@@ -15,7 +15,6 @@ $IFTHENI %system.filesys% == UNIX $SET sep "/"
 $ELSE $SET sep "\"
 $ENDIF
 
-
 $IFTHENI "%neos%" == "yes"
 FILE opt / kestrel.opt /;
 $ENDIF

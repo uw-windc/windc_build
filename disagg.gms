@@ -9,8 +9,12 @@
 *               GAMS-AMPL, IPOPT, KNITRO, LINDOGLOBAL, MILES, MINOS, MOSEK, NLPEC,
 *               PATH, PATHNLP, SBB, SCIP, SNOPT, XPRESS
 
-$IF NOT SET reldir $SET reldir "./build_files"
-$IF NOT SET dsdir $SET dsdir "./built_datasets"
+$IFTHENI %system.filesys% == UNIX $SET sep "/"
+$ELSE $SET sep "\"
+$ENDIF
+
+$IF NOT SET reldir $SET reldir ".%sep%build_files"
+$IF NOT SET dsdir $SET dsdir ".%sep%built_datasets"
 
 $IF NOT SET neos $SET neos "no"
 $IF NOT SET neosserver $SET neosserver "neos-server.org:3333"
@@ -22,9 +26,7 @@ $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 $IF NOT SET year $SET year 2016
 $IF NOT SET aggr $SET aggr bluenote
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+
 
 SCALAR myerrorlevel;
 
@@ -87,17 +89,3 @@ ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete with error code '0
 $ENDIF
 
 * ------------------------------------------------------------------------------
-
-
-
-*------------------------------------------------------------------------------
-*** Clean up
-*------------------------------------------------------------------------------
-$IFTHENI %system.filesys% == UNIX
-EXECUTE 'rm disagg.lst';
-$ENDIF
-
-$IFTHENI %system.filesys% == MSNT
-EXECUTE 'del disagg.lst';
-$ENDIF
-*------------------------------------------------------------------------------

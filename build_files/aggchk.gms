@@ -3,11 +3,13 @@ $TITLE Micro-consistency check on aggregation :/
 $IF NOT SET year $SET year 2016
 $IF NOT SET aggr	$SET aggr bluenote
 
-
+$IFTHENI %system.filesys% == UNIX $SET sep "/"
+$ELSE $SET sep "\"
+$ENDIF
 * Set directory structure:
 
 $IF NOT SET reldir $SET reldir "."
-$IF NOT SET dsdir $SET dsdir "../built_datasets"
+$IF NOT SET dsdir $SET dsdir "..%sep%built_datasets"
 
 $IF NOT SET neos $SET neos "no"
 $IF NOT SET neosserver $SET neosserver "neos-server.org:3333"
@@ -15,10 +17,6 @@ $IF NOT SET kestrel_nlp $SET kestrel_nlp "conopt"
 $IF NOT SET kestrel_lp $SET kestrel_lp "cplex"
 $IF NOT SET kestrel_qcp $SET kestrel_qcp "cplex"
 $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
-
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
 
 
 $IFTHENI.kestrel "%neos%" == "yes"

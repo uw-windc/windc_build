@@ -9,8 +9,12 @@
 *               GAMS-AMPL, IPOPT, KNITRO, LINDOGLOBAL, MILES, MINOS, MOSEK, NLPEC,
 *               PATH, PATHNLP, SBB, SCIP, SNOPT, XPRESS
 
+$IFTHENI %system.filesys% == UNIX $SET sep "/"
+$ELSE $SET sep "\"
+$ENDIF
+
 $IF NOT SET reldir $SET reldir "."
-$IF NOT SET dsdir $SET dsdir "../built_datasets"
+$IF NOT SET dsdir $SET dsdir "..%sep%built_datasets"
 
 $IF NOT SET neos $SET neos "no"
 $IF NOT SET neosserver $SET neosserver "neos-server.org:3333"
@@ -22,9 +26,7 @@ $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 $IF NOT SET satdata $SET satdata bluenote
 $IF NOT SET year $SET year 2016
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+
 
 SCALAR myerrorlevel;
 

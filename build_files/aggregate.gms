@@ -17,17 +17,19 @@ $TITLE Sectoral/Regional (Dis)aggregation routine :/
 * work from in the "canned" portion of the program. Make distinction between
 * intended regions/sectors in the target vs. origin dataset.
 
+$IFTHENI %system.filesys% == UNIX $SET sep "/"
+$ELSE $SET sep "\"
+$ENDIF
+
 $IF NOT SET sdisagg	$SET sdisagg yes
 $IF NOT SET aggr	$SET aggr bluenote
 $IF NOT SET year $SET year 2016
 
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
-$IF NOT SET dsdir $SET dsdir "../built_datasets"
+$IF NOT SET dsdir $SET dsdir "..%sep%built_datasets"
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+
 
 
 * --------------------------------------------------------------------------
