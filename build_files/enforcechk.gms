@@ -39,6 +39,8 @@ PARAMETER ys0(r,s,g) "Sectoral supply";
 PARAMETER id0(r,g,s) "Intermediate demand";
 PARAMETER ld0(r,s) "Labor demand";
 PARAMETER kd0(r,s) "Capital demand";
+PARAMETER ty(r,s) "Counterfactual production tax";
+PARAMETER ty0(r,s) "Production tax rate";
 PARAMETER m0(r,g) "Imports";
 PARAMETER x0(r,g) "Exports of goods and services";
 PARAMETER rx0(r,g) "Re-exports of goods and services";
@@ -69,6 +71,7 @@ $LOADDC ys0
 $LOADDC ld0
 $LOADDC kd0
 $LOADDC id0
+$LOADDC ty0
 
 * Consumption data:
 
@@ -94,6 +97,7 @@ $LOADDC m0
 $LOADDC ta0
 $LOADDC tm0
 
+ty(r,s) = ty0(r,s);
 ta(r,s) = ta0(r,s);
 tm(r,s) = tm0(r,s);
 
@@ -146,7 +150,7 @@ $consumer:
 	RA(r)			!	Representative agent
 
 $prod:Y(r,s)$y_(r,s)  s:0 va:1
-	o:PY(r,g)	q:ys0(r,s,g)
+	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty(r,s)    p:(1-ty0(r,s))
 	i:PA(r,g)	q:id0(r,g,s)
 	i:PL(r)		q:ld0(r,s)	va:
 	i:PK(r,s)	q:kd0(r,s)	va:
@@ -158,11 +162,11 @@ $prod:X(r,g)$x_(r,g)  t:4
 	i:PY(r,g)	q:s0(r,g)
 
 $prod:A(r,g)$a_(r,g)  s:0 dm:4  d:2
-	o:PA(r,g)	q:a0(r,g)		a:RA(r)	t:ta0(r,g)	p:(1-ta0(r,g))
+	o:PA(r,g)	q:a0(r,g)		a:RA(r)	t:ta(r,g)	p:(1-ta0(r,g))
 	o:PFX		q:rx0(r,g)
 	i:PN(g)		q:nd0(r,g)	d:
 	i:PD(r,g)	q:dd0(r,g)	d:
-	i:PFX		q:m0(r,g)	dm: 	a:RA(r)	t:tm0(r,g) 	p:(1+tm0(r,g))
+	i:PFX		q:m0(r,g)	dm: 	a:RA(r)	t:tm(r,g) 	p:(1+tm0(r,g))
 	i:PM(r,m)	q:md0(r,m,g)
 
 $prod:MS(r,m)

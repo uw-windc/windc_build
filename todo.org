@@ -1,5 +1,0 @@
-* Main model tasks
-** TODO fix capital-labor state level shares
-** TODO add output taxes
-** TODO restrict used and other sectors in national matrix balancing (should only be a "used" sector)
-** TODO test robustness of the build generally

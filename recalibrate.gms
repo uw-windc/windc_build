@@ -122,15 +122,3 @@ $ENDIF
 
 $ENDIF.satdata
 
-
-*------------------------------------------------------------------------------
-*** Clean up
-*------------------------------------------------------------------------------
-$IFTHENI %system.filesys% == UNIX
-EXECUTE 'rm recalibrate.lst';
-$ENDIF
-
-$IFTHENI %system.filesys% == MSNT
-EXECUTE 'del recalibrate.lst';
-$ENDIF
-*------------------------------------------------------------------------------

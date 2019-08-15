@@ -57,7 +57,7 @@ SET sector "Dynamically created set from seds_units parameter, EIA SEDS sector c
 SET sr "Super set of Regions (states + US) in WiNDC Database";
 SET r(sr) "Regions in WiNDC Database";
 SET yr "Years in WiNDC Database"
-PARAMETER seds_units(source<,sector<,sr,yr,*) "Complete EIA SEDS data, with units as domain";
+PARAMETER seds_units(source,sector,sr,yr,*) "Complete EIA SEDS data, with units as domain";
 PARAMETER crude_oil_price_units(yr,*) "Crude Oil price (composite between domestic and international), with units as domain";
 PARAMETER heatrate_units(yr,*,*) "EIA Elec Generator average heat rates, with units as domain";
 PARAMETER co2perbtu_units(*,*) "Carbon dioxide -- not CO2s -- content (kg per million btu)";
@@ -66,6 +66,8 @@ $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
 $LOAD sr
 $LOAD r
+$LOAD source<seds_units.dim1
+$LOAD sector<seds_units.dim2
 $LOAD seds_units
 $LOAD heatrate_units
 $LOAD crude_oil_price_units
@@ -99,6 +101,7 @@ PARAMETER ys0_(yr,r,s,g) "Sectoral supply";
 PARAMETER id0_(yr,r,g,s) "Intermediate demand";
 PARAMETER ld0_(yr,r,s) "Labor demand";
 PARAMETER kd0_(yr,r,s) "Capital demand";
+PARAMETER ty0_(yr,r,s) "Production tax rate";
 PARAMETER m0_(yr,r,g) "Imports";
 PARAMETER x0_(yr,r,g) "Exports of goods and services";
 PARAMETER rx0_(yr,r,g) "Re-exports of goods and services";
@@ -127,6 +130,7 @@ $LOADDC ys0_
 $LOADDC ld0_
 $LOADDC kd0_
 $LOADDC id0_
+$LOADDC ty0_
 
 * Consumption data:
 $LOADDC yh0_
@@ -181,6 +185,7 @@ PARAMETER dataconschk "Consistency check on re-calibrated data";
 dataconschk(r,s,'ys0','old') = sum(g, ys0_('%year%',r,s,g));
 dataconschk(r,g,'id0','old') = sum(s, id0_('%year%',r,g,s));
 dataconschk(r,s,'va0','old') = ld0_('%year%',r,s) + kd0_('%year%',r,s);
+dataconschk(r,s,'tyrev','old') = (1-ty0_('%year%',r,s)) * sum(g, ys0_('%year%',r,s,g));
 
 dataconschk(r,g,'i0','old') = i0_('%year%',r,g);
 dataconschk(r,g,'g0','old') = g0_('%year%',r,g);
@@ -311,6 +316,7 @@ PARAMETER ys0(yr,r,*,*) "Sectoral supply";
 PARAMETER id0(yr,r,*,*) "Intermediate demand";
 PARAMETER ld0(yr,r,*) "Labor demand";
 PARAMETER kd0(yr,r,*) "Capital demand";
+PARAMETER ty0(yr,r,*) "Production tax rate";
 PARAMETER m0(yr,r,*) "Imports";
 PARAMETER x0(yr,r,*) "Exports of goods and services";
 PARAMETER rx0(yr,r,*) "Re-exports of goods and services";
@@ -338,6 +344,7 @@ PARAMETER nd0(yr,r,*) "Regional demand from national market";
 
 ld0(yr,r,s)$(NOT SAMEAS(s,'cng')) = ld0_(yr,r,s);
 kd0(yr,r,s)$(NOT SAMEAS(s,'cng')) = kd0_(yr,r,s);
+ty0(yr,r,s)$(NOT SAMEAS(s,'cng')) = ty0_(yr,r,s);
 m0(yr,r,g)$(NOT SAMEAS(g,'cng')) = m0_(yr,r,g);
 x0(yr,r,g)$(NOT SAMEAS(g,'cng')) = x0_(yr,r,g);
 rx0(yr,r,g)$(NOT SAMEAS(g,'cng')) = rx0_(yr,r,g);
@@ -366,6 +373,7 @@ hhadj(yr,r) = hhadj_(yr,r);
 
 ld0(yr,r,as) = sum(mapog(as,s), shrgas(r,yr,as) * ld0_(yr,r,s));
 kd0(yr,r,as) = sum(mapog(as,s), shrgas(r,yr,as) * kd0_(yr,r,s));
+ty0(yr,r,as) = sum(mapog(as,s), ty0_(yr,r,s));
 m0(yr,r,as) = sum(mapog(as,s), shrgas(r,yr,as) * m0_(yr,r,s));
 x0(yr,r,as) = sum(mapog(as,s), shrgas(r,yr,as) * x0_(yr,r,s));
 rx0(yr,r,as) = sum(mapog(as,s), shrgas(r,yr,as) * rx0_(yr,r,s));
@@ -409,6 +417,7 @@ PARAMETER fvs "Factor value shares";
 
 fvs(yr,r,ds,'lab')$sum(dg, ys0(yr,r,ds,dg)) = ld0(yr,r,ds) / sum(dg, ys0(yr,r,ds,dg));
 fvs(yr,r,ds,'cap')$sum(dg, ys0(yr,r,ds,dg)) = kd0(yr,r,ds) / sum(dg, ys0(yr,r,ds,dg));
+
 
 * -------------------------------------------------------------------------
 * Enforce that supply sent to other regions in the county or imported from
@@ -540,6 +549,7 @@ inpchk(yr,r,ds,'new') = sum(ioe, id0(yr,r,ioe,ds));
 ys0(yr,r,'ele',g)$(elegen(r,'total',yr) * ps0(yr,'ele') = 0) = 0;
 ld0(yr,r,'ele')$(sum(dg, ys0(yr,r,'ele',dg)) = 0) = 0;
 kd0(yr,r,'ele')$(sum(dg, ys0(yr,r,'ele',dg)) = 0) = 0;
+ty0(yr,r,'ele')$(sum(dg, ys0(yr,r,'ele',dg)) = 0) = 0;
 id0(yr,r,dg,'ele')$(sum(ds, ys0(yr,r,'ele',ds)) = 0) = 0;
 s0(yr,r,'ele')$(sum(dg, ys0(yr,r,'ele',dg)) = 0) = 0;
 xd0(yr,r,'ele')$(sum(dg, ys0(yr,r,'ele',dg)) = 0) = 0;
@@ -595,6 +605,14 @@ secco2(r,'cru','oil') = co2emiss(r,'cru','ref');
 PARAMETER nomatch;
 nomatch(r,ioe,ds)$(secco2(r,ioe,ds) and not id0('%year%',r,ioe,ds)) = secco2(r,ioe,ds);
 secco2(r,ioe,ds)$nomatch(r,ioe,ds) = 0;
+
+* Recalculate the household adjustment parameter
+
+hhadj(yr,r) = c0(yr,r)
+    - sum(ds, ld0(yr,r,ds) + kd0(yr,r,ds) + yh0(yr,r,ds)) - bopdef0(yr,r)
+    - sum(ds, ta0(yr,r,ds) * a0(yr,r,ds) + tm0(yr,r,ds)*m0(yr,r,ds) + ty0(yr,r,ds)*sum(dg, ys0(yr,r,ds,dg)))
+    + sum(ds, g0(yr,r,ds) + i0(yr,r,ds));
+
 
 * -------------------------------------------------------------------
 * Recalibrate dataset to match totals using LS or Huber method:
@@ -819,6 +837,7 @@ PARAMETER ys0loop;
 PARAMETER id0loop;
 PARAMETER ld0loop;
 PARAMETER kd0loop;
+PARAMETER ty;
 PARAMETER ta;
 PARAMETER a0loop;
 PARAMETER nd0loop;
@@ -954,7 +973,7 @@ obj_ls..	OBJ =E= sum((r,ds,dg)$ys0loop(r,ds,dg), abs(ys0loop(r,ds,dg)) * sqr(YS(
 			sum((r,dg)$(not i0loop(r,dg)), INV(r,dg)) +
 			sum((r,dg)$(not g0loop(r,dg)), GD(r,dg)));
 
-zp_y(r,ds)..	sum(dg, YS(r,ds,dg)) =E= sum(dg, ID(r,dg,ds)) + LD(r,ds) + KD(r,ds);
+zp_y(r,ds)..	(1-ty(r,ds)) * sum(dg, YS(r,ds,dg)) =E= sum(dg, ID(r,dg,ds)) + LD(r,ds) + KD(r,ds);
 zp_a(r,dg)..	(1-ta(r,dg)) * ARM(r,dg) + RX(r,dg) =E= ND(r,dg) + DD(r,dg) + (1+tm(r,dg)) * IMP(r,dg) + sum(m, MARD(r,m,dg));
 zp_x(r,dg)..	SUP(r,dg) + RX(r,dg) =E= XPT(r,dg) + XN(r,dg) + XD(r,dg);
 zp_ms(r,m)..	sum(ds, NM(r,ds,m) + DM(r,ds,m)) =E= sum(dg, MARD(r,m,dg));
@@ -971,7 +990,8 @@ mc_pfx..	sum(r, BOP(r) + hhadjloop(r)) + sum((r,dg), XPT(r,dg)) =E= sum((r,dg), 
 expdef(r,dg)..	XPT(r,dg) =G= RX(r,dg);
 
 incbal(r)..	sum(dg, CD(r,dg) + GD(r,dg) + INV(r,dg)) =E=
-		sum(dg, YH(r,dg)) + BOP(r) + hhadjloop(r) + sum(ds, LD(r,ds) + KD(r,ds)) + sum(dg, ta(r,dg)*ARM(r,dg) + tm(r,dg)*IMP(r,dg));
+		sum(dg, YH(r,dg)) + BOP(r) + hhadjloop(r) + sum(ds, LD(r,ds) + KD(r,ds)) +
+		sum(dg, ta(r,dg)*ARM(r,dg) + tm(r,dg)*IMP(r,dg)) + sum(ds, ty(r,ds)*sum(dg, YS(r,ds,dg)));
 
 * Impose net generation constraints on national electricity trade if calibrating
 * to SEDS data:
@@ -1020,6 +1040,7 @@ ys0loop(r,ds,dg) = ys0(yr,r,ds,dg);
 id0loop(r,dg,ds) = id0(yr,r,dg,ds);
 ld0loop(r,dg) = ld0(yr,r,dg);
 kd0loop(r,dg) = kd0(yr,r,dg);
+ty(r,ds) = ty0(yr,r,ds);
 a0loop(r,dg) = a0(yr,r,dg);
 nd0loop(r,dg) = nd0(yr,r,dg);
 dd0loop(r,dg) = dd0(yr,r,dg);
@@ -1228,6 +1249,7 @@ ys0loop(r,ds,dg) = YS.L(r,ds,dg);
 id0loop(r,dg,ds) = ID.L(r,dg,ds);
 ld0loop(r,ds) = LD.L(r,ds);
 kd0loop(r,ds) = KD.L(r,ds);
+ty(r,dg) = ty0('%year%',r,dg);
 a0loop(r,dg) = ARM.L(r,dg);
 nd0loop(r,dg) = ND.L(r,dg);
 dd0loop(r,dg) = DD.L(r,dg);
@@ -1249,6 +1271,7 @@ ta(r,dg) = ta0('%year%',r,dg);
 tm(r,dg) = tm0('%year%',r,dg);
 c0loop(r) = sum(dg, cd0loop(r,dg));
 
+
 * -------------------------------------------------------------------
 * Write a report on the differences in the dataset relative to
 * the core blueNOTE output:
@@ -1260,12 +1283,13 @@ c0loop(r) = sum(dg, cd0loop(r,dg));
 dataconschk(r,ds,'ys0','new') = sum(dg, ys0loop(r,ds,dg));
 dataconschk(r,dg,'id0','new') = sum(ds, id0loop(r,dg,ds));
 dataconschk(r,ds,'va0','new') = ld0loop(r,ds) + kd0loop(r,ds);
+dataconschk(r,ds,'tyrev','new') = (1-ty(r,ds)) * sum(dg, ys0loop(r,ds,dg));
 
 dataconschk(r,dg,'i0','new') = i0loop(r,dg);
 dataconschk(r,dg,'g0','new') = g0loop(r,dg);
 dataconschk(r,dg,'cd0','new') = cd0loop(r,dg);
 dataconschk(r,dg,'yh0','new') = yh0loop(r,dg);
-dataconschk(r,'total','hhadj','new') = hhadj_('%year%',r);
+dataconschk(r,'total','hhadj','new') = hhadjloop(r);
 dataconschk(r,'total','bop','new') = bopdef0loop(r);
 
 dataconschk(r,dg,'s0','new') = s0loop(r,dg);
@@ -1329,7 +1353,7 @@ r,ds=s,m,
 
 * Production data:
 
-ys0loop=ys0,ld0loop=ld0,kd0loop=kd0,id0loop=id0,
+ys0loop=ys0,ld0loop=ld0,kd0loop=kd0,id0loop=id0,ty=ty0,
 
 * Consumption data:
 
@@ -1347,12 +1371,3 @@ md0loop=md0,nm0loop=nm0,dm0loop=dm0,
 * Emissions:
 
 resco2, secco2;
-
-* $IFTHENI %system.filesys% == MSNT
-* EXECUTE 'del %reldir%%sep%%dsdir%%sep%WiNDC_disagg_bluenote.gdx';
-* $ENDIF
-*
-*
-* $IFTHENI %system.filesys% == UNIX
-* EXECUTE 'rm %reldir%%sep%%dsdir%%sep%WiNDC_disagg_bluenote.gdx';
-* $ENDIF

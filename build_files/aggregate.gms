@@ -56,6 +56,7 @@ PARAMETER ys0_(yr,r,g,s) "Sectoral supply";
 PARAMETER id0_(yr,r,s,g) "Intermediate demand";
 PARAMETER ld0_(yr,r,s) "Labor demand";
 PARAMETER kd0_(yr,r,s) "Capital demand";
+PARAMETER ty0_(yr,r,s) "Production tax rate";
 PARAMETER m0_(yr,r,s) "Imports";
 PARAMETER x0_(yr,r,s) "Exports of goods and services";
 PARAMETER rx0_(yr,r,s) "Re-exports of goods and services";
@@ -84,6 +85,7 @@ $LOADDC ys0_
 $LOADDC ld0_
 $LOADDC kd0_
 $LOADDC id0_
+$LOADDC ty0_
 
 * Consumption data:
 $LOADDC yh0_
@@ -152,6 +154,7 @@ PARAMETER ys0__(yr,rr,gg,ss) "Sectoral supply";
 PARAMETER id0__(yr,rr,ss,gg) "Intermediate demand";
 PARAMETER ld0__(yr,rr,ss) "Labor demand";
 PARAMETER kd0__(yr,rr,ss) "Capital demand";
+PARAMETER ty0__(yr,rr,ss) "Production tax rate";
 PARAMETER m0__(yr,rr,ss) "Imports";
 PARAMETER x0__(yr,rr,ss) "Exports of goods and services";
 PARAMETER rx0__(yr,rr,ss) "Re-exports of goods and services";
@@ -201,6 +204,8 @@ hhadj__(yr,rr) = sum(rmap(rr,r),hhadj_(yr,r));
 
 * Assign averaged tax rates:
 
+ty0__(yr,rr,ss)$sum(gg,ys0__(yr,rr,ss,gg)) = sum((rmap(rr,r),smap(ss,s)), ty0_(yr,r,s)*sum(g, ys0_(yr,r,s,g)))/
+    sum(gg, ys0__(yr,rr,ss,gg));
 ta0__(yr,rr,ss)$a0__(yr,rr,ss)	= sum((rmap(rr,r),smap(ss,s)), ta0_(yr,r,s)*a0_(yr,r,s))/a0__(yr,rr,ss);
 tm0__(yr,rr,ss)$m0__(yr,rr,ss)	= sum((rmap(rr,r),smap(ss,s)), tm0_(yr,r,s)*m0_(yr,r,s))/m0__(yr,rr,ss);
 
@@ -221,7 +226,7 @@ yr,rr=r,ss=s,mm=m,gmm=gm,
 
 * Production data:
 
-ys0__=ys0_,ld0__=ld0_,kd0__=kd0_,id0__=id0_,
+ys0__=ys0_,ld0__=ld0_,kd0__=kd0_,id0__=id0_,ty0__=ty0_,
 
 * Consumption data:
 

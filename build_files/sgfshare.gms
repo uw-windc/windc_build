@@ -17,11 +17,12 @@ SET ec "Dynamically created set from the sgf_raw parameter, government expenditu
 SET yr "Years in WiNDC Database";
 SET g	"BEA Goods and sectors categories";
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER sgf_raw_units(yr,r<,ec<,*) "Personal expenditure data, with units as domain";
+PARAMETER sgf_raw_units(yr,r,ec,*) "Personal expenditure data, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOADDC yr
+$LOAD r<sgf_units.dim2
+$LOAD ec<sgf_units.dim3
 $LOADDC sgf_raw_units=sgf_units
 $LOAD g=i
 $GDXIN

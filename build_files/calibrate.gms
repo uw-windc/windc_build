@@ -422,7 +422,7 @@ $ENDIF.kestrel
 
 * Restrict output of the use and other sector to be zero:
 
-*	ys0_.FX(i,j)$()
+	ys0_.FX(i,j)$(sameas(i,'use') or sameas(i,'oth')) = 0;
 	
 * Set zero values:
 

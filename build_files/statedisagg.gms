@@ -183,6 +183,8 @@ DISPLAY shrverify;
 PARAMETER va0_(yr,r,s) "Regional value added";
 PARAMETER ld0_(yr,r,s) "Labor demand";
 PARAMETER kd0_(yr,r,s) "Capital demand";
+PARAMETER ty0_rev_(yr,r,s) "Production tax payments";
+PARAMETER ty0_(yr,r,s) "Production tax rate";
 PARAMETER y0_(yr,r,s) "Regional gross sectoral output";
 PARAMETER ys0_(yr,r,s,g) "Regional sectoral output";
 PARAMETER id0_(yr,r,g,s) "Regional intermediate demand";
@@ -190,16 +192,17 @@ PARAMETER zprof(yr,r,s) "Check on ZP";
 
 ys0_(yr,r,s,g) = region_shr(yr,r,s) * ys_0(yr,s,g);
 id0_(yr,r,g,s) = region_shr(yr,r,s) * id_0(yr,g,s);
-va0_(yr,r,s) = region_shr(yr,r,s) * sum(va, va_0(yr,va,s));
+ty0_rev_(yr,r,s) = region_shr(yr,r,s) * va_0(yr,'othtax',s);
+ty0_(yr,r,s)$sum(g, ys0_(yr,r,s,g)) = ty0_rev_(yr,r,s) / sum(g, ys0_(yr,r,s,g));
+va0_(yr,r,s) = region_shr(yr,r,s) * (va_0(yr,'compen',s) + va_0(yr,'surplus',s));
 
 * Split aggregate value added based on GSP components:
 
 ld0_(yr,r,s) = labor_shr(yr,r,s) * va0_(yr,r,s);
 kd0_(yr,r,s) = va0_(yr,r,s) - ld0_(yr,r,s);
 
-zprof(yr,r,s) = sum(g, ys0_(yr,r,s,g)) - ld0_(yr,r,s) - kd0_(yr,r,s) - sum(g, id0_(yr,r,g,s));
+zprof(yr,r,s) = sum(g, ys0_(yr,r,s,g)) - ld0_(yr,r,s) - kd0_(yr,r,s) - ty0_rev_(yr,r,s) - sum(g, id0_(yr,r,g,s));
 ABORT$(smax((yr,r,s), abs(zprof(yr,r,s))) > 1e-5) "Error in zero profit check in regionalization.";
-
 
 
 
@@ -398,14 +401,14 @@ PARAMETER zp;
 PARAMETER mkt;
 PARAMETER ibal;
 
-zp(yr,r,s,'Y') = sum(g, ys0_(yr,r,s,g)) - sum(g, id0_(yr,r,g,s)) - ld0_(yr,r,s) - kd0_(yr,r,s);
+zp(yr,r,s,'Y') = (1-ty0_(yr,r,s)) * sum(g, ys0_(yr,r,s,g)) - sum(g, id0_(yr,r,g,s)) - ld0_(yr,r,s) - kd0_(yr,r,s);
 zp(yr,r,g,'A') = (1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
         (nd0_(yr,r,g) + dd0_(yr,r,g) + (1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g)));
 zp(yr,r,g,'X') = s0_(yr,r,g) - xd0_(yr,r,g) - xn0_(yr,r,g) - x0_(yr,r,g) + rx0_(yr,r,g);
 zp(yr,r,m,'M') = sum(s, nm0_(yr,r,s,m) + dm0_(yr,r,s,m)) - sum(g, md0_(yr,r,m,g));
 
 ibal(yr,r,'inc') = sum(s, va0_(yr,r,s) + yh0_(yr,r,s)) + bopdef0_(yr,r) - sum(s, g0_(yr,r,s) + i0_(yr,r,s));
-ibal(yr,r,'taxrev') = sum(s, ta0_(yr,r,s) * a0_(yr,r,s) + tm0_(yr,r,s)*m0_(yr,r,s));
+ibal(yr,r,'taxrev') = sum(s, ta0_(yr,r,s) * a0_(yr,r,s) + tm0_(yr,r,s)*m0_(yr,r,s) + ty0_(yr,r,s)*sum(g, ys0_(yr,r,s,g)));
 ibal(yr,r,'expend') = c0_(yr,r);
 ibal(yr,r,'balance') = ibal(yr,r,'expend') - ibal(yr,r,'inc') - ibal(yr,r,'taxrev');
 ibal(yr,'USA','balance') = sum(r, ibal(yr,r,'balance'));
@@ -436,6 +439,7 @@ negnum('ys0') = smin((r,g,s), ys0_('%year%',r,s,g));
 negnum('id0') = smin((r,s,g), id0_('%year%',r,g,s));
 negnum('ld0') = smin((r,s), ld0_('%year%',r,s));
 negnum('kd0') = smin((r,s), kd0_('%year%',r,s));
+negnum('ty0_rev') = smin((r,s), ty0_rev_('%year%',r,s));
 negnum('m0') = smin((r,g), m0_('%year%',r,g));
 negnum('x0') = smin((r,g), x0_('%year%',r,g));
 negnum('rx0') = smin((r,g), rx0_('%year%',r,g));
@@ -493,7 +497,7 @@ yr,r,s,m,gm,
 
 * Production data:
 
-ys0_,ld0_,kd0_,id0_,
+ys0_,ld0_,kd0_,id0_,ty0_,
 
 * Consumption data:
 
@@ -502,7 +506,7 @@ yh0_,fe0_,cd0_,c0_,i0_,g0_,bopdef0_,hhadj_,
 * Trade data:
 
 s0_,xd0_,xn0_,x0_,rx0_,a0_,nd0_,dd0_,m0_,ta0_,tm0_,
-
+g
 * Margins:
 
 md0_,nm0_,dm0_;

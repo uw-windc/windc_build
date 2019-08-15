@@ -40,12 +40,13 @@ SET sr "Super set of Regions (states + US) in WiNDC Database";
 SET r(sr) "Regions in WiNDC Database";
 SET yr "Years in WiNDC Database";
 SET nc "Dynamically created set from nass_units parameter, USDA NAICS codes";
-PARAMETER nass_units(r,nc<,*) "USDA NASS Ag Census data, with units as domain";
+PARAMETER nass_units(r,nc,*) "USDA NASS Ag Census data, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
 $LOAD sr
 $LOAD r
+$LOAD nc<nass_units.dim2
 $LOAD nass_units
 $GDXIN
 
@@ -53,7 +54,7 @@ SET s "Goods\sectors (national data)";
 SET gm(s) "Margin related sectors";
 SET m "Margins (trade or transport)";
 
-$GDXIN '%reldir%%sep%WiNDC_disagg_nass.gdx'
+$GDXIN '%dsdir%%sep%WiNDC_disagg_nass.gdx'
 $LOADDC s
 $LOADDC m
 $LOADDC gm
@@ -64,6 +65,7 @@ PARAMETER ys0_(yr,r,g,s) "Sectoral supply";
 PARAMETER id0_(yr,r,s,g) "Intermediate demand";
 PARAMETER ld0_(yr,r,s) "Labor demand";
 PARAMETER kd0_(yr,r,s) "Capital demand";
+PARAMETER ty0_(yr,r,s) "Production tax rate";
 PARAMETER m0_(yr,r,s) "Imports";
 PARAMETER x0_(yr,r,s) "Exports of goods and services";
 PARAMETER rx0_(yr,r,s) "Re-exports of goods and services";
@@ -93,6 +95,7 @@ $LOADDC ys0_
 $LOADDC ld0_
 $LOADDC kd0_
 $LOADDC id0_
+$LOADDC ty0_
 
 * Consumption data:
 
@@ -151,6 +154,7 @@ PARAMETER dataconschk "Consistency check on re-calibrated data";
 dataconschk(r,s,'ys0','old') = sum(g, ys0_('%year%',r,s,g));
 dataconschk(r,g,'id0','old') = sum(s, id0_('%year%',r,g,s));
 dataconschk(r,s,'va0','old') = ld0_('%year%',r,s) + kd0_('%year%',r,s);
+dataconschk(r,s,'tyrev','old') = (1-ty0_('%year%',r,s)) * sum(g, ys0_('%year%',r,s,g));
 
 dataconschk(r,g,'i0','old') = i0_('%year%',r,g);
 dataconschk(r,g,'g0','old') = g0_('%year%',r,g);
@@ -334,6 +338,7 @@ PARAMETER ys0loop;
 PARAMETER id0loop;
 PARAMETER ld0loop;
 PARAMETER kd0loop;
+PARAMETER ty;
 PARAMETER ta;
 PARAMETER a0loop;
 PARAMETER nd0loop;
@@ -467,7 +472,7 @@ obj_ls..	OBJ =E= sum((r,s,g)$ys0loop(r,s,g), abs(ys0loop(r,s,g)) * sqr(YS(r,s,g)
 			sum((r,g)$(not i0loop(r,g)), sqr(INV(r,g))) +
 			sum((r,g)$(not g0loop(r,g)), sqr(GD(r,g))));
 
-zp_y(r,s)..	sum(g, YS(r,s,g)) =E= sum(g, ID(r,g,s)) + LD(r,s) + KD(r,s);
+zp_y(r,s)..	(1-ty(r,s)) * sum(g, YS(r,s,g)) =E= sum(g, ID(r,g,s)) + LD(r,s) + KD(r,s);
 zp_a(r,g)..	(1-ta(r,g)) * ARM(r,g) + RX(r,g) =E= ND(r,g) + DD(r,g) + (1+tm(r,g)) * IMP(r,g) + sum(m, MARD(r,m,g));
 zp_x(r,g)..	SUP(r,g) + RX(r,g) =E= XPT(r,g) + XN(r,g) + XD(r,g);
 zp_ms(r,m)..	sum(s, NM(r,s,m) + DM(r,s,m)) =E= sum(g, MARD(r,m,g));
@@ -481,7 +486,8 @@ mc_pfx..	sum(r, BOP(r) + hhadjloop(r)) + sum((r,g), XPT(r,g)) =E= sum((r,g), IMP
 expdef(r,g)..	XPT(r,g) =G= RX(r,g);
 
 incbal(r)..	sum(g, CD(r,g) + GD(r,g) + INV(r,g)) =E=
-		sum(g, YH(r,g)) + BOP(r) + hhadjloop(r) + sum(s, LD(r,s) + KD(r,s)) + sum(g, ta(r,g)*ARM(r,g) + tm(r,g)*IMP(r,g));
+		sum(g, YH(r,g)) + BOP(r) + hhadjloop(r) + sum(s, LD(r,s) + KD(r,s)) +
+		sum(g, ta(r,g)*ARM(r,g) + tm(r,g)*IMP(r,g)) + sum(s, ty(r,s)*sum(g, YS(r,s,g)));
 
 natys0(s)..	sum((r,g), YS(r,s,g)) =E= sum(g, nat_ys(s,g));
 
@@ -513,6 +519,7 @@ ys0loop(r,s,g) = ys0_(yr,r,s,g);
 id0loop(r,g,s) = id0_(yr,r,g,s);
 ld0loop(r,g) = ld0_(yr,r,g);
 kd0loop(r,g) = kd0_(yr,r,g);
+ty(r,s) = ty0_(yr,r,s);
 a0loop(r,g) = a0_(yr,r,g);
 nd0loop(r,g) = nd0_(yr,r,g);
 dd0loop(r,g) = dd0_(yr,r,g);
@@ -657,6 +664,7 @@ ys0loop(r,s,g) = YS.L(r,s,g);
 id0loop(r,g,s) = ID.L(r,g,s);
 ld0loop(r,s) = LD.L(r,s);
 kd0loop(r,s) = KD.L(r,s);
+ty(r,s) = ty0_('%year%',r,s);
 a0loop(r,g) = ARM.L(r,g);
 nd0loop(r,g) = ND.L(r,g);
 dd0loop(r,g) = DD.L(r,g);
@@ -690,7 +698,7 @@ r,s,m,gm,
 
 * Production data:
 
-ys0loop=ys0,ld0loop=ld0,kd0loop=kd0,id0loop=id0,
+ys0loop=ys0,ld0loop=ld0,kd0loop=kd0,id0loop=id0,ty=ty0,
 
 * Consumption data:
 

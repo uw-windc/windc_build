@@ -17,13 +17,13 @@ SET pg "Dynamically created set from parameter pce_units, PCE goods";
 SET yr "Years in WiNDC Database"
 SET g "BEA Goods and sectors categories";
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER pce_raw_units(yr,r,pg<,*) "Personal expenditure data with units as domain";
+PARAMETER pce_raw_units(yr,r,pg,*) "Personal expenditure data with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
 $LOAD g=i
 $LOAD r
+$LOAD pg<pce_units.dim3
 $LOADDC pce_raw_units=pce_units
 $GDXIN
 

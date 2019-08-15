@@ -16,12 +16,13 @@ SET sg "Dynamically created set from cfs2012 parameter, SCTG codes";
 SET g "BEA Goods and sectors categories";
 SET r "Regions";
 
-* Note the dynamically created set notation here using the '<' character
 * First two indices in CFS parameter correspond to regions
-PARAMETER cfs2012_units(*,*,n<,sg<,*) "CFS data for 2012, with units as domain";
+PARAMETER cfs2012_units(*,*,n,sg,*) "CFS data for 2012, with units as domain";
 
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
+$LOAD n<cfsdata_st_units.dim3
+$LOAD sg<cfsdata_st_units.dim4
 $LOADDC cfs2012_units=cfsdata_st_units
 $LOAD g=i
 $LOAD r
