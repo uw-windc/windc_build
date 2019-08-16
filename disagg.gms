@@ -87,5 +87,3 @@ myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete with error code '0'";
 
 $ENDIF
-
-* ------------------------------------------------------------------------------

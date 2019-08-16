@@ -18,16 +18,25 @@ SET si "Dynamically created set from parameter gsp_units, State industry list";
 SET gdpcat "Dynamically creates set from parameter gsp_units, GSP components"
 
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER gsp_units(r,yr,gdpcat<,si<,*) "Annual gross state product with units as domain";
+PARAMETER gsp_units(r,yr,gdpcat,si,*) "Annual gross state product with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD s=i
 $LOAD yr
 $LOAD r
+$LOAD gdpcat<gsp_units.dim3
+$LOAD si<gsp_units.dim4
 $LOADDC gsp_units
 $GDXIN
 
+PARAMETER va_0(yr,*,s) "Value added from national dataset";
+PARAMETER lshr_0(yr,s) "Labor share of value added from national dataset";
+
+$GDXIN '%reldir%%sep%temp%sep%gdx_temp%sep%nationaldata.gdx'
+$LOAD va_0
+
+lshr_0(yr,s)$(va_0(yr,'compen',s) + va_0(yr,'surplus',s)) =
+    va_0(yr,'compen',s) / (va_0(yr,'compen',s) + va_0(yr,'surplus',s));
 
 * Note: GSP <> lab + cap + tax in the data for government affiliated sectors
 * (utilities, enterprises, etc.).
@@ -80,6 +89,7 @@ gspcat0(yr,r,s,gdpcat) = sum(mapsec(si,s), gsp_units(r,yr,gdpcat,si,"millions of
 
 PARAMETER region_shr "Regional share of value added";
 PARAMETER labor_shr "Share of regional value added due to labor";
+PARAMETER labor_shr_avg "Average regional share of value added due to labor";
 PARAMETER netva "Net value added (compensation + surplus)";
 
 region_shr(yr,r,s)$(sum(r.local, gsp0(yr,r,s,'Reported'))) = gsp0(yr,r,s,'Reported') / sum(r.local,  gsp0(yr,r,s,'Reported'));
@@ -98,15 +108,30 @@ region_shr(yr,r,s)$sum(r.local, region_shr(yr,r,s)) = region_shr(yr,r,s) / sum(r
 netva(yr,r,s,'sudo') = gspcat0(yr,r,s,'cmp') + (gsp0(yr,r,s,'Reported') - gspcat0(yr,r,s,'cmp') - gspcat0(yr,r,s,'taxsbd'));
 netva(yr,r,s,'comp') = gspcat0(yr,r,s,'cmp') + gspcat0(yr,r,s,'gos');
 
-* Define labor component of value added demand:
+* Potential future update might be to define labor component of value added
+* demand using region average for stability purposes. I.e. find labor shares that
+* match US average but allow for distribution in GSP data.
 
 labor_shr(yr,r,s)$netva(yr,r,s,'comp') = gspcat0(yr,r,s,'cmp') / netva(yr,r,s,'comp');
+
+* In cases where the labor share is zero (e.g. banking and finance), use the
+* national average.
+
+labor_shr(yr,r,s)$(labor_shr(yr,r,s)=0 and region_shr(yr,r,s)>0) = lshr_0(yr,s);
+
+* How do national averages compare with what national BEA reports? -- remarkably
+* well.
+
+PARAMETER comparelshr "Comparison between state and national dataset";
+
+comparelshr(yr,s,'bea') = lshr_0(yr,s);
+comparelshr(yr,s,'gsp')$sum(r,netva(yr,r,s,'comp')) = sum(r, gspcat0(yr,r,s,'cmp')) / sum(r,netva(yr,r,s,'comp'));
 
 * At least 1 year for a given region-sector pairing has wage shares less than 1:
 
 SET hw(r,s) "Regions with all years of high wage shares";
-hw(r,s) = yes$(smin(yr$labor_shr(yr,r,s), labor_shr(yr,r,s))>1);
 
+hw(r,s) = yes$(smin(yr$labor_shr(yr,r,s), labor_shr(yr,r,s))>1);
 
 PARAMETER seclaborshr(yr,s) Sector level average labor shares;
 
@@ -116,6 +141,7 @@ seclaborshr(yr,s)$sum(r$(labor_shr(yr,r,s) < 1), 1) =
 * Pick out (year,region,sector) pairings with wage shares greater than 1.
 
 SET wg(yr,r,s) "Index pairs with high wage shares";
+
 wg(yr,r,s) = yes$(labor_shr(yr,r,s) > 1);
 
 * Take an average for a given region-sector across years with shares less
@@ -134,6 +160,15 @@ chkshrs(yr,s) = sum(r, region_shr(yr,r,s));
 
 ABORT$(round(smin((yr,s), chkshrs(yr,s))) <> 1) "Missing GSP shares.";
 ABORT$(round(smax((yr,r,s), labor_shr(yr,r,s))) > 1) "Shares greater than 1";
+
+* Report variation in shares relative to national averages:
+
+PARAMETER hetersh "Heterogeneity in labor value added shares";
+
+hetersh(yr,r,s,'usa') = lshr_0(yr,s);
+hetersh(yr,r,s,'reg') = labor_shr(yr,r,s);
+hetersh(yr,r,s,'diff') = abs(hetersh(yr,r,s,'usa') - hetersh(yr,r,s,'reg'));
+hetersh(yr,r,'max','max') = smax(s$hetersh(yr,r,s,'reg'), hetersh(yr,r,s,'diff'));
 
 * -------------------------------------------------------------------
 * Output regional shares:

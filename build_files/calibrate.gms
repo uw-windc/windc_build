@@ -353,6 +353,9 @@ SET	lp(bal)	"Loop control for balancing frameworks";
 lp('ls') = yes;
 lp('huber') = yes;
 
+*SET	uo(i) "Used goods and Other sectors";
+*uo(')
+
 FILE gendir / "%reldir%%sep%temp%sep%loadpoint%sep%loadptdir.gms" /;
 FILE loadptexist / "%reldir%%sep%temp%sep%loadpoint%sep%loadpoint.gms" /;
 FILE copysoln / "%reldir%%sep%temp%sep%loadpoint%sep%storeloadpt.gms" /;
@@ -417,6 +420,10 @@ $ENDIF.kestrel
 	m0_.UP(i)$m0(i)  = abs(5 * m0(i));
 	md0_.UP(m,i)$md0(m,i)  = abs(5 * md0(m,i));
 
+* Restrict output of the use and other sector to be zero:
+
+	ys0_.FX(i,j)$(sameas(i,'use') or sameas(i,'oth')) = 0;
+	
 * Set zero values:
 
 *	ms0_.FX(i,m)$(not ms0(i,m))  = 0;

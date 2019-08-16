@@ -25,12 +25,16 @@ SET va "Value-added";
 SET fd "Final demand";
 
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER use_det_units(yr_det<,ir_use<,jc_use<,*) "Annual use matrix with units as domain";
-PARAMETER supply_det_units(yr_det,ir_supply<,jc_supply<,*) "Annual supply matrix with units as domain";
+PARAMETER use_det_units(yr_det,ir_use,jc_use,*) "Annual use matrix with units as domain";
+PARAMETER supply_det_units(yr_det,ir_supply,jc_supply,*) "Annual supply matrix with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
+$LOAD yr_det<use_det_units.dim1
+$LOAD ir_use<use_det_units.dim2
+$LOAD jc_use<use_det_units.dim3
 $LOAD use_det_units
+$LOAD ir_supply<supply_det_units.dim2
+$LOAD jc_supply<supply_det_units.dim3
 $LOAD supply_det_units
 $LOAD s=i_det
 $LOAD as=i
@@ -208,6 +212,7 @@ PARAMETER ys0_(yr,r,as,ag) "Sectoral supply";
 PARAMETER id0_(yr,r,ag,as) "Intermediate demand";
 PARAMETER ld0_(yr,r,as) "Labor demand";
 PARAMETER kd0_(yr,r,as) "Capital demand";
+PARAMETER ty0_(yr,r,as) "Production tax rate";
 PARAMETER m0_(yr,r,as) "Imports";
 PARAMETER x0_(yr,r,as) "Exports of goods and services";
 PARAMETER rx0_(yr,r,as) "Re-exports of goods and services";
@@ -237,6 +242,7 @@ $LOADDC ys0_
 $LOADDC ld0_
 $LOADDC kd0_
 $LOADDC id0_
+$LOADDC ty0_
 
 * Consumption data:
 
@@ -284,6 +290,7 @@ PARAMETER ys_0(yr,r,*,*) "Sectoral supply";
 PARAMETER id_0(yr,r,*,*) "Intermediate demand";
 PARAMETER ld_0(yr,r,*) "Labor demand";
 PARAMETER kd_0(yr,r,*) "Capital demand";
+PARAMETER ty_0(yr,r,*) "Production tax rate";
 PARAMETER m_0(yr,r,*) "Imports";
 PARAMETER x_0(yr,r,*) "Exports of goods and services";
 PARAMETER rx_0(yr,r,*) "Re-exports of goods and services";
@@ -342,6 +349,7 @@ fe_0(yr,r) = fe0_(yr,r);
 
 * Set tax rates the same as aggregate sector:
 
+ty_0(yr,r,ms) = sum(as$share_(yr,ms,as), ty0_(yr,r,as));
 ta_0(yr,r,ms) = sum(as$share_(yr,ms,as), ta0_(yr,r,as));
 tm_0(yr,r,ms) = sum(as$share_(yr,ms,as), tm0_(yr,r,as));
 
@@ -382,7 +390,7 @@ yr,r,ms=s,m,gms=gm,
 
 * Production data:
 
-ys_0=ys0_,ld_0=ld0_,kd_0=kd0_,id_0=id0_,
+ys_0=ys0_,ld_0=ld0_,kd_0=kd0_,id_0=id0_,ty_0=ty0_,
 
 * Consumption data:
 

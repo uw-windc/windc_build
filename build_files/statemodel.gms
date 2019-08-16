@@ -13,6 +13,7 @@ PARAMETER ys0(r,s,g) "Sectoral supply";
 PARAMETER id0(r,g,s) "Intermediate demand";
 PARAMETER ld0(r,s) "Labor demand";
 PARAMETER kd0(r,s) "Capital demand";
+PARAMETER ty0(r,s) "Production tax";
 PARAMETER m0(r,g) "Imports";
 PARAMETER x0(r,g) "Exports of goods and services";
 PARAMETER rx0(r,g) "Re-exports of goods and services";
@@ -39,6 +40,7 @@ ys0(r,s,g) = ys0_('%year%',r,s,g);
 id0(r,g,s) = id0_('%year%',r,g,s);
 ld0(r,s) = ld0_('%year%',r,s);
 kd0(r,s) = kd0_('%year%',r,s);
+ty0(r,s) = ty0_('%year%',r,s);
 m0(r,g) = m0_('%year%',r,g);
 x0(r,g) = x0_('%year%',r,g);
 rx0(r,g) = rx0_('%year%',r,g);
@@ -94,7 +96,7 @@ $consumer:
 	RA(r)			!	Representative agent
 
 $prod:Y(r,s)$y_(r,s)  s:0 va:1
-	o:PY(r,g)	q:ys0(r,s,g)
+	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty0(r,s)    p:(1-ty0(r,s))    
 	i:PA(r,g)	q:id0(r,g,s)
 	i:PL(r)		q:ld0(r,s)	va:
 	i:PK(r,s)	q:kd0(r,s)	va:

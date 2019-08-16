@@ -158,5 +158,3 @@ myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete with error code '0'";
 
 $ENDIF
-
-*------------------------------------------------------------------------------

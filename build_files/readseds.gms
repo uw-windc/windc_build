@@ -91,10 +91,9 @@ SET r(sr) "Regions in WiNDC Database";
 SET yr "Years in WiNDC Database"
 
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER seds_units(source<,sector<,sr,yr,*) "Complete EIA SEDS data, with units as domain";
+PARAMETER seds_units(source,sector,sr,yr,*) "Complete EIA SEDS data, with units as domain";
 PARAMETER heatrate_units(yr,*,*) "EIA Elec Generator average heat rates, with units as domain";
-PARAMETER emissions_units(co2dim<,r,yr,*) "CO2 emissions, with units as domain";
+PARAMETER emissions_units(co2dim,r,yr,*) "CO2 emissions, with units as domain";
 PARAMETER co2perbtu_units(*,*) "Carbon dioxide -- not CO2e -- content, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
@@ -102,8 +101,11 @@ $LOAD src=seds_src
 $LOAD sr
 $LOAD r
 $LOAD yr
+$LOAD source<seds_units.dim1
+$LOAD sector<seds_units.dim2
 $LOAD seds_units
 $LOAD heatrate_units
+$LOAD co2dim<emissions_units.dim1
 $LOAD emissions_units
 $LOAD co2perbtu_units
 $GDXIN

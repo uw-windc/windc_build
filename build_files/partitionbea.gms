@@ -27,9 +27,8 @@ SET ir_supply "Dynamically created set from supply_units parameter";
 SET jc_use "Dynamically created set from use_units parameter";
 SET jc_supply "Dynamically created set from supply_units parameter";
 
-* Note the dynamically created set notation here using the '<' character
-PARAMETER use_units(yr,ir_use<,jc_use<,*) "Annual use matrix with units domain";
-PARAMETER supply_units(yr,ir_supply<,jc_supply<,*) "Annual supply matrix with units domain";
+PARAMETER use_units(yr,ir_use,jc_use,*) "Annual use matrix with units domain";
+PARAMETER supply_units(yr,ir_supply,jc_supply,*) "Annual supply matrix with units domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
@@ -37,7 +36,11 @@ $LOAD i
 $LOAD va
 $LOAD fd
 $LOAD ts
+$LOAD ir_use<use_units.dim2
+$LOAD jc_use<use_units.dim3
 $LOADDC use_units
+$LOAD ir_supply<supply_units.dim2
+$LOAD jc_supply<supply_units.dim3
 $LOADDC supply_units
 $GDXIN
 
@@ -47,13 +50,13 @@ ALIAS(i,j);
 * 	Scale dataset:
 * -------------------------------------------------------------------
 
-* Scale input-output data to be in 10s of billions of dollars.
+* Scale input-output data to be in billions of dollars.
 
 PARAMETER use(yr,ir_use,jc_use) "Annual use matrix without units domain";
 PARAMETER supply(yr,ir_supply,jc_supply) "Annual supply matrix without units domain";
 
-use(yr,ir_use,jc_use) = use_units(yr,ir_use,jc_use,"millions of us dollars (USD)") * 1e-4;
-supply(yr,ir_supply,jc_supply) = supply_units(yr,ir_supply,jc_supply,"millions of us dollars (USD)") * 1e-4;
+use(yr,ir_use,jc_use) = use_units(yr,ir_use,jc_use,"millions of us dollars (USD)") * 1e-3;
+supply(yr,ir_supply,jc_supply) = supply_units(yr,ir_supply,jc_supply,"millions of us dollars (USD)") * 1e-3;
 
 
 * -------------------------------------------------------------------

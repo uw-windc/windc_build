@@ -14,13 +14,15 @@ SET t	"Dynamically create set from parameter usatrd, Trade type (import/export)"
 SET n "Dynamically created set from parameter usatrd, NAICS codes"
 SET s "BEA Goods and sectors categories";
 
-* Note the dynamically created set notation here using the '<' character
 * Note that exports are available from 2002-2016, while imports are available from 2008-2012.
-PARAMETER usatrd_units(r,n<,yr<,t<,*) "Trade data with units as domain";
+PARAMETER usatrd_units(r,n,yr,t,*) "Trade data with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD r
 $LOAD s=i
+$LOAD n<usatrd_units.dim2
+$LOAD yr<usatrd_units.dim3
+$LOAD t<usatrd_units.dim4
 $LOADDC usatrd_units
 $GDXIN
 
@@ -32,8 +34,8 @@ $INCLUDE '%reldir%%sep%maps%sep%mapusatrd.map'
 
 PARAMETER usatrd(r,n,yr,t) "Trade data without units";
 
-* Data originally in millions of dollars. Scale to 10s of billions:
-usatrd(r,n,yr,t) = usatrd_units(r,n,yr,t,"millions of us dollars (USD)") * 1e-4;
+* Data originally in millions of dollars. Scale to billions:
+usatrd(r,n,yr,t) = usatrd_units(r,n,yr,t,"millions of us dollars (USD)") * 1e-3;
 
 
 PARAMETER usatrd_(yr,r,s,t) "Mapped trade data";
