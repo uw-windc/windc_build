@@ -37,8 +37,6 @@ $IF NOT EXIST %dsdir%%sep%WiNDC_disagg_%satdata%.gdx $ERROR WiNDC_disagg_%satdat
 
 $IF NOT EXIST %reldir%%sep%temp%sep%gdx_temp%sep%sectordisagg_%satdata%.gdx $ERROR Sector disaggregation sectordisagg_%satdata%.gdx does not exist in %reldir%%sep%temp%sep%gdx_temp%sep%, must first disaggregate with disagg.gms tool
 
-$IF "%satdata%" == "bluenote" $IF "%year%" == "2015" $ERROR Currently WiNDC only supports recalibration of blueNOTE data for 1997..2014 and 2016
-
 $IF "%satdata%" == "nass" $IF NOT "%year%" == "2012" $ERROR Currently WiNDC only supports recalibration of NASS data for 2012
 *------------------------------------------------------------------------------
 
@@ -121,4 +119,3 @@ $ENDIF
 
 
 $ENDIF.satdata
-
