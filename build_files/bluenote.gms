@@ -461,13 +461,13 @@ pctgen(yr,r,ioe,demsec)$(NOT SAMEAS(demsec,'ele')) = 2;
 * two.
 
 PARAMETER eq0(yr,r,*,*) "Energy demand (trillions of btu or billions of kwh)";
-PARAMETER ed0(yr,r,e,demsec) "Energy demand (10s of bill $ value gross margin)";
+PARAMETER ed0(yr,r,e,demsec) "Energy demand (bill $ value gross margin)";
 PARAMETER emarg0(yr,r,e,*) "Margin demand for energy markups (10s of bill $)";
-PARAMETER ned0(yr,r,*,*) "Net energy demands (10s of bill $ value net of margin)";
+PARAMETER ned0(yr,r,*,*) "Net energy demands (bill $ value net of margin)";
 
 eq0(yr,r,e,demsec) = max(0,sedsenergy(r,'q',e,demsec,yr));
-ed0(yr,r,e,demsec) = pe0(yr,r,e,demsec) * eq0(yr,r,e,demsec) / 1e4;
-emarg0(yr,r,e,demsec)$ed0(yr,r,e,demsec) = (pe0(yr,r,e,demsec) - ps0(yr,e)) * eq0(yr,r,e,demsec) / 1e4;
+ed0(yr,r,e,demsec) = pe0(yr,r,e,demsec) * eq0(yr,r,e,demsec) / 1e3;
+emarg0(yr,r,e,demsec)$ed0(yr,r,e,demsec) = (pe0(yr,r,e,demsec) - ps0(yr,e)) * eq0(yr,r,e,demsec) / 1e3;
 ned0(yr,r,e,demsec) = ed0(yr,r,e,demsec) - emarg0(yr,r,e,demsec);
 
 * Assume margins for energy is aggregated and applied uniformily to all
@@ -509,13 +509,13 @@ resechk(yr,r,ioe,'new') = cd0(yr,r,ioe);
 
 PARAMETER chkele;
 chkele(r,'old') = ys0('2016',r,'ele','ele');
-chkele(r,'new') = elegen(r,'total','2016') * ps0('2016','ele') / 1e4;
+chkele(r,'new') = elegen(r,'total','2016') * ps0('2016','ele') / 1e3;
 DISPLAY chkele;
 
-ys0(yr,r,'ele','ele') = elegen(r,'total',yr) * ps0(yr,'ele') / 1e4;
-ys0(yr,r,'cru','cru') = sedsenergy(r,'q','cru','supply',yr)*ps0(yr,'cru') / 1e4;
-ys0(yr,r,'gas','gas') = sedsenergy(r,'q','gas','supply',yr)*ps0(yr,'gas') / 1e4;
-ys0(yr,r,'col','col') = sedsenergy(r,'q','col','supply',yr)*ps0(yr,'col') / 1e4;
+ys0(yr,r,'ele','ele') = elegen(r,'total',yr) * ps0(yr,'ele') / 1e3;
+ys0(yr,r,'cru','cru') = sedsenergy(r,'q','cru','supply',yr)*ps0(yr,'cru') / 1e3;
+ys0(yr,r,'gas','gas') = sedsenergy(r,'q','gas','supply',yr)*ps0(yr,'gas') / 1e3;
+ys0(yr,r,'col','col') = sedsenergy(r,'q','col','supply',yr)*ps0(yr,'col') / 1e3;
 ys0(yr,r,'oil','oil') = sedsenergy(r,'q','cru','ref',yr)/sum(r.local,sedsenergy(r,'q','cru','ref',yr)) *
 	sum((demsec,r.local),ned0(yr,r,'oil',demsec));
 
@@ -529,7 +529,6 @@ inpshrs(yr,r,ioe,demsec,ds)$(sum(ds.local$mapdems(ds,demsec), id0(yr,r,ioe,ds)) 
 
 * If input shares do not exist for the aggregate demsec category, use national
 * average, subject to multiple caveats:
-
 
 inpshrs(yr,r,ioe,demsec,ds)$(
     sum(ds.local,inpshrs(yr,r,ioe,demsec,ds)) = 0 AND
