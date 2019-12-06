@@ -621,7 +621,7 @@ hhadj(yr,r) = c0(yr,r)
 * of the average value across all regions.
 
 PARAMETER trace "Debug check on calculations";
-PARAMETER zerotol "Tolerance level" / 5 /;
+PARAMETER zerotol "Tolerance level" / 6 /;
 
 * Number of elements in each parameter before filter is applied:
 
