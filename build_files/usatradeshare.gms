@@ -8,22 +8,24 @@ $ELSE $SET sep "\"
 $ENDIF
 
 
-SET r "Regions in WiNDC Database";
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
 SET yr "Dynamically created set from parameter usatrd_units, Years in USA trade data set (2002-2016)";
 SET t	"Dynamically create set from parameter usatrd, Trade type (import/export)";
 SET n "Dynamically created set from parameter usatrd, NAICS codes"
 SET s "BEA Goods and sectors categories";
 
 * Note that exports are available from 2002-2016, while imports are available from 2008-2012.
-PARAMETER usatrd_units(r,n,yr,t,*) "Trade data with units as domain";
+PARAMETER usatrd_units(sr,n,yr,t,*) "Trade data with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
+$LOAD sr
 $LOAD r
 $LOAD s=i
 $LOAD n<usatrd_units.dim2
 $LOAD yr<usatrd_units.dim3
 $LOAD t<usatrd_units.dim4
-$LOADDC usatrd_units
+$LOAD usatrd_units
 $GDXIN
 
 

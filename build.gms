@@ -52,7 +52,7 @@ $CALL 'gams %gams.scrdir%create_loadpt_file.gms o="%reldir%%sep%temp%sep%lst%sep
 
 EXECUTE 'gams %reldir%%sep%partitionbea.gms o="%reldir%%sep%temp%sep%lst%sep%partitionbea.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: partitionbea.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: partitionbea.gms did not complete correctly...";
 *------------------------------------------------------------------------------
 
 
@@ -72,13 +72,13 @@ $IFTHENI "%neos%" == "yes"
 
 EXECUTE 'gams %reldir%%sep%calibrate.gms solver=kestrel optfile=1 --neos=yes --neosserver=%neosserver% --kestrel_mcp=%kestrel_mcp% --kestrel_nlp=%kestrel_nlp% --kestrel_lp=%kestrel_qcp% --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete correctly...";
 
 $ELSE
 
 EXECUTE 'gams %reldir%%sep%calibrate.gms qcp=cplex nlp=ipopt --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete correctly...";
 
 $ENDIF
 *------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ $ENDIF
 
 EXECUTE 'gams %reldir%%sep%gspshare.gms o="%reldir%%sep%temp%sep%lst%sep%gspshare.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: gspshare.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: gspshare.gms did not complete correctly...";
 
 
 * Household expenditures follow the Personal Consumption Expenditure Survey
@@ -107,7 +107,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: gspshare.gms did not complete with error code 
 
 EXECUTE 'gams %reldir%%sep%pceshare.gms o="%reldir%%sep%temp%sep%lst%sep%pceshare.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: pceshare.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: pceshare.gms did not complete correctly...";
 
 
 * Government expenditures are assumed to follow the state government finance tables.
@@ -115,7 +115,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: pceshare.gms did not complete with error code 
 
 EXECUTE 'gams %reldir%%sep%sgfshare.gms o="%reldir%%sep%temp%sep%lst%sep%sgfshare.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: sgfshare.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: sgfshare.gms did not complete correctly...";
 
 
 * Regional purchase coefficients which determine flows within and out to other
@@ -124,7 +124,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: sgfshare.gms did not complete with error code 
 
 EXECUTE 'gams %reldir%%sep%cfsshare.gms o="%reldir%%sep%temp%sep%lst%sep%cfsshare.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: cfsshare.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: cfsshare.gms did not complete correctly...";
 
 
 * Shares for exports are generated using Census data from USA Trade Online. The
@@ -133,7 +133,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: cfsshare.gms did not complete with error code 
 
 EXECUTE 'gams %reldir%%sep%usatradeshare.gms o="%reldir%%sep%temp%sep%lst%sep%usatradeshr.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: usatradeshare.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: usatradeshare.gms did not complete correctly...";
 
 
 * Disaggregate accounts by region and output a gdx file data for all years. The
@@ -149,12 +149,12 @@ $IFTHENI "%neos%" == "yes"
 
 EXECUTE 'gams %reldir%%sep%statedisagg.gms --neos=yes solver=kestrel optfile=1 --kestrel_mcp=%kestrel_mcp% --year=%year% o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete correctly...";
 
 $ELSE
 
 EXECUTE 'gams %reldir%%sep%statedisagg.gms --year=%year% o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete correctly...";
 
 $ENDIF

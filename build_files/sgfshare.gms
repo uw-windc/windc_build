@@ -12,18 +12,22 @@ $ENDIF
 * map to sector list and generate shares to use in disagg.gms.
 * ------------------------------------------------------------------------------
 
-SET r "Dynamically created set from sgf_raw parameter, regions";
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
+* SET r "Dynamically created set from sgf_raw parameter, regions";
 SET ec "Dynamically created set from the sgf_raw parameter, government expenditure categories";
 SET yr "Years in WiNDC Database";
 SET g	"BEA Goods and sectors categories";
 
-PARAMETER sgf_raw_units(yr,r,ec,*) "Personal expenditure data, with units as domain";
+PARAMETER sgf_raw_units(yr,sr,ec,*) "Personal expenditure data, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
-$LOADDC yr
-$LOAD r<sgf_units.dim2
+$LOAD yr
+* $LOAD r<sgf_units.dim2
+$LOAD sr
+$LOAD r
 $LOAD ec<sgf_units.dim3
-$LOADDC sgf_raw_units=sgf_units
+$LOAD sgf_raw_units=sgf_units
 $LOAD g=i
 $GDXIN
 

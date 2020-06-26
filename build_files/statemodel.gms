@@ -96,7 +96,7 @@ $consumer:
 	RA(r)			!	Representative agent
 
 $prod:Y(r,s)$y_(r,s)  s:0 va:1
-	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty0(r,s)    p:(1-ty0(r,s))    
+	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty0(r,s)    p:(1-ty0(r,s))
 	i:PA(r,g)	q:id0(r,g,s)
 	i:PL(r)		q:ld0(r,s)	va:
 	i:PK(r,s)	q:kd0(r,s)	va:

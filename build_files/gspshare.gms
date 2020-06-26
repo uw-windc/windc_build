@@ -12,21 +12,23 @@ $ENDIF
 * -------------------------------------------------------------------
 
 SET yr "Years in WiNDC Database"
-SET r "Regions in WiNDC Database";
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
 SET s "BEA Goods and sectors categories";
 SET si "Dynamically created set from parameter gsp_units, State industry list";
 SET gdpcat "Dynamically creates set from parameter gsp_units, GSP components"
 
 
-PARAMETER gsp_units(r,yr,gdpcat,si,*) "Annual gross state product with units as domain";
+PARAMETER gsp_units(sr,yr,gdpcat,si,*) "Annual gross state product with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD s=i
 $LOAD yr
+$LOAD sr
 $LOAD r
 $LOAD gdpcat<gsp_units.dim3
 $LOAD si<gsp_units.dim4
-$LOADDC gsp_units
+$LOAD gsp_units
 $GDXIN
 
 PARAMETER va_0(yr,*,s) "Value added from national dataset";

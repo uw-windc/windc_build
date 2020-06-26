@@ -144,7 +144,7 @@ PARAMETER pet_chk "Cross check on petroleum demand";
 PARAMETER pet_prc "Petroleum price";
 
 pet_chk(petruse(petr,s)) = sum(sr, seds_units(petr,s,sr,'2016','billion btu'));
-pet_prc(petruse(petr,s)) = sum(sr, seds_units(petr,s,sr,'2016','dollars per million btu'));
+pet_prc(petruse(petr,s)) = sum(sr, seds_units(petr,s,sr,'2016','us dollars (USD) per million btu'));
 
 pet_chk(petr,'rowsum') = sum((sr,petruse(petr,s)), seds_units(petr,s,sr,'2016','billion btu'));
 
@@ -169,7 +169,7 @@ pet_chk('colchk',s) = sum((sr,petruse(petr,s)), seds_units(petr,s,sr,'2016','bil
 * sectors for each petroleum product.
 
 pet_prc('PA',s)$sum(sr, seds_units('PA',s,sr,'2016','billion btu'))
-	= sum(sr, seds_units('PA',s,sr,'2016','billion btu') * seds_units('PA',s,sr,'2016','dollars per million btu')) / sum(sr, seds_units('PA',s,sr,'2016','billion btu'));
+	= sum(sr, seds_units('PA',s,sr,'2016','billion btu') * seds_units('PA',s,sr,'2016','us dollars (USD) per million btu')) / sum(sr, seds_units('PA',s,sr,'2016','billion btu'));
 
 OPTION pet_chk:0;
 DISPLAY pet_chk, pet_prc;
@@ -232,7 +232,7 @@ gas_chk('demand') = sum(s, gas_chk(s));
 gas_chk('supply') = sum(sr, seds_units('NG','MP',sr,'2016','billion btu')) / 1e6;
 DISPLAY gas_chk;
 
-gas_prc(sr,s)$seds_units('NG',s,sr,'2016','billion btu') = seds_units('NG',s,sr,'2016','dollars per million btu') + eps;
+gas_prc(sr,s)$seds_units('NG',s,sr,'2016','billion btu') = seds_units('NG',s,sr,'2016','us dollars (USD) per million btu') + eps;
 DISPLAY gas_prc;
 
 SET col(source) "Coal Index" / CL /;
@@ -266,9 +266,9 @@ PARAMETER fuelexpend "Fuel expenditures in electric utilities";
 PARAMETER fueluse "Fuel useitures in electric utilities";
 PARAMETER fuelprice "Fuel price in electric utilities";
 
-fuelexpend('col',sr,yr) = seds_units('CL','EI',sr,yr,'million dollars');
-fuelexpend('gas',sr,yr) = seds_units('NG','EI',sr,yr,'million dollars');
-fuelexpend('oil',sr,yr) = seds_units('PA','EI',sr,yr,'million dollars');
+fuelexpend('col',sr,yr) = seds_units('CL','EI',sr,yr,'millions of us dollars (USD)');
+fuelexpend('gas',sr,yr) = seds_units('NG','EI',sr,yr,'millions of us dollars (USD)');
+fuelexpend('oil',sr,yr) = seds_units('PA','EI',sr,yr,'millions of us dollars (USD)');
 
 fueluse('col',sr,yr) = seds_units('CL','EI',sr,yr,'billion btu') / 1000;
 fueluse('gas',sr,yr) = seds_units('NG','EI',sr,yr,'billion btu') / 1000;
@@ -284,10 +284,10 @@ SET pq "Price vs. quantities" / p,q /;
 SET ed(*) "Energy data" / supply, set.sec, ref /;
 
 PARAMETER ngp;
-ngp(sr,'d',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','dollars per million btu'));
-ngp(sr,'v',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','million dollars'));
+ngp(sr,'d',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','us dollars (USD) per million btu'));
+ngp(sr,'v',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','millions of us dollars (USD)'));
 ngp(sr,'b',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','billion btu'));
-ngp(sr,'d*b',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','billion btu') * seds_units('NG',s,sr,'2016','dollars per million btu'));
+ngp(sr,'d*b',sec) = sum(secmap(sec,s), seds_units('NG',s,sr,'2016','billion btu') * seds_units('NG',s,sr,'2016','us dollars (USD) per million btu'));
 
 OPTION ngp:1:1:2;
 DISPLAY ngp;
@@ -369,15 +369,15 @@ loop(sr,
 * these units, multiplying price x quantity will result in millions of
 * dollars.
 
-	energydata(sr,'p','gas',ed(sec),yr) = sum(secmap(sec,s), seds_units('NG',s,sr,yr,'dollars per million btu'));
-	energydata(sr,'p','oil',ed(sec),yr) = sum(secmap(sec,s), seds_units('PA',s,sr,yr,'dollars per million btu'));
-	energydata(sr,'p','col',ed(sec),yr) = sum(secmap(sec,s), seds_units('CL',s,sr,yr,'dollars per million btu'));
+	energydata(sr,'p','gas',ed(sec),yr) = sum(secmap(sec,s), seds_units('NG',s,sr,yr,'us dollars (USD) per million btu'));
+	energydata(sr,'p','oil',ed(sec),yr) = sum(secmap(sec,s), seds_units('PA',s,sr,yr,'us dollars (USD) per million btu'));
+	energydata(sr,'p','col',ed(sec),yr) = sum(secmap(sec,s), seds_units('CL',s,sr,yr,'us dollars (USD) per million btu'));
 
- 	energydata(sr,'p','col','ele',yr)$seds_units('CL','EI',sr,yr,'billion btu') = seds_units('CL','EI',sr,yr,'million dollars') / (seds_units('CL','EI',sr,yr,'billion btu') / 1000);
+ 	energydata(sr,'p','col','ele',yr)$seds_units('CL','EI',sr,yr,'billion btu') = seds_units('CL','EI',sr,yr,'millions of us dollars (USD)') / (seds_units('CL','EI',sr,yr,'billion btu') / 1000);
 
-	energydata(sr,'p','gas','ele',yr)$seds_units('NG','EI',sr,yr,'billion btu') = seds_units('NG','EI',sr,yr,'million dollars') / (seds_units('NG','EI',sr,yr,'billion btu') / 1000);
+	energydata(sr,'p','gas','ele',yr)$seds_units('NG','EI',sr,yr,'billion btu') = seds_units('NG','EI',sr,yr,'millions of us dollars (USD)') / (seds_units('NG','EI',sr,yr,'billion btu') / 1000);
 
-	energydata(sr,'p','oil','ele',yr)$seds_units('PA','EI',sr,yr,'billion btu') = seds_units('PA','EI',sr,yr,'million dollars') / (seds_units('PA','EI',sr,yr,'billion btu') / 1000);
+	energydata(sr,'p','oil','ele',yr)$seds_units('PA','EI',sr,yr,'billion btu') = seds_units('PA','EI',sr,yr,'millions of us dollars (USD)') / (seds_units('PA','EI',sr,yr,'billion btu') / 1000);
 
 
 * Prices of electricity are millions of dollars per thousand kilowatt
@@ -387,7 +387,7 @@ loop(sr,
 * of dollars.
 
 	energydata(sr,'p','ele',ed(sec),yr)$energydata(sr,'q','ele',ed,yr)
-		 = sum(secmap(sec,s), seds_units('ES',s,sr,yr,'million dollars')) / energydata(sr,'q','ele',ed,yr);
+		 = sum(secmap(sec,s), seds_units('ES',s,sr,yr,'millions of us dollars (USD)')) / energydata(sr,'q','ele',ed,yr);
 
 );
 
@@ -435,7 +435,7 @@ DISPLAY totals;
 PARAMETER otherdata "Other SEDS data";
 
 otherdata(sr,'rgdp',yr) = seds_units('GD','PR',sr,yr,'million chained (2009) dollars') / 1000 + eps;
-otherdata(sr,'gdp',yr) = seds_units('GD','PR',sr,yr,'million dollars') / 1000 + eps;
+otherdata(sr,'gdp',yr) = seds_units('GD','PR',sr,yr,'millions of us dollars (USD)') / 1000 + eps;
 otherdata(sr,'pop',yr) = seds_units('TP','OP',sr,yr,'thousand') + eps;
 
 * Only output data from 1997-2016 in accordance with national Input Output

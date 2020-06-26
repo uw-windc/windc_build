@@ -42,16 +42,16 @@ SET va "BEA Value added categories";
 $IF NOT EXIST "%reldir%%sep%temp%sep%gdx_temp%sep%nationaldata.gdx" ABORT "File nationaldata.gdx does not exist"
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
-$LOADDC yr
-$LOADDC r
-$LOADDC s=i
-$LOADDC va
-$LOADDC fd
+$LOAD yr
+$LOAD r
+$LOAD s=i
+$LOAD va
+$LOAD fd
 $GDXIN
 
 
 $GDXIN '%reldir%%sep%temp%sep%gdx_temp%sep%nationaldata.gdx'
-$LOADDC m
+$LOAD m
 
 ALIAS(s,g,ss,gg),(r,rr);
 
@@ -118,7 +118,7 @@ $LOADDC pce_shr
 $GDXIN
 
 $GDXIN %reldir%%sep%temp%sep%gdx_temp%sep%shares_sgf.gdx
-$LOADDC sgf_shr
+$LOAD sgf_shr
 $GDXIN
 
 $GDXIN %reldir%%sep%temp%sep%gdx_temp%sep%cfs_rpcs.gdx

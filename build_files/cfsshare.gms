@@ -14,18 +14,21 @@ $ENDIF
 SET n "Dynamically created set from cfs2012 parameter, NAICS codes";
 SET sg "Dynamically created set from cfs2012 parameter, SCTG codes";
 SET g "BEA Goods and sectors categories";
-SET r "Regions";
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
 
 * First two indices in CFS parameter correspond to regions
-PARAMETER cfs2012_units(*,*,n,sg,*) "CFS data for 2012, with units as domain";
+PARAMETER cfs2012_units(sr,sr,n,sg,*) "CFS data for 2012, with units as domain";
 
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
+$LOAD sr
+$LOAD r
 $LOAD n<cfsdata_st_units.dim3
 $LOAD sg<cfsdata_st_units.dim4
 $LOADDC cfs2012_units=cfsdata_st_units
 $LOAD g=i
-$LOAD r
+
 $GDXIN
 
 

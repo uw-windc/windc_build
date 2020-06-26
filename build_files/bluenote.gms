@@ -621,7 +621,7 @@ hhadj(yr,r) = c0(yr,r)
 * of the average value across all regions.
 
 PARAMETER trace "Debug check on calculations";
-PARAMETER zerotol "Tolerance level" / 5 /;
+PARAMETER zerotol "Tolerance level" / 6 /;
 
 * Number of elements in each parameter before filter is applied:
 
@@ -739,8 +739,11 @@ trace(yr,dg,'dm0','after') = sum((r,m)$dm0(yr,r,dg,m),1);
 ALIAS(pm,*);
 PARAMETER zeroed "Number of zeroed elements in filter";
 
-zeroed(yr,'before')$(NOT SAMEAS(yr,'2015')) = sum((pm,dg), trace(yr,dg,pm,'before'));
-zeroed(yr,'after')$(NOT SAMEAS(yr,'2015')) = sum((pm,dg), trace(yr,dg,pm,'after'));
+* zeroed(yr,'before')$(NOT SAMEAS(yr,'2015')) = sum((pm,dg), trace(yr,dg,pm,'before'));
+* zeroed(yr,'after')$(NOT SAMEAS(yr,'2015')) = sum((pm,dg), trace(yr,dg,pm,'after'));
+
+zeroed(yr,'before') = sum((pm,dg), trace(yr,dg,pm,'before'));
+zeroed(yr,'after') = sum((pm,dg), trace(yr,dg,pm,'after'));
 zeroed(yr,'diff') = zeroed(yr,'before') - zeroed(yr,'after');
 
 * -------------------------------------------------------------------------
@@ -1343,7 +1346,6 @@ DISPLAY pctchg, vschk;
 * -------------------------------------------------------------------
 * Output regionalized dataset calibrated to SEDS:
 * -------------------------------------------------------------------
-
 EXECUTE_UNLOAD '%dsdir%%sep%WiNDC_cal_%year%_bluenote.gdx'
 
 * Sets:

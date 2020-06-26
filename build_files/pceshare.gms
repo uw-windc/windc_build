@@ -12,19 +12,21 @@ $ENDIF
 * Read in raw PCE data, map to sector list and generate shares to use in
 * disagg.gms.
 
-SET r "Regions in WiNDC Database";
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
 SET pg "Dynamically created set from parameter pce_units, PCE goods";
 SET yr "Years in WiNDC Database"
 SET g "BEA Goods and sectors categories";
 
-PARAMETER pce_raw_units(yr,r,pg,*) "Personal expenditure data with units as domain";
+PARAMETER pce_raw_units(yr,sr,pg,*) "Personal expenditure data with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
 $LOAD g=i
+$LOAD sr
 $LOAD r
 $LOAD pg<pce_units.dim3
-$LOADDC pce_raw_units=pce_units
+$LOAD pce_raw_units=pce_units
 $GDXIN
 
 
