@@ -1,4 +1,4 @@
-$TITLE Partition IO data in CGE Parameters (1997-2016)
+$TITLE Partition IO data in CGE Parameters (1997-2017)
 
 $IF NOT SET reldir $SET reldir "."
 
@@ -38,10 +38,10 @@ $LOAD fd
 $LOAD ts
 $LOAD ir_use<use_units.dim2
 $LOAD jc_use<use_units.dim3
-$LOADDC use_units
+$LOAD use_units
 $LOAD ir_supply<supply_units.dim2
 $LOAD jc_supply<supply_units.dim3
-$LOADDC supply_units
+$LOAD supply_units
 $GDXIN
 
 ALIAS(i,j);
@@ -258,7 +258,10 @@ duty0(yr,imrg) = 0;
 PARAMETER ta0(yr,i) "Tax net subsidy rate on intermediate demand";
 PARAMETER tm0(yr,i)	"Import tariff";
 
-tm0(yr,i)$duty0(yr,i) = duty0(yr,i)/m0(yr,i);
+EXECUTE_UNLOAD "test.gdx" duty0, m0;
+
+* tm0(yr,i)$duty0(yr,i) = duty0(yr,i)/m0(yr,i);
+tm0(yr,i)$(duty0(yr,i) AND m0(yr,i) > 0) = duty0(yr,i)/m0(yr,i);
 ta0(yr,i)$(tax0(yr,i)-sbd0(yr,i)) = (tax0(yr,i) - sbd0(yr,i))/a0(yr,i);
 
 * -------------------------------------------------------------------

@@ -40,7 +40,7 @@ SET sr "Super set of Regions (states + US) in WiNDC Database";
 SET r(sr) "Regions in WiNDC Database";
 SET yr "Years in WiNDC Database";
 SET nc "Dynamically created set from nass_units parameter, USDA NAICS codes";
-PARAMETER nass_units(r,nc,*) "USDA NASS Ag Census data, with units as domain";
+PARAMETER nass_units(r,yr,nc,*) "USDA NASS Ag Census data, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
@@ -198,7 +198,7 @@ SET mapg(g,nc) "Mapping between WiNDC and NAICS codes" /
 
 PARAMETER data(r,g) "Mapped sales data (10s bill. dollars)";
 
-data(r,g) = sum(mapg(g,nc), nass_units(r,nc,'millions of us dollars (USD)')) / 1e4;
+data(r,g) = sum(mapg(g,nc), nass_units(r,%year%,nc,'millions of us dollars (USD)')) / 1e4;
 
 * In this example, we use NASS state by commodity sales data. Thus, we re-adjust
 * s0, or gross output.
