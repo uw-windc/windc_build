@@ -89,7 +89,7 @@ SET g "BEA Goods and sectors categories";
 SET sr "Super set of Regions (states + US) in WiNDC Database";
 SET r(sr) "Regions in WiNDC Database";
 SET yr "Years in WiNDC Database"
-
+SET version "WiNDC data version number";
 
 PARAMETER seds_units(source,sector,sr,yr,*) "Complete EIA SEDS data, with units as domain";
 PARAMETER heatrate_units(yr,*,*) "EIA Elec Generator average heat rates, with units as domain";
@@ -97,6 +97,7 @@ PARAMETER emissions_units(co2dim,r,yr,*) "CO2 emissions, with units as domain";
 PARAMETER co2perbtu_units(*,*) "Carbon dioxide -- not CO2e -- content, with units as domain";
 
 $GDXIN '%reldir%%sep%windc_base.gdx'
+$LOAD version
 $LOAD src=seds_src
 $LOAD sr
 $LOAD r
@@ -202,9 +203,9 @@ loop(sr,
 
 * Initial data is in billions of btu. Scaling by htrate converts to billions of kwh.
 
-	elegen(sr,"col",yr) = seds_units("CL","EI",sr,yr,"billion btu") / heatrate_units(yr,"col","btu per kWh generated");
-	elegen(sr,"gas",yr) = seds_units("NG","EI",sr,yr,"billion btu") / heatrate_units(yr,"gas","btu per kWh generated");
-	elegen(sr,"oil",yr) = seds_units("PA","EI",sr,yr,"billion btu") / heatrate_units(yr,"oil","btu per kWh generated");
+	elegen(sr,"col",yr) = seds_units("CL","EI",sr,yr,"billion btu") / heatrate_units(yr,"col","btu per kilowatthour");
+	elegen(sr,"gas",yr) = seds_units("NG","EI",sr,yr,"billion btu") / heatrate_units(yr,"gas","btu per kilowatthour");
+	elegen(sr,"oil",yr) = seds_units("PA","EI",sr,yr,"billion btu") / heatrate_units(yr,"oil","btu per kilowatthour");
 
 * Initial data is in millions of kwh. Scaling by 1000 converts to billions of kwh.
 
@@ -434,7 +435,17 @@ DISPLAY totals;
 * Report other aggregate social and economic data in SEDS:
 PARAMETER otherdata "Other SEDS data";
 
-otherdata(sr,"rgdp",yr) = seds_units("GD","PR",sr,yr,"million chained (2009) dollars") / 1000 + eps;
+
+
+$IFTHEN uelExist "windc_2_0_1"
+otherdata(sr,"rgdp",yr) = seds_units("GD","PR",sr,yr,"millions of chained (2009) us dollars (USD)") / 1000 + eps;
+$ENDIF
+
+
+$IFTHEN uelExist "windc_2_1"
+otherdata(sr,"rgdp",yr) = seds_units("GD","PR",sr,yr,"millions of chained (2012) us dollars (USD)") / 1000 + eps;
+$ENDIF
+
 otherdata(sr,"gdp",yr) = seds_units("GD","PR",sr,yr,"millions of us dollars (USD)") / 1000 + eps;
 otherdata(sr,"pop",yr) = seds_units("TP","OP",sr,yr,"thousand") + eps;
 

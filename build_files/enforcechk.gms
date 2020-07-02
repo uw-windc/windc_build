@@ -1,7 +1,7 @@
 $TITLE Micro-consistency check without subnational trade flows
 
 $IF NOT SET year $SET year 2016
-$IF NOT SET satdata $SET satdata bluenote
+$IF NOT SET aggr $SET aggr bluenote
 
 $IFTHENI %system.filesys% == UNIX $SET sep "/"
 $ELSE $SET sep "\"
@@ -28,7 +28,7 @@ SET s	"Goods\sectors (national data)";
 SET m	"Margins (trade or transport)";
 SET gm(s)	"Commodities employed in margin supply";
 
-$GDXIN %dsdir%%sep%WiNDC_cal_%year%_%satdata%.gdx
+$GDXIN %dsdir%%sep%WiNDC_cal_%year%_%aggr%.gdx
 $LOADDC r
 $LOADDC s
 $LOADDC m
@@ -215,4 +215,4 @@ $ENDIF.kestrel
 
 SOLVE enforcechk using mcp;
 
-ABORT$(enforcechk.objval>1e-5) "Error in benchmark calibration with regional data.";
+ABORT$(enforcechk.objval>1e-4) "Error in benchmark calibration with regional data.";

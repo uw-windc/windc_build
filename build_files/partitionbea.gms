@@ -258,9 +258,8 @@ duty0(yr,imrg) = 0;
 PARAMETER ta0(yr,i) "Tax net subsidy rate on intermediate demand";
 PARAMETER tm0(yr,i)	"Import tariff";
 
-EXECUTE_UNLOAD "test.gdx" duty0, m0;
-
 * tm0(yr,i)$duty0(yr,i) = duty0(yr,i)/m0(yr,i);
+* there could be an error in the BEA Supply Table data here... need to include extra logic to avoid a divide by zero error because of this BEA problem
 tm0(yr,i)$(duty0(yr,i) AND m0(yr,i) > 0) = duty0(yr,i)/m0(yr,i);
 ta0(yr,i)$(tax0(yr,i)-sbd0(yr,i)) = (tax0(yr,i) - sbd0(yr,i))/a0(yr,i);
 

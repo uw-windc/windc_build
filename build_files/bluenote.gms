@@ -34,7 +34,7 @@ $IF NOT SET kestrel_qcp $SET kestrel_qcp "cplex"
 $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 
 * Aggregation:
-$IF NOT SET satdata $SET satdata bluenote
+$IF NOT SET aggr $SET aggr bluenote
 
 * Output parameters for a single year:
 $IF NOT SET year $SET year 2016
@@ -90,7 +90,7 @@ SET s "Goods\sectors (national data)";
 SET gm(s) "Margin related sectors";
 SET m	"Margins (trade or transport)";
 
-$GDXIN '%dsdir%%sep%WiNDC_disagg_%satdata%.gdx'
+$GDXIN '%dsdir%%sep%WiNDC_disagg_%aggr%.gdx'
 $LOADDC s
 $LOADDC m
 $LOADDC gm
@@ -436,8 +436,8 @@ netgen(r,yr,'io') = nd0(yr,r,'ele') - xn0(yr,r,'ele');
 
 * Initial data is in millions of dollars:
 
-trdele(r,yr,'imp') = seds_units('EL','IM',r,yr,'million dollars') / 10000;
-trdele(r,yr,'exp') = seds_units('EL','EX',r,yr,'million dollars') / 10000;
+trdele(r,yr,'imp') = seds_units('EL','IM',r,yr,'millions of us dollars (USD)') / 10000;
+trdele(r,yr,'exp') = seds_units('EL','EX',r,yr,'millions of us dollars (USD)') / 10000;
 
 x0(yr,r,'ele') = trdele(r,yr,'exp');
 m0(yr,r,'ele') = trdele(r,yr,'imp');

@@ -46,7 +46,7 @@ $GDXIN '%reldir%%sep%windc_base.gdx'
 $LOAD yr
 $LOAD sr
 $LOAD r
-$LOAD nc<nass_units.dim2
+$LOAD nc<nass_units.dim3
 $LOAD nass_units
 $GDXIN
 
@@ -198,7 +198,7 @@ SET mapg(g,nc) "Mapping between WiNDC and NAICS codes" /
 
 PARAMETER data(r,g) "Mapped sales data (10s bill. dollars)";
 
-data(r,g) = sum(mapg(g,nc), nass_units(r,%year%,nc,'millions of us dollars (USD)')) / 1e4;
+data(r,g) = sum(mapg(g,nc), nass_units(r,"%year%",nc,"millions of us dollars (USD)")) / 1e4;
 
 * In this example, we use NASS state by commodity sales data. Thus, we re-adjust
 * s0, or gross output.
@@ -207,7 +207,7 @@ SET ns(g)	"NASS sectors";
 
 ns(g) = yes$sum(r, data(r,g));
 
-s0_('2012',r,g)$(ns(g) and data(r,g)) = data(r,g);
+s0_("%year%",r,g)$(ns(g) and data(r,g)) = data(r,g);
 
 * -------------------------------------------------------------------------
 * Write a re-calibration routine which minimally shifts data to maintain
