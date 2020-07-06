@@ -36,13 +36,12 @@ SET bal "Matrix balancing objectives" / ls, huber /;
 
 * Set year for calibration check using an accounting model:
 
-$IF NOT SET year $SET year 2009
+$IF NOT SET year $SET year 2016
 
 
 * -------------------------------------------------------------------
 * 	Read in the dataset:
 * -------------------------------------------------------------------
-
 SET yr "Years in WiNDC Database";
 SET i "BEA Goods and sectors categories";
 SET m "Margins (trade or transport)";
@@ -423,7 +422,7 @@ $ENDIF.kestrel
 * Restrict output of the use and other sector to be zero:
 
 	ys0_.FX(i,j)$(sameas(i,'use') or sameas(i,'oth')) = 0;
-	
+
 * Set zero values:
 
 *	ms0_.FX(i,m)$(not ms0(i,m))  = 0;

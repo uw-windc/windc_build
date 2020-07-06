@@ -23,7 +23,7 @@ $ENDIF
 
 $IF NOT SET sdisagg	$SET sdisagg yes
 $IF NOT SET aggr	$SET aggr bluenote
-$IF NOT SET year $SET year 2016
+* $IF NOT SET year $SET year 2016
 
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."

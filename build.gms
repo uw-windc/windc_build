@@ -23,10 +23,6 @@ $IF NOT SET kestrel_lp $SET kestrel_lp "cplex"
 $IF NOT SET kestrel_qcp $SET kestrel_qcp "cplex"
 $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 
-$IF NOT SET year $SET year 2016
-
-
-
 SCALAR myerrorlevel;
 
 *------------------------------------------------------------------------------
@@ -61,7 +57,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: partitionbea.gms did not complete correctly...
 *------------------------------------------------------------------------------
 
 * Use matrix balancing to enforce accounting identities and verify benchmark
-* with accounting CGE model called nationalmodel.gms for year %year%.
+* with accounting CGE model called nationalmodel.gms for year 2016.
 * Optimization methods provided:
 * - huber -> Hybrid huber loss function
 * - ls    -> Least squares
@@ -70,18 +66,19 @@ ABORT$(myerrorlevel <> 0) "ERROR: partitionbea.gms did not complete correctly...
 
 $IFTHENI "%neos%" == "yes"
 
-EXECUTE 'gams %reldir%%sep%calibrate.gms solver=kestrel optfile=1 --neos=yes --neosserver=%neosserver% --kestrel_mcp=%kestrel_mcp% --kestrel_nlp=%kestrel_nlp% --kestrel_lp=%kestrel_qcp% --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" > %system.nullfile%';
+EXECUTE 'gams %reldir%%sep%calibrate.gms solver=kestrel optfile=1 --neos=yes --neosserver=%neosserver% --kestrel_mcp=%kestrel_mcp% --kestrel_nlp=%kestrel_nlp% --kestrel_lp=%kestrel_qcp% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" > %system.nullfile%';
 myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete correctly...";
 
 $ELSE
 
-EXECUTE 'gams %reldir%%sep%calibrate.gms qcp=cplex nlp=ipopt --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" --reldir=%reldir% > %system.nullfile%';
+EXECUTE 'gams %reldir%%sep%calibrate.gms qcp=cplex nlp=ipopt --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%calibrate.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: calibrate.gms did not complete correctly...";
 
 $ENDIF
 *------------------------------------------------------------------------------
+
 
 
 *------------------------------------------------------------------------------
@@ -137,7 +134,7 @@ ABORT$(myerrorlevel <> 0) "ERROR: usatradeshare.gms did not complete correctly..
 
 
 * Disaggregate accounts by region and output a gdx file data for all years. The
-* %year% environment variable determines the test year to verify benchmark
+* default year is 2016 and determines the test year to verify benchmark
 * consistency.
 
 
@@ -147,13 +144,13 @@ $ENDIF
 
 $IFTHENI "%neos%" == "yes"
 
-EXECUTE 'gams %reldir%%sep%statedisagg.gms --neos=yes solver=kestrel optfile=1 --kestrel_mcp=%kestrel_mcp% --year=%year% o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" > %system.nullfile%';
+EXECUTE 'gams %reldir%%sep%statedisagg.gms --neos=yes solver=kestrel optfile=1 --kestrel_mcp=%kestrel_mcp% o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" > %system.nullfile%';
 myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete correctly...";
 
 $ELSE
 
-EXECUTE 'gams %reldir%%sep%statedisagg.gms --year=%year% o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
+EXECUTE 'gams %reldir%%sep%statedisagg.gms o="%reldir%%sep%temp%sep%lst%sep%statedisagg.lst" --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
 ABORT$(myerrorlevel <> 0) "ERROR: statedisagg.gms did not complete correctly...";
 

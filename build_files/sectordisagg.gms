@@ -10,7 +10,7 @@ $ENDIF
 $IF NOT SET reldir $SET reldir "."
 $IF NOT SET dsdir $SET dsdir "..%sep%built_datasets"
 
-$IF NOT SET year $SET year 2016
+* $IF NOT SET year $SET year 2016
 
 SET ir_use "Dynamically created set from parameter use_det_units, identifiers for use table rows";
 SET jc_use "Dynamically created set from parameter use_det_units, identifiers for use table columns";
