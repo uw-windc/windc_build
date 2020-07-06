@@ -42,7 +42,7 @@ SET yr "Years in WiNDC Database";
 SET nc "Dynamically created set from nass_units parameter, USDA NAICS codes";
 PARAMETER nass_units(r,yr,nc,*) "USDA NASS Ag Census data, with units as domain";
 
-$GDXIN '%reldir%%sep%windc_base.gdx'
+$GDXIN "%reldir%%sep%windc_base.gdx"
 $LOAD yr
 $LOAD sr
 $LOAD r
@@ -54,7 +54,7 @@ SET s "Goods\sectors (national data)";
 SET gm(s) "Margin related sectors";
 SET m "Margins (trade or transport)";
 
-$GDXIN '%dsdir%%sep%WiNDC_disagg_nass.gdx'
+$GDXIN "%dsdir%%sep%WiNDC_disagg_nass.gdx"
 $LOADDC s
 $LOADDC m
 $LOADDC gm
@@ -151,31 +151,31 @@ cd0nat(yr,g) = sum(r, cd0_(yr,r,g));
 
 PARAMETER dataconschk "Consistency check on re-calibrated data";
 
-dataconschk(r,s,'ys0','old') = sum(g, ys0_('%year%',r,s,g));
-dataconschk(r,g,'id0','old') = sum(s, id0_('%year%',r,g,s));
-dataconschk(r,s,'va0','old') = ld0_('%year%',r,s) + kd0_('%year%',r,s);
-dataconschk(r,s,'tyrev','old') = (1-ty0_('%year%',r,s)) * sum(g, ys0_('%year%',r,s,g));
+dataconschk(r,s,"ys0","old") = sum(g, ys0_("%year%",r,s,g));
+dataconschk(r,g,"id0","old") = sum(s, id0_("%year%",r,g,s));
+dataconschk(r,s,"va0","old") = ld0_("%year%",r,s) + kd0_("%year%",r,s);
+dataconschk(r,s,'tyrev',"old") = (1-ty0_("%year%",r,s)) * sum(g, ys0_("%year%",r,s,g));
 
-dataconschk(r,g,'i0','old') = i0_('%year%',r,g);
-dataconschk(r,g,'g0','old') = g0_('%year%',r,g);
-dataconschk(r,g,'cd0','old') = cd0_('%year%',r,g);
-dataconschk(r,g,'yh0','old') = yh0_('%year%',r,g);
-dataconschk(r,'total','hhadj','old') = hhadj_('%year%',r);
-dataconschk(r,'total','bop','old') = bopdef0_('%year%',r);
+dataconschk(r,g,"i0","old") = i0_("%year%",r,g);
+dataconschk(r,g,"g0","old") = g0_("%year%",r,g);
+dataconschk(r,g,"cd0","old") = cd0_("%year%",r,g);
+dataconschk(r,g,"yh0","old") = yh0_("%year%",r,g);
+dataconschk(r,"total","hhadj","old") = hhadj_("%year%",r);
+dataconschk(r,"total","bop","old") = bopdef0_("%year%",r);
 
-dataconschk(r,g,'s0','old') = s0_('%year%',r,g);
-dataconschk(r,g,'xd0','old') = xd0_('%year%',r,g);
-dataconschk(r,g,'xn0','old') = xn0_('%year%',r,g);
-dataconschk(r,g,'x0','old') = x0_('%year%',r,g);
-dataconschk(r,g,'rx0','old') = rx0_('%year%',r,g);
-dataconschk(r,g,'a0','old') = a0_('%year%',r,g);
-dataconschk(r,g,'nd0','old') = nd0_('%year%',r,g);
-dataconschk(r,g,'dd0','old') = dd0_('%year%',r,g);
-dataconschk(r,g,'m0','old') = m0_('%year%',r,g);
+dataconschk(r,g,"s0","old") = s0_("%year%",r,g);
+dataconschk(r,g,"xd0","old") = xd0_("%year%",r,g);
+dataconschk(r,g,"xn0","old") = xn0_("%year%",r,g);
+dataconschk(r,g,"x0","old") = x0_("%year%",r,g);
+dataconschk(r,g,"rx0","old") = rx0_("%year%",r,g);
+dataconschk(r,g,"a0","old") = a0_("%year%",r,g);
+dataconschk(r,g,"nd0","old") = nd0_("%year%",r,g);
+dataconschk(r,g,"dd0","old") = dd0_("%year%",r,g);
+dataconschk(r,g,"m0","old") = m0_("%year%",r,g);
 
-dataconschk(r,g,'md0','old') = sum(m, md0_('%year%',r,m,g));
-dataconschk(r,g,'nm0','old') = sum(m, nm0_('%year%',r,g,m));
-dataconschk(r,g,'dm0','old') = sum(m, dm0_('%year%',r,g,m));
+dataconschk(r,g,"md0","old") = sum(m, md0_("%year%",r,m,g));
+dataconschk(r,g,"nm0","old") = sum(m, nm0_("%year%",r,g,m));
+dataconschk(r,g,"dm0","old") = sum(m, dm0_("%year%",r,g,m));
 
 * -------------------------------------------------------------------
 * Impose outside data: NASS
@@ -377,7 +377,7 @@ PARAMETER v0_(mat,r,*,*) "matrix values";
 PARAMETER gammab "Lower bound cross-over tolerance" / 0.5 /;
 PARAMETER thetab "Upper bound cross-over tolerance" / 0.25 /;
 
-$MACRO	MV(mat,r,s,g) (YS(r,s,g)$SAMEAS(mat,'ys0') + ID(r,s,g)$SAMEAS(mat,'id0'))
+$MACRO	MV(mat,r,s,g) (YS(r,s,g)$SAMEAS(mat,"ys0") + ID(r,s,g)$SAMEAS(mat,"id0"))
 
 x2def(nonzero(mat,r,s,g))..   X2(mat,r,s,g) + X1(mat,r,s,g) =G= (MV(mat,r,s,g)/v0_(mat,r,s,g)-1);
 x3def(nonzero(mat,r,s,g))..   X3(mat,r,s,g) - X2(mat,r,s,g) =G= (1-MV(mat,r,s,g)/v0_(mat,r,s,g));
@@ -511,7 +511,7 @@ $IF %matbal% == ls model regcalib /obj_ls, expdef, zp_y, zp_a, zp_x, zp_ms, mc_p
 * We could alternatively produce data for all years:
 * loop(yr$(not SAMEAS(yr,'2015')),
 
-loop(yr$(SAMEAS(yr,'%year%')),
+loop(yr$(SAMEAS(yr,"%year%")),
 
 * Define looping data:
 
@@ -548,8 +548,8 @@ nat_g(s) = g0nat(yr,s);
 nat_i(s) = i0nat(yr,s);
 nat_c(s) = cd0nat(yr,s);
 
-$IF %matbal% == huber v0('ys0',r,s,g) = ys0loop(r,s,g);
-$IF %matbal% == huber v0('id0',r,s,g) = id0loop(r,s,g);
+$IF %matbal% == huber v0("ys0",r,s,g) = ys0loop(r,s,g);
+$IF %matbal% == huber v0("id0",r,s,g) = id0loop(r,s,g);
 $IF %matbal% == huber nonzero(mat,r,s,g) = yes$v0(mat,r,s,g);
 $IF %matbal% == huber zeros(mat,r,s,g) = yes$(not v0(mat,r,s,g));
 $IF %matbal% == huber X1.FX(zeros) = 0;
@@ -664,7 +664,7 @@ ys0loop(r,s,g) = YS.L(r,s,g);
 id0loop(r,g,s) = ID.L(r,g,s);
 ld0loop(r,s) = LD.L(r,s);
 kd0loop(r,s) = KD.L(r,s);
-ty(r,s) = ty0_('%year%',r,s);
+ty(r,s) = ty0_("%year%",r,s);
 a0loop(r,g) = ARM.L(r,g);
 nd0loop(r,g) = ND.L(r,g);
 dd0loop(r,g) = DD.L(r,g);
@@ -682,9 +682,18 @@ cd0loop(r,g) = CD.L(r,g);
 i0loop(r,g) = INV.L(r,g);
 g0loop(r,g) = GD.L(r,g);
 bopdef0loop(r) = BOP.L(r);
-ta(r,g) = ta0_('%year%',r,g);
-tm(r,g) = tm0_('%year%',r,g);
+ta(r,g) = ta0_("%year%",r,g);
+tm(r,g) = tm0_("%year%",r,g);
 c0loop(r) = sum(g, cd0loop(r,g));
+
+
+*	Remove domestic markets where supply is less than 1e-6:
+xd0loop(r,g)$(not round(xd0loop(r,g),6)) = 0;
+
+*	Do the same for Armington markets:
+a0loop(r,g)$(not round(a0loop(r,g),6)) =  0;
+
+
 
 * -------------------------------------------------------------------
 * Output regionalized dataset calibrated to NASS:

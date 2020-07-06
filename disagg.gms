@@ -63,13 +63,13 @@ $ENDIF
 
 EXECUTE 'gams %reldir%%sep%sectordisagg.gms o="%reldir%%sep%temp%sep%lst%sep%sectordisagg.lst" --year=%year% --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: sectordisagg.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: sectordisagg.gms did not complete successfully...";
 
 
 * Option for aggregating sectors of lesser importance to analysis.
 EXECUTE 'gams %reldir%%sep%aggregate.gms o="%reldir%%sep%temp%sep%lst%sep%aggregate.lst" --year=%year% --sdisagg=yes --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: aggregate.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: aggregate.gms did not complete successfully...";
 
 
 
@@ -78,12 +78,12 @@ $IFTHENI "%neos%" == "yes"
 * Use aggchk.gms to verify robustness of aggregation in an accounting model.
 EXECUTE 'gams %reldir%%sep%%wdir%%sep%aggchk.gms --neos=yes solver=kestrel optfile=1 o="%reldir%%sep%temp%sep%lst%sep%aggchk.lst" --neosserver=%neosserver% --kestrel_mcp=%kestrel_mcp% --kestrel_nlp=%kestrel_nlp% --kestrel_lp=%kestrel_qcp% --year=%year% --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete successfully...";
 
 $ELSE
 
 EXECUTE 'gams %reldir%%sep%aggchk.gms o="%reldir%%sep%temp%sep%lst%sep%aggchk.lst" --year=%year% --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: aggchk.gms did not complete successfully...";
 
 $ENDIF

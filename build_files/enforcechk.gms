@@ -28,10 +28,10 @@ SET s	"Goods\sectors (national data)";
 SET m	"Margins (trade or transport)";
 SET gm(s)	"Commodities employed in margin supply";
 
-$GDXIN %dsdir%%sep%WiNDC_cal_%year%_%aggr%.gdx
-$LOADDC r
-$LOADDC s
-$LOADDC m
+$GDXIN "%dsdir%%sep%WiNDC_cal_%year%_%aggr%.gdx"
+$LOAD r
+$LOAD s
+$LOAD m
 
 ALIAS(s,g),(r,rr);
 
@@ -125,6 +125,8 @@ py_(r,g) = s0(r,g);
 pd_(r,g) = xd0(r,g);
 pk_(r,s) = kd0(r,s);
 
+
+$exit
 $ontext
 $model:enforcechk
 

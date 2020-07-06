@@ -55,27 +55,27 @@ $IFTHENI.aggr "%aggr%" == "bluenote"
 
 EXECUTE 'gams %reldir%%sep%readseds.gms o="%reldir%%sep%temp%sep%lst%sep%readseds.lst" --reldir=%reldir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: readseds.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: readseds.gms did not complete successfully...";
 
 $IFTHENI "%neos%" == "yes"
 
 EXECUTE 'gams %reldir%%sep%bluenote.gms --neos=yes solver=kestrel optfile=1 --kestrel_nlp=%kestrel_nlp% --kestrel_qcp=%kestrel_qcp% --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%bluenote.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: bluenote.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: bluenote.gms did not complete successfully...";
 
 EXECUTE 'gams %reldir%%sep%enforcechk.gms --neos=yes solver=kestrel optfile=1 --kestrel_nlp=%kestrel_nlp% --kestrel_qcp=%kestrel_qcp% --year=%year% o="%reldir%%sep%temp%sep%lst%sep%enforcechk.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete successfully...";
 
 $ELSE
 
 EXECUTE 'gams %reldir%%sep%bluenote.gms nlp=ipopt qcp=cplex --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%bluenote.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: bluenote.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: bluenote.gms did not complete successfully...";
 
 EXECUTE 'gams %reldir%%sep%enforcechk.gms nlp=ipopt qcp=cplex --year=%year% o="%reldir%%sep%temp%sep%lst%sep%enforcechk.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete successfully...";
 
 $ENDIF
 
@@ -88,22 +88,22 @@ $IFTHENI "%neos%" == "yes"
 
 EXECUTE 'gams %reldir%%sep%nass.gms --neos=yes solver=kestrel optfile=1 --kestrel_nlp=%kestrel_nlp% --kestrel_qcp=%kestrel_qcp% --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%nass.lst" --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: nass.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: nass.gms did not complete successfully...";
 
 EXECUTE 'gams %reldir%%sep%enforcechk.gms --neos=yes solver=kestrel optfile=1 --kestrel_mcp=%kestrel_mcp% --year=%year% o="%reldir%%sep%temp%sep%lst%sep%enforcechk.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete successfully...";
 
 $ELSE
 
 EXECUTE 'gams %reldir%%sep%nass.gms nlp=conopt qcp=cplex --year=%year% --matbal=ls o="%reldir%%sep%temp%sep%lst%sep%nass.lst" --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: nass.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: nass.gms did not complete successfully...";
 
 
 EXECUTE 'gams %reldir%%sep%enforcechk.gms nlp=conopt qcp=cplex --year=%year% o="%reldir%%sep%temp%sep%lst%sep%enforcechk.lst" --aggr=%aggr% --reldir=%reldir% --dsdir=%dsdir% > %system.nullfile%';
 myerrorlevel = errorlevel;
-ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete with error code '0'";
+ABORT$(myerrorlevel <> 0) "ERROR: enforcechk.gms did not complete successfully...";
 
 $ENDIF
 

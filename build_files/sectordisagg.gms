@@ -382,7 +382,7 @@ id_0(yr,r,afs,afs)$(sum(as, same(afs,afs,as))) = sum((as), share_(yr,afs,as) * i
 * 	Output disaggregated data:
 * ----------------------------------------------------------------
 
-EXECUTE_UNLOAD '%reldir%%sep%temp%sep%gdx_temp%sep%sectordisagg_%aggr%.gdx'
+EXECUTE_UNLOAD "%reldir%%sep%temp%sep%gdx_temp%sep%sectordisagg_%aggr%.gdx"
 
 * Sets:
 
