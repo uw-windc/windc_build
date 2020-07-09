@@ -1,3 +1,4 @@
+*.opt
 *.lst
 built_datasets/
 build_files/temp/

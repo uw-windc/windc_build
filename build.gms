@@ -25,6 +25,10 @@ $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 
 SCALAR myerrorlevel;
 
+$onecho > cplex.opt
+numericalemphasis 1
+$offecho
+
 *------------------------------------------------------------------------------
 *** Create directories if necessary
 *------------------------------------------------------------------------------

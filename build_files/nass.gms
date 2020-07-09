@@ -616,9 +616,12 @@ $IFTHENI.kestrel "%neos%" == "yes"
 PUT opt;
 PUT 'kestrel_solver %kestrel_qcp%' /;
 PUT 'neos_server %neosserver%';
+PUT 'numericalemphasis 1' ;
 PUTCLOSE opt;
 $ENDIF.kestrel
 
+
+regcalib.OptFile = 1;
 SOLVE regcalib using QCP minimizing OBJ;
 
 $ELSE.matbal

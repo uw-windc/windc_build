@@ -253,7 +253,8 @@ $INCLUDE %reldir%%sep%temp%sep%aggchk.gen
 $IFTHENI.kestrel "%neos%" == "yes"
 PUT opt;
 PUT 'kestrel_solver %kestrel_mcp%' /;
-PUT 'neos_server %neosserver%';
+PUT 'neos_server %neosserver%' /;
+PUT 'numericalemphasis 1' ;
 PUTCLOSE opt;
 $ENDIF.kestrel
 

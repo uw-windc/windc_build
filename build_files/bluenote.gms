@@ -1175,7 +1175,7 @@ $IFTHENI.a1 "%matbal%" == 'huber'
 $IFTHENI.a2 "%neos%" == "yes"
 PUT opt;
 PUT 'kestrel_solver %kestrel_nlp%' /;
-PUT 'neos_server %neosserver%';
+PUT 'neos_server %neosserver%' /;
 PUTCLOSE opt;
 $ENDIF.a2
 
@@ -1189,14 +1189,13 @@ $IFTHENI.b2 "%neos%" == "yes"
 PUT opt;
 PUT 'kestrel_solver %kestrel_qcp%' /;
 PUT 'neos_server %neosserver%';
+PUT 'numericalemphasis 1' ;
 PUTCLOSE opt;
 $ENDIF.b2
 
+regcalib.optfile = 1;
 SOLVE regcalib using QCP minimizing OBJ;
 $ENDIF.b1
-
-
-
 
 ABORT$(regcalib.modelstat > 1) "Optimal solution not found.";
 

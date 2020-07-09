@@ -26,6 +26,9 @@ $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 * $IF NOT SET year $SET year 2016
 $IF NOT SET aggr $SET aggr bluenote
 
+$onecho > cplex.opt
+numericalemphasis 1
+$offecho
 
 
 SCALAR myerrorlevel;
