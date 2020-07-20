@@ -3,9 +3,7 @@ $TITLE GAMS routine for merging USA Trade Online data into build
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 
 SET sr "Super Regions in WiNDC Database";

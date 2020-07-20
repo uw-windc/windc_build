@@ -3,9 +3,7 @@ $TITLE Generate governmental expenditure shares
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * ------------------------------------------------------------------------------
 * Read in raw State Government Finances data (available on the census website),

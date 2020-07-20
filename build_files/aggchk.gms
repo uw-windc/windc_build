@@ -3,9 +3,8 @@ $TITLE Micro-consistency check on aggregation :/
 $IF NOT SET year $SET year 2016
 $IF NOT SET aggr	$SET aggr bluenote
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
+
 * Set directory structure:
 
 $IF NOT SET reldir $SET reldir "."

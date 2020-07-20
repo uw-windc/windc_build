@@ -5,9 +5,7 @@ $IF NOT SET year	$SET year 2014
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * Read in raw CFS data, map to sector list and generate RPCs to be used in disagg.gms.
 

@@ -5,9 +5,7 @@ $IF NOT SET year $SET year 2016
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 PARAMETER ys0(r,s,g) "Sectoral supply";
 PARAMETER id0(r,g,s) "Intermediate demand";

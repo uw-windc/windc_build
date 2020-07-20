@@ -1,15 +1,13 @@
 $title GAMS program for calculating benchmark regional GDP levels
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 SET yr "Years of IO data";
 SET r "States";
 SET m "Margins (trade or transport)";
 SET s "Sectors";
 
-$GDXIN built_datasets/WiNDCdatabase.gdx
+$GDXIN built_datasets%sep%WiNDCdatabase.gdx
 $LOADDC yr
 $LOADDC r
 $LOADDC m

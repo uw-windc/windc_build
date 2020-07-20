@@ -1,8 +1,6 @@
 $TITLE Matrix balancing routine for enforcing parameter values
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 $IF NOT SET reldir $SET reldir "."
 $IF NOT SET dsdir $SET dsdir "..%sep%built_datasets"

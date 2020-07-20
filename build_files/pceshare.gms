@@ -5,9 +5,7 @@ $IF NOT SET year $SET year 2014
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * Read in raw PCE data, map to sector list and generate shares to use in
 * disagg.gms.

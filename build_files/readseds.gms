@@ -2,9 +2,7 @@ $TITLE	Read and partition the SEDS dataset
 
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 $ONTEXT
 		State Energy Data System (SEDS)

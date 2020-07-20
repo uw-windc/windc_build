@@ -9,9 +9,7 @@
 *               GAMS-AMPL, IPOPT, KNITRO, LINDOGLOBAL, MILES, MINOS, MOSEK, NLPEC,
 *               PATH, PATHNLP, SBB, SCIP, SNOPT, XPRESS
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 $IF NOT SET reldir $SET reldir ".%sep%build_files"
 $IF NOT SET dsdir $SET dsdir ".%sep%built_datasets"

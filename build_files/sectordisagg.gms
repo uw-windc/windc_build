@@ -2,9 +2,7 @@ $TITLE Routine for disaggregating sectoring definitions :/
 
 $IF NOT SET aggr	$SET aggr bluenote
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."

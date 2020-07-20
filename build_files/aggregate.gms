@@ -17,9 +17,7 @@ $TITLE Sectoral/Regional (Dis)aggregation routine :/
 * work from in the "canned" portion of the program. Make distinction between
 * intended regions/sectors in the target vs. origin dataset.
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 $IF NOT SET sdisagg	$SET sdisagg yes
 $IF NOT SET aggr	$SET aggr bluenote

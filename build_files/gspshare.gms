@@ -2,9 +2,7 @@ $TITLE Share Generation Based On State Level Gross Product
 
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 
 * -------------------------------------------------------------------

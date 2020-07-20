@@ -11,9 +11,7 @@ $IF NOT SET kestrel_lp $SET kestrel_lp "cplex"
 $IF NOT SET kestrel_qcp $SET kestrel_qcp "cplex"
 $IF NOT SET kestrel_mcp $SET kestrel_mcp "path"
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 $IFTHENI "%neos%" == "yes"
 FILE opt / kestrel.opt /;

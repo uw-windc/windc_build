@@ -2,9 +2,7 @@ $TITLE Accounting model to verify benchmark consistency
 
 $IF NOT SET reldir $SET reldir "."
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * This routine provides a very simple accounting general equilibrium model to
 * verify the consistency of reconciled national accounts.

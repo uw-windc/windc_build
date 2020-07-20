@@ -18,9 +18,7 @@ totals. New parameters included are co2(*) describing total co2 emissions by
 generating sector/agent.
 $OFFTEXT
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."

@@ -4,9 +4,7 @@ $TITLE Regional Disaggregation of the National IO Tables
 
 $IF NOT SET year $SET year 2016
 
-$IFTHENI %system.filesys% == UNIX $SET sep "/"
-$ELSE $SET sep "\"
-$ENDIF
+$SET sep %system.dirsep%
 
 * Set directory structure:
 $IF NOT SET reldir $SET reldir "."
