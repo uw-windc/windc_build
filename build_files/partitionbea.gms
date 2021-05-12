@@ -179,7 +179,7 @@ tsupply(yr,i,"chk") = tsupply(yr,i,'supply') - tsupply(yr,i,"totaluse");
 tsupply(yr,i,"supply-use") = tsupply(yr,i,"ys0+...") - tsupply(yr,i,"totaluse");
 DISPLAY tsupply;
 
-SET	m	"Margins" / trd,trn /;
+SET	m	"Margins" / trd "trade",trn "transport" /;
 
 PARAMETER ms0(yr,i,m)	"Margin supply";
 PARAMETER md0(yr,m,i)	"Margin demand";
