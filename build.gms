@@ -13,7 +13,6 @@ $SET sep %system.dirsep%
 
 $IF NOT SET reldir $SET reldir ".%sep%build_files"
 $IF NOT SET dsdir $SET dsdir ".%sep%built_datasets"
-
 $IF NOT SET neos $SET neos "no"
 $IF NOT SET neosserver $SET neosserver "neos-server.org:3333"
 $IF NOT SET kestrel_nlp $SET kestrel_nlp "conopt"
@@ -41,6 +40,14 @@ $ONECHO > %gams.scrdir%create_loadpt_file.gms
 EXECUTE_UNLOAD '%reldir%%sep%temp%sep%loadpoint%sep%loadpt.gdx'
 $OFFECHO
 $CALL 'gams %gams.scrdir%create_loadpt_file.gms o="%reldir%%sep%temp%sep%lst%sep%create_loadpt_file.lst"'
+*------------------------------------------------------------------------------
+
+
+*------------------------------------------------------------------------------
+*** Relabel sets in windc_base.gdx
+*------------------------------------------------------------------------------
+
+$CALL 'gams %reldir%%sep%relabel.gms o="%reldir%%sep%temp%sep%lst%sep%relabel.lst" --reldir="%reldir%"'
 *------------------------------------------------------------------------------
 
 
