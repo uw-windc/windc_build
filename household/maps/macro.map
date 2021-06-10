@@ -1,0 +1,106 @@
+
+set     ss      Sectors in the target dataset /
+		mfr	Manufacturing
+		trn	Transportation
+		ser	Services
+		agr	Agriculture
+		con	Construction
+                /;
+
+set	mm	Margins in the target dataset /
+		trn	"Transport margin"
+		trd	"Retail margin"
+		/;
+
+set     smap(ss,s)      Mapping of target sectors ss and source sectors s /
+
+mfr.oil		"Oil and gas extraction",
+mfr.pmt		"Primary metals",
+
+con.con		"Construction",
+
+trn.air        	"Air transportation",
+trn.trn        	"Rail transportation",
+trn.wtt        	"Water transportation",
+trn.trk        	"Truck transportation",
+trn.grd        	"Transit and ground passenger transportation",
+trn.pip        	"Pipeline transportation",
+trn.otr        	"Other transportation and support activities",
+
+agr.agr	"Farms", 
+agr.fof   	"Forestry, fishing, and related activities",
+
+ser.uti	"Other utilities",
+
+mfr.che		"Chemical products", 
+mfr.ppd		"Paper products", 
+mfr.nmp		"Nonmetallic mineral products", 
+mfr.pla		"Plastics and rubber products", 
+mfr.min		"Other mining", 
+mfr.mot		"Motor vehicles, bodies and trailers, and parts manufacturing",
+mfr.fmt		"Fabricated metal products", 
+mfr.fbp		"Food and beverage and tobacco products", 
+mfr.sec		"Securities, commodity contracts, and investments", 
+mfr.eec		"Electrical equipment, appliances, and components", 
+mfr.pri		"Printing and related support activities", 
+mfr.tex		"Textile mills and textile product mills", 
+mfr.mch		"Machinery", 
+mfr.wpd		"Wood products",
+
+mfr.fpd		"Furniture and related products"
+mfr.ote   	"Other transportation equipment",
+mfr.mmf   	"Miscellaneous manufacturing",
+mfr.pet   	"Other petroleum based manufacturing",
+mfr.smn   	"Support activities for mining",
+mfr.alt   	"Apparel and leather and allied products",
+mfr.cep   	"Computer and electronic products",
+
+ser.ore       	"Other real estate",
+ser.dat       	"Data processing, internet publishing, and other information",
+ser.wst       	"Waste management and remediation services",
+ser.brd       	"Broadcasting and telecommunications",
+ser.res       	"Food services and drinking places",
+ser.wrh       	"Warehousing and storage",
+ser.fin       	"Funds, trusts, and other financial vehicles",
+ser.rec       	"Amusements, gambling, and recreation industries",
+ser.edu       	"Educational services",
+ser.tsv       	"Miscellaneous professional, scientific, and technical services",
+ser.amd       	"Accommodation",
+ser.osv       	"Other services, except government",
+ser.pub       	"Publishing industries, except internet (includes software)",
+ser.hos       	"Hospitals",
+ser.adm       	"Administrative and support services",
+ser.nrs       	"Nursing and residential care facilities",
+ser.rnt       	"Rental and leasing services and lessors of intangible assets",
+ser.soc       	"Social assistance",
+ser.art       	"Performing arts, spectator sports, museums, and related activit",
+ser.man       	"Management of companies and enterprises",
+ser.amb       	"Ambulatory health care services",
+ser.com       	"Computer systems design and related services",
+ser.bnk       	"Federal Reserve banks, credit intermediation, and related activ",
+ser.mov       	"Motion picture and sound recording industries",
+ser.leg       	"Legal services",
+ser.ins       	"Insurance carriers and related activities",
+ser.hou       	"Housing",
+
+ser.wht        	"Wholesale trade",
+ser.mvt        	"Motor vehicle and parts dealers",
+ser.fbt        	"Food and beverage stores",
+ser.gmt        	"General merchandise stores",
+ser.ott        	"Other retail",
+ser.fdd        	"Federal general government (defense)",
+ser.fnd        	"Federal general government (nondefense)",
+ser.fen        	"Federal government enterprises",
+ser.slg        	"State and local general government",
+ser.sle        	"State and local government enterprises"
+
+*	These two sectors are dropped in the core build:
+
+*.	ser.use        	"Scrap, used and secondhand goods",
+*.	ser.oth        	"Noncomparable imports and rest-of-the-world adjustment" 
+/;
+
+set	mmap(mm,m)	Mapping of target margins mm and source margins m /
+		trn.trn		"Transport margin"
+		trd.trd		"Retail margin"
+		/;

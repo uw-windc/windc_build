@@ -1,0 +1,10 @@
+$stitle define default state level aggregation
+
+* regions in the target dataset
+
+alias(rr,r);
+
+* mappings
+set    rmap(rr,r)    mapping of target regions rr and source regions r;
+
+rmap(r,r) = yes;

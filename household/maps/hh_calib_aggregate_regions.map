@@ -1,0 +1,68 @@
+set   ar           Aggregated regions /
+               nor    ! northeast
+	       mid    ! midwest
+	       sou    ! south
+	       wes    ! west
+      /;
+
+set   mapr(ar,r)   Mapping between census divisions and states /
+         nor.(        
+               ct     ! connecticut
+	       me     ! maine
+	       ma     ! massachusetts
+	       nh     ! new hampshire
+	       ri     ! rhode island
+	       vt     ! vermont
+	       nj     ! new jersey
+	       ny     ! new york
+	       pa     ! pennsylvania
+             )
+         mid.(        
+	       in     ! indiana
+	       il     ! illinois
+	       mi     ! michigan
+	       oh     ! ohio
+	       wi     ! wisconsin
+	       ia     ! iowa
+	       ks     ! kansas
+	       mn     ! minnesota
+	       mo     ! missouri
+	       ne     ! nebraska
+	       nd     ! north dakota
+	       sd     ! south dakota
+             )
+	 sou.(        
+	       dc     ! district of columbia
+	       de     ! delaware
+	       fl     ! florida
+	       ga     ! georgia
+	       md     ! maryland
+	       nc     ! north carolina
+	       sc     ! south carolina
+	       va     ! virginia
+	       wv     ! west virginia
+	       al     ! alabama
+	       ky     ! kentucky
+	       ms     ! mississippi
+	       tn     ! tennessee
+	       ar     ! arkansas
+	       la     ! louisiana
+	       ok     ! oklahoma
+	       tx     ! texas
+             )
+         wes.(        
+               az     ! arizona
+	       co     ! colorado
+	       id     ! idaho
+	       nm     ! new mexico
+	       mt     ! montana
+	       ut     ! utah
+	       nv     ! nevada
+	       wy     ! wyoming
+	       ak     ! alaska
+	       ca     ! california
+	       hi     ! hawaii
+	       or     ! oregon
+	       wa     ! washington
+             )
+     /;

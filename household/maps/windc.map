@@ -1,0 +1,15 @@
+$stitle	mapping file to maintain windc sectors
+
+* sectors in the target dataset
+alias(ss,s);
+
+* margins in the target dataset
+alias(mm,m);
+
+* mappings
+set
+    smap(ss,s)    mapping of target sectors ss and source sectors s,
+    mmap(mm,m)    mapping of target margins mm and source margins m;
+
+smap(s,s) = yes;
+mmap(m,m) = yes;

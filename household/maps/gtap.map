@@ -1,0 +1,110 @@
+$stitle	Define Mapping to Sectors Compatible with the WINDC.MAP Aggregation of GTAP
+
+* Oil and natural gas are separated in bluenote.gms.
+
+set     ss      Sectors in the target dataset /
+
+	rtl	Retail services (sectors shocked by Covid-19)
+
+	agr	"Farms and farm products (111CA)"
+	fof	"Forestry and fishing",
+	fbp	"Food and beverage and tobacco products (311FT)"
+	alt	"Apparel and leather and allied products (315AL)"
+	pmt	"Primary metals (331)"
+
+	ogs	"Crude oil and natural gas"
+
+	uti	"Utilities (electricity-gas-water)"
+
+	TEX	"Textiles",
+	LUM	"Lumber and wood products",
+	NMM	"Mineral products nec",
+	FMP	"Metal products",
+	MVH	"Motor vehicles and parts",
+	OTN	"Transport equipment nec",
+	OME	"Machinery and equipment nec",
+	CNS	"Construction",
+	WTP	"Water transport",
+	ATP	"Air transport",
+	ISR	"Insurance",
+
+	COL	"Coal",
+	OIL	"Petroleum, coal products",
+
+	OMN	"Minerals nec",
+	PPP	"Paper products, publishing",
+	CRP	"Chemical, rubber, plastic products",
+	EEQ	"Electronic equipment",
+	OMF	"Manufactures nec",
+	TRD	"Trade",
+	OTP	"Transport nec",
+	CMN	"Communication",
+	OFI	"Financial services nec",
+	OBS	"Business services nec",
+	ROS	"Recreational and other services",
+	OSG	"Public Administration, Defense, Education, Health",
+	DWE	"Dwellings"/;
+
+set	mm	Margins in the target dataset /
+	TRN	"Transport margin"
+	TRD	"Retail margin"
+		/;
+
+$eolcom !
+
+set     smap(ss,s)      Mapping of target sectors ss and source sectors s /
+
+*	Sectors which have the same name in both datasets:
+
+	AGR.agr		! "Farms and farm products (111CA)"
+	FOF.fof		! "Forestry and fishing",
+	FBP.fbp		! "Food and beverage and tobacco products (311FT)"
+	PMT.pmt		! "Primary metals (331)"
+	UTI.uti		! "Utilities (electricity-gas-water)"
+	TEX.tex		! "Textiles"
+	ALT.alt		! "Apparel and leather and allied products (315AL)"
+
+*	Sectors which are one-to-one with change in name:
+
+	LUM.wpd		! "Wood products (321)"
+	OGS.oil		! "Oil and gas extraction (211)"
+	ISR.ins		! "Insurance",
+	WTP.wtt		! "Water transport",
+	ATP.air		! "Air transport",
+	CNS.con		! "Construction",
+	OIL.pet		! "Petroleum, coal products",
+	NMM.nmp		! "Mineral products nec",
+	FMP.fmt		! "Metal products",
+	MVH.mot		! "Motor vehicles and parts",
+	OTN.ote		! "Other transportation equipment (3364OT)"
+	OME.mch		! "Machinery (333)"
+	COL.min		! "Mining, except oil and gas (212)"
+	OMN.smn
+
+*	These are GTAP sectors which have multiple WiNDC subsectors:
+
+	PPP.(ppd,pri)			! "Paper products, publishing",
+	EEQ.(cep,eec)			! "Electronic equipment",
+	OMF.(fpd,mmf)			! "Manufactures nec",
+	TRD.(wht,mvt,fbt,gmt,ott)	! "Trade",
+	OTP.(trn,trk,grd,pip,otr)	! "Transport nec",
+	CMN.(wrh,pub,mov,brd,dat) 	! "Communication",
+	CRP.(che,pla)			! "Chemical, rubber, plastic products",
+	OFI.(bnk,sec,fin,rnt) 		! "Financial services nec",
+	OBS.(leg,com,tsv,man,adm,osv) ! "Business services nec",
+
+*	ROS.(art,rec,amd,res)		! "Recreational and other services",
+	ROS.amd									! "Recreational and other services",
+	rtl.(art,rec,res)				! "Sectors shocked by Covid-19"			
+
+	OSG.(wst,edu,amb,hos,nrs,soc,fdd,fnd,fen,slg,sle) ! "Public Administration, Defense, Education, Health",
+
+*	Two sectors dropped in the core build are removed from OSG: use,oth
+
+	DWE.(hou,ore)			! "Dwellings" 
+/;
+
+set	mmap(mm,m)	Mapping of target margins mm and source margins m /
+		trn.trn		"Transport margin"
+		trd.trd		"Retail margin"
+		/;
