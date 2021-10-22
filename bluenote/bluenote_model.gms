@@ -72,28 +72,28 @@ $ontext
 $model:energy
 
 $sectors:
-        Y(r,s)$y_(r,s)          !       Production
-        X(r,g)$x_(r,g)          !       Disposition
-        A(r,g)$a_(r,g)          !       Absorption
-	LS(r,h)			!	Labor supply
-	KS			!	Aggregate capital stock
-        C(r,h)			!       Household consumption
-        MS(r,m)                 !       Margin supply
+        Y(r,s)$y_(r,s)          ! Production
+        X(r,g)$x_(r,g)          ! Disposition
+        A(r,g)$a_(r,g)          ! Absorption
+	LS(r,h)			! Labor supply
+	KS			! Aggregate capital stock
+        C(r,h)			! Household consumption
+        MS(r,m)                 ! Margin supply
 
 $commodities:
-        PA(r,g)$a0(r,g)         !       Regional market (input)
-        PY(r,g)$s0(r,g)         !       Regional market (output)
-        PD(r,g)$xd0(r,g)        !       Local market price
-        RK(r,s)$kd0(r,s)	!       Sectoral rental rate
-	PR(r,s)$rd0(r,s)	!	Energy resource earnings
-	RKS			!	Capital stock
-        PM(r,m)                 !       Margin price
-        PC(r,h)			!       Consumer price index
-        PN(g)                   !       National market price for goods
-	PLS(r,h)		!	Leisure price
-        PL(r)                   !       Regional wage rate
-	PK			!     	Aggregate return to capital
-        PFX                     !       Foreign exchange
+        PA(r,g)$a0(r,g)         ! Regional market (input)
+        PY(r,g)$s0(r,g)         ! Regional market (output)
+        PD(r,g)$xd0(r,g)        ! Local market price
+        RK(r,s)$kd0(r,s)	! Sectoral rental rate
+	PR(r,s)$rd0(r,s)	! Energy resource earnings
+	RKS			! Capital stock
+        PM(r,m)                 ! Margin price
+        PC(r,h)			! Consumer price index
+        PN(g)                   ! National market price for goods
+	PLS(r,h)		! Leisure price
+        PL(r)                   ! Regional wage rate
+	PK			! Aggregate return to capital
+        PFX                     ! Foreign exchange
 
 $consumer:
         RA(r,h)			!	Representative agent
@@ -107,8 +107,8 @@ $auxiliary:
 	SSK			!	Steady-state capital stock
 
 $prod:Y(r,s)$(y_(r,s) and nx(s))  t:0 s:0.5 e:1 m:0 va(m):1
-	o:PY(r,g)	q:ys0(r,s,g)            a:GOVT t:ty(r,s)       p:(1-ty0(r,s))
-        i:PA(r,g)       q:id0(r,g,s)   a:GOVT t:te(r,g)	e:$(eg(g) and (not sameas(g,s))) m:$((not eg(g)) or sameas(g,s))
+	o:PY(r,g)	q:ys0(r,s,g)	a:GOVT t:ty(r,s)       p:(1-ty0(r,s))
+        i:PA(r,g)       q:id0(r,g,s)	a:GOVT t:te(r,g)	e:$(eg(g) and (not sameas(g,s))) m:$((not eg(g)) or sameas(g,s))
         i:PL(r)         q:ld0(r,s)     va:
         i:RK(r,s)       q:kd0(r,s)     va:	a:GOVT t:tk(r,s)       p:(1+tk0(r))
 
@@ -214,34 +214,20 @@ parameter
 
 pnum = sum((r,h),c0_h(r,h)*PC.L(r,h))/sum((r,h),c0_h(r,h));
 
-parameter
-    revenue	Tax Revenue by Instrument and Region;
-
+parameter    revenue	Tax Revenue by Instrument and Region;
 revenue("bmk",r,"TL") =	sum((h,q), tl(r,h) * LS.L(r,h)* le0(r,q,h) * PL.L(q))/pnum;
-
 revenue("bmk",r,"TK") =	sum((s), tk(r,s) * KD.L(r,s) * RK.L(r,s)/pnum);
-
 revenue("bmk",r,"ty") = sum((s)$y_(r,s), ty(r,s)*Y.L(r,s)*sum(g,ys0(r,s,g)*PY.L(r,g))/pnum);
-
 revenue("bmk",r,"ta") =  sum((g)$a_(r,g), A.L(r,g)*a0(r,g)*ta(r,g)*PA.L(r,g)/pnum);
-
 revenue("bmk",r,"tm") = sum((g)$m0(r,g), tm(r,g) * MD.L(r,g)*PFX.L/pnum);
-
 revenue("bmk",r,"te_y") = sum((s)$y_(r,s), sum(eg(g),ED.L(r,g,s)*PA.L(r,g)*te(r,g)/pnum));
-
 revenue("bmk",r,"te_c") = sum((h), sum(eg(g), EDC.L(r,g,h)*PA.L(r,g)*te(r,g)/pnum));
-
 revenue("bmk",r,"revenue") = sum(taxes,revenue("bmk",r,taxes));
-
 revenue("bmk",r,"G.L") = GOVT.L / sum((r.local,g),PA.L(r,g)*g0(r,g));;
-
 revenue("bmk",r,"GOVT.L") = sum(g,PA.L(r,g)*g0(r,g))/pnum * revenue("bmk",r,"G.L");
-
-
 revenue("bmk","total","chk") = sum(r,revenue("bmk",r,"GOVT.L"))
 		- (govdef0 + sum((r,h), trn0(r,h))*(1-TRANS.L))*PFX.L/pnum 
 		- sum((r,taxes),revenue("bmk",r,taxes));
-
 alias (u,*);
 revenue("bmk","total",u) = sum(r, revenue("bmk",r,u));
 

@@ -192,6 +192,12 @@ $load a0ss=a0 s0ss=s0 i0ss=i0 g0ss=g0 ty0ss=ty0 ta0ss=ta0
 	ta0_(yr,r,g) = sum(mapss(u,yr), ta0ss(u,r,g));
 $endif.dynamic
 
+parameter	plchk;
+plchk(yr,r,"ld0") = sum(s,ld0_(yr,r,s));
+plchk(yr,q,"le0") = sum((r,h),le0_(yr,r,q,h));
+plchk(yr,r,"chk") = plchk(yr,r,"ld0") - plchk(yr,r,"le0");
+display plchk;
+
 * -----------------------------------------------------------------------------
 * add data parameters to a single data container
 * -----------------------------------------------------------------------------

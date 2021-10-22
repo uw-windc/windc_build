@@ -56,7 +56,7 @@ parameter
 * fix investment demands to match previous calibration. dispense with tiny
 * values to avoid numerical overflows in the objective function:
 
-$gdxin "%gdxdir%dynamic_adjustments_2017.gdx"
+$gdxin "%gdxdir%i0_%year%.gdx"
 $loaddc i0_ss=i0 gr ir delta
 
 * convert gross capital payments to net
@@ -216,15 +216,16 @@ S0_V.LO(r,g) = s0(r,g)/5;
 
 * nb: we are solving all the balancing problems simultaneously but we are holding
 * fixed trade flows between regions and international markets
+
 alias (r,rr);
 rb(r) = yes;
-option qcp=cplex;
 
 * fix investment demands to match pre-computed levels
 I0_V.FX(r,g) = i0_ss(r,g);
 i0(r,g) = i0_ss(r,g);
 i0(r,g)$(not round(i0(r,g),5)) = 0;
 
+option qcp=cplex;
 solve sscalib using QCP minimizing OBJ;
 
 taxrate(r,s,'ty_new')$sum(g, ys0(r,s,g)) = taxrev(r,s,'ty') / sum(g, YS0_V.L(r,s,g));

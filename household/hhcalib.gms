@@ -2,8 +2,6 @@ $title Read the household data and recalibrate to match the WiNDC database
 
 $if not set puttitle $set puttitle yes
 
-option nlp=ipopt;
-
 file kutl; kutl.lw=0;
 
 * -----------------------------------------------------------------------------
@@ -106,19 +104,19 @@ set
     trn(*) cps transfer income source categories;
 
 parameters
-    wages0(r,h)		    Wage income by region and household (in billions),
-    interest0(r,h)	    Interest income by region and household (in billions),
-    taxes0(r,h)		    Personal income taxes by region and household (in billions),
-    trans0(r,h)		    Transfers from government (in billions),
-    tottrn0(r)          Total transfer payments from government (CPS -- in billions),
+    wages0(r,h)		Wage income by region and household (in billions),
+    interest0(r,h)	Interest income by region and household (in billions),
+    taxes0(r,h)		Personal income taxes by region and household (in billions),
+    trans0(r,h)		Transfers from government (in billions),
+    tottrn0(r)		Total transfer payments from government (CPS -- in billions),
     cpstrn0(r,h)        CPS cash payment transfers (in billions),
     hhtrans0(r,h,*)     Disaggregate household transfers (in billions),
-    save0(r,h)		    Retirement contributions (in billions),
-    cons0(r,h)		    Imputed consumption (in billions),
-    pop(r,h)		    Number of households (in millions),
+    save0(r,h)		Retirement contributions (in billions),
+    cons0(r,h)		Imputed consumption (in billions),
+    pop(r,h)		Number of households (in millions),
     pccons(r,h)         Per-household consumption,
     taxrate0(r,h)       Assumed tax rate on income,
-    capgain0(r,h)	    Mapped capital gains from SOI;
+    capgain0(r,h)	Mapped capital gains from SOI;
 
 $gdxin '%gdxdir%%hhdata%_data_%year%.gdx'
 $loaddc h
@@ -304,6 +302,8 @@ $if %puttitle%==yes put_utility kutl 'title' /'solve partial_ss minimizing OBJI 
 	model partial_ss /objinv, investment/;
 	INV.L(r,g) = i0(r,g);
 
+	option qcp = cplex;
+
 	INV.LO(r,g) = 0.5 * i0(r,g);
 	INV.FX(r,g)$(not i0(r,g)) = 0;
 	solve partial_ss minimizing OBJI using QCP;
@@ -311,7 +311,7 @@ $if %puttitle%==yes put_utility kutl 'title' /'solve partial_ss minimizing OBJI 
 *	Output dynamic adjustment to investment.  This is subsequently imposed in dynamic_calib.gms
 
 	i0(r,g) = INV.L(r,g);
-	execute_unload "%gdxdir%dynamic_adjustments_%year%.gdx" i0, gr, ir, delta;
+	execute_unload "%gdxdir%i0_%year%.gdx" i0, gr, ir, delta;
 
 	compi0(r,g,'ss') = i0(r,g);
 
@@ -323,8 +323,8 @@ $endif.dynamic
 
 * there are differences between the balancing routines for the cps vs. soi data
 * due to differences in how the underlying data is reported.
-parameter
-    cps		    Switch for cps based constraints /0/;
+parameter    cps		    Switch for cps based constraints /0/;
+
 $if %hhdata%=="cps" cps=1;
 
 * include mapping file of aggregated regions
@@ -411,6 +411,7 @@ equations
     lincdef_ag         Constraint on wages to scale the same across household types for fringe benefits;
 
 * objective definition (penalizing consumption from going to zero)
+
 objdef_ag..        OBJ =e= sum((ar,h),
 		            sqr(CONS_AG(ar,h) - LAMDA_AG("CONS") * cons0_ag(ar,h)) - 
 		           (log(CONS_AG(ar,h)) - log(cons0_ag(ar,h))) +
@@ -503,8 +504,17 @@ TRANS_AG.UP(ar,h)$(ord(h)>3) = 1.25 * trn_agg_weight * trans0_ag(ar,h);
 
 * solve step 1
 
+option nlp=ipopt;
+
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step1_%hhdata% using nlp minimizing OBJ;';
 solve calib_step1_%hhdata% using nlp minimizing OBJ;
+
+if(calib_step1_%hhdata%.modelstat > 2,
+	option nlp=conopt;
+	solve calib_step1_%hhdata% using nlp minimizing OBJ;
+);
+
+ABORT$(calib_step1_%hhdata%.modelstat > 2) "Model calib_step1_%hhdata% has status > 2.";
 
 * construct reports
 parameter
@@ -655,10 +665,10 @@ model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, lincdef, interest
                              totaltrnless, totaltrnmore, ar_trans, ar_transhh, ar_wages, ar_interest, ar_save /;
 
 * assume bounds akin to aggregated solve
-$if %hhdata%=="soi" TRANSHH.L(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
-$if %hhdata%=="cps" TRANSHH.L(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
-$if %hhdata%=="cps" TRANSHH.UP(r,h,trn) = 1.5 * trn_weight(trn) * hhtrans0(r,h,trn);
-$if %hhdata%=="cps" TRANSHH.LO(r,h,trn) = 0.75 * trn_weight(trn) * hhtrans0(r,h,trn);
+
+TRANSHH.L(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
+
+$if %hhdata%=="cps" TRANSHH.UP(r,h,trn) = 1.5 * trn_weight(trn) * hhtrans0(r,h,trn);	TRANSHH.LO(r,h,trn) = 0.75 * trn_weight(trn) * hhtrans0(r,h,trn);
 
 TRANS.L(r,h) = trans0(r,h);
 TRANS.LO(r,h) = 0.75 * trans0(r,h);
@@ -694,7 +704,16 @@ $if exist '%gdxdir%calib_step2_%hhdata%_p.gdx' execute_loadpoint '%gdxdir%calib_
 
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step2_%hhdata% using nlp minimizing OBJ;';
 
+option nlp=ipopt;
+
 solve calib_step2_%hhdata% using nlp minimizing OBJ;
+
+if (calib_step2_%hhdata%.modelstat > 2,
+	option nlp=conopt;
+	solve calib_step2_%hhdata% using nlp minimizing OBJ;
+);
+
+ABORT$(calib_step2_%hhdata%.modelstat > 2) "Model calib_step2_%hhdata% has status > 2.";
 
 execute 'mv -f calib_step2_%hhdata%_p.gdx %gdxdir%calib_step2_%hhdata%_p.gdx';
 
@@ -872,12 +891,22 @@ CD.FX(r,g,h)$(not theta(r,g,h)) = 0;
 
 * use savepoint to solve subsequent models
 
+
 calib_step3_%hhdata%.savepoint = 1;
 $if exist '%gdxdir%calib_step3_%hhdata%_p.gdx' execute_loadpoint '%gdxdir%calib_step3_%hhdata%_p.gdx';
 
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step3_%hhdata% using nlp minimizing OBJ;';
 
+option nlp=ipopt;
+
 solve calib_step3_%hhdata% using nlp minimizing OBJ;
+
+if (calib_step3_%hhdata%.modelstat > 3,
+	option nlp=conopt;
+	solve calib_step3_%hhdata% using nlp minimizing OBJ;
+);
+
+ABORT$(calib_step3_%hhdata%.modelstat > 2) "Model calib_step3_%hhdata% has status > 2.";
 
 execute 'mv -f calib_step3_%hhdata%_p.gdx %gdxdir%calib_step3_%hhdata%_p.gdx';
 
