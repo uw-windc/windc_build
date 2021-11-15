@@ -8,7 +8,7 @@ $title consolidate years of available windc data with households
 $set sep %system.dirsep%
 
 * set environment variable for years of available household data
-$if not set hh_years $set hh_years "2015*2017"
+$if not set hh_years $set hh_years "2014*2017"
 
 * set environment variable for alternative household datasets
 $if not set hhdata $set hhdata "cps"
@@ -85,7 +85,8 @@ parameter
 * series using gdxmerge. the same code is used for households and steady state
 * parameters.
  set
-     mapcap(*,yr) /  capital_taxrate_2015.2015,
+     mapcap(*,yr) /  capital_taxrate_2014.2014,
+                     capital_taxrate_2015.2015,
                      capital_taxrate_2016.2016,
                      capital_taxrate_2017.2017 /;
 alias(u,*);
@@ -127,7 +128,8 @@ parameter
     le0, ke0, tl0, cd0_h, c0_h, sav0, trn0, hhtrn0, pop;
 
 set
-    maphh(*,yr) / calibrated_hhdata_%hhdata%_%invest%_2015.2015,
+    maphh(*,yr) / calibrated_hhdata_%hhdata%_%invest%_2014.2014,
+                  calibrated_hhdata_%hhdata%_%invest%_2015.2015,
 		  calibrated_hhdata_%hhdata%_%invest%_2016.2016,
 		  calibrated_hhdata_%hhdata%_%invest%_2017.2017 /;
 
@@ -166,7 +168,8 @@ parameter
     ta0ss(*,r,g)        Dynamic commodity tax;
 
 set
-    mapss(*,yr) / dynamic_parameters_2015.2015,
+    mapss(*,yr) / dynamic_parameters_2014.2014,
+                  dynamic_parameters_2015.2015,
 		  dynamic_parameters_2016.2016,
 		  dynamic_parameters_2017.2017 /;
 

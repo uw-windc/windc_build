@@ -34,13 +34,13 @@ file kutl; kutl.lw=0;
 * -----------------------------------------------------------------------------
 
 * set year of interest
-$if not set year $set year 2017
+$if not set year $set year 2014
 
 * set underlying dataset for recalibration
 $if not set hhdata $set hhdata cps
 
 * switch for invest calibration (static vs. dynamic)
-$if not set invest $set invest dynamic
+$if not set invest $set invest static
 
 * file separator
 $set sep %system.dirsep%
