@@ -7,7 +7,7 @@ $eolcom !
 $set sep %system.dirsep%
 
 * set analysis year
-$if not set year $set year 2017
+$if not set year $set year 2014
 
 *	Data directory:
 
@@ -41,7 +41,7 @@ parameter
     soi_(*,ups,agi_stub,*)    Available years of SOI dataset,
     soi(ups,agi_stub,item)    Specified year of data;
 
-$gdxin '%soidir%soi_data_2015-2017.gdx'
+$gdxin '%soidir%soi_data_2014-2017.gdx'
 $loaddc soi_=soidata
 soi(ups,agi_stub,item) = soi_("%year%",ups,agi_stub,item);
 

@@ -1,6 +1,6 @@
 $title	Build for Bluenote Datasets based on Household Data (2015-2017)
 
-set	bnyear /2015*2017/
+set	bnyear /2014*2017/
 	hhdata /cps,soi/
 	rmap /state,census/;
 
@@ -20,7 +20,7 @@ $if not dexist gdx	$call mkdir gdx
 
 $call 'gams sectordisagg.gms --hhdata=cps o=%lstdir%sectordisagg_cps.lst'
 $call 'gams sectordisagg.gms --hhdata=soi o=%lstdir%sectordisagg_soi.lst'
-$exit
+
 *	Aggregate to bluenote sectors and either states or census regions:
 
 $call 'gams aggregate.gms --hhdata=cps --rmap=state  o=%lstdir%aggregate_cps_state.lst'

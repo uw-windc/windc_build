@@ -15,14 +15,14 @@ $if not dexist gdx $call mkdir gdx
 $set gdxdir  gdx%sep%
 
 * analysis year
-$if not set year $set year 2017
+$if not set year $set year 2014
 
 * ------------------------------------------------------------------------------
 * read in data and needed sets
 * ------------------------------------------------------------------------------
 
 * translate the CPS income CSV data to GDX:
-$set file "%cpsdir%cps_asec_income_totals_2015_2017.csv"
+$set file "%cpsdir%cps_asec_income_totals_2014_2017.csv"
 $call csv2gdx "%file%" id=cpscsv useheader=yes index=1,2,3,5,6 values=4 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3
 
 
