@@ -346,7 +346,7 @@ parameter	ys_n	Negative values in ys_0,
 		y_n	Negative values in y_0, 
 		m_n	Negative values in m_0, 
 		duty_n	Negative values in duty_0, 
-		md_0	Negative values in md_0, 
+		md_n	Negative values in md_0, 
 		fd_n	Negative values in fd_0, 
 		ms_n	Negative values in ms_0;
 
@@ -361,7 +361,7 @@ x_n(yr,i) = min(0, x_0(yr,i));
 y_n(yr,i) = min(0, y_0(yr,i));
 m_n(yr,i) = min(0, m_0(yr,i));
 duty_n(yr,i)$(not m_0(yr,i)) = 0;
-md_0(yr,m,i) = min(0,md_0(yr,m,i));
+md_n(yr,m,i) = min(0,md_0(yr,m,i));
 fd_n(yr,i,'pce') = min(0, fd_0(yr,i,'pce'));
 ms_n(yr,i,m) = min(0, ms_0(yr,i,m));
 
@@ -396,7 +396,6 @@ duty_0(yr,i)$(not m_0(yr,i)) = 0;
 md_0(yr,m,i) = max(0,md_0(yr,m,i));
 ms_0(yr,i,m) = max(0, ms_0(yr,i,m));
 fd_0(yr,i,'pce') = max(0, fd_0(yr,i,'pce'));
-
 
 *	Compute average shares m and va:
 

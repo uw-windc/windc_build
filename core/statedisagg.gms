@@ -493,7 +493,7 @@ yh0_,fe0_,cd0_,c0_,i0_,g0_,bopdef0_,hhadj_,
 * Trade data:
 
 s0_,xd0_,xn0_,x0_,rx0_,a0_,nd0_,dd0_,m0_,ta0_,tm0_,
-g
+
 * Margins:
 
 md0_,nm0_,dm0_;
