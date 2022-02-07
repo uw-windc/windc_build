@@ -16,7 +16,7 @@ $if not dexist gdx $call mkdir gdx
 
 $set lstdir lst%sep%
 
-$set years 2015*2017
+$set years 2014*2017
 
 set	year /%years%/
 	hhdata /cps,soi/
