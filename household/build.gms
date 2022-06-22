@@ -80,7 +80,9 @@ $label aggr
 set	ds				Source datasets
 					/cps_static,cps_dynamic,soi_static,soi_dynamic/,
 	rmap				Regional mappings /census,state/,
-	smap				Sectoral mappings /windc,gtap,bluenote,macro/,
+*	smap				Sectoral mappings /windc,gtap,bluenote,macro/,
+	smap				Sectoral mappings /windc,gtap_10,gtap_32,bluenote,macro/,
+
 	aggregate(ds,rmap,smap)		Datasets to aggregate;
 
 file kutl; kutl.lw=0; put kutl;

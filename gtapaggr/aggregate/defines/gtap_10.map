@@ -1,0 +1,7 @@
+$stitle		WiNDC Dataset with 11 regions and 11 energy-related sectors
+
+$include '%system.fp%11regions'
+
+$include '%system.fp%windcsectors_10'
+
+$include %system.fp%allfactors

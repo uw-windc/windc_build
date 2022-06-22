@@ -536,10 +536,11 @@ $onechov >%gams.scrdir%loadyr.gms
 	id0_.fx(i,j)$(not id0(i,j)) = 0;
 
 * Fix certain parameters -- exogenous portions of final demand, value
-* added, imports and household supply.
+* added, imports, exports and household supply.
 
 	fs0_.FX(i) = fs0(i);
 	m0_.FX(i) = m0(i);
+	x0_.FX(i) = x0(i);
 
 *	Need to permit adjustment of value-added, but retain the sparsity pattern:
 

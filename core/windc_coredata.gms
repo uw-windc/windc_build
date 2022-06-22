@@ -1,6 +1,6 @@
 $title Read the WiNDC Dataset
 
-$if not set ds $set ds WiNDCdatabase.gdx
+$if not set ds $set ds %system.fp%WiNDCdatabase.gdx
 
 *------------------------------------
 * Data

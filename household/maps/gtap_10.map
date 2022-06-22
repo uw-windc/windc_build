@@ -1,0 +1,103 @@
+*	10 Sector Aggregation for GTAP 
+
+
+SET ss "Sectors in the target dataset" /
+		ele	"Electric power generation, transmission, and distribution and other utilities",
+		ogs	"Crude oil and natural gas extraction",
+		col	"All mining",
+		oil	"Petroleum products",
+		eis	"Energy/Emission intensive sectors (embodied carbon > .5 kg per $)",
+		trn	"Transportation",
+		agr	"Agriculture forestry and fishing"
+		man	"Other manufacturing sectors",
+		cns	"Construction",
+		ser	"Other services" /
+
+SET mm "Margins in the target dataset" /
+		trn	"Transport margin",
+		trd	"Retail margin" /;
+
+
+SET smap(ss,s) "Mapping of target sectors ss and source sectors s" /
+		oil.pet 	"Petroleum products",
+		ogs.oil 	"Oil and natural gas extraction",
+		ele.uti 	"Electricity generation, transmission, and distribution",
+		col.min 	"Mining, except oil and gas",
+		cns.con 	"Construction",
+
+		trn.air     	"Air transportation",
+		trn.trn     	"Rail transportation",
+		trn.wtt     	"Water transportation",
+		trn.trk     	"Truck transportation",
+		trn.grd     	"Transit and ground passenger transportation",
+		trn.pip     	"Pipeline transportation",
+		trn.otr     	"Other transportation and support activities",
+
+		eis.che		"Chemical products",
+		eis.nmp		"Nonmetallic mineral products",
+		eis.pmt 	"Primary metals",
+
+		agr.agr		"Farms",
+
+		man.ppd		"Paper products",
+		man.pla		"Plastics and rubber products",
+		man.mot		"Motor vehicles, bodies and trailers, and parts manufacturing",
+		man.fmt		"Fabricated metal products",
+		man.fbp		"Food and beverage and tobacco products",
+		man.eec		"Electrical equipment, appliances, and components",
+		man.pri		"Printing and related support activities",
+		man.tex		"Textile mills and textile product mills",
+		man.mch		"Machinery",
+		man.wpd		"Wood products",
+
+		man.fpd	"Furniture and related products"
+		man.ote   	"Other transportation equipment",
+		man.mmf   	"Miscellaneous manufacturing",
+		man.smn   	"Support activities for mining",
+		man.alt   	"Apparel and leather and allied products",
+		man.fof   	"Forestry, fishing, and related activities",
+		man.cep   	"Computer and electronic products",
+
+		ser.sec		"Securities, commodity contracts, and investments",
+		ser.ore	"Other real estate",
+		ser.dat	"Data processing, internet publishing, and other information",
+		ser.wst	"Waste management and remediation services",
+		ser.brd	"Broadcasting and telecommunications",
+		ser.res	"Food services and drinking places",
+		ser.wrh	"Warehousing and storage",
+		ser.fin	"Funds, trusts, and other financial vehicles",
+		ser.rec	"Amusements, gambling, and recreation industries",
+		ser.edu	"Educational services",
+		ser.tsv	"Miscellaneous professional, scientific, and technical services",
+		ser.amd	"Accommodation",
+		ser.osv	"Other services, except government",
+		ser.pub	"Publishing industries, except internet (includes software)",
+		ser.hos	"Hospitals",
+		ser.adm	"Administrative and support services",
+		ser.nrs	"Nursing and residential care facilities",
+		ser.rnt	"Rental and leasing services and lessors of intangible assets",
+		ser.soc	"Social assistance",
+		ser.art	"Performing arts, spectator sports, museums, and related activit",
+		ser.man	"Management of companies and enterprises",
+		ser.amb	"Ambulatory health care services",
+		ser.com	"Computer systems design and related services",
+		ser.bnk	"Federal Reserve banks, credit intermediation, and related activ",
+		ser.mov	"Motion picture and sound recording industries",
+		ser.leg	"Legal services",
+		ser.ins	"Insurance carriers and related activities",
+		ser.hou	"Housing",
+
+ 		ser.wht		"Wholesale trade",
+		ser.mvt		"Motor vehicle and parts dealers",
+		ser.fbt		"Food and beverage stores",
+		ser.gmt		"General merchandise stores",
+		ser.ott		"Other retail",
+		ser.fdd		"Federal general government (defense)",
+		ser.fnd		"Federal general government (nondefense)",
+		ser.fen		"Federal government enterprises",
+		ser.slg		"State and local general government",
+		ser.sle		"State and local government enterprises" /;
+
+SET	mmap(mm,m) "Mapping of target margins mm and source margins m" /
+		trn.trn		"Transport margin",
+		trd.trd		"Retail margin" /;
