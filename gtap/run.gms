@@ -1,5 +1,6 @@
 $title	GAMS Script to Create Two GTAP-WiNDC Datasets
 
+
 * Model dimension - (default is 10)
 $if not set dim $set dim 10
 
