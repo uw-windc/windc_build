@@ -14,10 +14,6 @@ $if not set syr $abort "Year is not valid: %yr%"
 
 $if not dexist %yr% $call mkdir %yr%
 
-*	Point to the location of the GTAP file:
-
-$if not set gdxfile $set gdxfile ..\gtapfiles\GDX_AY1017
-
 $ontext
 Archive:  GDX_AY1017.zip
   Length     Date   Time    Name
@@ -549,8 +545,10 @@ $if "%yr%"=="2011" $set syr 11
 $if "%yr%"=="2014" $set syr 14
 $if "%yr%"=="2017" $set syr 17
 
-$call gmsunzip -j %gdxfile%.zip *GDX%syr%.zip   -d %gams.scrdir%
-$call gmsunzip -j %gams.scrdir%GDX%syr%.zip     -d %gams.scrdir%
+$if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
+
+$call gmsunzip -j %zipfile% *GDX%syr%.zip   -d %gams.scrdir%
+$call gmsunzip -j %gams.scrdir%GDX%syr%.zip -d %gams.scrdir%
 
 *	This program can be included or it can run "stand-alone":
 
