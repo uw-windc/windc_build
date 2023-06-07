@@ -1,5 +1,10 @@
 $title	Read the GTAP 11 Data (GDX format) and Write in GTAPinGAMS Format
 
+$set fs %system.dirsep%
+$call mkdir %gams.scrdir%%fs%gtapingams
+$set tmpdir %gams.scrdir%%fs%gtapingams%fs%
+
+
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 
 $if not set yr $set yr 2004
@@ -547,8 +552,8 @@ $if "%yr%"=="2017" $set syr 17
 
 $if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
 
-$call gmsunzip -j %zipfile% *GDX%syr%.zip   -d %gams.scrdir%
-$call gmsunzip -j %gams.scrdir%GDX%syr%.zip -d %gams.scrdir%
+$call gmsunzip -j %zipfile% *GDX%syr%.zip   -d %tmpdir%
+$call gmsunzip -j %tmpdir%GDX%syr%.zip -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 
@@ -623,7 +628,7 @@ $endif.standalone
 
 *	Read the economic data tables:
 
-$gdxin '%gams.scrdir%%datfile%.gdx'
+$gdxin '%tmpdir%%datfile%.gdx'
 $loaddc maks makb evfb evfp vdfb vdfp vdpb vdpp vdgb vdgp 
 $loaddc vdib vdip vmfb vmfp vmpb vmpp vmgb vmgp vmib vmip
 $loaddc vfob vxsb vcif vmsb pop
@@ -631,26 +636,30 @@ $loaddc vst_=vst vtwr_=vtwr
 
 *	Read the elasticity parameters:
 
-$gdxin %gams.scrdir%%parfile%.gdx
+$gdxin %tmpdir%%parfile%.gdx
 $loaddc subp_=%subp% incp_=%incp% etaf_=%etaf% esubva_=%esubva% esubdm_=%esubdm% 
 
 *	Read the CO2 emissions data:
 
-$gdxin '%gams.scrdir%%emissfile%.gdx'
+$gdxin '%tmpdir%%emissfile%.gdx'
 $loaddc    mdf mmf mdg mmg mdp mmp mdi mmi 
 $gdxin
 
 *	Read the NCO2 emissions data:
 
-$gdxin %gams.scrdir%%nco2file%.gdx
+$gdxin %tmpdir%%nco2file%.gdx
 $loaddc emi_io emi_endw emi_qo emi_hh emi_iop emi_lu gwp
 $gdxin
 
 *	Read the energy data:
 
-$gdxin '%gams.scrdir%%volefile%.gdx'
+$gdxin '%tmpdir%%volefile%.gdx'
 $loaddc    edf emf edg emg edp emp edi emi exi 
 $gdxin
+
+*	Remove the temporary directory:
+
+$call rmdir /q /s %tmpdir%
 
 
 *	Scale data from millions to billions of dollars:
@@ -908,3 +917,4 @@ execute_unload '%yr%%system.dirsep%gtapingams.gdx',g_=g,i,f,r,pol,
 	eco2d, eco2i, 
 	nco2emit, nco2process, landuse, gwp, metadata,
 	evd, evi, evt;
+
