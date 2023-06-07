@@ -5,7 +5,7 @@ $title	Build GTAP in GAMS from GTAP Datasets
 
 *	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
 
-*.$set task replicate
+$set task gdx2gdx
 *. $set start filter
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
@@ -45,11 +45,14 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set gdxfile $set gdxfile C:\Users\mphillipson\Documents\WiNDC\GDX_AY1017
-
-*h:\gtapingams\build11final\gtapfiles\GDX_AY1017
+$if not set zipfile $set zipfile h:\gtapingams\build11final\gtapfiles\GDX_AY1017.zip
 	
-$if set task $goto %task%
+*	Run a single task:
+
+$if set task  $goto %task%
+
+*	Start at a specific task:
+
 $if set start $goto %start%
 
 $label gdx2gdx
@@ -61,7 +64,7 @@ loop(yr,
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
 	put_utility 'shell' / 'mkdir ',yr.tl;
-	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --gdxfile=%gdxfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
+	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 	if (errorlevel>0, abort "Non-zero return code from gdx2gdx.gms"; );
