@@ -549,7 +549,7 @@ $if "%yr%"=="2011" $set syr 11
 $if "%yr%"=="2014" $set syr 14
 $if "%yr%"=="2017" $set syr 17
 
-$call gmsunzip -j %gdxfile%.zip *GDX%syr%.zip      -d %gams.scrdir%
+$call gmsunzip -j %gdxfile%.zip *GDX%syr%.zip   -d %gams.scrdir%
 $call gmsunzip -j %gams.scrdir%GDX%syr%.zip     -d %gams.scrdir%
 
 *	This program can be included or it can run "stand-alone":
