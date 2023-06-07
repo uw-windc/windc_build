@@ -45,7 +45,7 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set gdxfile $set gdxfile C:\Users\mphillipson\Documents\WiNDC\GDX_AY1017.zip
+$if not set gdxfile $set gdxfile C:\Users\mphillipson\Documents\WiNDC\GDX_AY1017
 
 *h:\gtapingams\build11final\gtapfiles\GDX_AY1017
 	
