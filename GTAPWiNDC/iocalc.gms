@@ -1,17 +1,23 @@
+$title	Canonical Template GTAP-WINDC Model (MGE format)
 
-set	re(r)	Region to evaluate /usa/;	
+$set gtapwindc_datafile %system.fp%datasets\gtapwindc\43.gdx
 
-set	iag(i) / pdr, wht, gro, v_f, osd, c_b, pfb, ocr, ctl, oap, rmk, wol/;
+*	Read the data:
 
-set	is(i,s)	Content to evaluate;
+$if not set ds $set ds 43
 
-set	samesector(i,s,i,s)	Sector identifier;
+$include gtapwindc_data
+
+set	re(r)			Region to evaluate /usa/,
+	iag(i)			Agricultural sectors/ pdr, wht, gro, v_f, osd, c_b, pfb, ocr, ctl, oap, rmk, wol/,
+	is(i,s)			Content to evaluate,
+	samesector(i,s,i,s)	Sector identifier;
 
 alias (s,ss);
 
 parameter	valueadded(i,r,s)	Sectoral value-added;
-valueadded(i,re(r),s) = rto(i,r)*vom(i,r,s)+sum(f,vfm(f,i,r,s)*(1+rtf0(f,i,r)));
 
+valueadded(i,re(r),s) = rto(i,r)*vom(i,r,s)+sum(f,vfm(f,i,r,s)*(1+rtf0(f,i,r)));
 
 
 variable	OBJ		Objective;
@@ -40,8 +46,18 @@ option qcp=cplex;
 
 is(i,s) = no;
 loop(iag,
-	loop(re,is(iag,s) = yes$valueadded(iag,re,s));
+	loop(re,
+	  is(iag,s) = yes$valueadded(iag,re,s));
 	samesector(i,s,i,s) = yes$is(i,s);
 	solve content using qcp minimizing OBJ;
 	is(iag,s) = no;
 );
+
+parameter	atm(i,iag,s)	Export content;
+atm(i,iag,s)$iag(i) = v_P.L(i,iag,s);
+atm("total",iag,s) = sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,r)) * v_P.L(i,iag,s)) /
+		     sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,r)));
+
+atm("vashare",iag,s) = valueadded(iag,re(r),s)/sum(s.local,valueadded(iag,re(r),s));
+
+execute_unload 'atm.gdx',atm;

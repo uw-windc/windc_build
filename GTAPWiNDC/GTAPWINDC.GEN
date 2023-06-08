@@ -308,6 +308,6 @@ PUT / '$PEPS:1.E-6'/;
 PUT / '$SOLVE'/;
 PUTCLOSE   MPS;
 GTAPWINDC.INTEGER1 = GTAPWINDC.INTEGER1 + 1;
-$IF %GTAPWINDC%=="06/07/2313:22:24" $EXIT
+$IF %GTAPWINDC%=="06/08/2314:53:23" $EXIT
 $error model.gen file is inconsistent
 $abort preprocessor must be reinvoked

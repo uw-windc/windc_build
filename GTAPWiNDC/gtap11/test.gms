@@ -10,4 +10,4 @@ $set syr 17
 $call gmsunzip -j %gdxfile%.zip *GDX%syr%.zip   -d %tmpdir%
 $call gmsunzip -j %tmpdir%GDX%syr%.zip          -d %tmpdir%
 
-$call rmdir /q /s %tmpdir%
+*.$call rmdir /q /s %tmpdir%

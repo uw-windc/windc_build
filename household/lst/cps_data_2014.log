@@ -1,0 +1,38 @@
+--- Job cps_data Start 06/08/23 15:51:35 42.5.0 cf11b917 WEX-WEI x86 64bit/MS Windows
+--- Applying:
+    C:\GAMS\42\gmsprmNT.txt
+--- GAMS Parameters defined
+    Input h:\windc\github\windc_build\household\cps_data.gms
+    Output h:\windc\github\windc_build\household\lst\cps_data_2014.lst
+    ScrDir h:\windc\github\windc_build\household\225b\
+    SysDir C:\GAMS\42\
+    LogOption 4
+    LogFile h:\windc\github\windc_build\household\lst\cps_data_2014.log
+    --year 2014
+Licensee: Small MUD - 5 User License                     G230511|0002AO-GEN
+          University of Wisconsin-Madison, Agricultural & Applied EconDC289
+          C:\Users\Thomas F. Rutherford\Documents\GAMS\gamslice.txt
+          License Admin: Thomas F. Rutherford, rutherford@aae.wisc.edu     
+Processor information: 1 socket(s), 12 core(s), and 24 thread(s) available
+GAMS 42.5.0   Copyright (C) 1987-2023 GAMS Development. All rights reserved
+--- Starting compilation
+--- cps_data.gms(26) 2 Mb
+--- call csv2gdx "data_sources\cps\cps_asec_income_totals_2014_2017.csv" id=cpscsv useheader=yes index=1,2,3,5,6 values=4 output="gdx\cpscsv.gdx" CheckDate=yes trace=3
+--- cps_data.gms(31) 2 Mb
+--- call csv2gdx data_sources\cps\number_of_household_2014.csv id=popcsv useheader=yes index=1 values=2,3,4,5,6 output="gdx\cps_household_csv_2014.gdx" CheckDate=yes trace=3
+--- cps_data.gms(37) 2 Mb
+--- call csv2gdx data_sources\cps\labor_tax_rates.csv  id=taxrate0 useheader=yes index=1,2 values=5 output="gdx\labor_tax_rates.gdx" CheckDate=yes trace=3
+--- cps_data.gms(42) 2 Mb
+--- call csv2gdx data_sources\cps\capital_tax_rates.csv id=tk0 useheader=yes index=1 values=2 output="gdx\capital_tax_rates.gdx" CheckDate=yes trace=3
+--- cps_data.gms(148) 3 Mb
+--- GDXin=h:\windc\github\windc_build\household\gdx\cpscsv.gdx
+--- GDX File ($gdxIn) h:\windc\github\windc_build\household\gdx\cpscsv.gdx
+--- cps_data.gms(152) 4 Mb
+--- GDXin=h:\windc\github\windc_build\household\gdx\cps_household_csv_2014.gdx
+--- GDX File ($gdxIn) h:\windc\github\windc_build\household\gdx\cps_household_csv_2014.gdx
+--- cps_data.gms(273) 4 Mb
+--- Starting execution: elapsed 0:00:00.107
+--- cps_data.gms(272) 6 Mb
+--- GDX File (execute_unload) h:\windc\github\windc_build\household\gdx\cps_data_2014.gdx
+*** Status: Normal completion
+--- Job cps_data.gms Stop 06/08/23 15:51:35 elapsed 0:00:00.130

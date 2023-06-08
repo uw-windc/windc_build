@@ -111,6 +111,10 @@ $include gmr_mge.gen
 solve gmr_mge using mcp;
 abort$round(gmr_mge.objval,3) "Benchmark replication problem with the MGE model.";
 
+$if not set mgeonly $set mgeonly no
+$if %mgeonly%==yes $exit
+
+
 *       -------------------------------------------------------------------------------
 *       Macros to diagnose the functional form:
 
