@@ -1,6 +1,8 @@
 *.opt
 *.lst
 *.GEN
+*.log
+*.dat
 built_datasets/
 build_files/temp/
 build_files/windc_base.gdx
@@ -11,5 +13,8 @@ GTAPWinDC/datasets/
 core/gdx/
 core/loadpoint/
 household/datasets/
+household/lst/
 household/gdx/
 bluenote/gdx/
+bluenote/datasets/
+
