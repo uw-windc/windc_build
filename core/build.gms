@@ -2,7 +2,7 @@
 *
 *	Comment out the following line to run the full build routine!
 
-*.$set runscript calibrate
+*.$set start statedisagg
 
 * Authors: Andrew Schreiber, Thomas Rutherford, Adam Christensen
 *

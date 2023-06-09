@@ -1,0 +1,37 @@
+--- Job soi_data Start 06/08/23 15:51:35 42.5.0 cf11b917 WEX-WEI x86 64bit/MS Windows
+--- Applying:
+    C:\GAMS\42\gmsprmNT.txt
+--- GAMS Parameters defined
+    Input h:\windc\github\windc_build\household\soi_data.gms
+    Output h:\windc\github\windc_build\household\lst\soi_data_2016.lst
+    ScrDir h:\windc\github\windc_build\household\225b\
+    SysDir C:\GAMS\42\
+    LogOption 4
+    LogFile h:\windc\github\windc_build\household\lst\soi_data_2016.log
+    --year 2016
+Licensee: Small MUD - 5 User License                     G230511|0002AO-GEN
+          University of Wisconsin-Madison, Agricultural & Applied EconDC289
+          C:\Users\Thomas F. Rutherford\Documents\GAMS\gamslice.txt
+          License Admin: Thomas F. Rutherford, rutherford@aae.wisc.edu     
+Processor information: 1 socket(s), 12 core(s), and 24 thread(s) available
+GAMS 42.5.0   Copyright (C) 1987-2023 GAMS Development. All rights reserved
+--- Starting compilation
+--- soi_data.gms(26) 2 Mb
+--- . ups.set(53) 3 Mb
+--- soi_data.gms(30) 3 Mb
+--- . agi_stub.set(11) 3 Mb
+--- soi_data.gms(34) 3 Mb
+--- . return_info.set(15) 3 Mb
+--- soi_data.gms(35) 3 Mb
+--- . item_2016.set(128) 3 Mb
+--- soi_data.gms(44) 3 Mb
+--- GDXin=h:\windc\github\windc_build\household\data_sources\soi\soi_data_2014-2017.gdx
+--- GDX File ($gdxIn) h:\windc\github\windc_build\household\data_sources\soi\soi_data_2014-2017.gdx
+--- soi_data.gms(229) 12 Mb
+--- Starting execution: elapsed 0:00:00.048
+--- soi_data.gms(432) 16 Mb
+--- GDX File (execute_unload) h:\windc\github\windc_build\household\gdx\soi_data_2016.gdx
+--- soi_data.gms(436) 16 Mb
+--- GDX File (execute_unload) h:\windc\github\windc_build\household\gdx\capital_gains_2016.gdx
+*** Status: Normal completion
+--- Job soi_data.gms Stop 06/08/23 15:51:36 elapsed 0:00:00.111

@@ -6,7 +6,9 @@ $if not set ds $set ds g20_32
 
 *	Run the standard GTAP multiregional model:
 
-$include %gtap11%gmr
+$set mgeonly yes
+
+$include %gtap11%replicate
 
 set	rb(r) /usa/;
 

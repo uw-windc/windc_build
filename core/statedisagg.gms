@@ -122,7 +122,6 @@ $GDXIN %gdxdir%shares_usatrd.gdx
 $LOAD usatrd_shr
 $GDXIN
 
-
 * * How do shares differ? Look at example:
 * PARAMETER diffshr(g,*) "Check on share differences";
 *
@@ -428,32 +427,44 @@ display zp, ibal, mkt;
 
 PARAMETER negnum "Check on negative numbers";
 
-negnum('ys0') = smin((r,g,s), ys0_("%year%",r,s,g));
-negnum('id0') = smin((r,s,g), id0_("%year%",r,g,s));
-negnum('ld0') = smin((r,s), ld0_("%year%",r,s));
-negnum('kd0') = smin((r,s), kd0_("%year%",r,s));
-negnum('m0') = smin((r,g), m0_("%year%",r,g));
-negnum('x0') = smin((r,g), x0_("%year%",r,g));
-negnum('rx0') = smin((r,g), rx0_("%year%",r,g));
-negnum('x0-rx0') = smin((r,g), x0_("%year%",r,g) - rx0_("%year%",r,g));
-negnum('md0') = smin((r,m,gm), md0_("%year%",r,m,gm));
-negnum('nm0') = smin((r,m,gm), nm0_("%year%",r,gm,m));
-negnum('dm0') = smin((r,m,gm), dm0_("%year%",r,gm,m));
-negnum('s0') = smin((r,g), s0_("%year%",r,g));
-negnum('a0') = smin((r,g), a0_("%year%",r,g));
-negnum('cd0') = smin((r,g), cd0_("%year%",r,g));
-negnum('c0') = smin((r), c0_("%year%",r));
-negnum('yh0') = smin((r,g), yh0_("%year%",r,g));
-negnum('g0') = smin((r,g), g0_("%year%",r,g));
-negnum('i0') = smin((r,g), i0_("%year%",r,g));
-negnum('xn0') = smin((r,g), xn0_("%year%",r,g));
-negnum('xd0') = smin((r,g), xd0_("%year%",r,g));
-negnum('dd0') = smin((r,g), dd0_("%year%",r,g));
-negnum('nd0') = smin((r,g), nd0_("%year%",r,g));
+negnum('ys0') = round( smin((r,g,s), ys0_("%year%",r,s,g)), 8);
+negnum('id0') = round( smin((r,s,g), id0_("%year%",r,g,s)), 8);
+negnum('ld0') = round( smin((r,s), ld0_("%year%",r,s)), 8);
+negnum('kd0') = round( smin((r,s), kd0_("%year%",r,s)), 8);
+negnum('m0') = round( smin((r,g), m0_("%year%",r,g)), 8);
+negnum('x0') = round( smin((r,g), x0_("%year%",r,g)), 8);
+negnum('rx0') = round( smin((r,g), rx0_("%year%",r,g)), 8);
+negnum('x0-rx0') = round( smin((r,g), x0_("%year%",r,g) - rx0_("%year%",r,g)), 8);
+negnum('md0') = round( smin((r,m,gm), md0_("%year%",r,m,gm)), 8);
+negnum('nm0') = round( smin((r,m,gm), nm0_("%year%",r,gm,m)), 8);
+negnum('dm0') = round( smin((r,m,gm), dm0_("%year%",r,gm,m)), 8);
+negnum('s0') = round( smin((r,g), s0_("%year%",r,g)), 8);
+negnum('a0') = round( smin((r,g), a0_("%year%",r,g)), 8);
+negnum('cd0') = round( smin((r,g), cd0_("%year%",r,g)), 8);
+negnum('c0') = round( smin((r), c0_("%year%",r)), 8);
+negnum('yh0') = round( smin((r,g), yh0_("%year%",r,g)), 8);
+negnum('g0') = round( smin((r,g), g0_("%year%",r,g)), 8);
+negnum('i0') = round( smin((r,g), i0_("%year%",r,g)), 8);
+negnum('xn0') = round( smin((r,g), xn0_("%year%",r,g)), 8);
+negnum('xd0') = round( smin((r,g), xd0_("%year%",r,g)), 8);
+negnum('dd0') = round( smin((r,g), dd0_("%year%",r,g)), 8);
+negnum('nd0') = round( smin((r,g), nd0_("%year%",r,g)), 8);
 
 alias(p,*);
 
-ABORT$(smin(p, negnum(p)) < 0) "Negative numbers exist in regionalized parameters.";
+ABORT$(smin(p, negnum(p)) < 0) "Negative numbers exist in regionalized parameters.", negnum;
+
+* -------------------------------------------------------------------
+* Filter tiny numbers (TFR 3/21/2023)
+* -------------------------------------------------------------------
+
+ys0_(yr,r,s,g)$(not round(ys0_(yr,r,s,g),8)) = 0;
+s0_(yr,r,g)$(not round(s0_(yr,r,g),8)) = 0;
+a0_(yr,r,g)$(not round(a0_(yr,r,g),8)) = 0;
+rx0_(yr,r,g)$(not round(rx0_(yr,r,g),8)) = 0;
+s0_(yr,r,g)$(not round(s0_(yr,r,g),8)) = 0;
+xd0_(yr,r,g)$(not round(xd0_(yr,r,g),8)) = 0;
+kd0_(yr,r,s)$(not round(kd0_(yr,r,s),8)) = 0;
 
 * -------------------------------------------------------------------
 * Check microconsistency in a regional accounting model for %year%:
@@ -466,8 +477,6 @@ $INCLUDE STATEMODEL.GEN
 
 SOLVE statemodel using mcp;
 ABORT$(statemodel.objval > 1e-5) "Error in benchmark calibration with regional data.";
-
-display ty0;
 
 * -------------------------------------------------------------------
 * Output regionalized dataset:

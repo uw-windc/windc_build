@@ -218,6 +218,6 @@ PUT / '$PEPS:1.E-6'/;
 PUT / '$SOLVE'/;
 PUTCLOSE   MPS;
 GMR_MGE.INTEGER1 = GMR_MGE.INTEGER1 + 1;
-$IF %GMR_MGE%=="06/07/2313:12:45" $EXIT
+$IF %GMR_MGE%=="06/08/2314:51:36" $EXIT
 $error model.gen file is inconsistent
 $abort preprocessor must be reinvoked

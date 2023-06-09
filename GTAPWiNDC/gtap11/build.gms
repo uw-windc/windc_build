@@ -5,8 +5,8 @@ $title	Build GTAP in GAMS from GTAP Datasets
 
 *	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
 
-$set task gdx2gdx
-*. $set start filter
+*.$set task gdx2gdx
+$set start filter
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
