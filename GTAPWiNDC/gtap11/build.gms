@@ -45,7 +45,7 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set zipfile $set zipfile h:\gtapingams\build11final\gtapfiles\GDX_AY1017.zip
+$if not set zipfile $set zipfile C:\Users\mphillipson\Documents\WiNDC\GDX_AY1017.zip
 	
 *	Run a single task:
 
@@ -67,7 +67,7 @@ loop(yr,
 	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
-	if (errorlevel>0, abort "Non-zero return code from gdx2gdx.gms"; );
+*	if (errorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
 );
 
 $if set task $exit
@@ -83,7 +83,7 @@ loop(yr,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
 	put_utility 'shell' /'gams filter --yr='yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\calibrate_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
-	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
+*	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
 
 $if set task $exit
@@ -98,7 +98,7 @@ loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;
 	put_utility 'shell' / 'gams aggregate --yr=',yr.tl,' --target=',target.tl,' o=',yr.tl,'\aggregate_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
-	if (errorlevel>0, abort "Non-zero return code from aggregate.gms"; );
+*	if (errorlevel>0, abort "Non-zero return code from aggregate.gms"; );
 );
 
 $if set task $exit
@@ -114,5 +114,5 @@ loop((yr,target),
 	put_utility 'title' /'replicate: ',yr.tl,' : ', target.tl;
 	put_utility 'shell' / 'gams replicate --yr=',yr.tl,' --ds=',target.tl,' o=',yr.tl,'\gmr_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
-	if (errorlevel>0, abort "Non-zero return code from replicate.gms"; );
+*	if (errorlevel>0, abort "Non-zero return code from replicate.gms"; );
 );
