@@ -7,9 +7,9 @@ build_files/windc_base.gdx
 build_files/windc_base_2_0_1.gdx
 build_files/windc_base_2_1.gdx
 GTAPWiNDC/gtap11/2017/*.gdx
-GTAPWinDC/datasets
-core/gdx
-core/loadpoint
-household/datasets
-household/gdx
-bluenote/gdx
+GTAPWinDC/datasets/
+core/gdx/
+core/loadpoint/
+household/datasets/
+household/gdx/
+bluenote/gdx/
