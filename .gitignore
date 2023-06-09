@@ -3,18 +3,26 @@
 *.GEN
 *.log
 *.dat
+
 built_datasets/
 build_files/temp/
 build_files/windc_base.gdx
 build_files/windc_base_2_0_1.gdx
 build_files/windc_base_2_1.gdx
-GTAPWiNDC/gtap11/2017/*.gdx
+
 GTAPWinDC/datasets/
+
 core/gdx/
 core/loadpoint/
+core/WiNDCdatabase.gdx
+core/WiNDCdatabase_huber.gdx
+
 household/datasets/
 household/lst/
 household/gdx/
+
 bluenote/gdx/
 bluenote/datasets/
+bluenote/regcalib_p.gdx
+
 
