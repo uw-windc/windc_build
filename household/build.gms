@@ -1,34 +1,55 @@
-$title		Build Routine for the WiNDC Household Dataset
+$title build routine for the windc household dataset
 
-*	Run after the core build is complete.
+***** run after the core build is complete!! *****
 
-*	To run a single script assign hhcalib, dynamic_calib or consolidate
+* to run a single script assign hhcalib, dynamic_calib or consolidate
+* $set runscript aggr
 
-*$set runscript aggr
+* ------------------------------------------------------------------------------
+* options
+* ------------------------------------------------------------------------------
 
-*	Create all the directories we need for building the household datasets:
-
+* system separator
 $set sep %system.dirsep%
+
+* years of household data
+* $set years 1997*2017
+$set years 2014*2017
+
+
+*------------------------------------------------------------------------------
+* create directories if necessary
+*------------------------------------------------------------------------------
+
 $if not dexist datasets $call mkdir datasets
 $if not dexist lst $call mkdir lst
 $if not dexist gdx $call mkdir gdx
-
-
 $set lstdir lst%sep%
 
-$set years 2014*2017
 
-set	year /%years%/
-	hhdata /cps,soi/
-	invest /static,dynamic/;
+*------------------------------------------------------------------------------
+* household build routine
+*------------------------------------------------------------------------------
+
+set
+    year 	Years of data /%years%/,
+    hhdata 	Household data /cps,soi/,
+    invest 	Investment calibration options /static,dynamic/,
+    rmap	Regional mappings /state/,
+    smap	Sectoral mappings /windc/;
+
+
+*------------------------------------------------------------------------------
+* household build routine
+*------------------------------------------------------------------------------
+
 
 file kutl; kutl.lw=0; put kutl; kutl.nw=0; kutl.nd=0; kutl.pw=32767;
 
 $if set runscript $goto %runscript%
 $if set start $goto %start%
 
-*	Run cps_data.gms and soi_data.gms for each of the years:
-
+* run cps_data.gms and soi_data.gms for each of the years:
 loop((year,hhdata),
 	put_utility 'title' /'Running ',year.tl,' with household dataset from ',hhdata.tl;
 	put_utility 'exec'/'gams ',hhdata.tl,'_data o=%lstdir%',hhdata.tl,'_data_',year.tl,'.lst --year=',year.tl,
@@ -36,10 +57,9 @@ loop((year,hhdata),
 );
 
 
+
+* run hhcalib.gms for each year, cps/soi, and for static and dynamic investment:
 $label hhcalib
-
-*	Run hhcalib.gms for each year, cps/soi, and for static and dynamic investment:
-
 loop((year,hhdata,invest),
 	put_utility 'title' /'Calibrating ',year.tl,' with ',hhdata.tl,' with invest=',invest.tl;
 	put_utility 'exec'/'gams hhcalib o=%lstdir%hhcalib_',year.tl,'_',hhdata.tl,'_',invest.tl,'.lst',
@@ -49,10 +69,9 @@ loop((year,hhdata,invest),
 
 $if set runscript $exit
 
+
+* impose steady-state investment demand on the model:
 $label dynamic_calib
-
-*	Impose steady-state investment demand on the model:
-
 put_utility kutl, 'title' / 'Running dynamic_calib.gms';
 loop(year,
 	put_utility kutl, 'exec' /
@@ -62,8 +81,7 @@ loop(year,
 
 $if set runscript $exit
 
-*	Consolidate the datasets:
-
+* consolidate the datasets:
 $label consolidate
 loop((hhdata,invest),
 	put_utility kutl, 'exec' /'gams consolidate o=%lstdir%consolidate_',hhdata.tl,'_',invest.tl,'.lst',
@@ -73,24 +91,22 @@ loop((hhdata,invest),
 );
 $if set runscript $exit
 
+
+*------------------------------------------------------------------------------
+* aggregate the datasets
+*------------------------------------------------------------------------------
+
 $label aggr
 
-*	Aggregate all the datasets:
-
-set	ds				Source datasets
-					/cps_static,cps_dynamic,soi_static,soi_dynamic/,
-	rmap				Regional mappings /census,state/,
-*	smap				Sectoral mappings /windc,gtap,bluenote,macro/,
-	smap				Sectoral mappings /windc,gtap_10,gtap_32,bluenote,macro/,
-
-	aggregate(ds,rmap,smap)		Datasets to aggregate;
+set
+    ds	Source datasets /cps_static,cps_dynamic,soi_static,soi_dynamic/,
+    aggregate(ds,rmap,smap) Datasets to aggregate;
 
 file kutl; kutl.lw=0; put kutl;
 
 aggregate(ds,rmap,smap) = yes;
 
-*	These datasets are identical to the disaggregate dataset:
-
+* these datasets are identical to the disaggregate dataset:
 aggregate(ds,"state","windc") = no;
 
 loop(aggregate(ds,rmap,smap),
@@ -100,3 +116,8 @@ loop(aggregate(ds,rmap,smap),
 );
 
 $if set runscript $exit
+
+
+*------------------------------------------------------------------------------
+* end
+*------------------------------------------------------------------------------
