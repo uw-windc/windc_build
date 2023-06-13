@@ -20,6 +20,22 @@ This repository contains 4 primary methods
 
 To do - Where to get the data and where to store the data
 
+```
+windc_build
+|-- core
+|  |   windc_base.gdx
+|-- household
+|  |-- data_sources
+|  |  |-- cex
+|  |  |-- cps
+|  |  |-- soi
+|-- bluenote
+|  |-- datasets
+|-- GTAPWiNDC
+|  |-- z
+```
+
+
 # Description of each method
 
 
