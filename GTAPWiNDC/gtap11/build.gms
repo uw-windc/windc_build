@@ -45,7 +45,7 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set zipfile $set zipfile C:\Users\mphillipson\Documents\WiNDC\GDX_AY1017.zip
+$if not set zipfile $set zipfile GDX_AY1017.zip
 	
 *	Run a single task:
 
