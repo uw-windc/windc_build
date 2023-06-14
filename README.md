@@ -32,7 +32,7 @@ windc_build
 |-- bluenote
 |  |-- datasets
 |-- GTAPWiNDC
-|  |-- z
+|  |--
 ```
 
 
