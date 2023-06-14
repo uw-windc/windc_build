@@ -8,7 +8,7 @@ $set debug yes
 
 *	Pause after each step?
 
-$set pause yes
+$set pause no
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 
@@ -152,7 +152,7 @@ $label agrdisagg
 $log	Ready to disaggreate agricultural sectors (datasets\windc\43.gdx)
 $if not %pause%==no $call pause
 
-$set windc_datafile h:\windc\windc_build-3.1\household\datasets\WINDC_cps_static_gtap_32_state.gdx
+$set windc_datafile ..\household\datasets\WINDC_cps_static_gtap_32_state.gdx
 $call gams agrdisagg --windc_datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --dsout=datasets\windc\43.gdx o=lst\agrdisagg.lst
 
 $if errorlevel 1 $log   "Non-zero return code from agrdisagg.gms"
