@@ -18,7 +18,7 @@ This repository contains 4 primary methods
 
 # Data
 
-To do - Where to get the data and where to store the data
+Currently all data included to build `core`, `household`, and `bluenote` are included in the repository. The data for GTAPWiNDC for the year 2017 is propriety to GTAP and requires a GTAP license. Once you acquire the data place the ZIP file in the `GTAPWiNDC/gtap11` directory and name the zip file `GDX_AY1017.zip`.
 
 ```
 windc_build
@@ -30,9 +30,9 @@ windc_build
 |  |  |-- cps
 |  |  |-- soi
 |-- bluenote
-|  |-- datasets
 |-- GTAPWiNDC
-|  |--
+|  |-- gtap11
+|  |  | GDX_AY1017.zip
 ```
 
 
