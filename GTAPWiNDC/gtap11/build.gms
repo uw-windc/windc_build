@@ -45,7 +45,7 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set zipfile $set zipfile GDX_AY1017.zip
+$if not set zipfile $set zipfile ./GDX_AY1017.zip
 	
 *	Run a single task:
 
@@ -72,7 +72,7 @@ loop(yr,
 
 $if set task $exit
 
-execute 'pause';
+*execute 'pause';
 
 $label filter
 
@@ -88,7 +88,7 @@ loop(yr,
 
 $if set task $exit
 
-execute 'pause';
+*execute 'pause';
 
 $label aggregate
 
@@ -103,7 +103,7 @@ loop((yr,target),
 
 $if set task $exit
 
-execute 'pause';
+*execute 'pause';
 
 $label replicate
 
