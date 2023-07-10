@@ -5,7 +5,7 @@ $title	Build GTAP9inGAMS from GTAP Datasets
 
 *	The tasks include "flex2gdx", "gdx2gdx", "filter", "aggregate" and "replicate"
 
-$set task filter
+*$set task filter
 *.$set start gdx2gdx
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
@@ -45,14 +45,20 @@ loop(yr,
 
 *	Point to the directory with the flexlagg data files:
 
-$set flexagg h:\gtapingams\flexagg\
+$set flexagg ../../data/GTAPWiNDC/gtap9/
 
 set		flexaggfile /
 		2004	"%flexagg%flexagg9aY04.zip"
 		2007	"%flexagg%flexagg9aY07.zip"
 		2011	"%flexagg%flexagg9aY11.zip" /;
+
+
+*****************
+** Is this a bug? The -yr is fixed at 2004
+*****************
+
 loop(yr,
-	put_utility 'shell' / 'gams flex2gdx --yr=2004 --flexaggfile=',flexaggfile.te(yr),' o=',yr.tl,'\flex2gdx.lst';
+	put_utility 'shell' / 'gams flex2gdx --yr=',yr.tl,' --flexaggfile=',flexaggfile.te(yr),' o=',yr.tl,'\flex2gdx.lst';
 	myerrorlevel = errorlevel;
 	if (errorlevel>1, abort "Non-zero return code from flex2gdx.gms"; );
 );

@@ -5,7 +5,8 @@
 *.log
 *.dat
 *.g00
-
+*.gdx
+*.zip
 
 */gdx/
 */lst/
@@ -21,6 +22,8 @@ build_files/windc_base_2_0_1.gdx
 build_files/windc_base_2_1.gdx
 
 
+
+
 core/loadpoint/
 core/WiNDCdatabase.gdx
 core/WiNDCdatabase_huber.gdx
@@ -32,7 +35,10 @@ core/WiNDCdatabase_huber.gdx
 bluenote/regcalib_p.gdx
 
 
-GTAPWinDC/gtap11/GDX_AY1017.zip
+
+GTAPWiNDC/gtap9/2004
+GTAPWiNDC/gtap9/2007
+GTAPWiNDC/gtap9/2011
 
 GTAPWiNDC/gtap11/2017/g20_10.gdx
 GTAPWiNDC/gtap11/2017/g20_32.gdx
