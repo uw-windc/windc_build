@@ -15,7 +15,7 @@ SET g "BEA Goods and sectors categories";
 
 PARAMETER pce_raw_units(yr,sr,pg,*) "Personal expenditure data with units as domain";
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD yr
 $LOAD g=i
 $LOAD sr

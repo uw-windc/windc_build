@@ -56,7 +56,7 @@ SET	yr	"Years in WiNDC Database",
 *	N.B. r is read but not touched in this program.  We need to have
 *	it passed through to the calibrated national dataset.
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOADDC yr va fd ts r
 $GDXIN
 
