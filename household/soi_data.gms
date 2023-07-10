@@ -11,7 +11,7 @@ $if not set year $set year 2014
 
 *	Data directory:
 
-$set soidir  data_sources%sep%soi%sep%
+$set soidir  ..%sep%data%sep%household%sep%soi%sep%
 
 $if not dexist gdx $call mkdir gdx
 $set gdxdir  gdx%sep%
