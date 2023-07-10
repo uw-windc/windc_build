@@ -5,8 +5,15 @@ $title	Build GTAP in GAMS from GTAP Datasets
 
 *	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
 
-*.$set task gdx2gdx
-$set start filter
+$set lstdir  lst/
+$set gdxdir  gdx/
+
+$if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
+$if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
+
+
+*$set task gdx2gdx
+*$set start filter
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
@@ -16,6 +23,11 @@ set
 	yr		Base years /2017/,
 	reltol		Filter tolance /4/
 	target		Aggregations /g20_10,  g20_32,  g20_43 /;
+
+
+*loop(yr,
+*$if not dexist yr $call mkdir yr;
+*);
 
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
@@ -45,8 +57,12 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set zipfile $set zipfile ./GDX_AY1017.zip
-	
+$if not set zipfile $set zipfile ../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
+
+****************
+* Remove these *
+****************
+
 *	Run a single task:
 
 $if set task  $goto %task%
@@ -54,6 +70,10 @@ $if set task  $goto %task%
 *	Start at a specific task:
 
 $if set start $goto %start%
+
+****************
+****************
+****************
 
 $label gdx2gdx
 

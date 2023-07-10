@@ -4,6 +4,8 @@
 *.gen
 *.log
 *.dat
+*.g00
+
 
 */gdx/
 */lst/

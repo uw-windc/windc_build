@@ -344,7 +344,7 @@ set	r	Regions /
    	BEN	Benin
    	BFA	Burkina Faso
    	CMR	Cameroon
-   	CIV	Côte d'Ivoire
+   	CIV	Cï¿½te d'Ivoire
    	GHA	Ghana
    	GIN	Guinea
    	MLI	Mali
@@ -911,7 +911,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%yr%%system.dirsep%gtapingams.gdx',g_=g,i,f,r,pol,
+execute_unload '%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
 	vst, vtwr, vfm, vdfm, vifm, vxmd, rto, rtf, rtfd, rtfi, rtxs, rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, pop, 
 	eco2d, eco2i, 
