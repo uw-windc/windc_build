@@ -1,6 +1,6 @@
 $title	GTAPinGAMS Model in Canonical Form
 
-$include gtap11
+$include gtapingams
 
 $if not set ds $set ds g20_32
 
@@ -8,7 +8,7 @@ $if not set ds $set ds g20_32
 
 $set mgeonly yes
 
-$include %gtap11%replicate
+$include %gtapingams%replicate
 
 set	rb(r) /usa/;
 

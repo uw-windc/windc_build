@@ -178,7 +178,7 @@ betales(r) =	sum(i, thetac(i,r)*epsilon(i,r)) /
 
 *	Non-negative subsistence demand?
 
-*.$if %nnsd%==yes betales(r) = max(betales(r), smin(i,1/eta(i,r)));
+$if %nnsd%==yes betales(r) = max(betales(r), smin(i,1/eta(i,r)));
 
 sigmales(r) = (1/betales(r)) *	sum(i, thetac(i,r)*epsilon(i,r)) /
 				sum(i,eta(i,r)*thetac(i,r)*(eta(i,r)*thetac(i,r)-1)); 

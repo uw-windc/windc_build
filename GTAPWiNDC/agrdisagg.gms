@@ -70,11 +70,11 @@ parameter	vafm(i,*)	GTAP intermediate demand
 $onechov >%gams.scrdir%gtapagr.gms
 $title	Extract Agricultural Data from the GTAP Dataset
 
-$include gtap11
+$include gtapingams
 
 $set ds g20_43
 
-$include %gtap11%gtapdata
+$include %gtapingams%gtapdata
 
 set	agr(g) /
 	pdr  "Paddy rice",
