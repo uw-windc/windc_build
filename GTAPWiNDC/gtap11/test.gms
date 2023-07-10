@@ -1,13 +1,18 @@
-*	Test that we can unzip the data file:
+set	g /g1*g3/, r/a,b/;
 
-$set fs %system.dirsep%
-$call mkdir %gams.scrdir%%fs%gtapingams
-$set tmpdir %gams.scrdir%%fs%gtapingams%fs%
+set	y(g,r), p(g,r);
+y(g,r) = yes; 
+p(g,r) = yes;
 
-$set gdxfile h:\gtapingams\build11final\gtapfiles\GDX_AY1017
-$set syr 17
+parameter	test;
+test(g,r) = sum((y(g,r),p(g,r)),ord(g));
+display test;
 
-$call gmsunzip -j %gdxfile%.zip *GDX%syr%.zip   -d %tmpdir%
-$call gmsunzip -j %tmpdir%GDX%syr%.zip          -d %tmpdir%
+test(g,r) = sum((y(g.local,r),p(g,r)),ord(g));
+display test;
 
-*.$call rmdir /q /s %tmpdir%
+*	Not sure why the following does not terminate with an error message:
+
+test(g,r) = sum((y(g.local,r),p(g.local,r)),ord(g));
+display test;
+

@@ -56,6 +56,8 @@ ih_P_RA(i_P("c",r),h_RA(r)) = yes;
 jh_Y_RA(j_Y(g,r),h_RA(r)) = yes$(abs(rto(g,r))+sum(i,abs(rtfd(i,g,r))+abs(rtfi(i,g,r)))+sum(f,abs(rtf(f,g,r))));
 jh_M_RA(j_M(i,r),h_RA(rr)) = yes$(abs(rtxs(i,rr,r)) or (sameas(r,rr) and sum(rr.local,abs(rtms(i,rr,r)))));
 
+
+
 *	Endowment:
 
 hi_RA_P(h_RA(r),i_P(g,r)) = yes$(sum(i(g),abs(sdd(i,r)))+abs(vom(g,r))$(sameas(g,"i") or sameas(g,"g")));

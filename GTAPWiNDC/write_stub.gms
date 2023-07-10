@@ -4,11 +4,11 @@ $set fs %system.dirsep%
 
 $if not set dsout $set dsout datasets\gtapwindc\43_stub
 
-$include gtap11
+$include gtapingams
 
 $if not set ds $set ds g20_43
 
-$include %gtap11%gtapdata
+$include %gtapingams%gtapdata
 
 sets	s_		  Subregions /rest/
 	h(*)		Households /rest/

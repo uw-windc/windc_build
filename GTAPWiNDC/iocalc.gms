@@ -8,8 +8,9 @@ $if not set ds $set ds 43
 
 $include gtapwindc_data
 
-set	re(r)			Region to evaluate /usa/,
-	iag(i)			Agricultural sectors/ pdr, wht, gro, v_f, osd, c_b, pfb, ocr, ctl, oap, rmk, wol/,
+singleton set	re(r)			Region to evaluate /usa/;
+
+set	iag(i)			Agricultural sectors/ pdr, wht, gro, v_f, osd, c_b, pfb, ocr, ctl, oap, rmk, wol/,
 	is(i,s)			Content to evaluate,
 	samesector(i,s,i,s)	Sector identifier;
 
@@ -32,6 +33,7 @@ equations	objdef, content_Y, content_Z, content_X;
 objdef..	OBJ =e= sum((i,s,re(r),is)$xd0(i,r,s), xd0(i,r,s)*sqr(v_PD(i,s,is)-v_P(i,is)));
 
 content_Y(i,re(r),s,is)$y_(i,r,s)..
+
 		vom(i,r,s)*v_PY(i,s,is) =e= sum(j, vafm(j,i,r,s)*v_PZ(j,s,is)) + valueadded(i,r,s)$samesector(i,s,is);
 
 content_Z(i,re(r),s,is)$z_(i,r,s)..
@@ -53,11 +55,11 @@ loop(iag,
 	is(iag,s) = no;
 );
 
-parameter	atm(i,iag,s)	Export content;
+parameter	atm(*,iag,s)	Export content;
 atm(i,iag,s)$iag(i) = v_P.L(i,iag,s);
-atm("total",iag,s) = sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,r)) * v_P.L(i,iag,s)) /
-		     sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,r)));
+atm("total",iag,s) = sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,re)) * v_P.L(i,iag,s)) /
+		     sum(i$iag(i), (sum(rr,vxmd(i,re,rr))+vst(i,re)));
 
-atm("vashare",iag,s) = valueadded(iag,re(r),s)/sum(s.local,valueadded(iag,re(r),s));
+atm("vashare",iag,s) = valueadded(iag,re,s)/sum(s.local,valueadded(iag,re,s));
 
 execute_unload 'atm.gdx',atm;
