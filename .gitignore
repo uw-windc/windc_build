@@ -5,26 +5,30 @@
 *.log
 *.dat
 
+*/gdx/
+*/lst/
+*/datasets/
+
+
+
+
 built_datasets/
 build_files/temp/
 build_files/windc_base.gdx
 build_files/windc_base_2_0_1.gdx
 build_files/windc_base_2_1.gdx
 
-GTAPWinDC/datasets/
 
-core/gdx/
 core/loadpoint/
 core/WiNDCdatabase.gdx
 core/WiNDCdatabase_huber.gdx
 
-household/datasets/
-household/lst/
-household/gdx/
 
-bluenote/gdx/
-bluenote/datasets/
+
+
+
 bluenote/regcalib_p.gdx
+
 
 GTAPWinDC/gtap11/GDX_AY1017.zip
 

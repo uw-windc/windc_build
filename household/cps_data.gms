@@ -9,7 +9,7 @@ $set sep %system.dirsep%
 
 *	Data directory:
 
-$set cpsdir  ..%sep%household%sep%cps%sep%
+$set cpsdir  ..%sep%data%sep%household%sep%cps%sep%
 
 $if not dexist gdx $call mkdir gdx
 $set gdxdir  gdx%sep%
