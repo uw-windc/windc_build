@@ -6,15 +6,15 @@ $title	Build GTAP in GAMS from GTAP Datasets
 *	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
 
 *.$set task gdx2gdx
-$set start filter
+*.$set start filter
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
 set	seq	Sequencing set for filter tolerance /1*10/;
 
 set
-	yr		Base years /2017/,
-	reltol		Filter tolance /4/
+	yr		Base years /2011,2017/,
+	reltol		Filter tolance /3,4,5/
 	target		Aggregations /g20_10,  g20_32,  g20_43 /;
 
 *	Data files exist for 2004 and 2007, but these do not have carbon
@@ -45,7 +45,8 @@ file kput; kput.lw=0; put kput;
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 	
-$if not set zipfile $set zipfile ./GDX_AY1017.zip
+$if not set zipfile $set zipfile h:\gtapingams\build11final\gtapfiles\GDX_AY1017.zip
+
 	
 *	Run a single task:
 

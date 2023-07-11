@@ -19,6 +19,9 @@ $if not set ds $set ds 43
 
 $include gtapwindc_data
 
+option g:0:0:1;
+display g;
+
 $ontext
 $model:gtapwindc
 

@@ -10,7 +10,7 @@ $if not set ds $set ds cps_static_gtap_32_state
 
 $if not set dsout $set dsout datasets\windc\43.gdx
 
-set s	Sectors (to which we introduce /
+set s	Sectors (to which we introduce agricultural products) /
 	fbp  "Food and beverage and tobacco products (311FT)",
 	tex  "Textiles",
 	uti  "Utilities (electricity-gas-water)",
@@ -43,7 +43,11 @@ set s	Sectors (to which we introduce /
 	OBS  "Business services nec",
 	OSG  "Public Administration, Defense, Education, Health",
 
+*	Original WiNDC dataset has but one agricultural sector:
+
 	agr  "Farms and farm products (111CA)",
+
+*	Here agr is disaggregated into several sectors:
 
 	pdr  "Paddy rice",
 	wht  "Wheat",
@@ -497,9 +501,12 @@ display nzlog;
 
 set	s_(s)	Sectors (excluding agr);
 s_(s) = s(s)$(not sameas(s,"agr"));
+option s_:0:0:1;
+display s_;
 
 set	gm_(s)	Sectors providing margins (excluding agr);
 gm_(s) = gm(s)$(not sameas(s,"agr"));
+
 
 cd0(r,g) = sum(h,cd0_h(r,g,h));
 

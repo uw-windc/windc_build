@@ -1,14 +1,12 @@
 $title	Disaggregate Subregions in USA for 2014 based on WINDC Benchmark
 
-*	Point to the GTAP stub dataset: 
-
-*	Point to a WiNDC dataset:
-
-*	Name the GTAPWiNDC dataset to be produced:
+*	Point to a WiNDC dataset which has only 32 sectors:
 
 $if not set gdxfile $set gdxfile datasets\windc\32.gdx
 
-$if not set dsout      $set dsout datasets\gtapwindc\32.gdx
+*	Name the GTAPWiNDC dataset to be produced:
+
+$if not set dsout      $set dsout datasets\gtapwindc\43.gdx
 
 *	Start off by reading the sets of subregions and 
 *	households in the WiNDC dataset:
@@ -35,7 +33,9 @@ alias (s,ss);
 
 *	Read the GTAPWiNDC stub dataset:
 
-$include	gtapwindc_data
+$set gtapwindc_datafile datasets\gtapwindc\43_stub
+
+$include gtapwindc_data
 
 *	Declare WiNDC parameters we will use for targetting the disaggregation:
 
@@ -105,7 +105,6 @@ set	dsource /stub,windc/;
 hhtrn_compare("total",dsource) = sum(trn,hhtrn_compare(trn,dsource));
 option trn:0:0:1;
 display hhtrn_compare, trn;
-
 
 parameter	incomechk;
 incomechk(r) = sum((s,h),c0(r,s,h)) + sum(s,vom("g",r,s) + vom("i",r,s)) 
@@ -720,8 +719,14 @@ xd0(i,r,s)$(not rs(r,s)) = 0;
 vom(g,r,s)$(not rs(r,s)) = 0;
 xn0(i,r,s)$(not rs(r,s)) = 0;
 
+set	g_(*), i_(*);
+g_(g) = g(g);
+i_(i) = i(i);
+$if "%dropagr%"=="yes" g_("agr") = no; i_("agr") = no;
+
+
 execute_unload '%dsout%',
-	r,g,i,f,s,h,sf,mf,
+	r,g_=g,i_=i,f,s,h,sf,mf,
 	vom, vafm, vfm, xn0, xd0, a0,
 	md0, nd0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,

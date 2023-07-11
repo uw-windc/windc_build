@@ -1,5 +1,7 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
+$set start windc_model
+
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
@@ -63,6 +65,8 @@ $log	"Ready to run WINDC_MODEL  (datasets\windc\32.gdx)"
 $if not %pause%==no $call pause
 $call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
 
+$exit
+
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"
 $if errorlevel 1 $abort "Non-zero return code from windc_model.gms"
 
@@ -91,7 +95,6 @@ $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
 $label chk32
 $log	"Ready to verify consistency of 32 sector dataset (no output)"
 $if not %pause%==no $call pause
-
 $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets\gtapwindc\32.gdx o=lst\gtapwindc_mge_32.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
@@ -171,13 +174,13 @@ $if errorlevel 1 $abort "Non-zero return code from windc_model.gms for 43.gdx"
 
 $label regiondisagg43
 * ------------------------------------------------------------------------
-*	Use the 43 sector WiNDC dataset to disaggregate the 43 sectdor 
+*	Use the 43 sector WiNDC dataset to disaggregate the 43 sector 
 *	GTAP stub data.
 * ------------------------------------------------------------------------
 
 $log	"Ready to run regiondisagg with 43 sector dataset  (datasets\gtapwindc\43.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --windc_gdx=datasets\windc\43.gdx --gtapwindc_datafile=datasets\gtapwindc\43_stub --dsout=datasets\gtapwindc\43.gdx   o=lst\regiondisagg_43.lst 
+$call gams regiondisagg --dropagr=yes --windc_gdx=datasets\windc\43.gdx --gtapwindc_datafile=datasets\gtapwindc\43_stub --dsout=datasets\gtapwindc\43.gdx   o=lst\regiondisagg_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 43.gdx"

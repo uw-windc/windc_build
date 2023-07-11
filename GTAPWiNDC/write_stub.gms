@@ -102,15 +102,15 @@ vb(u)$(not r(u)) = 0;
 sav0(r,s_,h)	= vom("i",r) - vb(r);
 hhtrn0(r,s_,h,"hpawval") = c0_(r,s_,h) + sav0(r,s_,h) - sum(f,evomh_(f,r,s_,h));
 
-set g_(*), i_(*);
-g_(i) = yes;
-g_("g") = yes;
-g_("i") = yes;
+set g_(*) /g	Public expenditure,
+	   i	Investment,
+	   agr	Agricuture (composite) /,
 
-*	Add the aggregate agricultural sector:
-g_("agr") = yes;
-i_(i) = yes;
-i_("agr") = yes;
+    i_(*) / agr	Agricuture (composite) /;
+
+g_(i) = i(i);
+i_(i) = i(i);
+
 
 set	sf(f)	Specific factor,
 	mf(f)	Mobile factors;

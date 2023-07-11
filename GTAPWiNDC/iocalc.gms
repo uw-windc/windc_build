@@ -23,12 +23,15 @@ valueadded(i,re(r),s) = rto(i,r)*vom(i,r,s)+sum(f,vfm(f,i,r,s)*(1+rtf0(f,i,r)));
 
 variable	OBJ		Objective;
 
-variable	v_P(i,j,s)	"Value-added content of Y(j,ss)  in P(i)",
+variables	v_P(i,j,s)	"Value-added content of Y(j,ss) in P(i)",
 		v_PD(i,s,j,ss)	"Value-added content of Y(j,ss) in PD(i,s)",
 		v_PZ(i,s,j,ss)	"Value-added content of Y(j,ss) in PZ(i,s)",
 		v_PY(i,s,j,ss)	"Value-added content of Y(j,ss) in PY(i,s)";
 
 equations	objdef, content_Y, content_Z, content_X;
+
+*	Objective function: among all content definitions which are feasible, find the one which
+*	most closely approximates the content in the national market.
 
 objdef..	OBJ =e= sum((i,s,re(r),is)$xd0(i,r,s), xd0(i,r,s)*sqr(v_PD(i,s,is)-v_P(i,is)));
 
@@ -45,6 +48,7 @@ content_X(i,re(r),s,is)$x_(i,r,s)..
 model content /objdef, content_Y, content_Z, content_X/;
 
 option qcp=cplex;
+
 
 is(i,s) = no;
 loop(iag,
