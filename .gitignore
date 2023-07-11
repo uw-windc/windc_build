@@ -1,34 +1,32 @@
 *.opt
 *.lst
 *.GEN
+*.gen
 *.log
 *.dat
+*.g00
+*.gdx
+*.zip
+*.bas
+*.txt
+*.csv
+*.set
+*.Rhistory
 
-built_datasets/
-build_files/temp/
-build_files/windc_base.gdx
-build_files/windc_base_2_0_1.gdx
-build_files/windc_base_2_1.gdx
+*/gdx/
+*/lst/
+*/datasets/
+*/loadpoint/
 
-GTAPWinDC/datasets/
 
-core/gdx/
-core/loadpoint/
-core/WiNDCdatabase.gdx
-core/WiNDCdatabase_huber.gdx
 
-household/datasets/
-household/lst/
-household/gdx/
+GTAPWiNDC/gtap9/2004
+GTAPWiNDC/gtap9/2007
+GTAPWiNDC/gtap9/2011
 
-bluenote/gdx/
-bluenote/datasets/
-bluenote/regcalib_p.gdx
+GTAPWiNDC/gtap11/2011
+GTAPWiNDC/gtap11/2017
 
-GTAPWinDC/gtap11/GDX_AY1017.zip
 
-GTAPWiNDC/gtap11/2017/g20_10.gdx
-GTAPWiNDC/gtap11/2017/g20_32.gdx
-GTAPWiNDC/gtap11/2017/g20_43.gdx
-GTAPWiNDC/gtap11/2017/gtapingams_4.gdx
-GTAPWiNDC/gtap11/2017/gtapingams.gdx
+
+#data/*

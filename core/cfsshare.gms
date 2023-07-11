@@ -16,7 +16,7 @@ SET r(sr) "Regions in WiNDC Database";
 PARAMETER cfs2012_units(sr,sr,n,sg,*) "CFS data for 2012, with units as domain";
 
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD sr
 $LOAD r
 $LOAD n<cfsdata_st_units.dim3

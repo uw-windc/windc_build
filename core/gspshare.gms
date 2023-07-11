@@ -20,7 +20,7 @@ SET gdpcat "Dynamically creates set from parameter gsp_units, GSP components"
 
 PARAMETER gsp_units(sr,yr,gdpcat,si,*) "Annual gross state product with units as domain";
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD s=i
 $LOAD yr
 $LOAD sr

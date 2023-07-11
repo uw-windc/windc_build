@@ -2,6 +2,7 @@ $TITLE Partition IO data in CGE Parameters (1997-2017)
 
 $SET sep %system.dirsep%
 
+
 * -------------------------------------------------------------------
 * 	Read in dataset:
 * -------------------------------------------------------------------
@@ -20,7 +21,7 @@ SET jc_supply "Dynamically created set from supply_units parameter";
 PARAMETER use_units(yr,ir_use,jc_use,*) "Annual use matrix with units domain";
 PARAMETER supply_units(yr,ir_supply,jc_supply,*) "Annual supply matrix with units domain";
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD yr
 $LOAD i
 $LOAD va

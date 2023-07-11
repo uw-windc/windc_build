@@ -14,7 +14,7 @@ $if not dexist %yr% $call mkdir %yr%
 
 *	Directory in which to find the GTAP zip files:
 
-$if not set flexaggfile $set flexaggfile h:\gtapingams\flexagg\flexagg9aY%year%.zip
+$if not set flexaggfile $set flexaggfile ../../data/GTAPWiNDC/gtap9/flexagg9aY%year%.zip
 
 $if not exist "%flexaggfile%" $abort Cannot find GTAP data file: "%flexaggfile%".
 
@@ -25,6 +25,7 @@ $set tmpdir %gams.scrdir%
 *	Unload the har files:
 
 $set zipfile flexagg9aY%year%%fs%
+
 $call gmsunzip -j "%flexaggfile%" %zipfile%gsdset.har	-d %tmpdir%
 $call gmsunzip -j "%flexaggfile%" %zipfile%gsddat.har	-d %tmpdir%
 $call gmsunzip -j "%flexaggfile%" %zipfile%gsdpar.har	-d %tmpdir%

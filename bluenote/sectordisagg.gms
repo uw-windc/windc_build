@@ -6,7 +6,7 @@ $set sep %system.dirsep%
 * set options
 * ------------------------------------------------------------------------------
 
-$set core          ..%sep%core%sep%
+$set core          ..%sep%data%sep%core%sep%
 $set windc_base    %core%windc_base.gdx
 
 *	Set aggregation environment variable

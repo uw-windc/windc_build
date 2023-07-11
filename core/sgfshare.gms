@@ -16,7 +16,7 @@ SET g	"BEA Goods and sectors categories";
 
 PARAMETER sgf_raw_units(yr,sr,ec,*) "Personal expenditure data, with units as domain";
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD yr
 * $LOAD r<sgf_units.dim2
 $LOAD sr
