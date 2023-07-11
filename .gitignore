@@ -12,6 +12,7 @@
 *.csv
 *.set
 *.Rhistory
+*.xlsx
 
 */gdx/
 */lst/
