@@ -1,50 +1,64 @@
-$TITLE Generate PCE shares
-
-$IF NOT SET year $SET year 2014
-
-$SET sep %system.dirsep%
-
-* Read in raw PCE data, map to sector list and generate shares to use in
-* disagg.gms.
-
-SET sr "Super Regions in WiNDC Database";
-SET r(sr) "Regions in WiNDC Database";
-SET pg "Dynamically created set from parameter pce_units, PCE goods";
-SET yr "Years in WiNDC Database"
-SET g "BEA Goods and sectors categories";
-
-PARAMETER pce_raw_units(yr,sr,pg,*) "Personal expenditure data with units as domain";
-
-$GDXIN 'windc_base.gdx'
-$LOAD yr
-$LOAD g=i
-$LOAD sr
-$LOAD r
-$LOAD pg<pce_units.dim3
-$LOAD pce_raw_units=pce_units
-$GDXIN
+$title Personal consumer expenditure (PCE) shares
 
 
-SET map(g,pg) "Mapping between pce and blueNOTE indices" /
-$INCLUDE 'maps%sep%mappce.map'
+* -------------------------------------------------------------------
+* Set options
+* -------------------------------------------------------------------
+
+* file separator
+$set sep %system.dirsep%
+
+
+* -------------------------------------------------------------------
+* Read in state level PCE data
+* -------------------------------------------------------------------
+
+set
+    yr 		Years in WiNDC Database,
+    sr 		Super Regions in WiNDC Database,
+    r(sr) 	Regions in WiNDC Database,
+    pg 		Dynamically created set from parameter pce_units (PCE goods),
+    g 		BEA Goods and sectors categories;
+
+parameter
+    pce_raw_units(yr,sr,pg,*) Personal expenditure data with units as domain;
+
+$gdxin 'windc_base.gdx'
+$load yr g=i sr r
+$load pg<pce_units.dim3
+$load pce_raw_units=pce_units
+$gdxin
+
+
+* -------------------------------------------------------------------
+* Map PCE categories to IO definitions and verify consistency
+* -------------------------------------------------------------------
+
+set
+    map(g,pg) 	Mapping between pce and WiNDC indices /
+$include 'maps%sep%mappce.map'
 /;
 
+parameter
+    pce_map(yr,r,g) 	Mapped PCE data,
+    pce_shr(yr,r,g) 	Regional shares of final consumption;
 
-PARAMETER pce_map(r,g,yr) "Mapped PCE data";
-PARAMETER pce_shr(yr,r,g) "Regional shares of final consumption";
-
-* Note that many of the sectors in blueNOTE are mapped to the same PCE
+* Note that many of the sectors in WiNDC are mapped to the same PCE
 * category. Thus, sectors will have equivalent shares.
 
-pce_map(r,g,yr) = sum(map(g,pg), pce_raw_units(yr,r,pg,"millions of us dollars (USD)"));
-pce_shr(yr,r,g) = pce_map(r,g,yr) / sum(r.local, pce_map(r,g,yr));
+pce_map(yr,r,g) = sum(map(g,pg), pce_raw_units(yr,r,pg,"millions of us dollars (USD)"));
+pce_shr(yr,r,g) = pce_map(yr,r,g) / sum(r.local, pce_map(yr,r,g));
 
-* Test, what do shares look like for %year%?
+abort$(round(smax((yr,g), sum(r, pce_shr(yr,r,g))),6) <> 1) "Regional PCE shares don't sum to 1";
 
-PARAMETER chkshr(g,r) "Check on PCE shares";
-chkshr(g,r) = pce_shr('%year%',r,g);
-DISPLAY chkshr;
 
-ABORT$(round(smax(g, sum(r, chkshr(g,r))),6) <> 1) "Regional PCE shares don't sum to 1";
+* -------------------------------------------------------------------
+* Output regional shares
+* -------------------------------------------------------------------
 
-EXECUTE_UNLOAD 'gdx%sep%shares_pce.gdx' pce_shr;
+execute_unload 'gdx%sep%shares_pce.gdx' pce_shr;
+
+
+* -------------------------------------------------------------------
+* End
+* -------------------------------------------------------------------

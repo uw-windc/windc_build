@@ -1,10 +1,11 @@
-$title build routine for the windc core dataset
+$title Build routine for the windc core dataset
 
-* comment out the following line to run the full build routine!
+* to run individual build scripts, set %runscript% environment variable:
 * $set runscript replicate
 
+
 * ------------------------------------------------------------------------------
-* options
+* Set options:
 * ------------------------------------------------------------------------------
 
 * system separator
@@ -23,7 +24,7 @@ $set ds	%system.fp%WiNDCdatabase
 
 
 *------------------------------------------------------------------------------
-* create directories if necessary
+* Create directories if necessary:
 *------------------------------------------------------------------------------
 
 $if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
@@ -35,7 +36,7 @@ $if set start     $goto %start%
 
 
 *------------------------------------------------------------------------------
-* add descriptive text for sets in windc_base.gdx:
+* Add descriptive text for sets in windc_base.gdx:
 *------------------------------------------------------------------------------
 
 $label relabel
@@ -44,12 +45,11 @@ $if %system.filesys% == MSNT $call 'title Inserting descriptive text in windc_ba
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 
 *------------------------------------------------------------------------------
-* form cge parameters using raw input data
+* Form cge parameters using raw input data:
 *------------------------------------------------------------------------------
 
 $label partitionbea
@@ -58,12 +58,11 @@ $if %system.filesys% == MSNT $call 'title Partitioning BEA data'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 
 *------------------------------------------------------------------------------
-* calibrate national dataset
+* Calibrate national dataset:
 *------------------------------------------------------------------------------
 
 $label calibrate
@@ -75,7 +74,6 @@ $if errorlevel 1 $abort "ERROR: calibrate.gms generated an error. See %lstdir%ca
 
 $call 'gams calibrate.gms --neos=%neos% o="%lstdir%calibrate_ls.lst" --matbal=ls';
 $if errorlevel 1 $abort "ERROR: calibrate.gms generated an error. See %lstdir%calibrate_ls.lst";
-
 $if set runscript $exit
 
 $label nationalmodel
@@ -84,13 +82,11 @@ $if %system.filesys% == MSNT $call 'title Verifying the national model.'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 
-
 *------------------------------------------------------------------------------
-* create state level regional accounts
+* Create state level regional accounts:
 *------------------------------------------------------------------------------
 
 * gross state product shares
@@ -100,7 +96,6 @@ $if %system.filesys% == MSNT $call 'title Reading GSP shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * household expenditure shares (personal consumer expenditure data)
@@ -110,7 +105,6 @@ $if %system.filesys% == MSNT $call 'title Reading PCE shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * government expenditure shares (state government finances)
@@ -120,7 +114,6 @@ $if %system.filesys% == MSNT $call 'title Reading SGF shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * commodity flow survey data (regional purchase coefficients)
@@ -130,7 +123,6 @@ $if %system.filesys% == MSNT $call 'title Reading CFS shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * export and import shares (usa trade online)
@@ -140,7 +132,6 @@ $if %system.filesys% == MSNT $call 'title Reading USA trade shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * state disaggregation routine
@@ -156,7 +147,6 @@ $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%sc
 * name of the output dataset and put it in the calling directory:
 $call 'gams %script%.gms --matbal=huber --ds=%ds%_huber --neos=%neos%  o="%lstdir%%script%_huber.lst"';
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 * verify benchmark consistency in both MGE and MCP models, solve a counter-factual
@@ -171,10 +161,9 @@ $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%sc
 
 $call 'gams %script%.gms --neos=%neos%  o="%lstdir%%script%_huber.lst" --ds=%ds%_huber';
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-
 $if set runscript $exit
 
 
 * ------------------------------------------------------------------------------
-* end
+* End
 * ------------------------------------------------------------------------------
