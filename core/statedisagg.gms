@@ -72,8 +72,8 @@ $gdxin
 
 
 * -------------------------------------------------------------------
-* Read in shares generated using state level gross product, pce, cfs and
-* government expenditures:
+* Read in shares generated using state level gross product, pce, faf,
+* and government expenditures:
 * -------------------------------------------------------------------
 
 parameter
@@ -81,13 +81,13 @@ parameter
     labor_shr(yr,r,s)		Labor share of GSP,
     pce_shr(yr,r,g)		Regional shares based on PCE,
     sgf_shr(yr,r,g)		Regional government expenditure shares (SGF),
-    cfs_rpc(r,g)		Regional purchase coefficients based on CFS (2012),
+    faf_rpc(yr,r,g)		Regional purchase coefficients based on FAF,
     usatrd_shr(yr,r,g,*)	Regional export-import shares based on USA Trade Online;
 
 * GDX existance test for UNIX
 $if not exist "%gdxdir%shares_pce.gdx" abort "File shares_pce.gdx does not exist"
 $if not exist "%gdxdir%shares_sgf.gdx" abort "File shares_sgf.gdx does not exist"
-$if not exist "%gdxdir%cfs_rpcs.gdx" abort "File cfs_rpcs.gdx does not exist"
+$if not exist "%gdxdir%faf_rpcs.gdx" abort "File faf_rpcs.gdx does not exist"
 $if not exist "%gdxdir%shares_usatrd.gdx" abort "File shares_usatrd.gdx does not exist"
 
 * N.B. We use LOAD rather than LOADDC to avoid domain errors associated
@@ -106,8 +106,8 @@ $gdxin %gdxdir%shares_sgf.gdx
 $load sgf_shr
 $gdxin
 
-$gdxin %gdxdir%cfs_rpcs.gdx
-$load cfs_rpc=rpc
+$gdxin %gdxdir%faf_rpcs.gdx
+$load faf_rpc=rpc
 $gdxin
 
 $gdxin %gdxdir%shares_usatrd.gdx
@@ -130,7 +130,7 @@ shrverify(yr,g,'PCE','max') = smax(r, pce_shr(yr,r,g));
 shrverify(yr,g,'SGF','max') = smax(r, sgf_shr(yr,r,g));
 shrverify(yr,g,'GSP','max') = smax(r, region_shr(yr,r,g));
 shrverify(yr,g,'LABOR','max') = smax(r, labor_shr(yr,r,g));
-shrverify(yr,g,'RPC','max') = smax(r, cfs_rpc(r,g));
+shrverify(yr,g,'RPC','max') = smax(r, faf_rpc(yr,r,g));
 shrverify(yr,g,'XPT','max') = smax(r, usatrd_shr(yr,r,g,'exports'));
 shrverify(yr,g,'IMP','max') = smax(r, usatrd_shr(yr,r,g,'imports'));
 
@@ -138,7 +138,7 @@ shrverify(yr,g,'PCE','min') = smin(r$pce_shr(yr,r,g), pce_shr(yr,r,g));
 shrverify(yr,g,'SGF','min') = smin(r$sgf_shr(yr,r,g), sgf_shr(yr,r,g));
 shrverify(yr,g,'GSP','min') = smin(r$region_shr(yr,r,g), region_shr(yr,r,g));
 shrverify(yr,g,'LABOR','min') = smin(r$labor_shr(yr,r,g), labor_shr(yr,r,g));
-shrverify(yr,g,'RPC','min') = smin(r$cfs_rpc(r,g), cfs_rpc(r,g));
+shrverify(yr,g,'RPC','min') = smin(r$faf_rpc(yr,r,g), faf_rpc(yr,r,g));
 shrverify(yr,g,'XPT','min') = smin(r$usatrd_shr(yr,r,g,'exports'), usatrd_shr(yr,r,g,'exports'));
 shrverify(yr,g,'IMP','min') = smin(r$usatrd_shr(yr,r,g,'imports'), usatrd_shr(yr,r,g,'imports'));
 
@@ -362,7 +362,7 @@ dd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) -
 parameter
     rpc(yr,r,g) 	Regional purchase coefficients;
 
-rpc(yr,r,g) = cfs_rpc(r,g);
+rpc(yr,r,g) = faf_rpc(yr,r,g);
 dd0_(yr,r,g) = rpc(yr,r,g) * dd0max(yr,r,g);
 nd0_(yr,r,g) = round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
     (dd0_(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g))),10);

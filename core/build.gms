@@ -117,15 +117,24 @@ $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%sc
 $if set runscript $exit
 
 * commodity flow survey data (regional purchase coefficients)
-$label cfsshare
-$set script cfsshare
-$if %system.filesys% == MSNT $call 'title Reading CFS shares'
+* $label cfsshare
+* $set script cfsshare
+* $if %system.filesys% == MSNT $call 'title Reading CFS shares'
+
+* $call 'gams %script%.gms o="%lstdir%%script%.lst"'
+* $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
+* $if set runscript $exit
+
+* freight analysis framework data (regional purchase coefficients)
+$label fafshare
+$set script fafshare
+$if %system.filesys% == MSNT $call 'title Reading FAF shares'
 
 $call 'gams %script%.gms o="%lstdir%%script%.lst"'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
 $if set runscript $exit
 
-* export and import shares (usa trade online)
+* export and import shares (census usa trade online)
 $label usatradeshare
 $set script usatradeshare
 $if %system.filesys% == MSNT $call 'title Reading USA trade shares'
