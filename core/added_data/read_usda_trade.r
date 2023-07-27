@@ -1,43 +1,96 @@
-## ----------------------------------------------------------------
-## read state exports data from usda
-## source: https://www.ers.usda.gov/data-products/state-export-data/
-## ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# read state exports data from usda
+# source: https://www.ers.usda.gov/data-products/state-export-data/
+# ----------------------------------------------------------------
 
-## set working directory
-setwd("~/git/windc_build/build_files/new_data/usda/")
+# set working directory
+setwd("~/git/windc_build/core/added_data")
 
-## add packages
-list.of.packages <- c("readxl","tidyr")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, repos = "http://cran.rstudio.com/")
+# set data directory
+data.dir = getwd()
+
+# install needed packages
+list.of.packages <- 
+  c("httr","tidyverse","readxl")
+
+new.packages <- 
+  list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+
+if(length(new.packages)) 
+  install.packages(new.packages, repos = "http://cran.rstudio.com/")
+
 lapply(list.of.packages, library, character.only = TRUE)
 
-## read in time series of aggregate agricultural exports
-rawdata <- read_excel("commodity_detail_by_state_cy.xlsx", skip=2, sheet="Total exports",
+
+# ------------------------------------------------------------------------------
+# function for downloading files
+# ------------------------------------------------------------------------------
+
+download_file = function(url,file.name,dir=".",check.file=NA) {
+
+  library(httr)
+
+  # create the directory if needed
+  if (!dir.exists(dir))
+    dir.create(dir)
+
+  # if no check file name is provided use the remote file name
+  if (is.na(check.file))
+    check.file = file.name
+
+  # if the check file is present then do nothing further
+  if (file.exists(file.path(dir,check.file)))
+    return()
+
+  # download the file
+  cat(paste0("downloading ",file.name,"... \n"))
+  GET(paste0(url,file.name),
+      write_disk(file.path(dir,file.name),overwrite=TRUE),
+      progress())
+
+  # if the file is a zip archive extract the contents and delete the archive
+  if (tools::file_ext(file.name)=="zip") {
+    cat("extracting zip file...\n")
+    unzip(file.path(dir,file.name),exdir=dir)
+    file.remove(file.path(dir,file.name))
+  }
+
+  cat("\n")
+
+}
+
+
+# ------------------------------------------------------------------------------
+# download state usda trade data and reconcile
+# ------------------------------------------------------------------------------
+
+url = "https://www.ers.usda.gov/webdocs/DataFiles/100812/"
+file.name = "commodity_detail_by_state_cy.xlsx"
+download_file(url,file.name,dir=data.dir)
+
+# read in time series of aggregate agricultural exports
+rawdata <- read_excel("commodity_detail_by_state_cy.xlsx", range="A3:W55", sheet="Total exports",
                       col_names=TRUE)
 rawdata <- data.frame(rawdata)
 
-## keep the first 21 columns
-rawdata <- rawdata[,c(1:21)]
-
-## remove NAs
+# remove NAs
 rawdata <- rawdata[complete.cases(rawdata),]
 
-## reshape data
-shaped_data <- rawdata %>% gather(year, exports, -c(States))
+# relabel first column
+names(rawdata)[1] = "state"
 
-## rename years to be numeric
-shaped_data$year <- as.numeric(substr(shaped_data$year, 2, 5))
+# reshape data
+shaped_data <- rawdata %>% gather(year, exports, -c(state))
 
-## remove united staes from listing
-shaped_data <- subset(shaped_data, !(States %in% c("United States")))
+# rename years to be numeric
+shaped_data$year <- as.numeric(shaped_data$year)
 
-## rename column names
+# rename column names
 names(shaped_data)[1] <- "r"
-names(shaped_data)[2] <- "y"
+names(shaped_data)[2] <- "yr"
 names(shaped_data)[3] <- "value"
 
-## rename states to be abbreviations
+# rename states to be abbreviations
 shaped_data$r[shaped_data$r=="Alaska"] <- "ak"
 shaped_data$r[shaped_data$r=="Alabama"] <- "al"
 shaped_data$r[shaped_data$r=="Arkansas"] <- "ar"
@@ -90,9 +143,14 @@ shaped_data$r[shaped_data$r=="Wisconsin"] <- "wi"
 shaped_data$r[shaped_data$r=="West Virginia"] <- "wv"
 shaped_data$r[shaped_data$r=="Wyoming"] <- "wy"
 
-## define year and value as numeric
-shaped_data$y <- as.numeric(shaped_data$y)
+# define year and value as numeric
 shaped_data$value <- as.numeric(shaped_data$value)
 
-## output dataset
+# output dataset and remove source data
 write.csv(shaped_data, "usda_time_series_exports.csv", row.names=FALSE)
+file.remove(file.name)
+
+
+# ------------------------------------------------------------------------------
+# End
+# ------------------------------------------------------------------------------

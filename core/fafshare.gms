@@ -170,7 +170,7 @@ parameter
 chk(r,g,'cfs') = cfs_rpc(r,g);
 chk(r,g,'faf') = rpc('2012',r,g);
 
-execute_unload 'added_data/rpc_comparison_2012.gdx';
+execute_unload 'added_data/rpc_comparison_2012.gdx', chk;
 execute 'gdxxrw i=added_data/rpc_comparison_2012.gdx o=added_data/rpc_comparison_2012.xlsx par=chk rng=data!A2 cdim=0';
 $offtext
 

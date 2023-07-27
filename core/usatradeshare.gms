@@ -77,6 +77,33 @@ abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'imports')), 4)) <> 1) "Impor
 
 
 * -------------------------------------------------------------------
+* add export shares from usda for the agricultural sector
+* -------------------------------------------------------------------
+
+parameter
+    usda(r,yr)    state level exports from usda of total agricultural output;
+
+$call 'csv2gdx added_data%sep%usda_time_series_exports.csv output=added_data%sep%usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
+$gdxin 'added_data%sep%usda_time_series_exports.gdx'
+$load usda
+
+$ontext	 
+parameter
+    comp;
+comp(yr,r,'census') = usatrd_shr(yr,r,'agr','exports');
+comp(yr,r,'usda') = usda(r,yr) / sum(r.local, usda(r,yr));
+display comp;
+
+execute_unload 'added_data/agr_trade_comparison.gdx', comp;
+execute 'gdxxrw i=added_data/agr_trade_comparison.gdx o=added_data/agr_trade_comparison.xlsx par=comp rng=data!A2 cdim=0';
+$offtext
+
+* assign trade for agriculture to be based on usda shares:
+
+usatrd_shr(yr,r,'agr','exports') = usda(r,yr) / sum(r.local, usda(r,yr));
+
+
+* -------------------------------------------------------------------
 * Output regional shares
 * -------------------------------------------------------------------
 
