@@ -98,11 +98,13 @@ parameter
     klshare		Reported capital-labor shares in data,
     problem_shares	QA flagged region-sectors;
 
-region_shr(yr,r,s)$(sum(r.local, gsp0(yr,r,s,'Reported'))) = gsp0(yr,r,s,'Reported') / sum(r.local,  gsp0(yr,r,s,'Reported'));
+region_shr(yr,r,s)$(sum(r.local, gsp0(yr,r,s,'Reported'))) = gsp0(yr,r,s,'Reported') /
+    sum(r.local,  gsp0(yr,r,s,'Reported'));
 
 * Verify regional shares sum to one:
 
-region_shr(yr,r,s)$sum(r.local, region_shr(yr,r,s)) = region_shr(yr,r,s) / sum(r.local, region_shr(yr,r,s));
+region_shr(yr,r,s)$sum(r.local, region_shr(yr,r,s)) = region_shr(yr,r,s) /
+    sum(r.local, region_shr(yr,r,s));
 
 * Attribute the difference between reported and calculated gdp to capital
 

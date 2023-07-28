@@ -116,10 +116,11 @@ $gdxin
 
 * For years not included in USA Trade Online shares, use most recent
 * shares. Earliest year for exports is: 2002. Earliest year for imports
-* is: 2008.
+* is: 2008. For agricultural data, earliest year is 2000 for exports.
 
-usatrd_shr(yr,r,g,'exports')$(ord(yr) < 6) = usatrd_shr('2002',r,g,'exports');
-usatrd_shr(yr,r,g,'imports')$(ord(yr) < 12) = usatrd_shr('2008',r,g,'imports');
+usatrd_shr(yr,r,g,'exports')$(yr.val<2002 and not sameas(g,'agr')) = usatrd_shr('2002',r,g,'exports');
+usatrd_shr(yr,r,g,'exports')$(yr.val<2000 and sameas(g,'agr')) = usatrd_shr('2000',r,g,'exports');
+usatrd_shr(yr,r,g,'imports')$(yr.val<2008) = usatrd_shr('2008',r,g,'imports');
 
 * Verify all shares both sum to 1 and are in [0,1]:
 

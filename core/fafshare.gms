@@ -154,7 +154,6 @@ rpc(yr,r,g)$(d0(yr,r,g) + mn0(yr,r,g)) = d0(yr,r,g) / (d0(yr,r,g) + mn0(yr,r,g))
 
 rpc(yr,r,'uti') = 0.9;
 
-
 $ontext
 * compare faf rpcs with cfs rpcs;
 parameter

@@ -174,6 +174,10 @@ faf$dms_destst = NULL
 faf$names = NULL
 faf$r = NULL
 
+# structure data file to be from,to,commodity,years,value, and sort
+faf = faf %>% select(orig,dest,sctg2,years,value) %>%
+  arrange(orig,dest,sctg2,years)
+
 
 # ------------------------------------------------------------------------------
 # dump into a csv file
