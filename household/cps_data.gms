@@ -1,30 +1,32 @@
-$title	read cps statistics for at the state level
+$title Read current population survey (CPS) data
 
-*	Allow end of line comments
-$eolcom !
-
-*	Directory separator:
-
-$set sep %system.dirsep%
-
-*	Data directory:
-
-$set cpsdir  data_sources%sep%cps%sep%
-
-$if not dexist gdx $call mkdir gdx
-$set gdxdir  gdx%sep%
-
-* analysis year
-$if not set year $set year 2014
 
 * ------------------------------------------------------------------------------
-* read in data and needed sets
+* Set options
+* ------------------------------------------------------------------------------
+
+* allow end of line comments
+$eolcom !
+
+* system separator
+$set sep %system.dirsep%
+
+* data directory
+$set cpsdir data_sources%sep%cps%sep%
+
+* scratch gdx file directory
+$if not dexist gdx $call mkdir gdx
+$set gdxdir gdx%sep%
+
+
+
+* ------------------------------------------------------------------------------
+* Read in data and needed sets
 * ------------------------------------------------------------------------------
 
 * translate the CPS income CSV data to GDX:
 $set file "%cpsdir%cps_asec_income_totals_2014_2017.csv"
 $call csv2gdx "%file%" id=cpscsv useheader=yes index=1,2,3,5,6 values=4 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3
-
 
 * translate the CPS population CSV data to GDX:
 $set file "%cpsdir%number_of_household_%year%.csv"

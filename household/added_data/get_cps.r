@@ -114,10 +114,11 @@ get.shares = function(year) {
   }
 
   # add column for aggregate retirement distributions to align datasets
-  if (year >= 2018) {
-    cpsasec$hretval = cpsasec$hdstval + cpsasec$hpenval + cpsasec$hannval
-    cps.vars.post2019.add = c(cps.vars.post2019,"hretval")
-  }
+  # if (year >= 2018) {
+  #   cpsasec$hretval = cpsasec$hdstval + cpsasec$hpenval + cpsasec$hannval
+  #   cps.vars.post2019.add = c(cps.vars.post2019,"hretval")
+  # }
+  cps.vars.post2019.add = cps.vars.post2019
 
   # extract the household file with representative persons
   cpsasec = cpsasec[cpsasec$a_exprrp %in% c(1,2) & cpsasec$h_hhtype==1,]
@@ -152,6 +153,11 @@ get.shares = function(year) {
   nat_count <- nat_count[,names(count)]
   count <- rbind(nat_count,count)
 
+  # report number of households in millions by quantile and state fips
+  numhh <- cpsasec[,c("gestfips","hh","marsupwt")] %>% group_by(gestfips,hh) %>%
+    summarize(numhh = sum(marsupwt,na.rm=TRUE)*1e-6)
+  names(numhh)[1] <- "state"
+
   # aggregate income by quantile and state fips
   if (year < 2018) {
   income = aggregate(
@@ -180,9 +186,10 @@ get.shares = function(year) {
   income$year = year
   shares$year = year
   count$year = year
+  numhh$year = year
   
   # function returns list of outputs
-  return(list(income=income,shares=shares,count=count))
+  return(list(income=income,shares=shares,count=count,numhh=numhh))
 
 }
 
@@ -208,20 +215,25 @@ fips <- data.frame(
 income = NULL
 shares = NULL
 count = NULL
+numhh = NULL
 for (year in years) {
   output = get.shares(year)
   income = rbind(income,output[["income"]])
   shares = rbind(shares,output[["shares"]])
   count = rbind(count,output[["count"]])
+  numhh = rbind(numhh,output[["numhh"]])
 }
 
 ## merge state names into income and shares data.frames
 shares$state <- as.character(shares$state)
 income$state <- as.character(income$state)
 count$state <- as.character(count$state)
+numhh$state <- as.character(numhh$state)
+
 income <- left_join(income, fips, by="state")
 shares <- left_join(shares, fips, by="state")
 count <- left_join(count, fips, by="state")
+numhh <- left_join(numhh, fips, by="state")
 
 
 # ------------------------------------------------------------------------------
@@ -424,6 +436,8 @@ kd0_windc = kd0 %>% group_by(year) %>% summarize(windc_capital = sum(value))
 # ------------------------------------------------------------------------------
 # compare cps and windc totals with nipa accounts
 # ------------------------------------------------------------------------------
+
+# plot for comparison with nipa and cps/windc
 
 # aggregate cps data to national totals
 cps_totals = subset(income, state %in% 0) %>%

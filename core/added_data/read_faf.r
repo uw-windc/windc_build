@@ -80,6 +80,7 @@ file.remove(paste0(file.name,".csv"))
 # read in the data dictionary elements
 datadict.file = "FAF5_metadata.xlsx"
 dict = read_excel(datadict.file,sheet="Data Dictionary",range="A3:B19")
+
 states = read_excel(datadict.file,sheet="State")
 faf_zone_dom = read_excel(datadict.file,sheet="FAF Zone (Domestic)")
 faf_zone_for = read_excel(datadict.file,sheet="FAF Zone (Foreign)")

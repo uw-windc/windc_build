@@ -1,4 +1,4 @@
-$title	read soi statistics at the state level
+$title Read statistics of income (SOI) data
 
 * allow for exclamations based comments
 $eolcom !
