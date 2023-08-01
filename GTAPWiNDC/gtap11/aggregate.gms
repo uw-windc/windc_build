@@ -1,6 +1,6 @@
 $title	Aggregation Program for the GTAP10 Database
 
-$if not set target $set target g20_10
+$if not set target $set target msmr
 $if not set yr     $set yr 2017
 $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%
@@ -130,8 +130,8 @@ putclose //"Aggregating evt."/;
 $batinclude "%system.fp%aggr" evt i r s evt_
 
 putclose //"Aggregating nco2emit."/;
-nco2emit_(pol,ii(i_f),gg,rr) = sum((mapi(i,ii),mapg(g,gg),mapr(r,rr))$sameas(i_f,i),nco2emit(pol,i_f,g,r));
-nco2emit_(pol,ff(i_f),gg,rr) = sum((mapf(f,ff),mapg(g,gg),mapr(r,rr))$sameas(i_f,f),nco2emit(pol,i_f,g,r));
+nco2emit_(pol,ii,gg,rr) = sum((mapi(i,ii),i_f,mapg(g,gg),mapr(r,rr))$sameas(i_f,i),nco2emit(pol,i_f,g,r));
+nco2emit_(pol,ff,gg,rr) = sum((mapf(f,ff),i_f,mapg(g,gg),mapr(r,rr))$sameas(i_f,f),nco2emit(pol,i_f,g,r));
 nco2emit_(pol,"output",gg,rr) = sum((mapg(g,gg),mapr(r,rr)),nco2emit(pol,"output",g,r));
 
 putclose //"Aggregating nco2process."/;

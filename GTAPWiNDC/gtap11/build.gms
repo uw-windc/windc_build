@@ -1,16 +1,15 @@
 $title	Build GTAP in GAMS from GTAP Datasets
 
-*	Indiate a single task.  If no task is specified, then build all 
-*	datasets.
-
-*	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
-
 $set lstdir  lst/
 $set gdxdir  gdx/
 
 $if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
 $if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
 
+*	Indicate a single task.  If no task is specified, then build all 
+*	datasets.
+
+*	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
 
 *$set task gdx2gdx
 *$set start filter
@@ -23,7 +22,6 @@ set
 	yr		Base years /2017/,
 	reltol		Filter tolance /4/
 	target		Aggregations /g20_10,  g20_32,  g20_43 /;
-
 
 *loop(yr,
 *$if not dexist yr $call mkdir yr;
@@ -112,7 +110,7 @@ $if set task $exit
 
 $label aggregate
 
-*	Aggregate for two target aggregations:
+*	Aggregate for each target dataset:
 
 loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;

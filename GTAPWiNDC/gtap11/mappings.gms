@@ -2,6 +2,8 @@ $stitle		Single File Contains All Mappings
 
 $eolcom !
 
+$if "%1"=="msmr_regions" $goto msmr_regions	! MSMR regions
+
 $if "%1"=="g20"		$goto g20		! G20 regions (plus OEC, LIC and MIC)
 $if "%1"=="ukrregions"	$goto ukrregions	! Regions in a model with Ukraine
 
@@ -17,6 +19,333 @@ $if "%1"=="windc_32"	$goto windc_32		! 32 sector aggregation compatible with WiN
 $if "%1"=="windc_43"	$goto windc_43		! 43 sector aggregation compatible with WiNDC
 
 $abort "Mapping is not defined: %1";
+
+$label msmr_regions
+
+set rr  Regions in the MSMR (ECCC) aggregation /
+	CAN	Canada
+	USA	United States
+	MEX	Mexico
+	AUS	Australia
+	NZL	New Zealand
+	JPN	Japan
+	KOR	Korea
+	GBR	United Kingdom
+	EUR	European Union
+	CHN	China and Hong Kong
+	IND	India
+	BRA	Brazil
+	RUS	Russia
+	ZAF	South Africa
+	OPC	OPEC
+	SAM	South America
+	ROW	Rest of world /;
+
+$if "%2"=="loadset" $exit
+
+SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
+	CAN.CAN	Canada
+	USA.USA	United States
+	MEX.MEX	Mexico
+	AUS.AUS	Australia
+	NZL.NZL	New Zealand
+	JPN.JPN	Japan
+	KOR.KOR	Korea
+	GBR.GBR	United Kingdom
+	IND.IND	India
+	BRA.BRA	Brazil
+	RUS.RUS	Russia
+	ZAF.ZAF	South Africa
+	( 	! China.China including Hong Kong
+		CHN	!	China
+		HKG	!	Hong Kong
+	).CHN	
+
+*	
+        
+
+	(       !       South America countries
+		XNA     !Rest of North America
+*                       - Bermuda
+*                       - Greenland
+*                       - Saint Pierre and Miquelon
+		ARG     !Argentina
+		BOL     !Bolivia, Plurinational Republic of
+*               BRA     !       Brazil
+		CHL     !Chile
+		COL     !Colombia
+*               ECU     !       Ecuador
+		PRY     !Paraguay
+		PER     !Peru
+		URY     !Uruguay
+*               VEN     !       Venezuela
+		XSM     !Rest of South America
+*                       - Falkland Islands (Malvinas)
+*                       - French Guiana
+*                       - Guyana
+*                       - South Georgia and the South Sandwich Islands
+*                       - Suriname
+		CRI     !Costa Rica
+		GTM     !Guatemala
+		HND     !Honduras
+		NIC     !Nicaragua
+		PAN     !Panama
+		SLV     !El Salvador
+		XCA     !Rest of Central America
+*                       - Belize
+		XCB     !Caribbean
+*                       - Anguilla
+*                       - Antigua & Barbuda
+*                       - Aruba
+*                       - Bahamas
+*                       - Barbados
+*                       - Cayman Islands
+*                       - Cuba
+*                       - Dominica
+		DOM     !Dominican Republic
+*                       - Grenada
+		HTI     !Haiti
+		JAM     !Jamaica
+*                       - Montserrat
+*                       - Netherlands Antilles
+		PRI     !Puerto Rico
+*                       - Saint Kitts and Nevis
+*                       - Saint Lucia
+*                       - Saint Vincent and the Grenadines
+		TTO     !Trinidad and Tobago
+*                       - Turks and Caicos Islands
+*                       - Virgin Islands British
+*                       - Virgin Islands U.S.
+                ).SAM   South American Countries except Brazil Ecuador and Venezuela
+
+		(       ! European Union
+		FRA     !France
+		DEU     !Germany
+		ITA     !Italy
+		AUT     !Austria
+		BEL     !Belgium
+		DNK     !Denmark
+		FIN     !Finland
+		GRC     !Greece
+		IRL     !Ireland
+		LUX     !Luxembourg
+		NLD     !Netherlands
+		PRT     !Portugal
+		ESP     !Spain
+		SWE     !Sweden
+		CZE     !Czech Republic
+		HUN     !Hungary
+		MLT     !Malta
+		POL     !Poland
+		ROU     !Romania
+		SVK     !Slovakia
+		SVN     !Slovenia
+		EST     !Estonia
+		LVA     !Latvia
+		LTU     !Lithuania
+		BGR     !Bulgaria
+		CYP     !Cyprus
+		HRV     !Croatia
+*                       - Iceland
+*                       - Liechtenstein
+        ).EUR   European Union,
+
+( ! Rest of world
+		XOC     !Rest of Oceania
+*                       - American Samoa
+*                       - Cook Islands
+*                       - Fiji
+*                       - French Polynesia
+*                       - Guam
+*                       - Kiribati
+*                       - Marshall Islands
+*                       - Micronesia, Federated States of
+*                       - Nauru
+*                       - New Caledonia
+*                       - Norfolk Island
+*                       - Northern Mariana Islands
+*                       - Niue
+*                       - Palau
+*                       - Papua New Guinea
+*                       - Samoa
+*                       - Solomon Islands
+*                       - Tokelau
+*                       - Tonga
+*                       - Tuvalu
+*                       - Vanuatu
+*                       - Island of Wallis and Futuna
+		XEA     !Rest of East Asia
+		MYS     !Malaysia
+		IDN     !Indonesia
+		TWN     !Taiwan
+		MNG     !Mongolia
+*                       - Macau
+*                       - Korea, Democratic Republic of
+		KHM     !Cambodia
+		LAO     !Lao People's Democratic Republic
+		PHL     !Philippines
+		SGP     !Singapore
+		THA     !Thailand
+		VNM     !Vietnam
+		XSE     !Rest of Southeast Asia
+		BRN     !Brunei Darassalam
+*                       - Timor Leste
+*                       - Myanmar
+		BGD     !Bangladesh
+		PAK     !Pakistan
+		LKA     !Sri Lanka
+		NPL     !Nepal
+		XSA     !Rest of South Asia
+		AFG     !Afghanistan
+*                       - Bhutan
+*                       - Maldives
+*EFTA
+		CHE     !Switzerland
+		NOR     !Norway
+		XEF     !Rest of EFTA
+		ALB     !Albania
+		BLR     !Belarus
+*               HRV     !       Croatia
+		UKR     !Ukraine
+		XEE     !Rest of Eastern Europe
+*                       - Moldova, Republic of
+		XER     !Rest of Europe
+*                       - Andorra
+*                       - Bosnia and Herzegovina
+*                       - Faroe Islands
+*                       - Gibraltar
+*                       - Macedonia, the former Yugoslav Republic of
+*                       - Monaco
+*                       - San Marino
+*                       - Serbia and Montenegro
+		SRB     !Serbia
+		KAZ     !Kazakhstan
+		KGZ     !Kyrgyzstan
+		TJK     !Tajikistan
+		XSU     !Rest of Former Soviet Union
+*                       - Turkmenistan
+		UZB     !Uzbekistan
+		ARM     !Armenia
+		AZE     !Azerbaijan
+		GEO     !Georgia
+*               IRN     !       Iran, Islamic Republic of
+		EGY     !Egypt
+		MAR     !Morocco
+		TUN     !Tunisia
+*               XNF     !       Rest of North Africa
+*                       - Algeria
+*                       - Libyan Arab Jamahiriya
+*               NGA     !       Nigeria
+		SEN     !Senegal
+		XWF     !Rest of Western Africa
+		BEN     !Benin
+		BFA     !Burkina Faso
+*                       - Cape Verde
+*                       -
+*                       - Gambia
+*                       -
+		GIN     !Guinea
+*                       - Guinea-Bissau
+*                       - Liberia
+		MLI     !Mali
+*                       - Mauritania
+		NER     !Niger
+*                       - Saint Helena
+*                       - Sierra Leone
+		TGO     !Togo
+		CIV     !Cote d'Ivoire
+		GHA     !Ghana
+		CMR     !Cameroon
+
+*                XCF     !       Rest of Central Africa
+*                       -
+*                       - Central African Republic
+		TCD     !Chad
+*                COG     !Congo (Already in OPEC)
+		GNQ     !Equatorial Guinea
+		GAB     !Gabon
+*                       - Sao Tome and Principe
+*               XAC     !       Rest of South Central Africa
+*                       - Angola
+*                       - Congo, Democratic Republic of the (Already in OPEC)
+		ETH     !Ethiopia
+		MDG     !Madagascar
+		MWI     !Malawi
+		MUS     !Mauritius
+		MOZ     !Mozambique
+		TZA     !Tanzania
+		UGA     !Uganda
+		ZMB     !Zambia
+		ZWE     !Zimbabwe
+		KEN     !Kenya
+		SWZ     !Eswatini
+		XEC     !Rest of Eastern Africa
+*                       - Burundi
+		COM     !Comoros
+*                       - Djibouti
+*                       - Eritrea
+*                       -
+*                       - Mayotte
+*                       - Reunion
+		RWA     !Rwanda
+*                       - Seychelles
+*                       - Somalia
+		SDN     !Sudan
+		NAM     !Namibia
+		BWA     !Botswana
+		XSC     !Rest of South African Customs Union
+		XTW     !Rest of the World
+*OMN     !Oman (Already in OPEC)
+*                ISR     !Isreal (Already in OPEC)
+*                TUR     !Turkey (Already in OPEC)
+*                BHR     ! Bahrain (Already in OPEC)
+        ).ROW     Rest of the World
+
+(      !OPEC contries
+
+$ontext
+13 OPEC Countries gathered from https://www.opec.org/opec_web/en/about_us/25.htm
+
+	Algeria, Angola, Congo, Equatorial Guinea, Gabon, Iran, Iraq, Kuwait,
+	Libya, Nigeria, Saudi Arabia, United Arab Emirates, Venezuela
+
+$offtext
+BHR     ! Bahrain 
+IRN     !Iran
+ISR     !Isreal
+KWT     !Kuwait
+OMN     !Oman
+QAT     !Qatar
+SAU     !Saudi Arabia
+TUR     !Turkey
+ARE     !United Arab Emirates
+NGA     !Nigeria
+VEN     !Venezuela
+ECU     !Ecuador
+XAC     !Rest of South Central Africa
+*                       - Angola
+CAF     !Central African Republic
+COD     !Congo, Democratic Republic of the
+COG     !Congo 
+XNF     !Rest of North Africa
+DZA     !Algeria 
+*                       - Libyan Arab Jamahiriya
+XWS     !Rest of Western Asia
+IRQ     !Iraq
+JOR     !Jordan
+LBN     !Lebanon
+PSE     !Palestinian Territory, Occupied
+SYR     !Syrian Arab Republic
+*                       - Yemen
+        ).opc  13 countries comprising OPEC + othr
+
+/;
+option mapr:0:0:1;
+abort$(card(mapr)<>card(r))	"Error: card(mapi)<>card(i).", mapr;
+
+$exit
+
+
 
 $label g20
 set rr  Regions in the G20 aggregation /
@@ -67,55 +396,55 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	USA.USA	United States
 
 	( 	! China including Hong Kong
-		CHN	!	China
-		HKG	!	Hong Kong
+CHN	!	China
+HKG	!	Hong Kong
 	).CHN	
 
 	(	! Other oil exporters 
-		VEN		!	Venezuela
-		BHR		!	Bahrain
-		KWT		!	Kuwait
-		QAT		!	Qatar
-		ARE		!	United Arab Emirates
-		IRN		!	Iran, Islamic Republic of
-		NGA		!	Nigeria
+VEN		!	Venezuela
+BHR		!	Bahrain
+KWT		!	Kuwait
+QAT		!	Qatar
+ARE		!	United Arab Emirates
+IRN		!	Iran, Islamic Republic of
+NGA		!	Nigeria
 	).OEX
 
 	(	 ! Australia and New Zealand
-		AUS	!	Australia
-		NZL	!	New Zealand
+AUS	!	Australia
+NZL	!	New Zealand
 	).ANZ,
 
 	(	! Rest of Europe
-		AUT	!	Austria
-		BEL	!	Belgium
-		DNK	!	Denmark
-		FIN	!	Finland
-		GRC	!	Greece
-		IRL	!	Ireland
-		LUX	!	Luxembourg
-		NLD	!	Netherlands
-		PRT	!	Portugal
-		ESP	!	Spain
-		SWE	!	Sweden
-		CZE	!	Czech Republic
-		HUN	!	Hungary
-		MLT	!	Malta
-		POL	!	Poland
-		ROU	!	Romania
-		SVK	!	Slovakia
-		SVN	!	Slovenia
-		EST	!	Estonia
-		LVA	!	Latvia
-		LTU	!	Lithuania
-		BGR	!	Bulgaria
-		CYP	!	Cyprus
+AUT	!	Austria
+BEL	!	Belgium
+DNK	!	Denmark
+FIN	!	Finland
+GRC	!	Greece
+IRL	!	Ireland
+LUX	!	Luxembourg
+NLD	!	Netherlands
+PRT	!	Portugal
+ESP	!	Spain
+SWE	!	Sweden
+CZE	!	Czech Republic
+HUN	!	Hungary
+MLT	!	Malta
+POL	!	Poland
+ROU	!	Romania
+SVK	!	Slovakia
+SVN	!	Slovenia
+EST	!	Estonia
+LVA	!	Latvia
+LTU	!	Lithuania
+BGR	!	Bulgaria
+CYP	!	Cyprus
 
-		CHE	!	Switzerland
-		NOR	!	Norway
-		XEF	!	Rest of EFTA
-		XER	!	Rest of Europe
-		SRB	!	Serbia (xer) 
+CHE	!	Switzerland
+NOR	!	Norway
+XEF	!	Rest of EFTA
+XER	!	Rest of Europe
+SRB	!	Serbia (xer) 
 *			- Andorra
 *			- Bosnia and Herzegovina
 *			- Faroe Islands
@@ -130,113 +459,113 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	).REU,
 
 	(
-		KHM	!	Cambodia
-		LAO	!	Lao People's Democratic Republic
-		BGD	!	Bangladesh
-		XSA	!	Rest of South Asia
-		KGZ	!	Kyrgyzstan
-		XWF	!	Rest of Western Africa
-		XAC	!	Rest of South Central Africa
-		KEN	!	Kenya
-		ETH	!	Ethiopia
-		MDG	!	Madagascar
-		MWI	!	Malawi
-		MOZ	!	Mozambique
-		TZA	!	Tanzania
-		UGA	!	Uganda
-		ZMB	!	Zambia
-		ZWE	!	Zimbabwe
-		XEC	!	Rest of Eastern Africa
-		afg	!	Afghanistan (xsa)
-		BEN	!	Benin
-		BFA	!	Burkina Faso
-		GIN	!	Guinea
-		TGO	!	Togo
-		RWA	!	Rwanda
-		ner	!	Niger (xwf)
-		caf	!	Central African Republic (xcf)
-		tcd	!	Chad (xcf) 
-		cog	!	Congo (xcf)
-		cod	!	Democratic Republic of the Congo (xac), 
-		gnq	!	Equatorial Guinea (xcf)
-		gab	!	Gabon (xcf)
-		com	!	Comoros (xec)
-		sdn	!	Sudan (xec)
-		swz	!	Eswatini - Swaziland (xsc)
-		mli	!	Mali (xwf)
-		hti	!	Haiti (xcb)
+KHM	!	Cambodia
+LAO	!	Lao People's Democratic Republic
+BGD	!	Bangladesh
+XSA	!	Rest of South Asia
+KGZ	!	Kyrgyzstan
+XWF	!	Rest of Western Africa
+XAC	!	Rest of South Central Africa
+KEN	!	Kenya
+ETH	!	Ethiopia
+MDG	!	Madagascar
+MWI	!	Malawi
+MOZ	!	Mozambique
+TZA	!	Tanzania
+UGA	!	Uganda
+ZMB	!	Zambia
+ZWE	!	Zimbabwe
+XEC	!	Rest of Eastern Africa
+afg	!	Afghanistan (xsa)
+BEN	!	Benin
+BFA	!	Burkina Faso
+GIN	!	Guinea
+TGO	!	Togo
+RWA	!	Rwanda
+ner	!	Niger (xwf)
+caf	!	Central African Republic (xcf)
+tcd	!	Chad (xcf) 
+cog	!	Congo (xcf)
+cod	!	Democratic Republic of the Congo (xac), 
+gnq	!	Equatorial Guinea (xcf)
+gab	!	Gabon (xcf)
+com	!	Comoros (xec)
+sdn	!	Sudan (xec)
+swz	!	Eswatini - Swaziland (xsc)
+mli	!	Mali (xwf)
+hti	!	Haiti (xcb)
 	).LIC	
 
 	(
-		MYS	!	Malaysia
-		XOC	!	Rest of Oceania
-		TWN	!	Taiwan
-		XEA	!	Rest of East Asia
-		PHL	!	Philippines
-		SGP	!	Singapore
-		THA	!	Thailand
-		VNM	!	Vietnam
-		XSE	!	Rest of Southeast Asia
-		PAK	!	Pakistan
-		LKA	!	Sri Lanka
-		XNA	!	Rest of North America
-		BOL	!	Bolivia
-		CHL	!	Chile
-		COL	!	Colombia
-		ECU	!	Ecuador
-		PRY	!	Paraguay
-		PER	!	Peru
-		URY	!	Uruguay
-		XSM	!	Rest of South America
-		CRI	!	Costa Rica
-		GTM	!	Guatemala
-		NIC	!	Nicaragua
-		PAN	!	Panama
-		XCA	!	Rest of Central America
-		XCB	!	Caribbean
-		ALB	!	Albania
-		BLR	!	Belarus
-		HRV	!	Croatia
-		UKR	!	Ukraine
-		XEE	!	Rest of Eastern Europe
-		KAZ	!	Kazakhstan
-		XSU	!	Rest of Former Soviet Union
-		ARM	!	Armenia
-		AZE	!	Azerbaijan
-		GEO	!	Georgia
-		EGY	!	Egypt
-		MAR	!	Morocco
-		TUN	!	Tunisia
-		XNF	!	Rest of North Africa
-		SEN	!	Senegal
-		MUS	!	Mauritius
-		BWA	!	Botswana
-		XSC	!	Rest of South African Customs Union 
-		OMN	!	Oman
-		ISR	!	Israel
-		MNG	!	Mongolia
-		NPL	!	Nepal
-		HND	!	Honduras
-		SLV	!	El Salvador
-		XWS	!	Rest of Western Asia
-		CMR	!	Cameroon
-		CIV	!	Cote d'Ivoire
-		GHA	!	Ghana
-		NAM	!	Namibia
-		XTW	!	Rest of the World 
-		BRN	!	Brunei Darussalam
-		DOM	!	Dominican Republic
-		JAM	!	Jamaica
-		PRI	!	Puerto Rico
-		TTO	!	Trinidad and Tobago
-		JOR	!	Jordan
-		uzb	!	Uzbekistan (xsu)
-		tjk	!	Tajikistan (xsu)
-		irq	!	Iraq (xws)
-		lbn	!	Lebanon (xws)
-		pse	!	State of Palestine (xws)
-		syr	!	Syrian Arab Republic (xws)
-		dza	!	Algeria (xnf)
+MYS	!	Malaysia
+XOC	!	Rest of Oceania
+TWN	!	Taiwan
+XEA	!	Rest of East Asia
+PHL	!	Philippines
+SGP	!	Singapore
+THA	!	Thailand
+VNM	!	Vietnam
+XSE	!	Rest of Southeast Asia
+PAK	!	Pakistan
+LKA	!	Sri Lanka
+XNA	!	Rest of North America
+BOL	!	Bolivia
+CHL	!	Chile
+COL	!	Colombia
+ECU	!	Ecuador
+PRY	!	Paraguay
+PER	!	Peru
+URY	!	Uruguay
+XSM	!	Rest of South America
+CRI	!	Costa Rica
+GTM	!	Guatemala
+NIC	!	Nicaragua
+PAN	!	Panama
+XCA	!	Rest of Central America
+XCB	!	Caribbean
+ALB	!	Albania
+BLR	!	Belarus
+HRV	!	Croatia
+UKR	!	Ukraine
+XEE	!	Rest of Eastern Europe
+KAZ	!	Kazakhstan
+XSU	!	Rest of Former Soviet Union
+ARM	!	Armenia
+AZE	!	Azerbaijan
+GEO	!	Georgia
+EGY	!	Egypt
+MAR	!	Morocco
+TUN	!	Tunisia
+XNF	!	Rest of North Africa
+SEN	!	Senegal
+MUS	!	Mauritius
+BWA	!	Botswana
+XSC	!	Rest of South African Customs Union 
+OMN	!	Oman
+ISR	!	Israel
+MNG	!	Mongolia
+NPL	!	Nepal
+HND	!	Honduras
+SLV	!	El Salvador
+XWS	!	Rest of Western Asia
+CMR	!	Cameroon
+CIV	!	Cote d'Ivoire
+GHA	!	Ghana
+NAM	!	Namibia
+XTW	!	Rest of the World 
+BRN	!	Brunei Darussalam
+DOM	!	Dominican Republic
+JAM	!	Jamaica
+PRI	!	Puerto Rico
+TTO	!	Trinidad and Tobago
+JOR	!	Jordan
+uzb	!	Uzbekistan (xsu)
+tjk	!	Tajikistan (xsu)
+irq	!	Iraq (xws)
+lbn	!	Lebanon (xws)
+pse	!	State of Palestine (xws)
+syr	!	Syrian Arab Republic (xws)
+dza	!	Algeria (xnf)
 	).MIC
 
 /;
@@ -273,74 +602,74 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	TUN.TUN		Tunisia
 
 	(	! Other G20
-		ARG    	! Argentina
-		BRA    	! Brazil
-		CAN    	! Canada
-		JPN    	! Japan
-		MEX    	! Mexico
-		SAU    	! Saudi Arabia
-		IDN    	! Indonesia
-		ZAF    	! South Africa
-		KOR    	! Korea
-		USA    	! United States
+ARG    	! Argentina
+BRA    	! Brazil
+CAN    	! Canada
+JPN    	! Japan
+MEX    	! Mexico
+SAU    	! Saudi Arabia
+IDN    	! Indonesia
+ZAF    	! South Africa
+KOR    	! Korea
+USA    	! United States
 	).ROW
 
 	( 	! China including Hong Kong
-		CHN	!	China
-		HKG	!	Hong Kong
+CHN	!	China
+HKG	!	Hong Kong
 	).CHN	
 
 	(	! Other oil exporters 
-		VEN		!	Venezuela
-		BHR		!	Bahrain
-		KWT		!	Kuwait
-		QAT		!	Qatar
-		ARE		!	United Arab Emirates
-		IRN		!	Iran, Islamic Republic of
-		NGA		!	Nigeria
+VEN		!	Venezuela
+BHR		!	Bahrain
+KWT		!	Kuwait
+QAT		!	Qatar
+ARE		!	United Arab Emirates
+IRN		!	Iran, Islamic Republic of
+NGA		!	Nigeria
 	).ROW
 
 	(	 ! Australia and New Zealand
-		AUS	!	Australia
-		NZL	!	New Zealand
+AUS	!	Australia
+NZL	!	New Zealand
 	).ROW,
 
 	(	! Europe
-		GBR	!	United Kingdom
+GBR	!	United Kingdom
 
-		FRA	!	France
-		DEU	!	Germany
-		ITA	!	Italy
+FRA	!	France
+DEU	!	Germany
+ITA	!	Italy
 
-		AUT	!	Austria
-		BEL	!	Belgium
-		DNK	!	Denmark
-		FIN	!	Finland
-		GRC	!	Greece
-		IRL	!	Ireland
-		LUX	!	Luxembourg
-		NLD	!	Netherlands
-		PRT	!	Portugal
-		ESP	!	Spain
-		SWE	!	Sweden
-		CZE	!	Czech Republic
-		HUN	!	Hungary
-		MLT	!	Malta
-		POL	!	Poland
-		ROU	!	Romania
-		SVK	!	Slovakia
-		SVN	!	Slovenia
-		EST	!	Estonia
-		LVA	!	Latvia
-		LTU	!	Lithuania
-		BGR	!	Bulgaria
-		CYP	!	Cyprus
+AUT	!	Austria
+BEL	!	Belgium
+DNK	!	Denmark
+FIN	!	Finland
+GRC	!	Greece
+IRL	!	Ireland
+LUX	!	Luxembourg
+NLD	!	Netherlands
+PRT	!	Portugal
+ESP	!	Spain
+SWE	!	Sweden
+CZE	!	Czech Republic
+HUN	!	Hungary
+MLT	!	Malta
+POL	!	Poland
+ROU	!	Romania
+SVK	!	Slovakia
+SVN	!	Slovenia
+EST	!	Estonia
+LVA	!	Latvia
+LTU	!	Lithuania
+BGR	!	Bulgaria
+CYP	!	Cyprus
 
-		CHE	!	Switzerland
-		NOR	!	Norway
-		XEF	!	Rest of EFTA
-		XER	!	Rest of Europe
-		SRB	!	Serbia (xer) 
+CHE	!	Switzerland
+NOR	!	Norway
+XEF	!	Rest of EFTA
+XER	!	Rest of Europe
+SRB	!	Serbia (xer) 
 
 *			- Andorra
 *			- Bosnia and Herzegovina
@@ -356,111 +685,111 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	).EUR,
 
 	(
-		KHM	!	Cambodia
-		LAO	!	Lao People's Democratic Republic
-		XSA	!	Rest of South Asia
-		KGZ	!	Kyrgyzstan
-		XWF	!	Rest of Western Africa
-		XAC	!	Rest of South Central Africa
-		KEN	!	Kenya
-		ETH	!	Ethiopia
-		MDG	!	Madagascar
-		MWI	!	Malawi
-		MOZ	!	Mozambique
-		TZA	!	Tanzania
-		UGA	!	Uganda
-		ZMB	!	Zambia
-		ZWE	!	Zimbabwe
-		XEC	!	Rest of Eastern Africa
-		afg	!	Afghanistan (xsa)
-		BEN	!	Benin
-		BFA	!	Burkina Faso
-		GIN	!	Guinea
-		TGO	!	Togo
-		RWA	!	Rwanda
-		ner	!	Niger (xwf)
-		caf	!	Central African Republic (xcf)
-		tcd	!	Chad (xcf) 
-		cog	!	Congo (xcf)
-		cod	!	Democratic Republic of the Congo (xac), 
-		gnq	!	Equatorial Guinea (xcf)
-		gab	!	Gabon (xcf)
-		com	!	Comoros (xec)
-		sdn	!	Sudan (xec)
-		swz	!	Eswatini - Swaziland (xsc)
-		mli	!	Mali (xwf)
-		hti	!	Haiti (xcb)
+KHM	!	Cambodia
+LAO	!	Lao People's Democratic Republic
+XSA	!	Rest of South Asia
+KGZ	!	Kyrgyzstan
+XWF	!	Rest of Western Africa
+XAC	!	Rest of South Central Africa
+KEN	!	Kenya
+ETH	!	Ethiopia
+MDG	!	Madagascar
+MWI	!	Malawi
+MOZ	!	Mozambique
+TZA	!	Tanzania
+UGA	!	Uganda
+ZMB	!	Zambia
+ZWE	!	Zimbabwe
+XEC	!	Rest of Eastern Africa
+afg	!	Afghanistan (xsa)
+BEN	!	Benin
+BFA	!	Burkina Faso
+GIN	!	Guinea
+TGO	!	Togo
+RWA	!	Rwanda
+ner	!	Niger (xwf)
+caf	!	Central African Republic (xcf)
+tcd	!	Chad (xcf) 
+cog	!	Congo (xcf)
+cod	!	Democratic Republic of the Congo (xac), 
+gnq	!	Equatorial Guinea (xcf)
+gab	!	Gabon (xcf)
+com	!	Comoros (xec)
+sdn	!	Sudan (xec)
+swz	!	Eswatini - Swaziland (xsc)
+mli	!	Mali (xwf)
+hti	!	Haiti (xcb)
 	).LIC	
 
 	(
-		MYS	!	Malaysia
-		XOC	!	Rest of Oceania
-		TWN	!	Taiwan
-		XEA	!	Rest of East Asia
-		PHL	!	Philippines
-		SGP	!	Singapore
-		THA	!	Thailand
-		VNM	!	Vietnam
-		XSE	!	Rest of Southeast Asia
-		PAK	!	Pakistan
-		LKA	!	Sri Lanka
-		XNA	!	Rest of North America
-		BOL	!	Bolivia
-		CHL	!	Chile
-		COL	!	Colombia
-		ECU	!	Ecuador
-		PRY	!	Paraguay
-		PER	!	Peru
-		URY	!	Uruguay
-		XSM	!	Rest of South America
-		CRI	!	Costa Rica
-		GTM	!	Guatemala
-		NIC	!	Nicaragua
-		PAN	!	Panama
-		XCA	!	Rest of Central America
-		XCB	!	Caribbean
-		ALB	!	Albania
-		BLR	!	Belarus
-		HRV	!	Croatia
+MYS	!	Malaysia
+XOC	!	Rest of Oceania
+TWN	!	Taiwan
+XEA	!	Rest of East Asia
+PHL	!	Philippines
+SGP	!	Singapore
+THA	!	Thailand
+VNM	!	Vietnam
+XSE	!	Rest of Southeast Asia
+PAK	!	Pakistan
+LKA	!	Sri Lanka
+XNA	!	Rest of North America
+BOL	!	Bolivia
+CHL	!	Chile
+COL	!	Colombia
+ECU	!	Ecuador
+PRY	!	Paraguay
+PER	!	Peru
+URY	!	Uruguay
+XSM	!	Rest of South America
+CRI	!	Costa Rica
+GTM	!	Guatemala
+NIC	!	Nicaragua
+PAN	!	Panama
+XCA	!	Rest of Central America
+XCB	!	Caribbean
+ALB	!	Albania
+BLR	!	Belarus
+HRV	!	Croatia
 
-		XEE	!	Rest of Eastern Europe
-		KAZ	!	Kazakhstan
-		XSU	!	Rest of Former Soviet Union
-		ARM	!	Armenia
-		AZE	!	Azerbaijan
-		GEO	!	Georgia
+XEE	!	Rest of Eastern Europe
+KAZ	!	Kazakhstan
+XSU	!	Rest of Former Soviet Union
+ARM	!	Armenia
+AZE	!	Azerbaijan
+GEO	!	Georgia
 
-		MAR	!	Morocco
-		XNF	!	Rest of North Africa
-		SEN	!	Senegal
-		MUS	!	Mauritius
-		BWA	!	Botswana
-		XSC	!	Rest of South African Customs Union 
-		OMN	!	Oman
-		ISR	!	Israel
-		MNG	!	Mongolia
-		NPL	!	Nepal
-		HND	!	Honduras
-		SLV	!	El Salvador
-		XWS	!	Rest of Western Asia
-		CMR	!	Cameroon
-		CIV	!	Cote d'Ivoire
-		GHA	!	Ghana
-		NAM	!	Namibia
-		XTW	!	Rest of the World 
-		BRN	!	Brunei Darussalam
-		DOM	!	Dominican Republic
-		JAM	!	Jamaica
-		PRI	!	Puerto Rico
-		TTO	!	Trinidad and Tobago
-		JOR	!	Jordan
-		uzb	!	Uzbekistan (xsu)
-		tjk	!	Tajikistan (xsu)
-		irq	!	Iraq (xws)
-		lbn	!	Lebanon (xws)
-		pse	!	State of Palestine (xws)
-		syr	!	Syrian Arab Republic (xws)
-		dza	!	Algeria (xnf)
+MAR	!	Morocco
+XNF	!	Rest of North Africa
+SEN	!	Senegal
+MUS	!	Mauritius
+BWA	!	Botswana
+XSC	!	Rest of South African Customs Union 
+OMN	!	Oman
+ISR	!	Israel
+MNG	!	Mongolia
+NPL	!	Nepal
+HND	!	Honduras
+SLV	!	El Salvador
+XWS	!	Rest of Western Asia
+CMR	!	Cameroon
+CIV	!	Cote d'Ivoire
+GHA	!	Ghana
+NAM	!	Namibia
+XTW	!	Rest of the World 
+BRN	!	Brunei Darussalam
+DOM	!	Dominican Republic
+JAM	!	Jamaica
+PRI	!	Puerto Rico
+TTO	!	Trinidad and Tobago
+JOR	!	Jordan
+uzb	!	Uzbekistan (xsu)
+tjk	!	Tajikistan (xsu)
+irq	!	Iraq (xws)
+lbn	!	Lebanon (xws)
+pse	!	State of Palestine (xws)
+syr	!	Syrian Arab Republic (xws)
+dza	!	Algeria (xnf)
 	).ROW
 
 /;
@@ -546,91 +875,91 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	IND.IND	India
 
 	( 	! China including Hong Kong
-		CHN	!	China
-		HKG	!	Hong Kong
+CHN	!	China
+HKG	!	Hong Kong
 	).CHN	
 
 	(	! EU-27
-		DEU	!	Germany
-		AUT	!	Austria
-		BEL	!	Belgium
-		BGR	!	Bulgaria
-		CYP	!	Cyprus
-		HRV	!	Croatia
-		CZE	!	Czech Republic
-		DNK	!	Denmark
-		ESP	!	Spain
-		EST	!	Estonia
-		FIN	!	Finland
-		FRA	!	France
-		GRC	!	Greece
-		HUN	!	Hungary
-		IRL	!	Ireland
-		ITA	!	Italy
-		LTU	!	Lithuania
-		LUX	!	Luxembourg
-		LVA	!	Latvia
-		MLT	!	Malta
-		NLD	!	Netherlands
-		POL	!	Poland
-		PRT	!	Portugal
-		ROU	!	Romania
-		SVK	!	Slovakia
-		SVN	!	Slovenia
-		SWE	!	Sweden
+DEU	!	Germany
+AUT	!	Austria
+BEL	!	Belgium
+BGR	!	Bulgaria
+CYP	!	Cyprus
+HRV	!	Croatia
+CZE	!	Czech Republic
+DNK	!	Denmark
+ESP	!	Spain
+EST	!	Estonia
+FIN	!	Finland
+FRA	!	France
+GRC	!	Greece
+HUN	!	Hungary
+IRL	!	Ireland
+ITA	!	Italy
+LTU	!	Lithuania
+LUX	!	Luxembourg
+LVA	!	Latvia
+MLT	!	Malta
+NLD	!	Netherlands
+POL	!	Poland
+PRT	!	Portugal
+ROU	!	Romania
+SVK	!	Slovakia
+SVN	!	Slovenia
+SWE	!	Sweden
 	).EUR
 
 
 	(	! RG7  - Remaining G7 countries
-		GBR	!	United Kingdom
-		JPN	!	Japan
-		CAN	!	Canada
-		NOR	!	Norway 	
-		CHE	!	Switzerland 	
+GBR	!	United Kingdom
+JPN	!	Japan
+CAN	!	Canada
+NOR	!	Norway 	
+CHE	!	Switzerland 	
 	).RG7
 
 	(	! RGT  - Remaining G20 countries
-		BRA	!	Brazil
-		IDN	!	Indonesia
-		ARG	!	Argentina
-		ZAF	!	South Africa
+BRA	!	Brazil
+IDN	!	Indonesia
+ARG	!	Argentina
+ZAF	!	South Africa
 	).RGT
 
 	(	! OEC  - Other OECD countries
-		AUS	!	Australia 
-		NZL	!	New Zealand
-		KOR	!	Korea
-		TUR	!	Turkey
-		ISR	!	Israel
-		CHL	!	Chile 	
-		COL	!	Colombia 	
-		CRI	!	Costa Rica 	
+AUS	!	Australia 
+NZL	!	New Zealand
+KOR	!	Korea
+TUR	!	Turkey
+ISR	!	Israel
+CHL	!	Chile 	
+COL	!	Colombia 	
+CRI	!	Costa Rica 	
 	).OEC
 
 	(	! Oil exporting countries
-		SAU	!	Saudi Arabia
-		VEN	!	Venezuela
-		KWT	!	Kuwait
-		QAT	!	Qatar
-		ARE	!	United Arab Emirates
-		IRN	!	Iran- Islamic Republic of
-		NGA	!	Nigeria
-		DZA	!	Algeria
-		COG	!	Congo
-		IRQ	!	Iraq
-		GAB	!	Gabon
-		GNQ	!	Equitorial Guinea
-		XNF	!	Libya (Rest of North Africa: Libya -- Western Sahara)
+SAU	!	Saudi Arabia
+VEN	!	Venezuela
+KWT	!	Kuwait
+QAT	!	Qatar
+ARE	!	United Arab Emirates
+IRN	!	Iran- Islamic Republic of
+NGA	!	Nigeria
+DZA	!	Algeria
+COG	!	Congo
+IRQ	!	Iraq
+GAB	!	Gabon
+GNQ	!	Equitorial Guinea
+XNF	!	Libya (Rest of North Africa: Libya -- Western Sahara)
 *	+10 associated countries
-		RUS	!	Russia
-		MEX	!	Mexico
-		SDN	!	Sudan			
-		BHR	!	Bahrain			   
-		OMN	!	Oman			   
-		KAZ	!	Kazakhstan		   
-		AZE	!	Azerbaijan		   
-		MYS	!	Malaysia		   
-		BRN	!	Brunei Darussalam	   
+RUS	!	Russia
+MEX	!	Mexico
+SDN	!	Sudan			
+BHR	!	Bahrain			   
+OMN	!	Oman			   
+KAZ	!	Kazakhstan		   
+AZE	!	Azerbaijan		   
+MYS	!	Malaysia		   
+BRN	!	Brunei Darussalam	   
 	).OEX
 
 *	Explicit low-income economies
@@ -653,9 +982,9 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	ZMB.ZMB	Zambia
 
 	( 	! WB Remaining low-income economies ($1,085 OR LESS)
-		XWS	!	Rest of Western Asia (Yemen)
-		XEC	!	Rest of Eastern Africa (Burundi, Eritrea, Somalia, South Sudan) % (Dijbouti, Mayotte, Seychelles)
-		XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Cabo Verde, Mauritania,Saint Helena)
+XWS	!	Rest of Western Asia (Yemen)
+XEC	!	Rest of Eastern Africa (Burundi, Eritrea, Somalia, South Sudan) % (Dijbouti, Mayotte, Seychelles)
+XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Cabo Verde, Mauritania,Saint Helena)
 	).LOI
 
 *	Explicit lower-middle income economies
@@ -694,47 +1023,47 @@ SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
 	NIC.NIC	Nicaragua
 
 	( 	! WB Remaining lower-middle income economies ($1,086 TO $4,255)
-		XAC	!	Rest of South and Central Africa (Angola, Sao Tome and Principe)
-		XSA	!	Rest of South Asia (Bhutan) % (Maldives)
-		XSE	!	Rest of Southeast Asia (Myanmar and Timor-Leste)
-		XOC	!	Rest of Oceania
+XAC	!	Rest of South and Central Africa (Angola, Sao Tome and Principe)
+XSA	!	Rest of South Asia (Bhutan) % (Maldives)
+XSE	!	Rest of Southeast Asia (Myanmar and Timor-Leste)
+XOC	!	Rest of Oceania
 	).LMI
 
 	(	! WB Remaining upper-middle-income economies ($4,256 TO $13,205)
-		ALB	!	Albania
-		ARM	!	Armenia
-		BLR	!	Belarus
-		BWA	!	Botswana
-		DOM	!	Dominican Republic  
-		ECU	!	Ecuador
-		GEO	!	Georgia
-		JAM	!	Jamaica
-		JOR	!	Jordan
-		MUS	!	Mauritius
-		NAM	!	Namibia
-		PRY	!	Paraguay
-		PER	!	Peru  
-		SRB	!	Serbia
-		THA	!	Thailand
-		GTM	!	Guatemala
-		XEE	!	Moldova (Rest of Eastern Europe)
-		XER	!	Rest of Europe
-		XCB	!	Rest of Caribbean
-		XSM	!	Rest of South America
+ALB	!	Albania
+ARM	!	Armenia
+BLR	!	Belarus
+BWA	!	Botswana
+DOM	!	Dominican Republic  
+ECU	!	Ecuador
+GEO	!	Georgia
+JAM	!	Jamaica
+JOR	!	Jordan
+MUS	!	Mauritius
+NAM	!	Namibia
+PRY	!	Paraguay
+PER	!	Peru  
+SRB	!	Serbia
+THA	!	Thailand
+GTM	!	Guatemala
+XEE	!	Moldova (Rest of Eastern Europe)
+XER	!	Rest of Europe
+XCB	!	Rest of Caribbean
+XSM	!	Rest of South America
 	).UMI,
 	(	TWN	!	Taiwan
-		XEA	!	Rest of East Asia
-		SGP	!	Singapore
-		XNA	!	Rest of North America
-		URY	!	Uruguay
-		PAN	!	Panama
-		XCA	!	Rest of Central America
-		PRI	!	Puerto Rico
-		TTO	!	Trinidad and Tobago
-		XEF	!	Rest of European Free Trade Association
-		XSU	!	Rest of Former Soviet Union
-		PSE	!	Occupied Palestineian Territory, 
-		XTW	!	Rest of the World 
+XEA	!	Rest of East Asia
+SGP	!	Singapore
+XNA	!	Rest of North America
+URY	!	Uruguay
+PAN	!	Panama
+XCA	!	Rest of Central America
+PRI	!	Puerto Rico
+TTO	!	Trinidad and Tobago
+XEF	!	Rest of European Free Trade Association
+XSU	!	Rest of Former Soviet Union
+PSE	!	Occupied Palestineian Territory, 
+XTW	!	Rest of the World 
 
 	).HII
 
@@ -777,91 +1106,91 @@ $if set np1	%np1%.%np1%
 	IND.IND	India
 
 	( 	! China including Hong Kong
-		CHN	!	China
-		HKG	!	Hong Kong
+CHN	!	China
+HKG	!	Hong Kong
 	).CHN	
 
 	(	! EU-27
-		DEU	!	Germany
-		AUT	!	Austria
-		BEL	!	Belgium
-		BGR	!	Bulgaria
-		CYP	!	Cyprus
-		HRV	!	Croatia
-		CZE	!	Czech Republic
-		DNK	!	Denmark
-		ESP	!	Spain
-		EST	!	Estonia
-		FIN	!	Finland
-		FRA	!	France
-		GRC	!	Greece
-		HUN	!	Hungary
-		IRL	!	Ireland
-		ITA	!	Italy
-		LTU	!	Lithuania
-		LUX	!	Luxembourg
-		LVA	!	Latvia
-		MLT	!	Malta
-		NLD	!	Netherlands
-		POL	!	Poland
-		PRT	!	Portugal
-		ROU	!	Romania
-		SVK	!	Slovakia
-		SVN	!	Slovenia
-		SWE	!	Sweden
+DEU	!	Germany
+AUT	!	Austria
+BEL	!	Belgium
+BGR	!	Bulgaria
+CYP	!	Cyprus
+HRV	!	Croatia
+CZE	!	Czech Republic
+DNK	!	Denmark
+ESP	!	Spain
+EST	!	Estonia
+FIN	!	Finland
+FRA	!	France
+GRC	!	Greece
+HUN	!	Hungary
+IRL	!	Ireland
+ITA	!	Italy
+LTU	!	Lithuania
+LUX	!	Luxembourg
+LVA	!	Latvia
+MLT	!	Malta
+NLD	!	Netherlands
+POL	!	Poland
+PRT	!	Portugal
+ROU	!	Romania
+SVK	!	Slovakia
+SVN	!	Slovenia
+SWE	!	Sweden
 	).EUR
 
 
 	(	! RG7  - Remaining G7 countries
-		GBR	!	United Kingdom
-		JPN	!	Japan
-		CAN	!	Canada
-		NOR	!	Norway 	
-		CHE	!	Switzerland 	
+GBR	!	United Kingdom
+JPN	!	Japan
+CAN	!	Canada
+NOR	!	Norway 	
+CHE	!	Switzerland 	
 	).RG7
 
 	(	! RGT  - Remaining G20 countries
-		BRA	!	Brazil
-		IDN	!	Indonesia
-		ARG	!	Argentina
-		ZAF	!	South Africa
+BRA	!	Brazil
+IDN	!	Indonesia
+ARG	!	Argentina
+ZAF	!	South Africa
 	).RGT
 
 	(	! OEC  - Other OECD countries
-		AUS	!	Australia 
-		NZL	!	New Zealand
-		KOR	!	Korea
-		TUR	!	Turkey
-		ISR	!	Israel
-		CHL	!	Chile 	
-		COL	!	Colombia 	
-		CRI	!	Costa Rica 	
+AUS	!	Australia 
+NZL	!	New Zealand
+KOR	!	Korea
+TUR	!	Turkey
+ISR	!	Israel
+CHL	!	Chile 	
+COL	!	Colombia 	
+CRI	!	Costa Rica 	
 	).OEC
 
 	(	! Oil exporting countires
-		SAU	!	Saudi Arabia
-		VEN	!	Venezuela
-		KWT	!	Kuwait
-		QAT	!	Qatar
-		ARE	!	United Arab Emirates
-		IRN	!	Iran- Islamic Republic of
-		NGA	!	Nigeria
-		DZA	!	Algeria
-		COG	!	Congo
-		IRQ	!	Iraq
-		GAB	!	Gabon
-		GNQ	!	Equitorial Guinea
-		XNF	!	Libya (Rest of North Africa: Libya -- Western Sahara)
+SAU	!	Saudi Arabia
+VEN	!	Venezuela
+KWT	!	Kuwait
+QAT	!	Qatar
+ARE	!	United Arab Emirates
+IRN	!	Iran- Islamic Republic of
+NGA	!	Nigeria
+DZA	!	Algeria
+COG	!	Congo
+IRQ	!	Iraq
+GAB	!	Gabon
+GNQ	!	Equitorial Guinea
+XNF	!	Libya (Rest of North Africa: Libya -- Western Sahara)
 *	+10 associated countries
-		RUS	!	Russia
-		MEX	!	Mexico
-		SDN	!	Sudan			
-		BHR	!	Bahrain			   
-		OMN	!	Oman			   
-		KAZ	!	Kazakhstan		   
-		AZE	!	Azerbaijan		   
-		MYS	!	Malaysia		   
-		BRN	!	Brunei Darussalam	   
+RUS	!	Russia
+MEX	!	Mexico
+SDN	!	Sudan			
+BHR	!	Bahrain			   
+OMN	!	Oman			   
+KAZ	!	Kazakhstan		   
+AZE	!	Azerbaijan		   
+MYS	!	Malaysia		   
+BRN	!	Brunei Darussalam	   
 	).OEX
 	( 	! WB Remaining low-income economies ($1,085 OR LESS)
 $if not "%np1%"=="AFG"	AFG	!	Afghanistan
@@ -881,9 +1210,9 @@ $if not "%np1%"=="SYR"	SYR	!	Syrian Arab Republic
 $if not "%np1%"=="TGO"	TGO	!	Togo
 $if not "%np1%"=="UGA"	UGA	!	Uganda
 $if not "%np1%"=="ZMB"	ZMB	!	Zambia
-		XWS	!	Rest of Western Asia (Yemen)
-		XEC	!	Rest of Eastern Africa (Burundi, Eritrea, Somalia, South Sudan) % (Dijbouti, Mayotte, Seychelles)
-		XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Cabo Verde, Mauritania,Saint Helena)
+XWS	!	Rest of Western Asia (Yemen)
+XEC	!	Rest of Eastern Africa (Burundi, Eritrea, Somalia, South Sudan) % (Dijbouti, Mayotte, Seychelles)
+XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Cabo Verde, Mauritania,Saint Helena)
 	).LOI
 
 	( 	! WB Remaining lower-middle income economies ($1,086 TO $4,255)
@@ -920,46 +1249,46 @@ $if not "%np1%"=="ZWE"	ZWE	!	Zimbabwe
 $if not "%np1%"=="SWZ"	SWZ	!	Eswatini
 $if not "%np1%"=="XSC"	XSC	!	Lesotho (Rest of South African Customs Union)
 $if not "%np1%"=="NIC"	NIC	!	Nicaragua
-		XAC	!	Rest of South and Central Africa (Angola, Sao Tome and Principe)
-		XSA	!	Rest of South Asia (Bhutan) % (Maldives)
-		XSE	!	Rest of Southeast Asia (Myanmar and Timor-Leste)
-		XOC	!	Rest of Oceania
+XAC	!	Rest of South and Central Africa (Angola, Sao Tome and Principe)
+XSA	!	Rest of South Asia (Bhutan) % (Maldives)
+XSE	!	Rest of Southeast Asia (Myanmar and Timor-Leste)
+XOC	!	Rest of Oceania
 	).LMI
 	(	! WB Remaining upper-middle-income economies ($4,256 TO $13,205)
-		ALB	!	Albania
-		ARM	!	Armenia
-		BLR	!	Belarus
-		BWA	!	Botswana
-		DOM	!	Dominican Republic  
-		ECU	!	Ecuador
-		GEO	!	Georgia
-		JAM	!	Jamaica
-		JOR	!	Jordan
-		MUS	!	Mauritius
-		NAM	!	Namibia
-		PRY	!	Paraguay
-		PER	!	Peru  
-		SRB	!	Serbia
-		THA	!	Thailand
-		GTM	!	Guatemala
-		XEE	!	Moldova (Rest of Eastern Europe)
-		XER	!	Rest of Europe
-		XCB	!	Rest of Caribbean
-		XSM	!	Rest of South America
+ALB	!	Albania
+ARM	!	Armenia
+BLR	!	Belarus
+BWA	!	Botswana
+DOM	!	Dominican Republic  
+ECU	!	Ecuador
+GEO	!	Georgia
+JAM	!	Jamaica
+JOR	!	Jordan
+MUS	!	Mauritius
+NAM	!	Namibia
+PRY	!	Paraguay
+PER	!	Peru  
+SRB	!	Serbia
+THA	!	Thailand
+GTM	!	Guatemala
+XEE	!	Moldova (Rest of Eastern Europe)
+XER	!	Rest of Europe
+XCB	!	Rest of Caribbean
+XSM	!	Rest of South America
 	).UMI,
 	(	TWN	!	Taiwan
-		XEA	!	Rest of East Asia
-		SGP	!	Singapore
-		XNA	!	Rest of North America
-		URY	!	Uruguay
-		PAN	!	Panama
-		XCA	!	Rest of Central America
-		PRI	!	Puerto Rico
-		TTO	!	Trinidad and Tobago
-		XEF	!	Rest of European Free Trade Association
-		XSU	!	Rest of Former Soviet Union
-		PSE	!	Occupied Palestineian Territory, 
-		XTW	!	Rest of the World 
+XEA	!	Rest of East Asia
+SGP	!	Singapore
+XNA	!	Rest of North America
+URY	!	Uruguay
+PAN	!	Panama
+XCA	!	Rest of Central America
+PRI	!	Puerto Rico
+TTO	!	Trinidad and Tobago
+XEF	!	Rest of European Free Trade Association
+XSU	!	Rest of Former Soviet Union
+PSE	!	Occupied Palestineian Territory, 
+XTW	!	Rest of the World 
 
 	).HII
 /;
@@ -990,20 +1319,20 @@ set	mapi(i,ii)	Sectoral mapping /
 
 
 	(	! "Farms (111CA)"
-		PDR		! "Paddy rice",
-		WHT		! "Wheat",
-		GRO		! "Cereal grains nec",
-		V_F		! "Vegetables, fruit, nuts",
-		OSD		! "Oil seeds",
-		C_B		! "Sugar cane, sugar beet",
-		PFB		! "Plant-based fibers",
-		OCR		! "Crops nec",
-		CTL		! "Bovine cattle, sheep and goats, horses",
-		OAP		! "Animal products nec",
-		RMK		! "Raw milk",
-		WOL		! "Wool, silk-worm cocoons"
-		FRS		! "Forestry",
-		FSH		! "Fishing",
+PDR		! "Paddy rice",
+WHT		! "Wheat",
+GRO		! "Cereal grains nec",
+V_F		! "Vegetables, fruit, nuts",
+OSD		! "Oil seeds",
+C_B		! "Sugar cane, sugar beet",
+PFB		! "Plant-based fibers",
+OCR		! "Crops nec",
+CTL		! "Bovine cattle, sheep and goats, horses",
+OAP		! "Animal products nec",
+RMK		! "Raw milk",
+WOL		! "Wool, silk-worm cocoons"
+FRS		! "Forestry",
+FSH		! "Fishing",
 	).agr
 
 	COL.col			! "Coal",
@@ -1038,16 +1367,16 @@ set	mapi(i,ii)	Sectoral mapping /
 	PPP.man		! "Paper products, publishing",
 
 	(
-		I_S		! "Ferrous metals",
-		NFM		! "Metals nec",
-		CHM		! "Chemical products",
-		RPP		! "Rubber and plastic products",
+I_S		! "Ferrous metals",
+NFM		! "Metals nec",
+CHM		! "Chemical products",
+RPP		! "Rubber and plastic products",
 	).eis
 
 	(
-		WTP	! "Water transport",
-		ATP	! "Air transport",
-		OTP	! "Transport nec",
+WTP	! "Water transport",
+ATP	! "Air transport",
+OTP	! "Transport nec",
 	).trn
 
 	TRD.ser		! "Trade",
@@ -1055,20 +1384,20 @@ set	mapi(i,ii)	Sectoral mapping /
 	CNS.cns		! "Construction",
 
 	(	INS		! "Insurance (formerly isr)"			
-		OXT		! "Other Extraction (formerly omn Minerals nec)",
-		BPH		! "Basic pharmaceutical products",
-		AFS		! "Accommodation, Food and service activities",
-		CMN		! "Communication",
-		OFI		! "Financial services nec",
-		OBS		! "Business services nec",
-		RSA		! "Real estate activities",
-		ROS		! "Recreational and other services",
-		WHS		! "Warehousing and support activities",
-		OSG		! "Public Administration and defense",
-		EDU		! "Education",
-		HHT		! "Human health and social work activities",
-		WTR		! "Water",
-		DWE		! "Dwellings"
+OXT		! "Other Extraction (formerly omn Minerals nec)",
+BPH		! "Basic pharmaceutical products",
+AFS		! "Accommodation, Food and service activities",
+CMN		! "Communication",
+OFI		! "Financial services nec",
+OBS		! "Business services nec",
+RSA		! "Real estate activities",
+ROS		! "Recreational and other services",
+WHS		! "Warehousing and support activities",
+OSG		! "Public Administration and defense",
+EDU		! "Education",
+HHT		! "Human health and social work activities",
+WTR		! "Water",
+DWE		! "Dwellings"
 	).ser
 /;
 
@@ -1128,70 +1457,70 @@ $if "%2"=="loadset" $exit
 set	mapi(i,ii)	Sectoral mapping /
 
 	(	! "Farms (111CA)"
-		PDR		! "Paddy rice",
-		Wht		! "Wheat",
-		GRO		! "Cereal grains nec",
-		V_F		! "Vegetables, fruit, nuts",
-		OSD		! "Oil seeds",
-		C_B		! "Sugar cane, sugar beet",
-		PFB		! "Plant-based fibers",
-		OCR		! "Crops nec",
-		CTL		! "Bovine cattle, sheep and goats, horses",
-		OAP		! "Animal products nec",
-		RMK		! "Raw milk",
-		WOL		! "Wool, silk-worm cocoons"
+PDR		! "Paddy rice",
+Wht		! "Wheat",
+GRO		! "Cereal grains nec",
+V_F		! "Vegetables, fruit, nuts",
+OSD		! "Oil seeds",
+C_B		! "Sugar cane, sugar beet",
+PFB		! "Plant-based fibers",
+OCR		! "Crops nec",
+CTL		! "Bovine cattle, sheep and goats, horses",
+OAP		! "Animal products nec",
+RMK		! "Raw milk",
+WOL		! "Wool, silk-worm cocoons"
 	).agr
 
 	(	! "Forestry, fishing, and related activities (113FF)"
-		FRS		! "Forestry",
-		FSH		! "Fishing",
+FRS		! "Forestry",
+FSH		! "Fishing",
 	).fof	
 
 	(	! "Food and beverage and tobacco products (311FT)"
-		CMT    		! "Bovine meat products",
-		OMT    		! "Meat products nec",
-		VOL    		! "Vegetable oils and fats",
-		MIL    		! "Dairy products",
-		PCR    		! "Processed rice",
-		SGR    		! "Sugar",
-		OFD    		! "Food products nec",
-		B_T    		! "Beverages and tobacco products",
+CMT    		! "Bovine meat products",
+OMT    		! "Meat products nec",
+VOL    		! "Vegetable oils and fats",
+MIL    		! "Dairy products",
+PCR    		! "Processed rice",
+SGR    		! "Sugar",
+OFD    		! "Food products nec",
+B_T    		! "Beverages and tobacco products",
 	).fbp
 
 	(	! "Apparel and leather and allied products (315AL)"
-		WAP		! "Wearing apparel",
-		LEA		! "Leather products",
+WAP		! "Wearing apparel",
+LEA		! "Leather products",
 	).alt
 
 	(	! "Primary metals (331)"
-		I_S		! "Ferrous metals",
-		NFM		! "Metals nec",
+I_S		! "Ferrous metals",
+NFM		! "Metals nec",
 	).pmt
 
 	(	! "Crude oil and natural gas"
-		CRU		! "Crude Oil",
-		GAS		! "Gas",
+CRU		! "Crude Oil",
+GAS		! "Gas",
 	).ogs
 
 	(	! "Utilities"
-		ELE		! "Electricity",
-		GDT		! "Gas manufacture, distribution",
-		WTR		! "Water",
+ELE		! "Electricity",
+GDT		! "Gas manufacture, distribution",
+WTR		! "Water",
 	).uti
 	
 	(	! "Mining"
-		COL		! "Coal",
-		OXT		! "Other mining extraction",
+COL		! "Coal",
+OXT		! "Other mining extraction",
 	).oxt
 	
 	(	! "Recreational and other services"
-		AFS		! "Accommodation, Food and service activities",
-		ROS		! "Recreational and other services",
+AFS		! "Accommodation, Food and service activities",
+ROS		! "Recreational and other services",
 	).ros
 	
 	(	! "Dwellings and real estate activities"
-		DWE		! "Dwellings",
-		RSA		! "Real estate activities",
+DWE		! "Dwellings",
+RSA		! "Real estate activities",
 	).dwe
 	
 *	The rest are one-to-one:
@@ -1275,20 +1604,20 @@ set	mapi(i,ii)	Sectoral mapping /
 	RPP.RPP		! Rubber and plastic products
 	PPP.PPP		! Paper products, publishing
 	(	! Agriculture
-		PDR		! "Paddy rice",
-		Wht		! "Wheat",
-		GRO		! "Cereal grains nec",
-		V_F		! "Vegetables, fruit, nuts",
-		OSD		! "Oil seeds",
-		C_B		! "Sugar cane, sugar beet",
-		PFB		! "Plant-based fibers",
-		OCR		! "Crops nec",
-		CTL		! "Bovine cattle, sheep and goats, horses",
-		OAP		! "Animal products nec",
-		RMK		! "Raw milk",
-		WOL		! "Wool, silk-worm cocoons"
-		FRS		! "Forestry",
-		FSH		! "Fishing",
+PDR		! "Paddy rice",
+Wht		! "Wheat",
+GRO		! "Cereal grains nec",
+V_F		! "Vegetables, fruit, nuts",
+OSD		! "Oil seeds",
+C_B		! "Sugar cane, sugar beet",
+PFB		! "Plant-based fibers",
+OCR		! "Crops nec",
+CTL		! "Bovine cattle, sheep and goats, horses",
+OAP		! "Animal products nec",
+RMK		! "Raw milk",
+WOL		! "Wool, silk-worm cocoons"
+FRS		! "Forestry",
+FSH		! "Fishing",
 	).AGR
 
 	(	! Manufacturing
@@ -1301,7 +1630,7 @@ set	mapi(i,ii)	Sectoral mapping /
                 EEQ		! "Electronic equipment",
                 CEO		! "Computer, electronic and optical products",
                 OMF		! "Manufactures nec",
-		   
+   
                 CMT		! "Bovine meat products",
                 OMT		! "Meat products nec",
                 VOL		! "Vegetable oils and fats",
@@ -1317,30 +1646,30 @@ set	mapi(i,ii)	Sectoral mapping /
 
 
 	(	! Transport
-		WTP	! "Water transport",
-		ATP	! "Air transport",
-		OTP	! "Transport nec",
+WTP	! "Water transport",
+ATP	! "Air transport",
+OTP	! "Transport nec",
 	).TRN
 
 
 
 	(	! Services
-		TRD		! "Trade",	
-		INS		! "Insurance (formerly isr)"			
-		OXT		! "Other Extraction (formerly omn Minerals nec)",
-		BPH		! "Basic pharmaceutical products",
-		AFS		! "Accommodation, Food and service activities",
-		CMN		! "Communication",
-		OFI		! "Financial services nec",
-		OBS		! "Business services nec",
-		RSA		! "Real estate activities",
-		ROS		! "Recreational and other services",
-		WHS		! "Warehousing and support activities",
-		OSG		! "Public Administration and defense",
-		EDU		! "Education",
-		HHT		! "Human health and social work activities",
-		WTR		! "Water",
-		DWE		! "Dwellings"
+TRD		! "Trade",	
+INS		! "Insurance (formerly isr)"			
+OXT		! "Other Extraction (formerly omn Minerals nec)",
+BPH		! "Basic pharmaceutical products",
+AFS		! "Accommodation, Food and service activities",
+CMN		! "Communication",
+OFI		! "Financial services nec",
+OBS		! "Business services nec",
+RSA		! "Real estate activities",
+ROS		! "Recreational and other services",
+WHS		! "Warehousing and support activities",
+OSG		! "Public Administration and defense",
+EDU		! "Education",
+HHT		! "Human health and social work activities",
+WTR		! "Water",
+DWE		! "Dwellings"
 	).SER
 
 /;
@@ -1397,20 +1726,20 @@ set	mapi(i,ii)	Sectoral mapping /
 	RPP.CHM		! Rubber and plastic products
 	PPP.CHM		! Paper products, publishing
 	(	! Agriculture
-		PDR		! "Paddy rice",
-		Wht		! "Wheat",
-		GRO		! "Cereal grains nec",
-		V_F		! "Vegetables, fruit, nuts",
-		OSD		! "Oil seeds",
-		C_B		! "Sugar cane, sugar beet",
-		PFB		! "Plant-based fibers",
-		OCR		! "Crops nec",
-		CTL		! "Bovine cattle, sheep and goats, horses",
-		OAP		! "Animal products nec",
-		RMK		! "Raw milk",
-		WOL		! "Wool, silk-worm cocoons"
-		FRS		! "Forestry",
-		FSH		! "Fishing",
+PDR		! "Paddy rice",
+Wht		! "Wheat",
+GRO		! "Cereal grains nec",
+V_F		! "Vegetables, fruit, nuts",
+OSD		! "Oil seeds",
+C_B		! "Sugar cane, sugar beet",
+PFB		! "Plant-based fibers",
+OCR		! "Crops nec",
+CTL		! "Bovine cattle, sheep and goats, horses",
+OAP		! "Animal products nec",
+RMK		! "Raw milk",
+WOL		! "Wool, silk-worm cocoons"
+FRS		! "Forestry",
+FSH		! "Fishing",
 	).AGR
 
 	(	! Manufacturing
@@ -1423,7 +1752,7 @@ set	mapi(i,ii)	Sectoral mapping /
                 EEQ		! "Electronic equipment",
                 CEO		! "Computer, electronic and optical products",
                 OMF		! "Manufactures nec",
-		   
+   
                 CMT		! "Bovine meat products",
                 OMT		! "Meat products nec",
                 VOL		! "Vegetable oils and fats",
@@ -1439,30 +1768,30 @@ set	mapi(i,ii)	Sectoral mapping /
 
 
 	(	! Transport
-		WTP	! "Water transport",
-		ATP	! "Air transport",
-		OTP	! "Transport nec",
+WTP	! "Water transport",
+ATP	! "Air transport",
+OTP	! "Transport nec",
 	).TRN
 
 
 
 	(	! Services
-		TRD		! "Trade",	
-		INS		! "Insurance (formerly isr)"			
-		OXT		! "Other Extraction (formerly omn Minerals nec)",
-		BPH		! "Basic pharmaceutical products",
-		AFS		! "Accommodation, Food and service activities",
-		CMN		! "Communication",
-		OFI		! "Financial services nec",
-		OBS		! "Business services nec",
-		RSA		! "Real estate activities",
-		ROS		! "Recreational and other services",
-		WHS		! "Warehousing and support activities",
-		OSG		! "Public Administration and defense",
-		EDU		! "Education",
-		HHT		! "Human health and social work activities",
-		WTR		! "Water",
-		DWE		! "Dwellings"
+TRD		! "Trade",	
+INS		! "Insurance (formerly isr)"			
+OXT		! "Other Extraction (formerly omn Minerals nec)",
+BPH		! "Basic pharmaceutical products",
+AFS		! "Accommodation, Food and service activities",
+CMN		! "Communication",
+OFI		! "Financial services nec",
+OBS		! "Business services nec",
+RSA		! "Real estate activities",
+ROS		! "Recreational and other services",
+WHS		! "Warehousing and support activities",
+OSG		! "Public Administration and defense",
+EDU		! "Education",
+HHT		! "Human health and social work activities",
+WTR		! "Water",
+DWE		! "Dwellings"
 	).SER
 
 /;
@@ -1536,55 +1865,55 @@ $if "%2"=="loadset" $exit
 set	mapi(i,ii)	Sectoral mapping /
 
 	(	! "Forestry, fishing, and related activities (113FF)"
-		FRS		! "Forestry",
-		FSH		! "Fishing",
+FRS		! "Forestry",
+FSH		! "Fishing",
 	).fof	
 
 	(	! "Food and beverage and tobacco products (311FT)"
-		CMT    		! "Bovine meat products",
-		OMT    		! "Meat products nec",
-		VOL    		! "Vegetable oils and fats",
-		MIL    		! "Dairy products",
-		PCR    		! "Processed rice",
-		SGR    		! "Sugar",
-		OFD    		! "Food products nec",
-		B_T    		! "Beverages and tobacco products",
+CMT    		! "Bovine meat products",
+OMT    		! "Meat products nec",
+VOL    		! "Vegetable oils and fats",
+MIL    		! "Dairy products",
+PCR    		! "Processed rice",
+SGR    		! "Sugar",
+OFD    		! "Food products nec",
+B_T    		! "Beverages and tobacco products",
 	).fbp
 
 	(	! "Apparel and leather and allied products (315AL)"
-		WAP		! "Wearing apparel",
-		LEA		! "Leather products",
+WAP		! "Wearing apparel",
+LEA		! "Leather products",
 	).alt
 
 	(	! "Primary metals (331)"
-		I_S		! "Ferrous metals",
-		NFM		! "Metals nec",
+I_S		! "Ferrous metals",
+NFM		! "Metals nec",
 	).pmt
 
 	(	! "Crude oil and natural gas"
-		CRU		! "Crude Oil",
-		GAS		! "Gas",
+CRU		! "Crude Oil",
+GAS		! "Gas",
 	).ogs
 
 	(	! "Utilities"
-		ELE		! "Electricity",
-		GDT		! "Gas manufacture, distribution",
-		WTR		! "Water",
+ELE		! "Electricity",
+GDT		! "Gas manufacture, distribution",
+WTR		! "Water",
 	).uti
 	
 	(	! "Mining"
-		COL		! "Coal",
-		OXT		! "Other mining extraction",
+COL		! "Coal",
+OXT		! "Other mining extraction",
 	).oxt
 	
 	(	! "Recreational and other services"
-		AFS		! "Accommodation, Food and service activities",
-		ROS		! "Recreational and other services",
+AFS		! "Accommodation, Food and service activities",
+ROS		! "Recreational and other services",
 	).ros
 	
 	(	! "Dwellings and real estate activities"
-		DWE		! "Dwellings",
-		RSA		! "Real estate activities",
+DWE		! "Dwellings",
+RSA		! "Real estate activities",
 	).dwe
 	
 	INS.ISR			! "Insurance",

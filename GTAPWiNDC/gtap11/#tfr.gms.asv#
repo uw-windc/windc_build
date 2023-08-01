@@ -1,10 +1,12 @@
 $title	 GTAPinGAMS -- GAMS/MPSGE and GAMS/MCP Formulations for the Global Multiregional Model
 
+$eolcom !
+
 *	This version of the model assumes that goods produced
 *	for the domestic and export markets are perfect substitutes.
 
 $if not set yr    $set yr    2017
-$if not set ds    $set ds    msmr
+$if not set ds    $set ds    g20_10
 
 *	Read the data file:
 
@@ -103,15 +105,32 @@ $demand:RA(r)  s:0
 
 $offtext
 $sysinclude mpsgeset gmr_mge
+
 gmr_mge.workspace = 1024;
 gmr_mge.iterlim = 0;
 $include gmr_mge.gen
 solve gmr_mge using mcp;
 abort$round(gmr_mge.objval,3) "Benchmark replication problem with the MGE model.";
 
-$if not set mgeonly $set mgeonly no
-$if %mgeonly%==yes $exit
+parameter	chkra;
 
+chkra(r,"P") = -(sum(i,sdd(i,r)) + vom("g",r) + vom("i",r)) + vb(r);
+
+chkra(r,"PM") = -sum(i,sdi(i,r));
+
+chkra(r,"PF") = sum(f,evom(f,r));
+
+chkra(r,"Y") = sum(g$vom(g,r),rto(g,r)*vom(g,r) 
+		+ sum(i,rtfd(i,g,r)*vdfm(i,g,r)+rtfi(i,g,r)*vifm(i,g,r)) 
+		+ sum(f,rtf(f,g,r)*vfm(f,g,r))
+		);
+
+chkra(r,"M") = -sum((i,rr)$vim(i,rr),rtxs(i,r,rr)*vxmd(i,r,rr)) 
+  + sum((i,rr)$vim(i,r), rtms(i,rr,r) * ( (1-rtxs(i,rr,r))*vxmd(i,rr,r) + sum(j,vtwr(j,i,rr,r))) );
+
+chkra(r,"chk") = vom("c",r) - ( chkra(r,"P") + chkra(r,"PM") +
+		chkra(r,"PF") + chkra(r,"Y") + chkra(r,"M") );
+display chkra;
 
 *       -------------------------------------------------------------------------------
 *       Macros to diagnose the functional form:
@@ -392,6 +411,8 @@ ih_P_RA(i_P("c",r),h_RA(r)) = yes;
 jh_Y_RA(j_Y(g,r),h_RA(r)) = yes$(abs(rto(g,r))+sum(i,abs(rtfd(i,g,r))+abs(rtfi(i,g,r)))+sum(f,abs(rtf(f,g,r))));
 jh_M_RA(j_M(i,r),h_RA(rr)) = yes$(abs(rtxs(i,rr,r)) or (sameas(r,rr) and sum(rr.local,abs(rtms(i,rr,r)))));
 
+
+
 *	Endowment:
 
 hi_RA_P(h_RA(r),i_P(g,r)) = yes$(sum(i(g),abs(sdd(i,r)))+abs(vom(g,r))$(sameas(g,"i") or sameas(g,"g")));
@@ -415,50 +436,96 @@ $offecho
 
 *	Load macros to return netput values:
 
-$macro  a_P_Y(i_P,j_Y) ( sum(indices_Y(j_Y,g,r), \
-			  sum(indices_P(i_P,g,r), vom(g,r)) \
-			- sum(indices_P(i_P,i,r), DDFM(i,g,r))))
-$macro  a_PM_Y(i_PM,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PM(i_PM,i,r), -DIFM(i,g,r))) )
-$macro	a_PS_Y(i_PS,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PS(i_PS,sf,g,r), -DFM(sf,g,r))) )
-$macro  a_PF_Y(i_PF,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PF(i_PF,mf,r), -DFM(mf,g,r))) )
-$macro tau_Y_RA(j_Y,h_RA) (sum((indices_Y(j_Y,g,r),indices_RA(h_RA,r)), \
-	                                 rto(g,r)*vom(g,r)*P(g,r) + \ 
-	sum(ij_P_Y( i_P(i,r), j_Y),    rtfd(i,g,r)*DDFM(i,g,r)*P(i,r)) + \ 
-	sum(ij_PM_Y(i_PM(i,r),j_Y),    rtfi(i,g,r)*DIFM(i,g,r)*PM(i,r)) + \ 
-	sum(ij_PS_Y(i_PS(sf,g,r),j_Y), rtf(sf,g,r)*DFM(sf,g,r)*PS(sf,g,r)) + \ 
-	sum(ij_PF_Y(i_PF(mf,r),j_Y),   rtf(mf,g,r)*DFM(mf,g,r)*PF(mf,r)) ) )
+$macro  a_P_Y(i_P,j_Y) ( sum(indices_Y(j_Y,g.local,r.local), \
+			 sum(indices_P(i_P,g,r), vom(g,r)) \
+			- sum(indices_P(i_P,i.local,r), DDFM(i,g,r))))
 
-$macro  a_PM_M(i_PM,j_M) ( sum(indices_M(j_M,i,r), sum(indices_PM(i_PM,i,r), vim(i,r) )) )
-$macro  a_P_M(i_P,j_M)	( sum(indices_M(j_M,i,r), sum(indices_P(i_P,i,rr), -DXMD(i,rr,r))) )
-$macro  a_PT_M(i_PT,j_M) ( sum((indices_M(j_M,i,r), indices_PT(i_PT,j), ij_P_M(i,rr,j_M)), -DTWR(j,i,rr,r)) )
+$macro  a_PM_Y(i_PM,j_Y) ( sum((ij_PM_Y(i_PM,j_Y),indices_PM(i_PM,i.local,r),indices_Y(j_Y,g.local,r.local)),    -DIFM(i,g,r)) )
+$macro	a_PS_Y(i_PS,j_Y) ( sum((ij_PS_Y(i_PS,j_Y),indices_PS(i_PS,sf.local,g.local,r.local),indices_Y(j_Y,g,r)), -DFM(sf,g,r)) )
+$macro  a_PF_Y(i_PF,j_Y) ( sum((ij_PF_Y(i_PF,j_Y),indices_PF(i_PF,mf.local,r.local),indices_Y(j_Y,g.local,r)),   -DFM(mf,g,r)) )
+$macro  a_PM_M(i_PM,j_M) ( sum((ij_PM_M(i_PM,j_M),indices_PM(i_PM,i.local,r.local),indices_M(j_M,i,r)),          vim(i,r)) )
 
+$macro  a_P_M(i_P,j_M)	 ( sum((ij_P_M(i_P,j_M),indices_P(i_P,i.local,rr.local),indices_M(j_M,i,r.local)),       -DXMD(i,rr,r)) )
+$macro  a_PT_M(i_PT,j_M) ( sum((ij_PT_M(i_PT,j_M),indices_PT(i_PT,j.local),indices_P(i_P,i.local,rr.local),indices_M(j_M,i,r.local)), -DTWR(j,i,rr,r)) )
 
-$macro  tau_M_RA(j_M,h_RA)	( sum((indices_M(j_M,i,r),indices_RA(h_RA,rt)), \
-	sum(ij_P_M(i_P(i,rr),j_M), ( -rtxs(i,rr,r)*DXMD(i,rr,r)*P(i,rr) )$sameas(rt,rr) + \
-		  (  rtms(i,rr,r)*( (1-rtxs(i,rr,r))*DXMD(i,rr,r)*P(i,rr)))$sameas(rt,r) + \
-	 sum(ij_PT_M(i_PT(j),j_M), rtms(i,rr,r)*DTWR(j,i,rr,r)*PT(j))$sameas(rt,r)) ) )
+$macro a_PT_YT(i_PT,j_YT) (sum((indices_PT(i_PT,j.local),indices_YT(j_YT,j)), vtw(j)))
+$macro a_P_YT(i_P,j_YT)   (sum((ij_P_YT(i_P,j_YT),indices_P(i_P,j.local,r.local),indices_YT(j_YT,j)), -DST(j,r)))
+$macro a_PS_FT(i_PS,j_FT) (sum((ij_PS_FT(i_PS,j_FT),indices_PS(i_PS,sf.local,j.local,r.local),indices_FT(j_FT,sf,r)), SFM(sf,j,r)))
+$macro a_PF_FT(i_PF,j_FT) (sum((indices_PF(i_PF,sf.local,r.local),indices_FT(j_FT,sf,r)),  -evom(sf,r)))
+$macro e_RA_P(h_RA,i_P)   (sum(indices_RA(h_RA,r.local), \
+			  sum(indices_P(i_P,i.local,r),	-sdd(i,r))  \
+			+ sum(indices_P(i_P,"g",r),	-vom("g",r))  \
+			+ sum(indices_P(i_P,"i",r),	-vom("i",r))  \
+			+ sum(indices_P(i_P,"i",rnum),  vb(r))))
 
-$macro a_PT_YT(i_PT,j_YT) (sum((indices_YT(j_YT,j),indices_PT(i_PT,j)), vtw(j)))
-$macro a_P_YT(i_P,j_YT) (sum((indices_YT(j_YT,j),indices_P(i_P,j,r)), -DST(j,r)))
-$macro a_PS_FT(i_PS,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PS(i_PS,sf,j,r)), SFM(sf,j,r)))
-$macro a_PF_FT(i_PF,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PF(i_PF,sf,r)),  -evom(sf,r)))
-$macro	e_RA_P(h_RA,i_P) ( sum(indices_RA(h_RA,r), \
-				sum(indices_P(i_P,i,r), -sdd(i,r)) \
-				+ sum(indices_P(i_P,"g",r), -vom("g",r)) \
-				+ sum(indices_P(i_P,"i",r), -vom("i",r)) \
-				+ sum(indices_P(i_P,"i",rnum), vb(r)) ))
+$macro  e_RA_PM(h_RA,i_PM) (sum((indices_RA(h_RA,r.local),indices_PM(i_PM,i.local,r)),	-sdi(i,r)))
+$macro  e_RA_PF(h_RA,i_PF) (sum((indices_RA(h_RA,r.local),indices_PF(i_PF,f.local,r)),	evom(f,r)))
+$macro  d_P_RA(i_P,h_RA)  ( sum((indices_RA(h_RA,r.local),indices_P(i_P,"c",r)),	RA(r)/P("c",r)) )
 
-$macro  e_RA_PM(h_RA,i_PM) (sum((indices_RA(h_RA,r),indices_PM(i_PM,i,r)),-sdi(i,r)))
-$macro  e_RA_PF(h_RA,i_PF) (sum((indices_RA(h_RA,r),indices_PF(i_PF,f,r)), evom(f,r)))
-$macro  d_P_RA(i_P,h_RA)  ( sum((indices_RA(h_RA,r),indices_P(i_P,"c",r)), RA(r)/P("c",r)) )
+*	Revenue per unit activity of sector Y(g,r) to RA(r):
+
+*	a. Output tax
+*	b. Ad-valorem tax on domestic intermediates
+*	c. Ad-valorem tax on imported intermediates
+*	d. Ad-valorem tax on specific factors
+*	e. Ad-valorem tax on mobile factors
+
+$oninline
+
+$macro mu_P_Y_RA(i_P,j_Y,h_RA) \
+	(sum((indices_P(i_P,gg.local,r.local),indices_Y(j_Y,g.local,r),indices_RA(h_RA,r)), \
+/* a */		( rto(g,r)*vom(g,r) )$sameas(gg,g) \
+/* b */		+ sum(i(gg), rtfd(i,g,r)*DDFM(i,g,r)) ))
+
+$macro mu_PM_Y_RA(i_PM,j_Y,h_RA) \
+	(sum((indices_PM(i_PM,i.local,r.local),indices_Y(j_Y,g.local,r),indices_RA(h_RA,r)), \
+/* c */		rtfi(i,g,r)*DIFM(i,g,r) ))
+
+$macro mu_PS_Y_RA(i_PS,j_Y,h_RA) \
+	(sum((indices_PS(i_PS,sf.local,g.local,r.local), indices_Y(j_Y,g,r), indices_RA(h_RA,r)), \
+/* d */		rtf(sf,g,r)*DFM(sf,g,r)))
+
+$macro mu_PF_Y_RA(i_PS,j_Y,h_RA) \
+	(sum((indices_PF(i_PF,mf.local,r.local), indices_Y(j_Y,g,r), indices_RA(h_RA,r)), \
+/* e */	rtf(mf,g,r)*DFM(mf,g,r)))
+
+$macro tau_Y_RA(j_Y,h_RA) ( \
+		    sum(ij_P_Y(i_P,j_Y),  P(i_P)   * mu_P_Y_RA(i_P, j_Y,h_RA)) \
+		  + sum(ij_PM_Y(i_PM,j_Y), PM(i_PM)*mu_PM_Y_RA(i_PM,j_Y,h_RA)) \
+		  + sum(ij_PS_Y(i_PS,j_Y), PS(i_PS)*mu_PS_Y_RA(i_PS,j_Y,h_RA)) \
+		  + sum(ij_PF_Y(i_PF,j_Y), PF(i_PF)*mu_PF_Y_RA(i_PF,j_Y,h_RA)) )
+
+*	Revenue per unit activity of sector M(i,r) to RA(rt):
+*	a. Subsidies on exports from r are paid to r
+*	b. Tariffs on imports from r to rt are paid on the net of subsidy value
+*	c. Tariffs on trade margins to rt.
+
+$macro	mu_P_M_RA(i_P,j_M,h_RA) \
+	(sum((indices_P(i_P,i.local,r.local), indices_M(j_M,i,rr.local), indices_RA(h_RA,rt.local)), \
+/* a. */ ( -rtxs(i,r,rr)*DXMD(i,r,rr))$sameas(r,rt) + \
+/* b. */ ( rtms(i,r,rr)*(1-rtxs(i,r,rr))*DXMD(i,r,rr) )$sameas(rr,rt) ))
+
+$macro  mu_PT_M_RA(i_PT,j_M,h_RA) \
+	(sum((indices_PT(i_PT,j.local), indices_M(j_M,i.local,r.local), indices_RA(h_RA,r)), \
+/* c. */ sum(rr.local$vxmd(i,rr,r),rtms(i,rr,r)*DTWR(j,i,rr,r))))
+
+$macro  tau_M_RA(j_M,h_RA) \
+	( sum(ij_P_M(i_P,j_M),  P(i_P)*mu_P_M_RA(i_P,j_M,h_RA)) \
+	+ sum(ij_PT_M(i_PT,j_M), PT(i_PT)*mu_PT_M_RA(i_PT,j_M,h_RA)) )
 
 *	Interface macros translate user request to the corresponding 
 *	model-specific macro:
 
 $macro	a(i,j)	 (a_&&i&_&&j(i_&&i,j_&&j)$ij_&&i&_&&j(i_&&i,j_&&j))
-$macro	tau(j,h) (tau_&&j&_&&h(j_&&j,h_&&h))$jh_&&j&_&&h(j_&&j,h_&&h)
+
 $macro	e(h,i)	 (e_&&h&_&&i(h_&&h,i_&&i)$hi_&&h&_&&i(h_&&h,i_&&i))
 $macro	d(i,h)	 (d_&&i&_&&h(i_&&i,h_&&h)$ih_&&i&_&&h(i_&&i,h_&&h))
+
+
+*	Tax revenue by commodity, sector and consumer:
+
+$macro	tau(j,h) (tau_&&j&_&&h(j_&&j,h_&&h)$jh_&&j&_&&h(j_&&j,h_&&h))
+$macro	mu(i,j,h) (mu_&&i&_&&j&_&&h(i_&&i,j_&&j,h_&&h)$ij_&&i&_&&j(i_&&i,j_&&j))
 
 *	Algebraic version of the MPSGE model:
 
@@ -476,71 +543,70 @@ equations
 
 	income_RA(r)		Income balance for RA;
 
+alias (g,gg);
 
-$eolcom !
-
-profit_Y(j_Y)..	! $prod:Y(g,r)$vom(g,r)
-	- sum(i_P,  P(i_P)   * a(P,Y))		! o:P(g,r), i:P(i,r)
-	- sum(i_PM, PM(i_PM) * a(PM,Y))		! i:PM(i,r)
-	- sum(i_PS, PS(i_PS) * a(PS,Y))		! i:PS(sf,g,r)
-	- sum(i_PF, PF(i_PF) * a(PF,Y))		! i:PF(mf,g,r)
-	+ sum(h_RA,            tau(Y,RA))	! t:rto,rtfd,rtfi,rtf
+profit_Y(j_Y(g,r))..	! $prod:Y(g,r)$vom(g,r)
+	- sum(i_P(gg,r),    P(gg,r)    * a(P,Y))	! o:P(g,r), i:P(i,r)
+	- sum(i_PM(i,r),    PM(i,r)    * a(PM,Y))	! i:PM(i,r)
+	- sum(i_PS(sf,g,r), PS(sf,g,r) * a(PS,Y))	! i:PS(sf,g,r)
+	- sum(i_PF(mf,r),   PF(mf,r)   * a(PF,Y))	! i:PF(mf,g,r)
+	+ sum(h_RA(r),	    tau(Y,RA))			! t:rto,rtfd,rtfi,rtf
 	=e= 0;
 
-profit_M(j_M)..	! $prod:M(i,r)$vim(i,r)	
-	- sum(i_PM, PM(i_PM) * a(PM,M))		! o:PM(i,r)
-	- sum(i_P,  P(i_P)   * a(P,M))		! i:P(i,Rr)
-	- sum(i_PT, PT(i_PT) * a(PT,M))		! i:PT(j)
-	+ sum(h_RA,            tau(M,RA) )	! t:rtxs, rtms
+profit_M(j_M(i,r))..	! $prod:M(i,r)$vim(i,r)	
+	- sum(i_PM(i,r), PM(i,r) * a(PM,M))		! o:PM(i,r)
+	- sum(i_P(i,rr), P(i,rr) * a(P,M))		! i:P(i,r)
+	- sum(i_PT(j),   PT(j)   * a(PT,M))		! i:PT(j)
+	+ sum(h_RA, tau(M,RA) )	! t:rtxs, rtms
 	=e= 0;
 
-profit_FT(j_FT)..	! $prod:FT(sf,r)$evom(sf,r)
-	- sum(i_PS, PS(i_PS) * a(PS,FT))	! o:PS(sf,j,r)
-	- sum(i_PF, PF(i_PF) * a(PF,ft))	! i:PF(sf,r)
+profit_FT(j_FT(sf,r))..	! $prod:FT(sf,r)$evom(sf,r)
+	- sum(i_PS(sf,j,r), PS(sf,j,r) * a(PS,FT))	! o:PS(sf,j,r)
+	- sum(i_PF(sf,r),   PF(sf,r)   * a(PF,ft))	! i:PF(sf,r)
 	=e= 0;
 
-profit_YT(j_YT)..	! $prod:YT(j)$vtw(j)..
-	- sum(i_PT, PT(i_PT) * a(PT,YT))	! o:PT(j) 
-	- sum(i_P,  P(i_P)   * a(P,YT))		! i:P(j,r)
+profit_YT(j_YT(j))..	! $prod:YT(j)$vtw(j)..
+	- sum(i_PT(j),  PT(j)  * a(PT,YT))	! o:PT(j) 
+	- sum(i_P(j,r), P(j,r) * a(P,YT))	! i:P(j,r)
 	=e= 0;
 
-market_P(i_P)..	
-	  sum(j_Y, a(P,Y)   * Y(j_Y))		! $prod:Y(g,r) -- o:P(g,r), i:P(i,r)
-	+ sum(j_M, a(P,M)   * M(j_M))		! $prod:M(i,r) -- i:P(i,rr)
-	+ sum(j_YT, a(P,YT) * YT(j_YT))		! $prod:YT(j) -- i:P(j,r)
+market_P(i_P(g,r))..	
+	  sum(j_Y(gg,r),   a(P,Y)  * Y(gg,r))	! $prod:Y(g,r) -- o:P(g,r), i:P(i,r)
+	+ sum(j_M(i(g),rr),a(P,M)  * M(i,rr))	! $prod:M(i,r) -- i:P(i,rr)
+	+ sum(j_YT(j),     a(P,YT) * YT(j))	! $prod:YT(j) -- i:P(j,r)
 	=e= 
-	  sum(h_RA, d(P,RA)-e(RA,P));		! $demand:RA(r) -- d:P("c",r), e:P(i,r), P("g",r), P("i",r), P("i",rnum)
+	  sum(h_RA(rr),    d(P,RA)-e(RA,P));	! $demand:RA(r) -- d:P("c",r), e:P(i,r), P("g",r), P("i",r), P("i",rnum)
 
-market_PM(i_PM)..
-	  sum(j_Y,  a(PM,Y)  * Y(j_Y))		! $prod:Y(g,r) -- i:PM(i,r)
-	+ sum(j_M,  a(PM,M)  * M(j_M))		! $prod:M(i,r) -- o:PM(i,r)
-	+ sum(h_RA, e(RA,PM))			! $demand:RA(r) -- e:PM(i,r)
+market_PM(i_PM(i,r))..
+	  sum(j_Y(g,r),  a(PM,Y)  * Y(g,r))	! $prod:Y(g,r) -- i:PM(i,r)
+	+ sum(j_M(i,r),  a(PM,M)  * M(i,r))	! $prod:M(i,r) -- o:PM(i,r)
+	+ sum(h_RA(r),   e(RA,PM))		! $demand:RA(r) -- e:PM(i,r)
 	=e= 0;
 
-market_PF(i_PF)..
-	  sum(j_FT, a(PF,FT) * FT(j_FT))	! $prod:FT(sf,r)  -- i:PF(sf,r)
-	+ sum(j_Y,  a(PF,Y)  * Y(j_Y))		! $prod:Y(g,r) -- i:PF(mf,r)
-	+ sum(h_RA, e(RA,PF))			! $demand:RA(r) -- e:PF(r,f)
+market_PF(i_PF(f,r))..
+	  sum(j_FT(sf(f),r), a(PF,FT) * FT(sf,r)) ! $prod:FT(sf,r)  -- i:PF(sf,r)
+	+ sum(j_Y(g,r),      a(PF,Y)  * Y(g,r))	  ! $prod:Y(g,r) -- i:PF(mf,r)
+	+ sum(h_RA(r),       e(RA,PF))		  ! $demand:RA(r) -- e:PF(r,f)
 	=e= 0;
 
-market_PS(i_PS)..
-	+ sum(j_Y,  a(PS,Y) * Y(j_Y))		! $prod:Y(g,r) -- i:PS(sf,g,r)
-	+ sum(j_FT, a(PS,FT) * FT(j_FT))	! $prod:FT(sf,r)  -- o:PS(sf,j,r)
+market_PS(i_PS(sf,g,r))..
+	+ sum(j_Y(g,r),   a(PS,Y)  * Y(g,r))	! $prod:Y(g,r) -- i:PS(sf,g,r)
+	+ sum(j_FT(sf,r), a(PS,FT) * FT(sf,r))	! $prod:FT(sf,r)  -- o:PS(sf,j,r)
 	=e= 0;
 
-market_PT(i_PT)..
-	+ sum(j_YT, a(PT,YT) * YT(j_YT))	! $prod:YT(j) -- o:PT(j)
-	+ sum(j_M,  a(PT,M) * M(j_M))		! $prod:M(i,r) -- i:PT(j)
+market_PT(i_PT(j))..
+	+ sum(j_YT(j),   a(PT,YT) * YT(j))	! $prod:YT(j) -- o:PT(j)
+	+ sum(j_M(i,r),  a(PT,M)  * M(i,r))	! $prod:M(i,r) -- i:PT(j)
 	=e= 0;
 
-income_RA(h_RA)..	!  $demand:RA(r)
+income_RA(h_RA(r))..	!  $demand:RA(r)
 
-	RA(h_RA) =e= 
-		+ sum(i_P, P(i_P) * e(RA,P))		! e:P(i,r),P("g",r),P("i",r),P("i",rnum)
-		+ sum(i_PM, PM(i_PM) * e(RA,PM))	! e:PM(i,r)
-		+ sum(i_PF, PF(i_PF) * e(RA,PF))	! e:PF(f,r)
-		+ sum(j_Y, tau(Y,RA) * Y(j_Y))		! $prod:Y(g,r) -- t:rto,rtfd,rtfi,rtf
-		+ sum(j_M, tau(M,RA) * M(j_M))		! $prod:M(i,r) -- t:rtxs, rtms
+	RA(r) =e= 
+		+ sum(i_P(g,rr), P(g,rr)  * e(RA,P))	! e:P(i,r),P("g",r),P("i",r),P("i",rnum)
+		+ sum(i_PM(i,r), PM(i,r) * e(RA,PM))	! e:PM(i,r)
+		+ sum(i_PF(f,r), PF(f,r) * e(RA,PF))	! e:PF(f,r)
+		+ sum(j_Y(g,r),  tau(Y,RA) * Y(g,r))	! $prod:Y(g,r) -- t:rto,rtfd,rtfi,rtf
+		+ sum(j_M(i,rr), tau(M,RA) * M(i,rr))	! $prod:M(i,r) -- t:rtxs, rtms
 	;
 
 model gmr_mcp /
@@ -561,14 +627,51 @@ model gmr_mcp /
 
 RA.L(r) = vom("c",r);
 
+$ondotl
+
 
 $include gmr_mcp.gen
+
+parameter	chk_tau_Y, chk_tau_M;
+chk_tau_Y(j_Y(g,r),h_RA(r)) = tau(Y,RA) - rto(j_Y)*vom(j_Y) 
+	- sum(i,rtfd(i,j_Y)*vdfm(i,j_Y)+rtfi(i,j_Y)*vifm(i,j_Y)) 
+	- sum(f,rtf(f,j_Y)*vfm(f,j_Y));
+
+chk_tau_M(j_M(i,r),h_RA(rt)) = tau(M,RA) 
+	+ ( rtxs(i,rt,r)*vxmd(i,rt,r) )
+	- sum(rr, rtms(i,rr,r)*( (1-rtxs(i,rr,r))*vxmd(i,rr,r) 
+		+ sum(j,vtwr(j,i,rr,r))))$sameas(r,rt);
+
+option chk_tau_Y:3:0:1, chk_tau_M:3:0:1;
+display chk_tau_Y, chk_tau_M;
+
+chkra(h_RA(r),"P") = sum(i_P(g,rr), P(g,rr)  * e(RA,P));
+chkra(h_RA(r),"Pm") = sum(i_PM(i,r), PM(i,r) * e(RA,PM));
+chkra(h_RA(r),"PF") = sum(i_PF(f,r), PF(f,r) * e(RA,PF));
+chkra(h_RA(r),"Y") = sum(j_Y(g,r),  tau(Y,RA) * Y(g,r));
+chkra(h_RA(r),"m") = sum(j_M(i,rr), tau(M,RA) * M(i,rr));
+chkra(h_RA(r),"chk") = RA.L(r) - ( chkra(r,"P") + chkra(r,"Pm") +
+		chkra(r,"PF") + chkra(r,"Y") + chkra(r,"m") );
+display chkra;
 
 *	Benchmark replication of the MCP model:
 
 gmr_mcp.iterlim = 0;
 solve gmr_mcp using mcp;
-abort$round(gmr_mcp.objval,3) "Benchmark replication problem with the MCP model.";
+
+$exit
+
+option limrow=10000, limcol=10000;
+option mcp=examiner; 
+gmr_mcp.optfile = yes;
+$onecho >examiner.opt
+dumpSoluPoint true
+examineInitpoint true
+returnInitPoint true
+$offecho
+solve gmr_mcp using mcp;
+
+$exit
 
 *	Counterfactual in the MGE model:
 
@@ -577,7 +680,6 @@ gmr_mge.iterlim = 10000;
 $include gmr_mge.gen
 solve gmr_mge using mcp;
 abort$round(gmr_mge.objval,3) "Counterfactual solution fails with the MGE model.";
-
 
 *	Replication of the counterfactual in the MCP model:
 
@@ -593,4 +695,3 @@ gmr_mcp.iterlim = 10000;
 $include gmr_mcp.gen
 solve gmr_mcp using mcp;
 abort$round(gmr_mcp.objval,3) "Cleanup solution fails with the MCP model.";
-

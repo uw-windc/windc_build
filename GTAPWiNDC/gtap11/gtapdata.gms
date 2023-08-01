@@ -64,7 +64,7 @@ set	pol	Pollutants /
 		PM2_5       Particulate matter 2.5
 		SO2         Sulfur dioxide /;
 
-set	i_f	 /set.i, set.f, "output"/;
+set	i_f(*)	 /set.i, set.f, "output"/;
 
 parameters
 

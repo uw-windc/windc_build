@@ -119,7 +119,6 @@ trace("vfm",r,"%pt%") = sum((f,g),vfm(f,g,r));
 option trace:3:2:1;
 display trace;
 
-
 *	Drop emissions which have no corresponding economic transaction:
 *	Report change in emissions.
 
