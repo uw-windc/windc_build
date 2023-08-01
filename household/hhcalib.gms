@@ -1,13 +1,13 @@
-$title Read the household data and recalibrate the WiNDC household accounts
+$title Read the household data and recalibrate WiNDC household accounts
 
-* changes here --
-
-* - replace markups with those calculated when compared to nipa tables
-* where applicable.
+* CHANGES MADE IN THIS VERSION--
 
 * - new version of balancing routine doesn't solve aggregates. fix transfers
 * (what is known), let labor and capital shares minimize difference, and then
 * let savings be the degree of freedom. tax rates are fixed.
+
+* - replace markups with those calculated when compared to nipa tables
+* where applicable.
 
 * - for now, calibration routine solves for foreign savings. depends on static
 * vs. dynamic calibration. foreign savings is dependent on assumptions made
@@ -16,6 +16,8 @@ $title Read the household data and recalibrate the WiNDC household accounts
 
 * like before, restrict labor demand to people living within an aggregate census
 * division.
+
+* -----------------------------------------------------------------------------
 
 * Three step balancing routine:
 *    - if dynamic, solve for equilibrium investment demand
@@ -53,7 +55,7 @@ $if not set year $set year 2017
 $if not set hhdata $set hhdata cps
 
 * switch for invest calibration (static vs. dynamic)
-$if not set invest $set invest static
+$if not set invest $set invest dynamic
 
 * allow end of line comments
 $eolcom !
@@ -99,7 +101,7 @@ display baserep;
 
 
 * -----------------------------------------------------------------------------
-* Read in tax rates from SAGE model
+* Read in capital income tax rates from SAGE model
 * -----------------------------------------------------------------------------
 
 parameter
@@ -194,10 +196,6 @@ cons0_(yr,r,h) = wages0_(yr,r,h) + interest0_(yr,r,h) + trans0_(yr,r,h) - taxes0
 * Pull out needed year of data
 * -----------------------------------------------------------------------------
 
-parameter    cps		    Switch for cps based constraints /0/;
-
-$if %hhdata%=="cps" cps=1;
-
 parameters
     wages0(r,h)		Wage income by region and household (in billions),
     interest0(r,h)	Interest income by region and household (in billions),
@@ -268,8 +266,14 @@ display hhshares, comp;
 
 
 * -----------------------------------------------------------------------------
-* Read in known reporting relationships between CPS and NIPA
+* Read in known reporting relationships between CPS and NIPA for transfers
 * -----------------------------------------------------------------------------
+
+parameter
+    cps_nipa(yr,*)	Comparison of CPS and NIPA income categories,
+    trn_weight_(yr,*,*)	Source based transfer category survey markup to match nipa totals,
+    trn_weight(yr,*)	Chosen transfer survey markup,
+    trn_agg_weight(yr)	Aggregate transfer markup for soi data;
 
 * from meyers et al. (2009), most recent estimates of under-reporting are (CPS
 * totals / administrative totals for US):
@@ -289,32 +293,58 @@ display hhshares, comp;
 * veteran's payments: .679
 * social security: .899
 * all transfers: .804
-* interest, dividents, royalties (capital payments): .530
 
-parameter
-    trn_weight(*),
-    trn_agg_weight,
-    cap_weight;
+* for income categories that can compare directly with nipa tables, use
+* that. the transfer "weight" will turn into a time series. otherwise use static
+* meyers/rothbaum estimates.
 
-* use when exist, otherwise default to all transfer share
-$if %hhdata%=="cps" trn_weight('hucval') = 1 / 0.679;
-$if %hhdata%=="cps" trn_weight('hwcval') = 1 / 0.527;
-$if %hhdata%=="cps" trn_weight('hssval') = 1 / 0.899;
-$if %hhdata%=="cps" trn_weight('hssival') = 1 / 0.759;
-$if %hhdata%=="cps" trn_weight('hpawval') = 1 / 0.487;
-$if %hhdata%=="cps" trn_weight('hvetval') = 1 / 0.679;
-$if %hhdata%=="cps" trn_weight('hsurval') = 1 / 0.908;
-$if %hhdata%=="cps" trn_weight('hdisval') = 1 / 0.819;
-$if %hhdata%=="cps" trn_weight('hedval') = 1 / 0.804;
-$if %hhdata%=="cps" trn_weight('hcspval') = 1 / 0.804;
-$if %hhdata%=="cps" trn_weight('hfinval') = 1 / 0.539;
-$if %hhdata%=="cps" trn_agg_weight = sum((trn,r,h), trn_weight(trn)*hhtrans0(r,h,trn)) / sum((r,h,trn),hhtrans0(r,h,trn));
+$call 'csv2gdx data_sources%sep%cps%sep%cps_vs_nipa_income_categories.csv output=%gdxdir%cps_vs_nipa_income_categories.gdx id=cps_nipa index=(1,5) useHeader=y value=4';
+$gdxin %gdxdir%cps_vs_nipa_income_categories.gdx
+$load cps_nipa
+$gdxin
 
-$if %hhdata%=="soi" trn_weight('total') = 1 / 0.804; 
-$if %hhdata%=="soi" trn_agg_weight = 1 / 0.804; 
+* When it exists, use explicit comparison to nipa tables (and comapre with older
+* literature estimates)
 
-$if %hhdata%=="cps" cap_weight = 1 / .530;
-$if %hhdata%=="soi" cap_weight = 1;
+$if %hhdata%=="cps" trn_weight_(yr,'hucval','meyer') = 1 / 0.679;
+$if %hhdata%=="cps" trn_weight_(yr,'hucval','nipa')$(cps_nipa(yr,'government benefits: unemployment insurance')) = 1 / (cps_nipa(yr,'government benefits: unemployment insurance')/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hucval','nipa')$(not cps_nipa(yr,'government benefits: unemployment insurance')) = trn_weight_(yr,'hucval','meyer');
+
+$if %hhdata%=="cps" trn_weight_(yr,'hssval','rothbaum') = 1 / 0.899;
+$if %hhdata%=="cps" trn_weight_(yr,'hssval','nipa')$(cps_nipa(yr,'government benefits: social security')) = 1 / (cps_nipa(yr,'government benefits: social security')/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hssval','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hssval','rothbaum');
+
+$if %hhdata%=="cps" trn_weight_(yr,'hssival','meyer') = 1 / 0.759;
+$if %hhdata%=="cps" trn_weight_(yr,'hssival','nipa')$(cps_nipa(yr,'government benefits: social security')) = 1 / (cps_nipa(yr,'government benefits: social security')/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hssival','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hssival','meyer');
+
+$if %hhdata%=="cps" trn_weight_(yr,'hdisval','meyer') = 1 / 0.819;
+$if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(cps_nipa(yr,'government benefits: social security')) = 1 / (cps_nipa(yr,'government benefits: social security')/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hdisval','meyer');
+
+$if %hhdata%=="cps" trn_weight_(yr,'hvetval','rothbaum') = 1 / 0.679;
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans' benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans' benefits")/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans' benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
+
+* Otherwise, default to literature estimates
+
+$if %hhdata%=="cps" trn_weight_(yr,'hwcval','meyer') = 1 / 0.527;
+$if %hhdata%=="cps" trn_weight_(yr,'hpawval','meyer') = 1 / 0.487;
+$if %hhdata%=="cps" trn_weight_(yr,'hsurval','meyer') = 1 / 0.908;
+$if %hhdata%=="cps" trn_weight_(yr,'hedval','rothbaum') = 1 / 0.804;
+$if %hhdata%=="cps" trn_weight_(yr,'hcspval','rothbaum') = 1 / 0.804;
+$if %hhdata%=="cps" trn_weight_(yr,'hfinval','meyer') = 1 / 0.539;
+
+$if %hhdata%=="cps" trn_weight(yr,trn)$(trn_weight_(yr,trn,'nipa')) = trn_weight_(yr,trn,'nipa');
+$if %hhdata%=="cps" trn_weight(yr,trn)$(not trn_weight(yr,trn) and trn_weight_(yr,trn,'meyer')) = trn_weight_(yr,trn,'meyer');
+$if %hhdata%=="cps" trn_weight(yr,trn)$(not trn_weight(yr,trn) and trn_weight_(yr,trn,'rothbaum')) = trn_weight_(yr,trn,'rothbaum');
+
+* Define aggregate transfer mark up
+
+$if %hhdata%=="cps" trn_agg_weight(yr) = sum((trn,r,h), trn_weight(yr,trn)*hhtrans0(r,h,trn)) / sum((r,h,trn),hhtrans0(r,h,trn));
+$if %hhdata%=="soi" trn_weight(yr,'total') = 1 / 0.804; 
+$if %hhdata%=="soi" trn_agg_weight(yr) = 1 / 0.804; 
+
 
 
 * -----------------------------------------------------------------------------
@@ -449,7 +479,7 @@ wagedef(rr)..
     sum((r,h), WAGES(r,rr,h)) =e= sum(s, ld0(rr,s));
 
 * restrict work-live pairings to within census regions
-censusdef(ar,aar,h)..
+censusdef(ar,aar,h)$(not sameas(ar,aar))..
     sum((mapr(ar,r),maprr(aar,rr)), WAGES(r,rr,h)) =e= 0;
 
 * capital rents must sum to total capital demands by region
@@ -471,17 +501,18 @@ disagtrn(r,h)..
 model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, censusdef,
 			     interestdef, savedef, incbal, disagtrn /;
 
-* fix transfers
+* Fix ABSOLUTE government transfers (we have good data on this)
 
-TRANSHH.L(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
-TRANSHH.FX(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
-
+TRANSHH.FX(r,h,trn) = trn_weight("%year%",trn) * hhtrans0(r,h,trn);
 TRANS.L(r,h) = trans0(r,h);
+
+* Require a lower bound on aggregate consumption to prevent zero values from occurring
 
 CONS.L(r,h) = cons0(r,h);
 CONS.LO(r,h) = 0.5 * cons0(r,h);
 
-* let wages and interest fluctuate 
+* Target income SHARES for wages and capital earnings (both categories having
+* missing information so we target the distribution based on WiNDC totals)
 
 WAGES.L(r,r,h) = wages0(r,h);
 WAGES.LO(r,r,h) = 0.75 * income_shares(r,h,'wages') * sum(s, ld0(r,s));
@@ -492,36 +523,24 @@ INTEREST.L(r,h) = interest0(r,h);
 INTEREST.LO(r,h) = 0.75 * income_shares(r,h,'cap') * sum(s, kd0(r,s));
 INTEREST.UP(r,h) = 1.25 * income_shares(r,h,'cap') * sum(s, kd0(r,s));
 
-* make sure savings is at least retirement distributions from household data
+* Make sure savings is at least retirement distributions from household data
 
 SAVE.L(r,h) = save0(r,h);
 SAVE.LO(r,h) = 0.75 * save0(r,h);
 
+* Taxes are constrained by a fixed taxrate in the balancing routine
+
 TAXES.L(r,h) = taxes0(r,h);
 
-* use savepoint to speed subsequent model runes
-calib_step2_%hhdata%.savepoint = 1;
-$if exist '%gdxdir%calib_step2_%hhdata%_p.gdx' execute_loadpoint '%gdxdir%calib_step2_%hhdata%_p.gdx';
-
-* solve step 2
+* Solve the income side balancing routine
 
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step2_%hhdata% using nlp minimizing OBJ;';
-
-* option nlp=ipopt;
 option nlp=conopt;
-
 solve calib_step2_%hhdata% using nlp minimizing OBJ;
-
-if (calib_step2_%hhdata%.modelstat > 2,
-	option nlp=conopt;
-	solve calib_step2_%hhdata% using nlp minimizing OBJ;
-);
-
 ABORT$(calib_step2_%hhdata%.modelstat > 2) "Model calib_step2_%hhdata% has status > 2.";
 
-* execute 'mv -f calib_step2_%hhdata%_p.gdx %gdxdir%calib_step2_%hhdata%_p.gdx';
+* Construct reports on calibrated household accounts
 
-* construct reports
 parameter
     cbochk    Check on CBO result for transfers less taxes,
     chkhhdata Aggregate shares for calibrated dataset,
@@ -597,13 +616,14 @@ avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
 display avg_tax_h, avg_tax;
-$exit
+
 
 * -----------------------------------------------------------------------------
 * Expenditure side balancing routine
 * -----------------------------------------------------------------------------
 
-* income elasticities taken from SAGE documentation
+* Income elasticities taken from SAGE documentation where categories are based
+* on the Consumer Expenditure Survey from BLS.
 
 set
     cex    Income elasticity categories /
@@ -657,15 +677,17 @@ $load pcebridge
 pceshr(cex,s) = pcebridge(cex,s,'pct_windc') / 100;
 chkpce(s) = sum(cex, pceshr(cex,s));
 
-* aggregate the elasticity estiamtes to sage sectors as weighted averages using
+* Aggregate the elasticity estiamtes to sage sectors as weighted averages using
 * expenditures in the pce
+
 eta0(s)$sum(r,cd0(r,s)) = sum(cex$pceshr(cex,s), pceshr(cex,s)*sum(r, cd0(r,s))*eta_(cex)) / sum(r,cd0(r,s));
 
 theta0(r,g)      = cd0(r,g)/sum(g.local,cd0(r,g));
 incomeindex(r,h) = (cons.l(r,h)/pop0(r,h)) * 
 	           sum((r.local,h.local),pop0(r,h))/sum((r.local,h.local),cons.l(r,h));
 
-* impute consumption shares using income elasticities of demand
+* Impute consumption shares using income elasticities of demand
+
 theta(r,g,h) = theta0(r,g) * incomeindex(r,h)**eta0(g);
 theta(r,g,h) = theta(r,g,h) / sum(g.local, theta(r,g,h));
 
@@ -679,15 +701,18 @@ equations
     budget      Budget balance;
 
 
-* objective function
-objcd..		OBJ =e= sum((r,g,h), sqr(CD(r,g,h)-theta(r,g,h)*CONS.L(r,h)) )
-			- sum((r,g,h)$theta(r,g,h), LOG(CD(r,g,h)));
+* Objective function
+objcd..
+    OBJ =e= sum((r,g,h), sqr(CD(r,g,h)-theta(r,g,h)*CONS.L(r,h)) )
+    		- sum((r,g,h)$theta(r,g,h), LOG(CD(r,g,h)));
 
-* market clearance
-market(r,g)..	sum(h, CD(r,g,h)) =e= cd0(r,g);
+* Market clearance
+market(r,g)..
+    sum(h, CD(r,g,h)) =e= cd0(r,g);
 
 * income balance
-budget(r,h)$(ord(h)<card(h))..	sum(g, CD(r,g,h)) =e= CONS.L(r,h);
+budget(r,h)$(ord(h)<card(h))..
+    sum(g, CD(r,g,h)) =e= CONS.L(r,h);
 
 model calib_step3_%hhdata% /objcd, market, budget/;
 
@@ -695,31 +720,17 @@ CD.L(r,g,h) = theta(r,g,h)*CONS.L(r,h);
 CD.LO(r,g,h)$theta(r,g,h) = 1e-5;
 CD.FX(r,g,h)$(not theta(r,g,h)) = 0;
 
-* use savepoint to solve subsequent models
-
-calib_step3_%hhdata%.savepoint = 1;
-$if exist '%gdxdir%calib_step3_%hhdata%_p.gdx' execute_loadpoint '%gdxdir%calib_step3_%hhdata%_p.gdx';
-
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step3_%hhdata% using nlp minimizing OBJ;';
-
 option nlp=ipopt;
-
 solve calib_step3_%hhdata% using nlp minimizing OBJ;
-
-if (calib_step3_%hhdata%.modelstat > 3,
-	option nlp=conopt;
-	solve calib_step3_%hhdata% using nlp minimizing OBJ;
-);
-
 ABORT$(calib_step3_%hhdata%.modelstat > 2) "Model calib_step3_%hhdata% has status > 2.";
 
-execute 'mv -f calib_step3_%hhdata%_p.gdx %gdxdir%calib_step3_%hhdata%_p.gdx';
+* Construct reports on expenditure side balancing routine
 
 parameter
     exprep	Check that all expenditures shared,
     expbyinc	Report expenditure shares by income,
     avgshr      Average shares for us;
-
 
 exprep(g,r,h)$cd0(r,g) = CD.L(r,g,h) / cd0(r,g);
 exprep(g,"us",h)$sum(r, cd0(r,g)) = sum(r, CD.L(r,g,h)) / sum(r, cd0(r,g));
