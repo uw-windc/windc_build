@@ -12,7 +12,7 @@ $eolcom !
 
 $set year 2017
 
-$set ds soi_dynamic_gtap_census
+$set ds cps_static_
 
 $include windc_hhdata
 

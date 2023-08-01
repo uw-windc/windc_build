@@ -47,16 +47,11 @@ file kutl; kutl.lw=0; put kutl; kutl.nw=0; kutl.nd=0; kutl.pw=32767;
 $if set runscript $goto %runscript%
 $if set start $goto %start%
 
-* don't need to loop by year. read in at once and reconcile by having super
-* sets in income categories.
-
-* run cps_data.gms and soi_data.gms for each of the years:
-loop((year,hhdata),
-    put_utility 'title' /'Running ',year.tl,' with household dataset from ',hhdata.tl;
-    put_utility 'exec'/'gams ',hhdata.tl,'_data o=%lstdir%',hhdata.tl,'_data_',year.tl,'.lst --year=',year.tl,
-	' lo=4 lf=%lstdir%',hhdata.tl,'_data_',year.tl,'.log';
+* run cps_data.gms and soi_data.gms
+loop(hhdata,
+    put_utility 'title' /'Reading household dataset from ',hhdata.tl;
+    put_utility 'exec'/'gams ',hhdata.tl,'_data o=%lstdir%',hhdata.tl,'_data.lst lo=4 lf=%lstdir%',hhdata.tl,'_data.log';
 );
-
 
 
 * run hhcalib.gms for each year, cps/soi, and for static and dynamic investment:
