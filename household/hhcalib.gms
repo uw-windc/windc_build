@@ -1,13 +1,18 @@
 $title Read the household data and recalibrate the WiNDC household accounts
 
 * changes here --
+
+* - replace markups with those calculated when compared to nipa tables
+* where applicable.
+
 * - new version of balancing routine doesn't solve aggregates. fix transfers
 * (what is known), let labor and capital shares minimize difference, and then
 * let savings be the degree of freedom. tax rates are fixed.
-* - to do -- replace markups with those calculated when compared to nipa tables
-* where applicable.
+
 * - for now, calibration routine solves for foreign savings. depends on static
-* vs. dynamic calibration.
+* vs. dynamic calibration. foreign savings is dependent on assumptions made
+* about capital income. in the corrent version of the dataset, we assume that
+* the current capital stock is owned entirely by domestic investors.
 
 * like before, restrict labor demand to people living within an aggregate census
 * division.
@@ -45,10 +50,13 @@ $title Read the household data and recalibrate the WiNDC household accounts
 $if not set year $set year 2017
 
 * set underlying dataset for recalibration
-$if not set hhdata $set hhdata soi
+$if not set hhdata $set hhdata cps
 
 * switch for invest calibration (static vs. dynamic)
 $if not set invest $set invest static
+
+* allow end of line comments
+$eolcom !
 
 * file separator
 $set sep %system.dirsep%
@@ -324,19 +332,21 @@ parameter
 delta(r,s) = 0.07;
 
 variables
-    OBJI	    Objective value for investment;
+    OBJI		Objective value for investment;
 
 nonnegative
 variables
-    INV(r,g)	    Steady state investment;
+    INV(r,g)		Steady state investment;
 
 equations
-    investment(r)   Steady state investment,
-    objinv          Objective function;
+    investment(r)	Steady state investment,
+    objinv		Objective function;
 
-objinv..        OBJI =e= sum((r,g)$i0(r,g), i0(r,g) * sqr(INV(r,g) / i0(r,g) - 1));
+objinv..
+    OBJI =e= sum((r,g)$i0(r,g), i0(r,g) * sqr(INV(r,g) / i0(r,g) - 1));
 
-investment(r)..	sum(g, INV(r,g)) =e= sum(s, (gr+delta(r,s)) * kd0(r,s)/(ir+delta(r,s)));
+investment(r)..
+    sum(g, INV(r,g)) =e= sum(s, (gr+delta(r,s)) * kd0(r,s)/(ir+delta(r,s)));
 
 parameter
     compi0(r,g,*)    Comparison between reference and steady state investment levels;
@@ -374,12 +384,21 @@ $endif.dynamic
 * Income side balancing routine
 * -----------------------------------------------------------------------------
 
+* Read in mapping on census regions to restrict wage payments
+
+$include 'maps%sep%hh_calib_aggregate_regions.map'
+alias(ar,aar),(mapr,maprr);
+
+* Construct income shares for targetting in balancing routine
+
 parameter
     income_shares(r,h,*);
 
 income_shares(r,h,'wages') = wages0(r,h) / sum(h.local, wages0(r,h));
 income_shares(r,h,'cap') = interest0(r,h) / sum(h.local, interest0(r,h));
 income_shares(r,h,'save') = save0(r,h) / sum(h.local, save0(r,h));
+
+* Define variables and equations of balancing routine
 
 variable
     TAXES(r,h)		Direct labor tax payments,
@@ -400,47 +419,57 @@ equations
     taxdef		Tax constraint,
     consdef		Consumption constraint,
     wagedef		Cross state labor income constraint,
-    lincdef		Within state labor income constraint,
+    censusdef		Restriction on wage payments,
     interestdef		Capital income constraint,
     savedef		Savings constraint,
     incbal		Income balance closure,
-    disagtrn		Disaggregate transfer payment,
-    totaltrnless	For SOI recalibration enforce CPS transfer totals approximately,
-    totaltrnmore	For SOI recalibration enforce CPS transfer totals approximately;
+    disagtrn		Disaggregate transfer payment;
 
 * objective definition -- target shares for labor and capital income and totals
 * for transfers and savings. fix transfers, minimize difference in labor and
 * capital, and let savings be the degree of freedom.
 
-objdef..        OBJ =e= sum((r,h),
-		abs(income_shares(r,h,'wages')*sum(s,ld0(r,s)))*
-    			sqr(sum(rr,WAGES(r,rr,h))/(income_shares(r,h,'wages')*sum(s,ld0(r,s))) - 1) +
-    		abs(income_shares(r,h,'cap')*sum(s,kd0(r,s)))*
-    			sqr(INTEREST(r,h)/(income_shares(r,h,'cap')*sum(s,kd0(r,s))) - 1));
+objdef..
+    OBJ =e= sum((r,h),
+	abs(income_shares(r,h,'wages')*sum(s,ld0(r,s)))*
+		sqr(sum(rr,WAGES(r,rr,h))/(income_shares(r,h,'wages')*sum(s,ld0(r,s))) - 1) +
+	abs(income_shares(r,h,'cap')*sum(s,kd0(r,s)))*
+		sqr(INTEREST(r,h)/(income_shares(r,h,'cap')*sum(s,kd0(r,s))) - 1));
 
 * fix the income tax rate from the household data
-taxdef(r,h)..	TAXES(r,h) =e= taxrate0(r,h) * sum(rr, WAGES(r,rr,h));
+taxdef(r,h)..
+    TAXES(r,h) =e= taxrate0(r,h) * sum(rr, WAGES(r,rr,h));
 
 * aggregation definition on total household consumption
-consdef(r)..    sum(h, CONS(r,h)) =e= c0(r);
+consdef(r)..
+    sum(h, CONS(r,h)) =e= c0(r);
 
 * wage income must sum to total labor demands by region
-wagedef(rr)..   sum((r,h), WAGES(r,rr,h)) =e= sum(s, ld0(rr,s));
+wagedef(rr)..
+    sum((r,h), WAGES(r,rr,h)) =e= sum(s, ld0(rr,s));
+
+* restrict work-live pairings to within census regions
+censusdef(ar,aar,h)..
+    sum((mapr(ar,r),maprr(aar,rr)), WAGES(r,rr,h)) =e= 0;
 
 * capital rents must sum to total capital demands by region
-interestdef..   sum((r,h), INTEREST(r,h)) =e= sum((r,s), kd0(r,s) + yh0(r,s));
+interestdef..
+    sum((r,h), INTEREST(r,h)) =e= sum((r,s), kd0(r,s) + yh0(r,s));
 
 * ignore enterprise and government saving:
-savedef..	sum((r,h), SAVE(r,h)) + FSAV =e= sum((r,g), i0(r,g));
+savedef..
+    sum((r,h), SAVE(r,h)) + FSAV =e= sum((r,g), i0(r,g));
 
 * let transfer payments and taxes adjust to satisfy budget balance assumptions
-incbal(r,h)..	TRANS(r,h) + sum(rr, WAGES(r,rr,h)) + INTEREST(r,h) =e= CONS(r,h) + SAVE(r,h) + TAXES(r,h);
+incbal(r,h)..
+    TRANS(r,h) + sum(rr, WAGES(r,rr,h)) + INTEREST(r,h) =e= CONS(r,h) + SAVE(r,h) + TAXES(r,h);
 
 * disaggregate transfer payments
-disagtrn(r,h).. sum(trn, TRANSHH(r,h,trn)) =e= TRANS(r,h);
+disagtrn(r,h)..
+    sum(trn, TRANSHH(r,h,trn)) =e= TRANS(r,h);
 
-model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, interestdef,
-			     savedef, incbal, disagtrn /;
+model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, censusdef,
+			     interestdef, savedef, incbal, disagtrn /;
 
 * fix transfers
 
@@ -457,8 +486,6 @@ CONS.LO(r,h) = 0.5 * cons0(r,h);
 WAGES.L(r,r,h) = wages0(r,h);
 WAGES.LO(r,r,h) = 0.75 * income_shares(r,h,'wages') * sum(s, ld0(r,s));
 WAGES.UP(r,r,h) = 1.25 * income_shares(r,h,'wages') * sum(s, ld0(r,s));
-* WAGES.FX(r,rr,h)$(not sameas(r,rr)) = 0;
-
 WAGES.UP(r,rr,h)$(not sameas(r,rr)) = .05 * income_shares(r,h,'wages') * sum(s, ld0(rr,s));
 
 INTEREST.L(r,h) = interest0(r,h);
@@ -570,7 +597,7 @@ avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
 display avg_tax_h, avg_tax;
-
+$exit
 
 * -----------------------------------------------------------------------------
 * Expenditure side balancing routine

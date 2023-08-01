@@ -12,8 +12,11 @@ $title Build routine for the windc household dataset
 * system separator
 $set sep %system.dirsep%
 
-* years of household data (constrained by cps data)
-$set years 2000*2017
+* years of household cps data
+$set cps_years 2000*2017
+
+* years of tax return soi data
+$set soi_years 2014:2017
 
 
 *------------------------------------------------------------------------------
@@ -31,11 +34,16 @@ $set lstdir lst%sep%
 *------------------------------------------------------------------------------
 
 set
-    year 	Years of data /%years%/,
-    hhdata 	Household data /cps,soi/,
-    invest 	Investment calibration options /static,dynamic/,
-    rmap	Regional mappings /state/,
-    smap	Sectoral mappings /windc/;
+    year 		Years of data /%years%/,
+    soi_year(year) 	Years of soi data /%soi_years%/,
+    hhdata 		Household data /cps,soi/,
+    run(hhdata,year)	Years to run hhdata,
+    invest 		Investment calibration options /static,dynamic/,
+    rmap		Regional mappings /state/,
+    smap		Sectoral mappings /windc/;
+
+run('cps',year) = yes;
+run('soi',soi_year) = yes;
 
 
 *------------------------------------------------------------------------------
@@ -56,7 +64,7 @@ loop(hhdata,
 
 * run hhcalib.gms for each year, cps/soi, and for static and dynamic investment:
 $label hhcalib
-loop((year,hhdata,invest),
+loop((run(hhdata,year),invest),
     put_utility 'title' /'Calibrating ',year.tl,' with ',hhdata.tl,' with invest=',invest.tl;
     put_utility 'exec'/'gams hhcalib o=%lstdir%hhcalib_',year.tl,'_',hhdata.tl,'_',invest.tl,'.lst',
 	' --year=',year.tl,' --hhdata=',hhdata.tl,' --invest=',invest.tl,' --puttitle=no',
@@ -64,7 +72,6 @@ loop((year,hhdata,invest),
 );
 
 $if set runscript $exit
-
 
 * impose steady-state investment demand on the model:
 $label dynamic_calib
@@ -79,11 +86,20 @@ $if set runscript $exit
 
 * consolidate the datasets:
 $label consolidate
-loop((hhdata,invest),
-    put_utility kutl, 'exec' /'gams consolidate o=%lstdir%consolidate_',hhdata.tl,'_',invest.tl,'.lst',
-	' --hh_years=%years% --hhdata=',hhdata.tl,' --invest=',invest.tl,
-	' lo=4 lf=%lstdir%consolidate_',hhdata.tl,'_',invest.tl,'.log';
+loop(invest,
+
+* cps data
+    put_utility kutl, 'exec' /'gams consolidate o=%lstdir%consolidate_',"cps",'_',invest.tl,'.lst',
+	' --hh_years=%years% --hhdata=',"cps",' --invest=',invest.tl,
+	' lo=4 lf=%lstdir%consolidate_',"cps",'_',invest.tl,'.log';
     display $sleep(1) "Waiting one second between consolidate job submissions.";
+
+* soi data
+    put_utility kutl, 'exec' /'gams consolidate o=%lstdir%consolidate_',"soi",'_',invest.tl,'.lst',
+	' --hh_years=%soi_years% --hhdata=',"soi",' --invest=',invest.tl,
+	' lo=4 lf=%lstdir%consolidate_',"soi",'_',invest.tl,'.log';
+    display $sleep(1) "Waiting one second between consolidate job submissions.";
+    
 );
 $if set runscript $exit
 
