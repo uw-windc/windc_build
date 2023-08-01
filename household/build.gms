@@ -12,11 +12,11 @@ $title Build routine for the windc household dataset
 * system separator
 $set sep %system.dirsep%
 
-* years of household cps data
-$set cps_years 2000*2017
+* years of household cps data (options 2000-2021)
+$set cps_years 2014*2017
 
-* years of tax return soi data
-$set soi_years 2014:2017
+* years of tax return soi data (options 2014-2017)
+$set soi_years 2014*2017
 
 
 *------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ $set lstdir lst%sep%
 *------------------------------------------------------------------------------
 
 set
-    year 		Years of data /%years%/,
+    year 		Years of data /%cps_years%/,
     soi_year(year) 	Years of soi data /%soi_years%/,
     hhdata 		Household data /cps,soi/,
     run(hhdata,year)	Years to run hhdata,
@@ -72,6 +72,8 @@ loop((run(hhdata,year),invest),
 );
 
 $if set runscript $exit
+
+$exit
 
 * impose steady-state investment demand on the model:
 $label dynamic_calib

@@ -17,6 +17,10 @@ if(length(new.packages))
 
 lapply(list.of.packages, library, character.only = TRUE)
 
+# cps and bea api keys
+cps.key = "a69b1c9f95e30d420fcef94d191d649a340ca7f3"
+bea.key = "12C8FE9E-DF75-4515-B170-296AB4E9AB93"
+
 
 # ------------------------------------------------------------------------------
 # pull in cps data
@@ -28,10 +32,6 @@ years = 2000:2021
 
 # pick income upper bounds for categories to generate population information
 upper_bounds = c(25000, 50000, 75000, 150000, Inf)
-
-# cps and bea api keys
-cps.key = "a69b1c9f95e30d420fcef94d191d649a340ca7f3"
-bea.key = "12C8FE9E-DF75-4515-B170-296AB4E9AB93"
 
 # income variables pre 2019 (retirement income variables redefined in 2019)
 cps.vars.pre2019 = c("hwsval",  # "wages and salaries"
@@ -417,6 +417,19 @@ beadata$year = as.numeric(str_replace(beadata$year,"DataValue_",""))
 
 # keep all data, using gams to piece together needed components
 write.csv(beadata, "nipa_income_outlays_2000_2021.csv", row.names=FALSE)
+
+# define national average markup or fringe benefits relative to total employee 
+# compensation
+nipa_fringe = subset(beadata, LineNumber %in% c("2","3")) %>%
+  rename("desc"="LineDescription") %>%
+  select(year,desc,value)
+nipa_fringe$desc[nipa_fringe$desc=="Compensation of employees"] = "compen"
+nipa_fringe$desc[nipa_fringe$desc=="Wages and salaries"] = "wages"
+nipa_fringe = nipa_fringe %>%
+  pivot_wider(names_from=desc, values_from=value) %>% 
+  mutate(markup = compen / wages) %>%
+  select(year,markup)
+write.csv(nipa_fringe, "nipa_fringe_benefit_markup.csv", row.names=FALSE)
 
 
 # ------------------------------------------------------------------------------

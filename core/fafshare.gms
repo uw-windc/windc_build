@@ -9,7 +9,6 @@ $title Regional purchase coefficients (RPC) from freight analysis framework (FAF
 $set sep %system.dirsep%
 
 
-
 * -------------------------------------------------------------------
 * Read in state level FAF data
 * -------------------------------------------------------------------
