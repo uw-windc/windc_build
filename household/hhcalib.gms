@@ -1,25 +1,5 @@
 $title Read the household data and recalibrate WiNDC household accounts
 
-* CHANGES MADE IN THIS VERSION--
-
-* - new version of balancing routine doesn't solve aggregates. fix transfers
-* (what is known), let labor and capital shares minimize difference, and then
-* let savings be the degree of freedom. tax rates are fixed.
-
-* - replace markups with those calculated when compared to nipa tables
-* where applicable.
-
-* - for now, calibration routine solves for foreign savings. depends on static
-* vs. dynamic calibration. foreign savings is dependent on assumptions made
-* about capital income. in the corrent version of the dataset, we assume that
-* the current capital stock is owned entirely by domestic investors.
-
-* like before, restrict labor demand to people living within an aggregate census
-* division.
-
-
-* -----------------------------------------------------------------------------
-
 * Three step balancing routine:
 *    - if dynamic, solve for equilibrium investment demand
 *    - solve income routine at the state level
@@ -39,10 +19,18 @@ $title Read the household data and recalibrate WiNDC household accounts
 * Income bins in SOI matched approximately
 * (25000, 50000, 75000, 200000, Inf)
 *
-* Allow the model to calculate foreign savings endogenously.
+* Allow the model to calculate both foreign savings and foreign capital
+* ownership endogenously.
 *
 * Assume that fringe benefits (difference between total employee compensation
 * and wages/salaries) are shared equivalently as wages and salaries.
+
+* Replaces markups with those calculated when compared to nipa tables
+* where applicable.
+
+* added foreign capital ownership and commuting patterns (from ACS) lets us
+* target cps shares really well. also foreign direct investment numbers make
+* more sense relative to what is suggested by say the IMF.
 
 
 * -----------------------------------------------------------------------------
@@ -351,22 +339,6 @@ $if %hhdata%=="soi" trn_agg_weight(yr) = 1 / 0.804;
 
 
 * -----------------------------------------------------------------------------
-* Read in fringe benefit share from NIPA tables
-* -----------------------------------------------------------------------------
-
-* Assign a standard markup to fringe benefits based on national averages from
-* NIPA table -- bls data shows markup pretty consistent across regions.
-
-parameter
-    fringe_markup(yr)	Fringe benefit markup;
-
-$call 'csv2gdx data_sources%sep%cps%sep%nipa_fringe_benefit_markup.csv output=%gdxdir%nipa_fringe_benefit_markup.gdx id=fringe_markup index=(1) useHeader=y value=2';
-$gdxin %gdxdir%nipa_fringe_benefit_markup.gdx
-$load fringe_markup
-$gdxin
-
-
-* -----------------------------------------------------------------------------
 * Balancing routine step 0: partial dynamic calibration (change investment for
 * household recalibration if invest=dynamic switch activated)
 * -----------------------------------------------------------------------------
@@ -433,20 +405,16 @@ $endif.dynamic
 * Income side balancing routine
 * -----------------------------------------------------------------------------
 
-* Read in mapping of census divisions to restrict wage payments
-
-$include 'maps%sep%hh_calib_aggregate_divisions.map'
-alias(ar,aar),(mapr,maprr);
-
 * Construct income shares and other parameters for targetting in balancing
 * routine
 
 parameter
     household_shares(r,h,*)	Household shares of income,
     savings_rate0(r,h)		Reference savings rate from hh data,
+    fringe_markup		Fringe benefit markup,
     le0_multiplier(r)		Labor income difference between home and work destination,
-    dist0(r,rr)			Distance between states (100s of km),
-    commute0(r,rr)		Approximate value of commuting flows from ACS-CPS;
+    commute0(r,rr)		Approximate value of commuting flows from ACS-CPS,
+    cap_own0			Portion of capital stock owned domestically /1/;
 
 household_shares(r,h,'wages') = wages0(r,h) / sum(h.local, wages0(r,h));
 household_shares(r,h,'cap') = interest0(r,h) / sum(h.local, interest0(r,h));
@@ -455,27 +423,30 @@ savings_rate0(r,h) = save0(r,h) / (save0(r,h) + cons0(r,h));
 * Define a multiplier that characterizes the ratio of income received from labor
 * compensation to sectoral labor payments. If the number is <1, we can interpret
 * as relatively more commuters coming into the state to work. If >1, commuters
-* leave the state to work. DC is a good example of the former case.
+* leave the state to work. DC is a good example of the former case. first,
+* adjust the fringe markup such that total wages = total labor demands.
 
-le0_multiplier(r) = sum(hh, fringe_markup('%year%') * wages0(r,hh))/sum(s,ld0(r,s));
+fringe_markup = sum((r,s),ld0(r,s)) / sum((r,h), wages0(r,h));
+le0_multiplier(r) = sum(hh, fringe_markup * wages0(r,hh))/sum(s,ld0(r,s));
 
-* Read in bilateral state distances
-
-$call 'csv2gdx data_sources%sep%state_distances.csv output=%gdxdir%state_distances.gdx id=dist0 index=(1,2) useHeader=y value=3';
-$gdxin %gdxdir%state_distances.gdx
-$load dist0
-$gdxin
+* Read in bilateral commuting data
 
 $call 'csv2gdx data_sources%sep%acs%sep%acs_commuting_data.csv output=%gdxdir%acs_commuting_data.gdx id=commute0 index=(1,2) useHeader=y value=3';
 $gdxin %gdxdir%acs_commuting_data.gdx
 $load commute0
 $gdxin
 
-* scale to billions of dollars
-commute0(r,rr) = commute0(r,rr) * 1e-9;
+* Scale to billions of dollars, remove within state commutes, keep only big
+* commutes (those worth over 1 billion)
 
-* remove within state commutes
+commute0(r,rr) = commute0(r,rr) * 1e-9;
 commute0(r,r) = 0;
+commute0(r,rr)$(commute0(r,rr)<1) = 0;
+
+* In instances where there is no commuting, reset le0_multiplier to 1
+
+le0_multiplier(r)$(le0_multiplier(r)>1 and sum(rr,commute0(r,rr))=0) = 1;
+le0_multiplier(r)$(le0_multiplier(r)<1 and sum(rr,commute0(rr,r))=0) = 1;
 
 * Define variables and equations of balancing routine
 
@@ -492,14 +463,14 @@ variable
     INTEREST(r,h)	Aggregate interest income,
     SAVE(r,h)		Savings,
     SAVE_RATE(r,h)	Savings rate (relative to consumption),
-    FSAV            	Foreign savings in United States;
+    FSAV            	Foreign savings in United States,
+    FINT		Foreign capital ownership;
 
 equations
     objdef		Objective function,
     taxdef		Tax constraint,
     consdef		Consumption constraint,
     wagedef		Cross state labor income constraint,
-    censusdef		Restriction on wage payments,
     interestdef		Capital income constraint,
     savedef		Savings constraint,
     saveratedef		Definition of savings rate,
@@ -508,17 +479,17 @@ equations
 
 * objective definition -- target shares for labor and capital income and totals
 * for transfers and savings. fix transfers, minimize difference in labor and
-* capital, and let savings be the degree of freedom. also penalize distance
-* traveled to work (largely ends up handling dc).
+* capital, and let savings be the degree of freedom. also penalize interstate
+* commuting based on ACS data on commuting flows
 
 objdef..
     OBJ =e= sum((r,h),
-	abs(household_shares(r,h,'wages')*sum(s,ld0(r,s)))*
+ 	abs(household_shares(r,h,'wages')*le0_multiplier(r)*sum(s,ld0(r,s)))*
 		sqr(sum(rr, WAGES(r,rr,h))/(household_shares(r,h,'wages')*le0_multiplier(r)*sum(s,ld0(r,s))) - 1) +
-	abs(household_shares(r,h,'cap')*sum(s,kd0(r,s)))*
-		sqr(INTEREST(r,h)/(household_shares(r,h,'cap')*sum(s,kd0(r,s))) - 1)) +
-    	sum((r,rr)$commute0(r,rr), sqr(sum(h, WAGES(r,rr,h))/commute0(r,rr)));
-
+	abs(household_shares(r,h,'cap')*cap_own0*sum(s,kd0(r,s)))*
+		sqr(INTEREST(r,h)/(household_shares(r,h,'cap')*cap_own0*sum(s,kd0(r,s))) - 1)) +
+    	sum((r,rr)$commute0(r,rr), sum(h, WAGES(r,rr,h))/commute0(r,rr));
+	
 * fix the income tax rate from the household data
 taxdef(r,h)..
     TAXES(r,h) =e= taxrate0(r,h) * sum(rr, WAGES(r,rr,h));
@@ -531,13 +502,9 @@ consdef(r)..
 wagedef(rr)..
     sum((r,h), WAGES(r,rr,h)) =e= sum(s, ld0(rr,s));
 
-* restrict commute pairings to within census divisions
-censusdef(ar,aar,h)$(not sameas(ar,aar))..
-    sum((mapr(ar,r),maprr(aar,rr)), WAGES(r,rr,h)) =e= 0;
-
 * capital rents must sum to total capital demands by region
 interestdef..
-    sum((r,h), INTEREST(r,h)) =e= sum((r,s), kd0(r,s) + yh0(r,s));
+    sum((r,h), INTEREST(r,h)) + FINT =e= sum((r,s), kd0(r,s) + yh0(r,s));
 
 * ignore enterprise and government saving:
 savedef..
@@ -555,8 +522,8 @@ incbal(r,h)..
 disagtrn(r,h)..
     sum(trn, TRANSHH(r,h,trn)) =e= TRANS(r,h);
 
-model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, censusdef,
-			     interestdef, savedef, saveratedef, incbal, disagtrn /;
+model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, interestdef,
+			     savedef, saveratedef, incbal, disagtrn /;
 
 * Fix ABSOLUTE government transfers (we have good data on this)
 
@@ -574,14 +541,20 @@ CONS.LO(r,h) = 0.5 * cons0(r,h);
 * function.
 
 WAGES.L(r,r,h) = household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-WAGES.LO(r,r,h) = 0.75 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-WAGES.UP(r,r,h) = 1.25 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-* WAGES.UP(r,rr,h)$commute0(r,rr) = 2 * commute0(r,rr);
+$if %hhdata% == "cps" WAGES.LO(r,r,h) = 0.75 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+$if %hhdata% == "cps" WAGES.UP(r,r,h) = 1.25 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+$if %hhdata% == "soi" WAGES.LO(r,r,h) = 0.65 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+$if %hhdata% == "soi" WAGES.UP(r,r,h) = 1.35 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+
+WAGES.L(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 0.5 * commute0(r,rr);
+WAGES.LO(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 0.1 * commute0(r,rr);
+WAGES.UP(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = commute0(r,rr);
 WAGES.FX(r,rr,h)$(commute0(r,rr)=0 and not sameas(r,rr)) = 0;
 
-INTEREST.L(r,h) = household_shares(r,h,'cap') * sum(s, kd0(r,s));
-INTEREST.LO(r,h) = 0.75 * household_shares(r,h,'cap') * sum(s, kd0(r,s));
-INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * sum(s, kd0(r,s));
+INTEREST.L(r,h) = household_shares(r,h,'cap') * cap_own0 * sum(s, kd0(r,s));
+INTEREST.LO(r,h) = 0.5 * household_shares(r,h,'cap') * cap_own0 * sum(s, kd0(r,s));
+INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * cap_own0 * sum(s, kd0(r,s));
+FINT.L = (1-cap_own0) * sum((r,s), kd0(r,s));
 
 * Assume any interest income adjustments that need to be made outside of bounds
 * above accrue to upper income group
@@ -589,9 +562,11 @@ INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * sum(s, kd0(r,s));
 INTEREST.UP(r,h)$(ord(h)=card(h)) = inf;
 
 * Make sure savings are at least retirement distributions from household data
+* (savings is smaller in cps data)
 
 SAVE.L(r,h) = save0(r,h);
-SAVE.LO(r,h) = 0.5 * save0(r,h);
+$if %hhdata% == "cps" SAVE.LO(r,h) = 0.75 * save0(r,h);
+$if %hhdata% == "soi" SAVE.LO(r,h) = 0.4 * save0(r,h);
 
 * Constrain savings rate letting any additional savings needed to close the
 * budget constraint accrues to the upper income group
@@ -607,7 +582,6 @@ TAXES.L(r,h) = taxes0(r,h);
 * Solve the income side balancing routine
 
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step2_%hhdata% using nlp minimizing OBJ;';
-option nlp=conopt;
 solve calib_step2_%hhdata% using nlp minimizing OBJ;
 abort$(calib_step2_%hhdata%.modelstat > 2) "Model calib_step2_%hhdata% has status > 2.";
 
@@ -682,7 +656,7 @@ chkwages(r,'all','le0_cal') = sum((rr,h), WAGES.L(r,rr,h));
 chkwages(r,'all','ld0') = sum(s, ld0(r,s));
 chkwages(r,'all','ld0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','ld0');
 chkwages(r,'all','le0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','le0');
-display cbochk, chkhhdata, hhshares, increp, boundshr, chkwages, FSAV.L, cons_save;
+display cbochk, chkhhdata, hhshares, increp, boundshr, chkwages, FSAV.L, cons_save, WAGES.L;
 
 * execute_unload '%hhdata%_income_ranges.gdx' boundshr;
 * execute 'gdxxrw %hhdata%_income_ranges.gdx par=boundshr rng=%hhdata%!A2 cdim=0';
@@ -693,8 +667,8 @@ parameter
 avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
-display avg_tax_h, avg_tax, WAGES.L;
-$exit
+display avg_tax_h, avg_tax;
+
 
 * -----------------------------------------------------------------------------
 * Expenditure side balancing routine
