@@ -129,3 +129,12 @@ The values for the variable `%year%` are `2015`, `2016` and `2017`. The datasets
 In addition to the routines to generate the datasets, the directory `bluenote` has two models that demonstrate how the Bluenote datasets may be used in a modeling application. The energy tax model in the file `bluenote_model.gms` includes disaggregated households, while the energy tax model in the file `bluenote_model_v2_1.gms` demonstrates how the Bluenote datasets on the US state level may be read and used in a model with just a single representative household per region. This model mimics the Bluenote model from WINDC version 2.1.
 
 ## GTAPWiNDC
+The GTAPWiNDC buildstream incorporates data from either the publicly available GTAP 9 release or proprietary GTAP 11 release. To inquire about obtaining a license for the GTAP 11 database, visit the [GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). The GTAP version 9 database is included in our data distribution.
+
+Navigate to the subdirectory `GTAPWiNDC/gtapN` where N is either 9 or 11, depending on the version of the data you wish to build. Run the command:
+
+    gams build.gms
+
+You must run both `core` and `household` before running this command. 
+
+This will build the data necessary 
