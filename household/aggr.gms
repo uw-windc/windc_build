@@ -98,7 +98,7 @@ parameter
     sav0__(yr,rr,h)		Household saving,
     trn0__(yr,rr,h)		Household transfer payments
     hhtrn0__(yr,rr,h,trn)  	Disaggregate transfer payments,
-    pop__(yr,rr,h)         	Population (in millions);
+    pop0__(yr,rr,h)         	Population (in millions);
 
 ys0__(yr,rr,gg,ss) = sum((rmap(rr,r),gmap(gg,g),smap(ss,s)),ys0_(yr,r,g,s));
 id0__(yr,rr,gg,ss) = sum((rmap(rr,r),gmap(gg,g),smap(ss,s)),id0_(yr,r,g,s));
@@ -137,7 +137,7 @@ c0_h__(yr,rr,h) = sum(rmap(rr,r),c0_h_(yr,r,h));
 sav0__(yr,rr,h) = sum(rmap(rr,r),sav0_(yr,r,h));
 trn0__(yr,rr,h) = sum(rmap(rr,r),trn0_(yr,r,h));
 hhtrn0__(yr,rr,h,trn) = sum(rmap(rr,r),hhtrn0_(yr,r,h,trn));
-pop__(yr,rr,h) = sum(rmap(rr,r), pop_(yr,r,h));
+pop0__(yr,rr,h) = sum(rmap(rr,r), pop0_(yr,r,h));
 
 * assign averaged tax rates:
 ta0__(yr,rr,ss)$a0__(yr,rr,ss) = sum((rmap(rr,r),smap(ss,s)), ta0_(yr,r,s)*a0_(yr,r,s))/a0__(yr,rr,ss);
@@ -175,4 +175,4 @@ md0__=md0_,nm0__=nm0_,dm0__=dm0_,
 
 * household data
 le0__=le0_, ke0__=ke0_, tk0__=tk0_, tl0__=tl0_, cd0_h__=cd0_h_, c0_h__=c0_h_,
-sav0__=sav0_, pop__=pop_, trn0__=trn0_, hhtrn0__=hhtrn0_;
+sav0__=sav0_, pop0__=pop0_, trn0__=trn0_, hhtrn0__=hhtrn0_;

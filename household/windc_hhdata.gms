@@ -75,7 +75,7 @@ parameter
     nd0_(yr,r,g)    	Regional demand from national market,
 
 * household data
-    pop_(yr,r,h)        Population (households or returns in millions),
+    pop0_(yr,r,h)       Population (households or returns in millions),
     le0_(yr,r,q,h)	Household labor endowment,
     ke0_(yr,r,h)	Household interest payments,
     tk0_(yr,r)          Capital tax rate,
@@ -100,7 +100,7 @@ $loaddc s0_ xd0_ xn0_ x0_ rx0_ a0_ nd0_ dd0_ m0_ ta0_ tm0_
 $loaddc md0_ nm0_ dm0_
 
 * household data:
-$loaddc le0_ ke0_ tk0_ tl0_ cd0_h_ c0_h_ sav0_ trn0_ hhtrn0_ pop_
+$loaddc le0_ ke0_ tk0_ tl0_ cd0_h_ c0_h_ sav0_ trn0_ hhtrn0_ pop0_
 
 * Calculate foreign savings:
 
@@ -138,7 +138,7 @@ parameter
     xd0(r,g)        Regional supply to local market,
     dd0(r,g)        Regional demand from local  market,
     nd0(r,g)        Regional demand from national market,
-    pop(r,h)        Population (households or returns in millions),
+    pop0(r,h)       Population (households or returns in millions),
     le0(r,q,h)	    Household labor endowment,
     ke0(r,h)	    Household interest payments,
     tk0(r)          Capital tax rate,
@@ -180,7 +180,7 @@ xd0(r,g) = xd0_('%year%',r,g);
 dd0(r,g) = dd0_('%year%',r,g);
 nd0(r,g) = nd0_('%year%',r,g);
 hhadj(r) = hhadj_('%year%',r);
-pop(r,h) = pop_('%year%',r,h);
+pop0(r,h) = pop0_('%year%',r,h);
 le0(r,q,h) = le0_('%year%',r,q,h);
 ke0(r,h) = ke0_('%year%',r,h);
 tk0(r) = tk0_('%year%',r);

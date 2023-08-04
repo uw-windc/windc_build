@@ -1,0 +1,4 @@
+Input=BUILD
+ScrDir=225a
+SysDir=c:\gams\42
+ScriptNext=225a\gamsnext.cmd
