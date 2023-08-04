@@ -1,6 +1,5 @@
 $title Relabel sets in windc_base.gdx
 
-
 * ------------------------------------------------------------------------------
 * Set options:
 * ------------------------------------------------------------------------------
@@ -16,7 +15,6 @@ $set sep %system.dirsep%
 $call cp "windc_base.gdx" "%gams.scrdir%windc_base_.gdx"
 $call gdxdump "%gams.scrdir%windc_base_.gdx" output="%gams.scrdir%windc_base.gms" nodata 
 $include %gams.scrdir%windc_base.gms 
-
 
 * ------------------------------------------------------------------------------
 * Declare sets with explicit descriptors (these were not installed by the

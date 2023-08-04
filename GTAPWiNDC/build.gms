@@ -1,6 +1,6 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
-$set start regiondisagg43
+*.$set start regiondisagg43
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
@@ -10,7 +10,7 @@ $set debug yes
 
 *	Pause after each step?
 
-$set pause yes
+$set pause no
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 
