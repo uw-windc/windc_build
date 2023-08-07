@@ -1,95 +1,110 @@
-$TITLE Accounting model to Verify Benchmark and Consistency of MGE and MCP Models
+$title National accounting model to verify benchmark consistency of MGE and MCP models
 
-*	Matrix balancing method defines which dataset is loaded
 
-$if not set matbal $set matbal ls
+* -------------------------------------------------------------------
+* Set options:
+* -------------------------------------------------------------------
 
+* file separator
 $set sep %system.dirsep%
 
+* matrix balancing method defines which dataset is loaded
+$if not set matbal $set matbal ls
 $if not set ds $set ds gdx%sep%nationaldata_%matbal%.gdx
 
+* years verified for benchmark consistency
 $if not set run $set run 1997*2017
 
-SET	yr	"Years in WiNDC Database",
-   	i	"BEA Goods and sectors categories",
-   	fd	"BEA Final demand categories",
-   	ts	"BEA Taxes and subsidies categories",
-   	va	"BEA Value added categories excluding othtax",
-   	m	"Margins (trade or transport)";
 
+* -------------------------------------------------------------------
+* Read in the dataset -- sets and parameters:
+* -------------------------------------------------------------------
 
-$GDXIN %ds%
-$LOADDC yr i va fd ts m
+set
+    yr		Years in WiNDC Database,
+    i		BEA Goods and sectors categories,
+    fd		BEA Final demand categories,
+    ts		BEA Taxes and subsidies categories,
+    va		BEA Value added categories excluding othtax,
+    m		Margins (trade or transport);
 
-set	run(yr)		Which years do we run /%run%/;
+$gdxin %ds%
+$loaddc yr i va fd ts m
 
+set
+    run(yr)	Sampled years for benchmark consistency /%run%/;
 
 alias (i,j);
 
-PARAMETER
-	y_0(yr,i)	"Gross output",
-	ys_0(yr,j,i)	"Sectoral supply",
-	ty_0(yr,j)	"Output tax rate"
-	fs_0(yr,i)	"Household supply",
-	id_0(yr,i,j)	"Intermediate demand",
-	fd_0(yr,i,fd)	"Final demand",
-	va_0(yr,va,j)	"Value added",
-	ts_0(yr,ts,i)	"Taxes and subsidies",
-	m_0(yr,i)	"Imports",
-	x_0(yr,i)	"Exports of goods and services",
-	mrg_0(yr,i)	"Trade margins",
-	trn_0(yr,i)	"Transportation costs",
-	duty_0(yr,i)	"Import duties",
-	sbd_0(yr,i)	"Subsidies on products",
-	tax_0(yr,i)	"Taxes on products",
-	ms_0(yr,i,m)	"Margin supply",
-	md_0(yr,m,i)	"Margin demand",
-	s_0(yr,i)	"Aggregate supply",
-	d_0(yr,i)	"Sales in the domestic market",
-	a_0(yr,i)	"Armington supply",
-	bopdef_0(yr)	"Balance of payments deficit",
-	ta_0(yr,i)	"Tax net subsidy rate on intermediate demand",
-	tm_0(yr,i)	"Import tariff";
+parameter
+    y_0(yr,i)		Gross output,
+    ys_0(yr,j,i)	Sectoral supply,
+    ty_0(yr,j)		Output tax rate,
+    fs_0(yr,i)		Household supply,
+    id_0(yr,i,j)	Intermediate demand,
+    fd_0(yr,i,fd)	Final demand,
+    va_0(yr,va,j)	Value added,
+    ts_0(yr,ts,i)	Taxes and subsidies,
+    m_0(yr,i)		Imports,
+    x_0(yr,i)		Exports of goods and services,
+    mrg_0(yr,i)		Trade margins,
+    trn_0(yr,i)		Transportation costs,
+    duty_0(yr,i)	Import duties,
+    sbd_0(yr,i)		Subsidies on products,
+    tax_0(yr,i)		Taxes on products,
+    ms_0(yr,i,m)	Margin supply,
+    md_0(yr,m,i)	Margin demand,
+    s_0(yr,i)		Aggregate supply,
+    d_0(yr,i)		Sales in the domestic market,
+    a_0(yr,i)		Armington supply,
+    bopdef_0(yr)	Balance of payments deficit,
+    ta_0(yr,i)		Tax net subsidy rate on intermediate demand,
+    tm_0(yr,i)		Import tariff;
 
 $loaddc y_0 ys_0 ty_0 fs_0 id_0 fd_0 va_0 m_0
 $loaddc x_0 ms_0 md_0 a_0 ta_0 tm_0
 $gdxin
 
-*	Parameters describing a single year:
+* Parameters describing a single year:
 
-PARAMETER
-	y0(i)		"Gross output",
-	ys0(j,i)	"Sectoral supply",
-	ty0(j)		"Output tax rate",
-	fs0(i)		"Household supply",
-	id0(i,j)	"Intermediate demand",
-	fd0(i,fd)	"Final demand",
-	va0(va,j)	"Vaue added",
-	ts0(ts,i)	"Taxes and subsidies",
-	m0(i)		"Imports",
-	x0(i)		"Exports of goods and services",
-	mrg0(i)		"Trade margins",
-	trn0(i)		"Transportation costs",
-	duty0(i)	"Import duties",
-	sbd0(i)		"Subsidies on products",
-	tax0(i)		"Taxes on products",
-	ms0(i,m)	"Margin supply",
-	md0(m,i)	"Margin demand",
-	s0(i)		"Aggregate supply",
-	d0(i)		"Sales in the domestic market",
-	a0(i)		"Armington supply",
-	bopdef		"Balance of payments deficit",
-	ta0(i)		"Tax net subsidy rate on intermediate demand",
-	tm0(i)		"Import tariff",
+parameter
+    y0(i)	Gross output,
+    ys0(j,i)	Sectoral supply,
+    ty0(j)	Reference output tax rate,
+    fs0(i)	Household supply,
+    id0(i,j)	Intermediate demand,
+    fd0(i,fd)	Final demand,
+    va0(va,j)	Vaue added,
+    ts0(ts,i)	Taxes and subsidies,
+    m0(i)	Imports,
+    x0(i)	Exports of goods and services,
+    mrg0(i)	Trade margins,
+    trn0(i)	Transportation costs,
+    duty0(i)	Import duties,
+    sbd0(i)	Subsidies on products,
+    tax0(i)	Taxes on products,
+    ms0(i,m)	Margin supply,
+    md0(m,i)	Margin demand,
+    s0(i)	Aggregate supply,
+    d0(i)	Sales in the domestic market,
+    a0(i)	Armington supply,
+    bopdef	Balance of payments deficit,
+    ta0(i)	Reference tax net subsidy rate on intermediate demand,
+    tm0(i)	Reference import tariff,
+    ty(j)	Policy output tax rate,
+    ta(i)	Policy tax net subsidy rate on intermediate demand,
+    tm(i)	Policy import tariff;
 
-	ty(j)	"Output tax rate",
-	ta(i)	"Tax net subsidy rate on intermediate demand",
-	tm(i)	"Import tariff";
+sets
+    y_(j)	Sectors with positive production,
+    a_(i)	Sectors with absorption,
+    py_(i)	Goods with positive supply,
+    xfd(fd) 	Exogenous components of final demand;
 
-sets	y_(j)	"Sectors with positive production",
-	a_(i)	"Sectors with absorption"
-	py_(i)	"Goods with positive supply",
-	xfd(fd) "Exogenous components of final demand";
+
+* ----------------------------------------------------------------------
+* MGE accounting model
+* ----------------------------------------------------------------------
 
 $ontext
 $model:accounting
@@ -138,10 +153,13 @@ $report:
 $offtext
 $SYSINCLUDE mpsgeset accounting -mt=1
 
-*	----------------------------------------------------------------------------------------
 
-Nonnegative
-Variables
+* ----------------------------------------------------------------------
+* MCP accounting model
+* ----------------------------------------------------------------------
+
+nonnegative
+variables
 	Y(j)		Sectoral production
 	A(i)		Armington supply
 	MS(m)		Margin supply
@@ -174,10 +192,11 @@ $echo	* Benchmark assignments for accounting_mcp		>%gams.scrdir%accounting_mcp.g
 * 	i:PA(i)		q:id0(i,j)
 * 	i:PVA(va)	q:va0(va,j)	va:
 
-parameter	thetava(va,j)	Value-added shares;
-$echo	thetava(va,j) = 0; thetava(va,j)$va0(va,j) = va0(va,j)/sum(va.local,va0(va,j));	>>%gams.scrdir%accounting_mcp.gen
-
+parameter
+    thetava(va,j)	Value-added shares;
 alias (va,va_);
+
+$echo	thetava(va,j) = 0; thetava(va,j)$va0(va,j) = va0(va,j)/sum(va.local,va0(va,j));	>>%gams.scrdir%accounting_mcp.gen
 $macro	CVA(j)	(prod(va_, PVA(va_)**thetava(va_,j)))
 
 prf_Y(y_(j))..	CVA(j)*sum(va,va0(va,j)) + sum(i, PA(i)*id0(i,j)) =e= sum(i, PY(i)*ys0(j,i))*(1-ty(j));
@@ -189,8 +208,9 @@ prf_Y(y_(j))..	CVA(j)*sum(va,va0(va,j)) + sum(i, PA(i)*id0(i,j)) =e= sum(i, PY(i
 * 	i:PFX		q:m0(i)		dm: 	a:ra	t:tm(i) 	p:(1+tm0(i))
 * 	i:PM(m)		q:md0(m,i)
 
-parameter	thetam(i)	Import value share,
-		thetax(i)	Export value share;
+parameter
+    thetam(i)	Import value share,
+    thetax(i)	Export value share;
 
 $echo	thetam(i) = 0; thetam(i)$m0(i) = m0(i)*(1+tm0(i))/( m0(i)*(1+tm0(i)) + y0(i) );	>>%gams.scrdir%accounting_mcp.gen
 $echo	thetax(i) = 0; thetax(i)$x0(i) = x0(i)/(x0(i)+a0(i)*(1-ta0(i)));		>>%gams.scrdir%accounting_mcp.gen
@@ -218,7 +238,8 @@ prf_MS(m)..	sum(i,PY(i)*ms0(i,m)) =e= PM(m)*sum(i,ms0(i,m));
 *	e:PA(i)		q:(-sum(xfd,fd0(i,xfd)))
 *	e:PVA(va)	q:(sum(j,va0(va,j)))
 
-parameter	thetac(i)	Benchmark value shares;
+parameter
+    thetac(i)	Benchmark value shares;
 
 $echo	thetac(i) =  fd0(i,"pce")/sum(i.local,fd0(i,"pce"));				>>%gams.scrdir%accounting_mcp.gen
 
@@ -240,7 +261,10 @@ model accounting_mcp /
 	bal_RA.RA, 
 	mkt_PA.PA, mkt_PY.PY, mkt_PVA.PVA, mkt_PM.PM, mkt_PFX.PFX /;
 
-*	----------------------------------------------------------------------------------------
+
+* ----------------------------------------------------------------------
+* Verify reference calibration of the MGE and MCP models
+* ----------------------------------------------------------------------
 
 loop(run(yr),
 	y0(i) = y_0(yr,i);
@@ -266,7 +290,6 @@ loop(run(yr),
 	a_(i) = yes$a0(i);
 	py_(i) = yes$sum(j,ys0(j,i));
 	xfd(fd) = yes$(not sameas(fd,'pce'));
-
 
 *	Benchmark replication:
 
@@ -314,3 +337,8 @@ $include %gams.scrdir%accounting_mcp.gen
 	solve accounting_mcp using mcp;
 	abort$round(accounting_mcp.objval,3) "Counterfactural solution fails for the MCP model.";
 );
+
+
+* ----------------------------------------------------------------------
+* End
+* ----------------------------------------------------------------------
