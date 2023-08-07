@@ -12,6 +12,9 @@
 *.set
 *.Rhistory
 *.xlsx
+*.r
+*.png
+
 
 */gdx/
 */lst/
@@ -29,4 +32,4 @@ GTAPWiNDC/gtap11/2017
 
 core/loadpoint
 
-data/*
+#data/*
