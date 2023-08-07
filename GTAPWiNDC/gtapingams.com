@@ -1,1 +1,0 @@
-$setglobal gtapingams  gtap11\

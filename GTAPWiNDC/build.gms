@@ -1,6 +1,6 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
-*.$set start regiondisagg43
+$set start windc_model
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
@@ -23,10 +23,6 @@ $if not dexist lst		  $call mkdir lst
 *	Jump to a starting point:
 
 $if set start $goto %start%
-
-*	Specify which version of GTAPinGAMS code and data:
-
-$echo	$setglobal gtapingams  gtap11\ >gtapingams.com
 
 * ------------------------------------------------------------------------
 *	        Verify benchmark consistency of the canonical GTAP model:
@@ -69,6 +65,8 @@ $log	"Ready to run WINDC_MODEL  (datasets\windc\32.gdx)"
 $if not %pause%==no $call pause
 $call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
 
+$exit
+
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"
 $if errorlevel 1 $abort "Non-zero return code from windc_model.gms"
 
@@ -85,7 +83,7 @@ $label regiondisagg32
 
 $log	"Ready to run regiondisagg (datasets\gtapwindc\32.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg  --stub=32 --windc_gdx=datasets\windc\32.gdx --gtapwindc_datafile=datasets\gtapwindc\32_stub --dsout=datasets\gtapwindc\32.gdx   o=lst\regiondisagg_32.lst 
+$call gams regiondisagg --windc_gdx=datasets\windc\32.gdx --gtapwindc_datafile=datasets\gtapwindc\32_stub --dsout=datasets\gtapwindc\32.gdx   o=lst\regiondisagg_32.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 32.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
@@ -182,7 +180,7 @@ $label regiondisagg43
 
 $log	"Ready to run regiondisagg with 43 sector dataset  (datasets\gtapwindc\43.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --stub=43 --dropagr=yes --windc_gdx=datasets\windc\43.gdx --gtapwindc_datafile=datasets\gtapwindc\43_stub --dsout=datasets\gtapwindc\43.gdx   o=lst\regiondisagg_43.lst 
+$call gams regiondisagg --dropagr=yes --windc_gdx=datasets\windc\43.gdx --gtapwindc_datafile=datasets\gtapwindc\43_stub --dsout=datasets\gtapwindc\43.gdx   o=lst\regiondisagg_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 43.gdx"

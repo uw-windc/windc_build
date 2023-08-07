@@ -5,17 +5,18 @@ $title Calibrate baseline data to balanced growth path
 * -----------------------------------------------------------------------------
 
 * set year of interest
+
 $if not set year $set year 2017
 
 * set file separator
 $set sep %system.dirsep%
 
-* GDX directory
+*	GDX directory
 
 $if not dexist gdx $call mkdir gdx
 $set gdxdir gdx%sep%
 
-* Core data directory:
+*	Core data directory:
 $if not set core $set core ..%sep%core%sep%
 
 

@@ -33,8 +33,7 @@ alias (s,ss);
 
 *	Read the GTAPWiNDC stub dataset:
 
-$if not set stub $set stub 32
-$set gtapwindc_datafile datasets\gtapwindc\%stub%_stub
+$set gtapwindc_datafile datasets\gtapwindc\43_stub
 
 $include gtapwindc_data
 
@@ -319,7 +318,6 @@ setlevel(CD0_,	cd0,	"i,r,s,h")
 *	During model development, CONOPT is useful as it provides
 *	better error messages.
 
-*.option qcp=ipopt;
 option qcp=cplex;
 
 *	Pass fixed values as constants:
@@ -628,18 +626,15 @@ loop(iter$dev,
 
 	);
 
-*	Use ipopt if an infeasibility only shows up, otherwise
+*	Use conopt if an infeasibility only shows up, otherwise
 *	one of the LP codes is going to be faster:
 
 	option qcp = cplex;
+*.	option qcp=conopt;
 
 	solve balance using qcp minimizing obj;
 
-	if (balance.modelstat>2,
-	  option qcp=ipopt;
-	  solve balance using qcp minimizing obj;
-	);
-	abort$(balance.modelstat>2) "Model balance fails to solve to optimality!";
+	abort$(balance.modelstat<>1) "Model balance fails to solve to optimality!";
 
 	mktchk(p_(i,r),"xn0") = sum(x_(i,r,s),xn0(i,r,s));
 	mktchk(p_(i,r),"nd0") = sum(z_(i,r,s),nd0(i,r,s));

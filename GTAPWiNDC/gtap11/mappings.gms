@@ -8,12 +8,11 @@ $if "%1"=="g20"		$goto g20		! G20 regions (plus OEC, LIC and MIC)
 $if "%1"=="ukrregions"	$goto ukrregions	! Regions in a model with Ukraine
 
 $if "%1"=="nplusone"     $goto nplusone  	! 13 regions for WB BCA
-
 $if "%1"=="wbregions_12" $goto wbregions_12	! 12 regions for WB BCA
 $if "%1"=="wbregions_62" $goto wbregions_62	! 62 regions for WB BCA
-
 $if "%1"=="wbsectors_14" $goto wbsectors_14	! 14 sector aggregation for WB BCA
 $if "%1"=="wbsectors_12" $goto wbsectors_12	! 12 sector aggregation for WB BCA
+
 
 $if "%1"=="windc_10"	$goto windc_10		! 10 sector aggregation compatible with WiNDC
 $if "%1"=="windc_32"	$goto windc_32		! 32 sector aggregation compatible with WiNDC

@@ -8,7 +8,7 @@ $title consolidate years of available windc data with households
 $set sep %system.dirsep%
 
 * set environment variable for years of available household data
-$if not set hh_years $set hh_years "2017"
+$if not set hh_years $set hh_years "2014*2017"
 
 * set environment variable for alternative household datasets
 $if not set hhdata $set hhdata "cps"
@@ -85,7 +85,7 @@ parameter
 * series using gdxmerge. the same code is used for households and steady state
 * parameters.
  set
-     mapcap(*,*) /  capital_taxrate_2014.2014,
+     mapcap(*,yr) /  capital_taxrate_2014.2014,
                      capital_taxrate_2015.2015,
                      capital_taxrate_2016.2016,
                      capital_taxrate_2017.2017 /;
@@ -108,12 +108,12 @@ set
     trn   transfer types;    
 
 * load h and trn from representative file    
-$gdxin '%gdxdir%calibrated_hhdata_%hhdata%_%invest%_%hh_years%.gdx'
+$gdxin '%gdxdir%calibrated_hhdata_%hhdata%_%invest%_2015.gdx'
 $load h trn
 
 * household parameters
 parameter
-    pop0_(yr,r,h)          Population (households or returns in millions),
+    pop_(yr,r,h)          Population (households or returns in millions),
     le0_(yr,r,q,h)	  Household labor endowment,
     ke0_(yr,r,h)	  Household interest payments,
     tl0_(yr,r,h)	  Household labor tax rate,
@@ -125,7 +125,7 @@ parameter
 
 * merged parameters
 parameter
-    le0, ke0, tl0, cd0_h, c0_h, sav0, trn0, hhtrn0, pop0;
+    le0, ke0, tl0, cd0_h, c0_h, sav0, trn0, hhtrn0, pop;
 
 set
     maphh(*,yr) / calibrated_hhdata_%hhdata%_%invest%_2014.2014,
@@ -136,7 +136,7 @@ set
 * read in static parameters
 $call gdxmerge %gdxdir%calibrated_hhdata_%hhdata%_%invest%_*.gdx output=%gdxdir%hh_%invest%.gdx
 $gdxin %gdxdir%hh_%invest%.gdx
-$load le0 ke0 tl0 cd0_h c0_h sav0 trn0 hhtrn0 pop0
+$load le0 ke0 tl0 cd0_h c0_h sav0 trn0 hhtrn0 pop
 
 le0_(yr,r,q,h) = sum(maphh(u,yr), le0(u,r,q,h));
 ke0_(yr,r,h) = sum(maphh(u,yr), ke0(u,r,h));
@@ -146,7 +146,7 @@ c0_h_(yr,r,h) = sum(maphh(u,yr), c0_h(u,r,h));
 sav0_(yr,r,h) = sum(maphh(u,yr), sav0(u,r,h));
 trn0_(yr,r,h) = sum(maphh(u,yr), trn0(u,r,h));
 hhtrn0_(yr,r,h,trn) = sum(maphh(u,yr), hhtrn0(u,r,h,trn));
-pop0_(yr,r,h) = sum(maphh(u,yr), pop0(u,r,h));
+pop_(yr,r,h) = sum(maphh(u,yr), pop(u,r,h));
 
 * -----------------------------------------------------------------------------
 * if reading in dynamic data, consolidate additional steady state parameters
@@ -215,4 +215,4 @@ execute_unload '%datadir%WiNDC_%hhdata%_%invest%.gdx',
     s0_, xd0_, xn0_, x0_, rx0_, a0_, nd0_, dd0_, m0_, ta0_, tm0_, md0_, nm0_, dm0_,
 
 * household parameters
-    le0_, ke0_, tk0_, tl0_, cd0_h_, c0_h_, sav0_, trn0_, hhtrn0_, pop0_;
+    le0_, ke0_, tk0_, tl0_, cd0_h_, c0_h_, sav0_, trn0_, hhtrn0_, pop_;
