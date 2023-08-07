@@ -2,7 +2,7 @@
 *
 *	Comment out the following line to run the full build routine!
 
-*.$set start statedisagg
+#$set start usatradeshare
 
 * Authors: Andrew Schreiber, Thomas Rutherford, Adam Christensen
 *
@@ -38,14 +38,14 @@ $if set start     $goto %start%
 *	Add descriptive text for sets in windc_base.gdx:
 *------------------------------------------------------------------------------
 
-$label relabel
-$set script relabel
-$if %system.filesys% == MSNT $call 'title Inserting descriptive text in windc_base.gdx'
+*$label relabel
+*$set script relabel
+*$if %system.filesys% == MSNT $call 'title Inserting descriptive text in windc_base.gdx'
 
-$call 'gams %script%.gms o="%lstdir%%script%.lst"'
-$if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
+*$call 'gams %script%.gms o="%lstdir%%script%.lst"'
+*$if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
 
-$if set runscript $exit
+*$if set runscript $exit
 
 *------------------------------------------------------------------------------
 

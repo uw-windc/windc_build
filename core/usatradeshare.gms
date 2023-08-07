@@ -13,7 +13,7 @@ SET s "BEA Goods and sectors categories";
 * Note that exports are available from 2002-2016, while imports are available from 2008-2012.
 PARAMETER usatrd_units(sr,n,yr,t,*) "Trade data with units as domain";
 
-$GDXIN 'windc_base.gdx'
+$GDXIN '../data/core/windc_base.gdx'
 $LOAD sr
 $LOAD r
 $LOAD s=i
