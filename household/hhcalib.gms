@@ -16,10 +16,7 @@ file kutl; kutl.lw=0;
 * capital income.  Assume that the geography of savings is independent of 
 * the geography of investment.
 *
-* The CPS does not have capital gains data in the household file. We use data
-* from SOI approximately.
-*
-* Income upperbounds by quintile (CPS):
+* Income upperbounds by quintile (CPS) -- can modify:
 * (25000, 50000, 75000, 150000, Inf)
 *
 * Income bins in SOI matched approximately
@@ -27,20 +24,39 @@ file kutl; kutl.lw=0;
 *
 * Allow the model to calculate foreign savings endogenously.
 *
-* Fringe benefits -- could possibly use National Compensation Survey to get at
-* how the difference between labor demands and labor endowment data should be
-* shared out across households. For now, are shared equally across households.
-*
+* Assume that fringe benefits (difference between total employee compensation
+* and wages/salaries) are shared equivalently as wages and salaries.
+
+* Replaces markups with those calculated when compared to nipa tables
+* where applicable.
+
+* Removes use of capital gains -- reflects change in WEALTH, not production
+* driven income. Not included in NIPA tables. (still commented out -- if
+* everyone okay with this, remove from code)
+
+* added foreign capital ownership and commuting patterns (from ACS) lets us
+* target cps shares really well. also foreign direct investment numbers make
+* more sense relative to what is suggested by say the IMF.
+
+
+* -----------------------------------------------------------------------------
+* Set options
 * -----------------------------------------------------------------------------
 
 * set year of interest
 $if not set year $set year 2014
 
 * set underlying dataset for recalibration
-$if not set hhdata $set hhdata cps
+$if not set hhdata $set hhdata "cps"
 
 * switch for invest calibration (static vs. dynamic)
-$if not set invest $set invest static
+$if not set invest $set invest "static"
+
+* switch for assumption on domestic capital ownership (all vs. partial)
+$if not set capital_ownership $set capital_ownership "partial"
+
+* allow end of line comments
+$eolcom !
 
 * file separator
 $set sep %system.dirsep%
@@ -90,35 +106,41 @@ $gdxin '%gdxdir%capital_tax_rates.gdx'
 $loaddc tk0
 $gdxin
 
-* convert gross capital payments to net
-kd0(r,s) = kd0(r,s) / (1+tk0(r));
+* Convert gross capital payments to net
+
+kd0_(yr,r,s) = kd0_(yr,r,s) / (1+tk0(r));
+kd0(r,s) = kd0_("%year%",r,s);
+
 
 * -----------------------------------------------------------------------------
 * Read in household data
 * -----------------------------------------------------------------------------
 
-* define dimensions of the reconciled income shares. note that CPS has data on
+* Define dimensions of the reconciled income shares. note that CPS has data on
 * transfer income, but SOI does not.
+
 set
     h      household income categories,
     trn(*) cps transfer income source categories;
 
 parameters
-    wages0(r,h)		Wage income by region and household (in billions),
-    interest0(r,h)	Interest income by region and household (in billions),
-    taxes0(r,h)		Personal income taxes by region and household (in billions),
-    trans0(r,h)		Transfers from government (in billions),
-    tottrn0(r)		Total transfer payments from government (CPS -- in billions),
-    cpstrn0(r,h)        CPS cash payment transfers (in billions),
-    hhtrans0(r,h,*)     Disaggregate household transfers (in billions),
-    save0(r,h)		Retirement contributions (in billions),
-    cons0(r,h)		Imputed consumption (in billions),
-    pop(r,h)		Number of households (in millions),
-    pccons(r,h)         Per-household consumption,
-    taxrate0(r,h)       Assumed tax rate on income,
-    capgain0(r,h)	Mapped capital gains from SOI;
+    wages0_(yr,r,h)	Wage income by region and household (in billions),
+    interest0_(yr,r,h)	Interest income by region and household (in billions),
+    taxes0_(yr,r,h)	Personal income taxes by region and household (in billions),
+    trans0_(yr,r,h)	Transfers from government (in billions),
+    cpstrn0_(yr,r,h)	CPS cash payment transfers (in billions),
+    hhtrans0_(yr,r,h,*)	Disaggregate household transfers (in billions),
+    save0_(yr,r,h)	Retirement contributions (in billions),
+    cons0_(yr,r,h)	Imputed consumption (in billions),
+    pop0_(yr,r,h)	Number of households (in millions),
+    pccons0_(yr,r,h)	Per-household consumption,
+    taxrate0_(yr,r,h)	Assumed tax rate on labor income,
+    taxrate0(r,h)	Assumed tax rate on labor income;
 
-$gdxin '%gdxdir%%hhdata%_data_%year%.gdx'
+* Turn off domain checking when reading in household data because it is
+* available for more recent years than core windc accounts
+
+$gdxin '%gdxdir%%hhdata%_data.gdx'
 $loaddc h
 $if %hhdata%=="cps" $loaddc trn
 $if %hhdata%=="cps" $loaddc wages0 interest0 taxes0 trans0 save0 pop pccons hhtrans0
@@ -126,18 +148,31 @@ $if %hhdata%=="soi" $loaddc wages0 interest0 taxes0 trans0 save0 pop=nr pccons
 $if %hhdata%=="soi" trn('total') = yes;
 $if %hhdata%=="soi" hhtrans0(r,h,trn) = trans0(r,h);
 
-* require total cash payments from CPS to hold in SOI data
-$if %hhdata%=="soi" $gdxin '%gdxdir%cps_data_%year%.gdx'
-$if %hhdata%=="soi" $load cpstrn0=trans0
-$if %hhdata%=="soi" tottrn0(r) = sum(h, cpstrn0(r,h));
-$if %hhdata%=="cps" tottrn0(r) = sum(h, trans0(r,h));
+* Require total transfer cash payments from CPS to hold in SOI data
 
-* read in capital gains data from SOI if calibrating to CPS
-$if %hhdata%=="cps" $gdxin '%gdxdir%capital_gains_%year%.gdx'
-$if %hhdata%=="cps" $load capgain0
-$if %hhdata%=="cps" interest0(r,h) = interest0(r,h) + capgain0(r,h);
+$if %hhdata%=="soi" $gdxin '%gdxdir%cps_data.gdx'
+$if %hhdata%=="soi" $load cpstrn0_=trans0_
+$if %hhdata%=="soi" trn('total') = yes;
+$if %hhdata%=="soi" trans0_(yr,r,h) = cpstrn0_(yr,r,h);
+$if %hhdata%=="soi" hhtrans0_(yr,r,h,trn) = trans0_(yr,r,h);
 
-* note that the CPS doesn't include tax payments at the household level. we use
+* Read in capital gains data from SOI if calibrating to CPS
+
+* $if %hhdata%=="cps" $gdxin '%gdxdir%soi_capital_gains.gdx'
+* $if %hhdata%=="cps" $load capgain0_
+* $if %hhdata%=="soi" capgain0_(yr,r,h) = 0;
+
+* Extrapolate size of capital gains based on income shares
+
+* parameter
+*     cg_income_share(r,h)	Share of capital income attributable to capital gains;
+
+* cg_income_share(r,h)$sum(yr, capgain0_(yr,r,h)) =
+*     sum(yr, capgain0_(yr,r,h)) / sum(yr$capgain0_(yr,r,h), interest0_(yr,r,h) + capgain0_(yr,r,h));
+
+* $if %hhdata%=="cps" interest0_(yr,r,h) = interest0_(yr,r,h)/(1-cg_income_share(r,h));
+
+* Note that the CPS doesn't include tax payments at the household level. we use
 * Alex Marten's taxsim code to genrate both average and marginal rates. average
 * rates are used here.
 
@@ -146,15 +181,17 @@ $if %hhdata%=="cps" $loaddc taxrate0
 $if %hhdata%=="cps" taxes0(r,h) = taxrate0(r,h) * wages0(r,h);
 $if %hhdata%=="soi" taxrate0(r,h) = taxes0(r,h) / (wages0(r,h) + interest0(r,h));
 
-* for SOI data, adjust income tax rates to net out imposed capital tax rate
+* For SOI data, adjust income tax rates to net out imposed capital tax rate
+
 parameter
     corporate_rate /.186 /;
 
 $if %hhdata%=="soi"  taxes0(r,h) = taxes0(r,h) - sum((rr,s), (tk0(rr) - corporate_rate)*kd0(rr,s)) * interest0(r,h) / sum((r.local, h.local), interest0(r,h));
 $if %hhdata%=="soi"  taxrate0(r,h) = taxes0(r,h) / wages0(r,h);
 
-* compute reference consumption
-cons0(r,h) = wages0(r,h) + interest0(r,h) + trans0(r,h) - taxes0(r,h) - save0(r,h) + eps;
+* Compute reference consumption based on known incomes and expenditures
+
+cons0_(yr,r,h) = wages0_(yr,r,h) + interest0_(yr,r,h) + trans0_(yr,r,h) - taxes0_(yr,r,h) - save0_(yr,r,h) + eps;
 
 * report reference income and expenditure shares;
 parameter
@@ -318,7 +355,7 @@ $if %puttitle%==yes put_utility kutl 'title' /'solve partial_ss minimizing OBJI 
 $endif.dynamic
 
 * -----------------------------------------------------------------------------
-* Balancing routine step 1: aggregate the data and solve simpler problem 
+* Prepare additional parameter targets for income side balancing routine
 * -----------------------------------------------------------------------------
 
 * there are differences between the balancing routines for the cps vs. soi data
@@ -518,17 +555,32 @@ ABORT$(calib_step1_%hhdata%.modelstat > 2) "Model calib_step1_%hhdata% has statu
 
 * construct reports
 parameter
-    cbochk_ar    Check on CBO result for transfers less taxes,
-    chkhhdata_ar Aggregate shares for calibrated dataset,
-    increp_ar    Income report,
-    boundshr_ar  Report on minimum and maximum shares;
+    household_shares(r,h,*)	Household shares of income,
+    savings_rate0(r,h)		Reference savings rate from hh data,
+    fringe_markup		Fringe benefit markup,
+    le0_multiplier(r)		Labor income difference between home and work destination,
+    commute0(r,rr)		Approximate value of commuting flows from ACS-CPS,
+    cap_own0_			Time series of capital ownership shares,
+    cap_own0			Portion of capital stock owned domestically;
 
-cbochk_ar(h) = sum(ar, TRANS_AG.L(ar,h) - TAXES_AG.L(ar,h));
+* Labor income shares defined by region:
 
-chkhhdata_ar("income","total",h) = sum(ar, WAGES_AG.L(ar,h) + INTEREST_AG.L(ar,h) + TRANS_AG.L(ar,h));
-chkhhdata_ar("income","wage",h) = sum(ar, WAGES_AG.L(ar,h)) / chkhhdata_ar("income","total",h);
-chkhhdata_ar("income","interest",h) = sum(ar, INTEREST_AG.L(ar,h)) / chkhhdata_ar("income","total",h);
-chkhhdata_ar("income","transfers",h) = sum(ar, TRANS_AG.L(ar,h)) / chkhhdata_ar("income","total",h);
+household_shares(r,h,'wages') = wages0(r,h) / sum(h.local, wages0(r,h));
+
+* Capital income shares defined across U.S. (capital market closed nationally)
+
+household_shares(r,h,'cap') = interest0(r,h) / sum((r.local, h.local), interest0(r,h));
+
+* Reference savings rate defined as portion of disposable income not spent on
+* current consumption
+
+savings_rate0(r,h) = save0(r,h) / (save0(r,h) + cons0(r,h));
+
+* Define a multiplier that characterizes the ratio of income received from labor
+* compensation to sectoral labor payments. If the number is <1, we can interpret
+* as relatively more commuters coming into the state to work. If >1, commuters
+* leave the state to work. DC is a good example of the former case. First,
+* adjust the fringe markup such that total wages = total labor demands.
 
 chkhhdata_ar("expend","total",h) = sum(ar, CONS_AG.L(ar,h) + TAXES_AG.L(ar,h) + SAVE_AG.L(ar,h));
 chkhhdata_ar("expend","cons",h) = sum(ar, CONS_AG.L(ar,h)) / chkhhdata_ar("expend","total",h);
@@ -578,6 +630,22 @@ parameter
 le0mult(r) = sum((mapr(ar,r),h), wages_ag.l(ar,h)) / sum((mapr(ar,r),h), wages0_ag(ar,h));
 display le0mult;
 
+le0_multiplier(r)$(le0_multiplier(r)>1 and sum(rr,commute0(r,rr))=0) = 1;
+le0_multiplier(r)$(le0_multiplier(r)<1 and sum(rr,commute0(rr,r))=0) = 1;
+
+* Set assumption on capital ownership (partial ownership is based on NIPA totals)
+
+$call 'csv2gdx data_sources%sep%cps%sep%windc_vs_nipa_domestic_capital.csv output=%gdxdir%windc_vs_nipa_domestic_capital.gdx id=cap_own0_ index=(1) useHeader=y value=4';
+$gdxin %gdxdir%windc_vs_nipa_domestic_capital.gdx
+$load cap_own0_
+$gdxin
+$if %capital_ownership%=="partial" cap_own0 = cap_own0_("%year%");
+$if %capital_ownership%=="all" cap_own0 = 1;
+
+
+* -----------------------------------------------------------------------------
+* Income side balancing routine
+* -----------------------------------------------------------------------------
 
 * -----------------------------------------------------------------------------
 * Balancing routine step 2: state level income side
@@ -617,15 +685,14 @@ equations
 
 * objective definition (penalizing consumption from going to zero)
 
-objdef..        OBJ =e= sum((r,h),
-		            sqr(CONS(r,h) - LAMDA("CONS") * cons0(r,h)) - 
-		           (log(CONS(r,h)) - log(cons0(r,h))) +
-            	            sqr(sum(rr,WAGES(r,rr,h)) - LAMDA("WAGES") * wages0(r,h)) + 
-            	           (sum(trn, sqr(TRANSHH(r,h,trn) - (LAMDA("TRANS")*hhtrans0(r,h,trn)))))$cps +
-            	           (sqr(TRANS(r,h) - LAMDA("TRANS") * trans0(r,h)))$(not cps) +
-                            sqr(INTEREST(r,h) - LAMDA("INTEREST") * interest0(r,h)) +
-            	            sqr(SAVE(r,h) - LAMDA("SAVE") * save0(r,h)));
-
+objdef..
+    OBJ =e= sum((r,h),
+ 	abs(household_shares(r,h,'wages')*le0_multiplier(r)*sum(s,ld0(r,s)))*
+		sqr(sum(rr, WAGES(r,rr,h))/(household_shares(r,h,'wages')*le0_multiplier(r)*sum(s,ld0(r,s))) - 1) +
+	abs(household_shares(r,h,'cap')*cap_own0*sum((s,rr),kd0(rr,s)))*
+		sqr(INTEREST(r,h)/(household_shares(r,h,'cap')*cap_own0*sum((s,rr),kd0(rr,s))) - 1)) +
+    	sum((r,rr)$commute0(r,rr), sum(h, WAGES(r,rr,h))/commute0(r,rr));
+	
 * fix the income tax rate from the household data
 taxdef(r,h)..	TAXES(r,h) =e= taxrate0(r,h) * sum(rr, WAGES(r,rr,h));
 
@@ -668,7 +735,13 @@ model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, lincdef, interest
 
 TRANSHH.L(r,h,trn) = trn_weight(trn) * hhtrans0(r,h,trn);
 
-$if %hhdata%=="cps" TRANSHH.UP(r,h,trn) = 1.5 * trn_weight(trn) * hhtrans0(r,h,trn);	TRANSHH.LO(r,h,trn) = 0.75 * trn_weight(trn) * hhtrans0(r,h,trn);
+* Target income SHARES for wages and capital earnings (both categories having
+* missing information so we target the distribution based on WiNDC
+* totals). Restrictions of interstate commuting handled through the objective
+* function. Note that commute0(r,rr) represents an upper bound on interstate
+* commuting -- it is estimated by taking the number of estimated commuters from
+* the ACS multiplied by average household income in the origin state of the
+* commute.
 
 TRANS.L(r,h) = trans0(r,h);
 TRANS.LO(r,h) = 0.75 * trans0(r,h);
@@ -677,11 +750,10 @@ TRANS.UP(r,h)$(ord(h)>3) = 1.25 * trn_agg_weight * trans0(r,h);
 CONS.L(r,h) = cons0(r,h);
 CONS.LO(r,h) = 0.5 * cons0(r,h);
 
-* bounds correspond to mark ups on labor demands
-WAGES.L(r,r,h) = wages0(r,h);
-WAGES.LO(r,r,h) = 0.75 * wages0(r,h);
-WAGES.UP(r,r,h) = le0mult(r) * wages0(r,h);
-WAGES.FX(r,rr,h)$(not sum(ar, within(r,rr,ar))) = 0;
+INTEREST.L(r,h) = household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
+INTEREST.LO(r,h) = 0.75 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
+INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
+FINT.L = (1-cap_own0) * sum((r,s), kd0(r,s));
 
 INTEREST.L(r,h) = interest0(r,h);
 INTEREST.LO(r,h) = 0.75 * interest0(r,h);
@@ -781,9 +853,7 @@ chkwages(r,'all','le0_cal') = sum((rr,h), WAGES.L(r,rr,h));
 chkwages(r,'all','ld0') = sum(s, ld0(r,s));
 chkwages(r,'all','ld0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','ld0');
 chkwages(r,'all','le0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','le0');
-display cbochk, chkhhdata, hhshares, increp, boundshr, chkwages;
-* execute_unload '%hhdata%_income_ranges.gdx' boundshr;
-* execute 'gdxxrw %hhdata%_income_ranges.gdx par=boundshr rng=%hhdata%!A2 cdim=0';
+display cbochk, chkhhdata, hhshares, increp, boundshr, chkwages, FSAV.L, cons_save, WAGES.L;
 
 parameter
     avg_tax_h, avg_tax_r, avg_tax    Reports on average tax rates;
@@ -791,7 +861,8 @@ parameter
 avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
-
+display avg_tax_h, avg_tax;
+$exit
 
 * -----------------------------------------------------------------------------
 * Balancing routine step 3: state level expenditures
