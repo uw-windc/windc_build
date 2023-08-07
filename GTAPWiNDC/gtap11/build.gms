@@ -85,7 +85,7 @@ loop(yr,
 	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
-*	if (errorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
+	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
 );
 
 $if set task $exit
@@ -101,7 +101,8 @@ loop(yr,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
 	put_utility 'shell' /'gams filter --yr='yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\calibrate_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
-*	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
+	if (myerrorlevel>0, abort "Non-zero return code from filter.gms"; );
+
 ));
 
 $if set task $exit
@@ -116,7 +117,7 @@ loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;
 	put_utility 'shell' / 'gams aggregate --yr=',yr.tl,' --target=',target.tl,' o=',yr.tl,'\aggregate_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
-*	if (errorlevel>0, abort "Non-zero return code from aggregate.gms"; );
+	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms"; );
 );
 
 $if set task $exit
@@ -132,5 +133,5 @@ loop((yr,target),
 	put_utility 'title' /'replicate: ',yr.tl,' : ', target.tl;
 	put_utility 'shell' / 'gams replicate --yr=',yr.tl,' --ds=',target.tl,' o=',yr.tl,'\gmr_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
-*	if (errorlevel>0, abort "Non-zero return code from replicate.gms"; );
+	if (myerrorlevel>0, abort "Non-zero return code from replicate.gms"; );
 );

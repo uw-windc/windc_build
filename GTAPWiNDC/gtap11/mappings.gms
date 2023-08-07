@@ -8,11 +8,12 @@ $if "%1"=="g20"		$goto g20		! G20 regions (plus OEC, LIC and MIC)
 $if "%1"=="ukrregions"	$goto ukrregions	! Regions in a model with Ukraine
 
 $if "%1"=="nplusone"     $goto nplusone  	! 13 regions for WB BCA
+
 $if "%1"=="wbregions_12" $goto wbregions_12	! 12 regions for WB BCA
 $if "%1"=="wbregions_62" $goto wbregions_62	! 62 regions for WB BCA
+
 $if "%1"=="wbsectors_14" $goto wbsectors_14	! 14 sector aggregation for WB BCA
 $if "%1"=="wbsectors_12" $goto wbsectors_12	! 12 sector aggregation for WB BCA
-
 
 $if "%1"=="windc_10"	$goto windc_10		! 10 sector aggregation compatible with WiNDC
 $if "%1"=="windc_32"	$goto windc_32		! 32 sector aggregation compatible with WiNDC
@@ -833,7 +834,7 @@ set rr  Regions in the aggregation /
 	KHM	Cambodia
 	CMR	Cameroon
 	COM	Comoros
-	CIV	"Côte d'Ivoire"
+	CIV	"Cï¿½te d'Ivoire"
 	EGY	"Egypt, Arab Rep."
 	SLV	El Salvador
 	GHA	Ghana
@@ -994,7 +995,7 @@ XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Ca
 	KHM.KHM	Cambodia
 	CMR.CMR	Cameroon
 	COM.COM	Comoros
-	CIV.CIV	"Côte d'Ivoire"
+	CIV.CIV	"Cï¿½te d'Ivoire"
 	EGY.EGY	"Egypt, Arab Rep."
 	SLV.SLV	El Salvador
 	GHA.GHA	Ghana
@@ -1222,7 +1223,7 @@ $if not "%np1%"=="BOL"	BOL	!	Bolivia
 $if not "%np1%"=="KHM"	KHM	!	Cambodia
 $if not "%np1%"=="CMR"	CMR	!	Cameroon
 $if not "%np1%"=="COM"	COM	!	Comoros
-$if not "%np1%"=="CIV"	CIV	!	Côte d'Ivoire
+$if not "%np1%"=="CIV"	CIV	!	Cï¿½te d'Ivoire
 $if not "%np1%"=="EGY"	EGY	!	Egypt, Arab Rep.
 $if not "%np1%"=="SLV"	SLV	!	El Salvador
 $if not "%np1%"=="GHA"	GHA	!	Ghana
