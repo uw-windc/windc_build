@@ -4,7 +4,7 @@ $SET sep %system.dirsep%
 
 *	Read the dataset through the scratch directory:
 
-$call cp "../data/core/windc_base.gdx" "%gams.scrdir%windc_base_.gdx"
+$call cp "windc_base.gdx" "%gams.scrdir%windc_base_.gdx"
 $call gdxdump "%gams.scrdir%windc_base_.gdx" output="%gams.scrdir%windc_base.gms" nodata 
 $include %gams.scrdir%windc_base.gms 
 

@@ -1,6 +1,5 @@
 *.opt
 *.lst
-*.GEN
 *.gen
 *.log
 *.dat

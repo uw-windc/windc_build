@@ -1,0 +1,15 @@
+N1		"Number of returns",
+MARS1		"Number of single returns: Filing status is single"
+MARS2		"Number of joint returns: Filing status is married filing jointly"
+MARS4		"Number of head of household returns: Filing status is head of household"
+PREP		"Number of returns with paid preparer's signature"
+N2		"Number of exemptions: 1040:6d",
+NUMDEP		"Number of dependents: 1040:6c",
+TOTAL_VITA	"Total number of volunteer prepared returns [2]",
+VITA		"Number of volunteer income tax assistance (VITA) prepared returns [2]",
+MVITA		"Number of military volunteer prepared returns [2]",
+TCE		"Number of tax counseling for the elderly (TCE) prepared returns [2]",
+VITA_EIC	"Number of volunteer prepared returns with Earned Income Credit",
+RAL		"Number of refund anticipation loan returns",
+RAC		"Number of refund anticipation check returns",
+ELDERLY		"Number of elderly returns [3]",
