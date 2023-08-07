@@ -9,6 +9,12 @@ $title Census Trade shares
 $set sep %system.dirsep%
 
 
+
+*---------
+* Raw data directory
+*---------
+$set gdxdir "../data/core"
+
 * -------------------------------------------------------------------
 * Read in state level USA Trade Online data
 * -------------------------------------------------------------------
@@ -86,8 +92,8 @@ set
 parameter
     usda(r,ayr)	State level exports from usda of total agricultural output;
 
-$call 'csv2gdx added_data%sep%usda_time_series_exports.csv output=added_data%sep%usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
-$gdxin 'added_data%sep%usda_time_series_exports.gdx'
+$call 'csv2gdx %gdxdir%%sep%usda_time_series_exports.csv output=%gdxdir%%sep%usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
+$gdxin '%gdxdir%%sep%usda_time_series_exports.gdx'
 $load ayr=Dim2
 $loaddc usda
 $gdxin
@@ -99,8 +105,8 @@ comp(yr,r,'census') = usatrd_shr(yr,r,'agr','exports');
 comp(ayr,r,'usda') = usda(r,ayr) / sum(r.local, usda(r,ayr));
 display comp;
 
-execute_unload 'added_data/agr_trade_comparison.gdx', comp;
-execute 'gdxxrw i=added_data/agr_trade_comparison.gdx o=added_data/agr_trade_comparison.xlsx par=comp rng=data!A2 cdim=0';
+execute_unload '%gdxdir%/agr_trade_comparison.gdx', comp;
+execute 'gdxxrw i=%gdxdir%/agr_trade_comparison.gdx o=%gdxdir%/agr_trade_comparison.xlsx par=comp rng=data!A2 cdim=0';
 $offtext
 
 * assign trade for agriculture to be based on usda shares:

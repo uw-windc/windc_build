@@ -5,9 +5,15 @@ $title Regional purchase coefficients (RPC) from freight analysis framework (FAF
 * Set options
 * -------------------------------------------------------------------
 
+
 * file separator
 $set sep %system.dirsep%
 
+
+*---------
+* Raw data directory
+*---------
+$set gdxdir "../data/core"
 
 * -------------------------------------------------------------------
 * Read in state level FAF data
@@ -74,8 +80,8 @@ $load yr sr r g=i
 $gdxin
 alias(r,rr),(*,u);
 
-$call 'csv2gdx added_data/faf_data_1997_2021.csv output=added_data/faf_data_1997_2021.gdx id=faf_units index=(1,2,3,4) colCount=5 value=lastCol useHeader=Y';
-$gdxin 'added_data/faf_data_1997_2021.gdx'
+$call 'csv2gdx %gdxdir%/faf_data_1997_2021.csv output=%gdxdir%/faf_data_1997_2021.gdx id=faf_units index=(1,2,3,4) colCount=5 value=lastCol useHeader=Y';
+$gdxin '%gdxdir%/faf_data_1997_2021.gdx'
 $load fyr=Dim4
 $load faf_units
 $gdxin
@@ -168,8 +174,8 @@ parameter
 chk(r,g,'cfs') = cfs_rpc(r,g);
 chk(r,g,'faf') = rpc('2012',r,g);
 
-execute_unload 'added_data/rpc_comparison_2012.gdx', chk;
-execute 'gdxxrw i=added_data/rpc_comparison_2012.gdx o=added_data/rpc_comparison_2012.xlsx par=chk rng=data!A2 cdim=0';
+execute_unload '%gdxdir%/rpc_comparison_2012.gdx', chk;
+execute 'gdxxrw i=%gdxdir%/rpc_comparison_2012.gdx o=%gdxdir%/rpc_comparison_2012.xlsx par=chk rng=data!A2 cdim=0';
 $offtext
 
 * -------------------------------------------------------------------
