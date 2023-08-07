@@ -1,54 +1,44 @@
-$title Census Trade shares
+$TITLE GAMS routine for merging USA Trade Online data into build
+
+$SET sep %system.dirsep%
 
 
-* -------------------------------------------------------------------
-* Set options
-* -------------------------------------------------------------------
+SET sr "Super Regions in WiNDC Database";
+SET r(sr) "Regions in WiNDC Database";
+SET yr "Dynamically created set from parameter usatrd_units, Years in USA trade data set (2002-2016)";
+SET t	"Dynamically create set from parameter usatrd, Trade type (import/export)";
+SET n "Dynamically created set from parameter usatrd, NAICS codes"
+SET s "BEA Goods and sectors categories";
 
-* file separator
-$set sep %system.dirsep%
+* Note that exports are available from 2002-2016, while imports are available from 2008-2012.
+PARAMETER usatrd_units(sr,n,yr,t,*) "Trade data with units as domain";
 
-
-* -------------------------------------------------------------------
-* Read in state level USA Trade Online data
-* -------------------------------------------------------------------
-
-set
-    sr 		Super Regions in WiNDC Database,
-    r(sr) 	Regions in WiNDC Database,
-    yr 		Dynamically created set from parameter usatrd_units (data years 2002-2016),
-    t		Dynamically create set from parameter usatrd (Trade type import-export),
-    n 		Dynamically created set from parameter usatrd (NAICS codes),
-    s 		BEA Goods and sectors categories;
-
-* Note that exports are available from 2002-2016, while imports are available
-* from 2008-2012.
-parameter
-    usatrd_units(sr,n,yr,t,*) 	Trade data with units as domain;
-
-$gdxin 'windc_base.gdx'
-$load sr r s=i
-$load n<usatrd_units.dim2
-$load yr<usatrd_units.dim3
-$load t<usatrd_units.dim4
-$load usatrd_units
-$gdxin
+$GDXIN '../data/core/windc_base.gdx'
+$LOAD sr
+$LOAD r
+$LOAD s=i
+$LOAD n<usatrd_units.dim2
+$LOAD yr<usatrd_units.dim3
+$LOAD t<usatrd_units.dim4
+$LOAD usatrd_units
+$GDXIN
 
 
-* -------------------------------------------------------------------
-* Map Census trade categories to IO definitions and verify consistency
-* -------------------------------------------------------------------
-
-set
-    map(n,s) Mapping between naics codes and sectors /
-$include 'maps%sep%mapusatrd.map'
+SET map(n,s) "Mapping between naics codes and sectors" /
+$INCLUDE 'maps%sep%mapusatrd.map'
 /;
 
-parameter
-    usatrd(yr,r,s,t) 		Trade data without units,
-    usatrd_shr(*,r,s,t) 	Share of total trade by region;
 
-usatrd(yr,r,s,t) = sum(map(n,s), usatrd_units(r,n,yr,t,"millions of us dollars (USD)"));
+PARAMETER usatrd(r,n,yr,t) "Trade data without units";
+
+* Data originally in millions of dollars. Scale to billions:
+usatrd(r,n,yr,t) = usatrd_units(r,n,yr,t,"millions of us dollars (USD)") * 1e-3;
+
+
+PARAMETER usatrd_(yr,r,s,t) "Mapped trade data";
+PARAMETER usatrd_shr(yr,r,s,t) "Share of total trade by region";
+
+usatrd_(yr,r,s,t) = sum(map(n,s), usatrd(r,n,yr,t));
 
 * Which sectors are not mapped? Could be there just aren't any
 * imports/exports for a given sector region pairing or the sector isn't
@@ -56,65 +46,26 @@ usatrd(yr,r,s,t) = sum(map(n,s), usatrd_units(r,n,yr,t,"millions of us dollars (
 * differentiate sectors not included based on state gross product for a
 * given state.
 
-set
-    notinc(s) 	Sectors not included in USA Trade Data;
+SET notinc(s) "Sectors not included in USA Trade Data";
 
-notinc(s) = yes$(not sum(n, map(n,s)));
-
-usatrd_shr(yr,r,s,t)$(NOT notinc(s) and sum(r.local, usatrd(yr,r,s,t))) =
-    usatrd(yr,r,s,t) / sum(r.local, usatrd(yr,r,s,t));
+notinc(s) = yes$(NOT sum(n, map(n,s)));
+usatrd_shr(yr,r,s,t)$(NOT notinc(s) and sum(r.local, usatrd_(yr,r,s,t))) = usatrd_(yr,r,s,t) / sum(r.local, usatrd_(yr,r,s,t));
 
 * Note that there isn't data for all years for the publishing sector in
 * both exports and imports. Take average of data:
 
-usatrd_shr(yr,r,s,t)$(not notinc(s) and not sum(r.local, usatrd(yr,r,s,t))) =
-    sum(yr.local, usatrd(yr,r,s,t)) / sum((r.local,yr.local), usatrd(yr,r,s,t));
+usatrd_shr(yr,r,s,t)$(NOT notinc(s) AND NOT sum(r.local, usatrd_(yr,r,s,t))) = sum(yr.local, usatrd_(yr,r,s,t)) / sum((r.local,yr.local), usatrd_(yr,r,s,t));
+
+* Perform a comparison between import and export shares:
+
+PARAMETER shrchk "Comparison between imports and exports";
+
+shrchk(s,t) = usatrd_shr('2014','CA',s,t);
+DISPLAY shrchk;
+
 
 * Verify all shares sum to 1:
+ABORT$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'exports')), 4)) <> 1) "Export shares don't sum to 1.";
+ABORT$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'imports')), 4)) <> 1) "Import shares don't sum to 1.";
 
-abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'exports')), 4)) <> 1) "Export shares don't sum to 1.";
-abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'imports')), 4)) <> 1) "Import shares don't sum to 1.";
-
-
-* -------------------------------------------------------------------
-* add export shares from usda for the agricultural sector
-* -------------------------------------------------------------------
-
-set
-    ayr		Years in usda export data;
-
-parameter
-    usda(r,ayr)	State level exports from usda of total agricultural output;
-
-$call 'csv2gdx added_data%sep%usda_time_series_exports.csv output=added_data%sep%usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
-$gdxin 'added_data%sep%usda_time_series_exports.gdx'
-$load ayr=Dim2
-$loaddc usda
-$gdxin
-
-$ontext	 
-parameter
-    comp;
-comp(yr,r,'census') = usatrd_shr(yr,r,'agr','exports');
-comp(ayr,r,'usda') = usda(r,ayr) / sum(r.local, usda(r,ayr));
-display comp;
-
-execute_unload 'added_data/agr_trade_comparison.gdx', comp;
-execute 'gdxxrw i=added_data/agr_trade_comparison.gdx o=added_data/agr_trade_comparison.xlsx par=comp rng=data!A2 cdim=0';
-$offtext
-
-* assign trade for agriculture to be based on usda shares:
-
-usatrd_shr(ayr,r,'agr','exports') = usda(r,ayr) / sum(r.local, usda(r,ayr));
-
-
-* -------------------------------------------------------------------
-* Output regional shares
-* -------------------------------------------------------------------
-
-execute_unload 'gdx%sep%shares_usatrd.gdx' usatrd_shr, notinc;
-
-
-* -------------------------------------------------------------------
-* End
-* -------------------------------------------------------------------
+EXECUTE_UNLOAD 'gdx%sep%shares_usatrd.gdx' usatrd_shr, notinc;
