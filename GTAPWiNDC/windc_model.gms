@@ -14,6 +14,18 @@ $if not set ds   $set ds cps_static_gtap_32_state
 
 $include windc_data
 
+set	agrfoo(g)	Agricultural and food products /
+	fbp	"Food and beverage and tobacco products (311FT)",
+	agr	"Agricultural products"/;
+
+parameter	expend(*,g,h)	Household consumption expenditures;
+expend("$",agrfoo(g),h) = sum(r,cd0_h(r,g,h));
+expend("%",agrfoo(g),h)$expend("$",g,h) 
+			= 100 * sum(r,cd0_h(r,g,h)) / sum((r,g.local),cd0_h(r,g,h));
+option expend:1:2:1;
+display expend;
+$exit
+
 parameter	
 	ls0(r,h)	Labor supply (net),
 	esubL(r,h)	Leisure-consumption elasticity,
@@ -202,18 +214,3 @@ macroaccounts("F","%GDP") = 100 * macroaccounts("F","$") / macroaccounts("GDP","
 option macct:0:0:1;
 option macroaccounts:3;
 display macroaccounts macct;
-
-$exit
-
-set	agrfoo(g)	Agricultural and food products /
-	fbp	"Food and beverage and tobacco products (311FT)",
-	agr	"Agricultural products"/;
-
-parameter	expend(*,g,h)	Household consumption expenditures;
-expend("$",agrfoo(g),h) = sum(r,cd0_h(r,g,h));
-expend("%",agrfoo(g),h)$expend("$",g,h) 
-			= 100 * sum(r,cd0_h(r,g,h)) / sum((r,g.local),cd0_h(r,g,h));
-option expend:1:2:1;
-display expend;
-$exit
-
