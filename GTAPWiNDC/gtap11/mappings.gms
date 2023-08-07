@@ -834,7 +834,7 @@ set rr  Regions in the aggregation /
 	KHM	Cambodia
 	CMR	Cameroon
 	COM	Comoros
-	CIV	"Cï¿½te d'Ivoire"
+	CIV	"Côte d'Ivoire"
 	EGY	"Egypt, Arab Rep."
 	SLV	El Salvador
 	GHA	Ghana
@@ -995,7 +995,7 @@ XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Ca
 	KHM.KHM	Cambodia
 	CMR.CMR	Cameroon
 	COM.COM	Comoros
-	CIV.CIV	"Cï¿½te d'Ivoire"
+	CIV.CIV	"Côte d'Ivoire"
 	EGY.EGY	"Egypt, Arab Rep."
 	SLV.SLV	El Salvador
 	GHA.GHA	Ghana
@@ -1223,7 +1223,7 @@ $if not "%np1%"=="BOL"	BOL	!	Bolivia
 $if not "%np1%"=="KHM"	KHM	!	Cambodia
 $if not "%np1%"=="CMR"	CMR	!	Cameroon
 $if not "%np1%"=="COM"	COM	!	Comoros
-$if not "%np1%"=="CIV"	CIV	!	Cï¿½te d'Ivoire
+$if not "%np1%"=="CIV"	CIV	!	Côte d'Ivoire
 $if not "%np1%"=="EGY"	EGY	!	Egypt, Arab Rep.
 $if not "%np1%"=="SLV"	SLV	!	El Salvador
 $if not "%np1%"=="GHA"	GHA	!	Ghana

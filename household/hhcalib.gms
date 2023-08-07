@@ -715,14 +715,14 @@ parameters
 
 
 * read in cex based income elasticities (estimated at the national level)
-$call 'csv2gdx ../data/household%sep%cex%sep%national_income_elasticities_CEX_2013_2017.csv output=%gdxdir%national_income_elasticities_CEX_2013_2017.gdx id=regres index=1 useHeader=y value=2,3,4';
+$call 'csv2gdx data_sources%sep%cex%sep%national_income_elasticities_CEX_2013_2017.csv output=%gdxdir%national_income_elasticities_CEX_2013_2017.gdx id=regres index=1 useHeader=y value=2,3,4';
 $gdxin '%gdxdir%national_income_elasticities_CEX_2013_2017.gdx'
 $load regres
 
 eta_(cex) = regres(cex,'elast');
 
 * read in constructed bridge file between cex and sage sectors (based on pce)
-$call 'csv2gdx ../data/household%sep%cex%sep%windc_pce_map.csv output=%gdxdir%windc_pce_map.gdx id=pcebridge index=1,2 useHeader=y value=3,4,5';
+$call 'csv2gdx data_sources%sep%cex%sep%windc_pce_map.csv output=%gdxdir%windc_pce_map.gdx id=pcebridge index=1,2 useHeader=y value=3,4,5';
 $gdxin '%gdxdir%windc_pce_map.gdx'
 $load pcebridge
 
