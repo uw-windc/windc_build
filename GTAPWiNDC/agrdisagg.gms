@@ -10,6 +10,25 @@ $if not set ds $set ds cps_static_gtap_32_state
 
 $if not set dsout $set dsout datasets\windc\43.gdx
 
+
+*-----------------------
+*   If the value of gtapingams is not set via command line,
+*   then set its value. If the data for gtap11 exists, then
+*   gtapingams will be set to gtap11, otherwise gtap9
+*-----------------------
+
+
+$ifThen not set gtapingams
+$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
+$set gtapingams  gtap11/
+$else
+$set gtapingams gtap9/
+$endif
+$endif
+
+
+
+
 set s	Sectors (to which we introduce agricultural products) /
 	fbp  "Food and beverage and tobacco products (311FT)",
 	tex  "Textiles",
@@ -74,7 +93,7 @@ parameter	vafm(i,*)	GTAP intermediate demand
 $onechov >%gams.scrdir%gtapagr.gms
 $title	Extract Agricultural Data from the GTAP Dataset
 
-$include gtapingams
+*$include gtapingams
 
 $set ds g20_43
 
