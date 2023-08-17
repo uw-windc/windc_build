@@ -56,7 +56,7 @@ $prod:C(r)  s:1
 $demand:RA(r)
 	d:PC(r)		q:c0(r)
 	e:PY(r,g)	q:yh0(r,g)
-	e:PFX		q:(bopdef0(r) + hhadj(r))
+	e:PFX		q:(bopdef0(r) + hhadj0(r))
 	e:PA(r,g)	q:(-g0(r,g) - i0(r,g))
 	e:PL(r)		q:(sum(s,ld0(r,s)))
 	e:PK(r,s)	q:kd0(r,s)

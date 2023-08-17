@@ -1,12 +1,9 @@
 $title State disaggregation of national accounts
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Set options:
-* -------------------------------------------------------------------
-
-* file separator
-$set sep %system.dirsep%
+* ------------------------------------------------------------------------------
 
 * matrix balancing method defines which dataset is loaded
 $if not set matbal $set matbal ls
@@ -15,7 +12,7 @@ $if not set matbal $set matbal ls
 $if not set year $set year 2017
 
 * input data directory
-$set gdxdir gdx%sep%
+$set gdxdir gdx/
 
 * set default name of the output dataset
 $if not set ds $set ds "WiNDCdatabase"
@@ -28,9 +25,9 @@ $echo		kestrel_solver path			>kestrel.opt
 $echo		neos_server "neos-server.org:3333"	>>kestrel.opt
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Read in the national dataset:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 set
     yr 	Years in WiNDC Database,
@@ -71,10 +68,10 @@ $loaddc bopdef_0 ta_0 tm_0
 $gdxin
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Read in shares generated using state level gross product, pce, faf,
 * and government expenditures:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 parameter
     region_shr(yr,r,s)		Regional shares based on GSP,
@@ -151,9 +148,9 @@ shrverify(yr,g,'IMP','sum') = sum(r, usatrd_shr(yr,r,g,'imports'));
 display shrverify;
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Regionalize production data using iomacro shares and GSP data:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 parameter
     va0_(yr,r,s)	Regional value added,
@@ -187,9 +184,9 @@ zprof(yr,r,s) = sum(g, ys0_(yr,r,s,g)) * (1-ty0_(yr,r,s)) -
 
 abort$(smax((yr,r,s), abs(zprof(yr,r,s))) > 1e-5) "Error in zero profit check in regionalization.";
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Final demand categories:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 * Aggregate final demand categories:
 
@@ -245,9 +242,9 @@ i0_(yr,r,g) = region_shr(yr,r,g) * i_0(yr,g);
 c0_(yr,r) = sum(g, cd0_(yr,r,g));
 
 
-* --------------------------------------------------------------------------
+* -------------------------------------------------------------------------------------
 * Trade parameters:
-* --------------------------------------------------------------------------
+* -------------------------------------------------------------------------------------
 
 parameter
     m0_(yr,r,g) 	Foreign Imports,
@@ -400,9 +397,9 @@ xn0_(yr,r,g)$(xn0_(yr,r,g) < 1e-8) = 0;
 a0_(yr,r,g)$(a0_(yr,r,g) < 1e-8) = 0;
 
 
-* --------------------------------------------------------------------------
+* -------------------------------------------------------------------------------------
 * Check equilibrium conditions:
-* --------------------------------------------------------------------------
+* -------------------------------------------------------------------------------------
 
 parameter
     zp		Zero-profit condition check,
@@ -424,11 +421,11 @@ ibal(yr,'USA','balance') = sum(r, ibal(yr,r,'balance'));
 * Need a household adjustment:
 
 parameter
-    hhadj_(yr,r) 	Household adjustment parameter;
+    hhadj0_(yr,r) 	Household adjustment parameter;
 
-hhadj_(yr,r) = ibal(yr,r,'balance');
+hhadj0_(yr,r) = ibal(yr,r,'balance');
 
-ibal(yr,r,'inc') = ibal(yr,r,'inc') + hhadj_(yr,r);
+ibal(yr,r,'inc') = ibal(yr,r,'inc') + hhadj0_(yr,r);
 ibal(yr,r,'balance') = ibal(yr,r,'expend') - ibal(yr,r,'inc') - ibal(yr,r,'taxrev');
 ibal(yr,'USA','balance') = sum(r, ibal(yr,r,'balance'));
 
@@ -436,12 +433,13 @@ mkt(yr,r,g,'PA') = a0_(yr,r,g) -
         (sum(s, id0_(yr,r,g,s)) + cd0_(yr,r,g) + g0_(yr,r,g) + i0_(yr,r,g));
 mkt(yr,'USA',g,'PN')$(not sameas(yr,'2015')) = sum(r, xn0_(yr,r,g)) - sum((r,m), nm0_(yr,r,g,m)) - sum(r, nd0_(yr,r,g));
 mkt(yr,r,g,'PY') = sum(s, ys0_(yr,r,s,g)) + yh0_(yr,r,g) - s0_(yr,r,g);
-mkt(yr,'USA','all','PFX') = sum(r, sum(s, x0_(yr,r,s)) + hhadj_(yr,r) + bopdef0_(yr,r) - sum(s, m0_(yr,r,s)));
+mkt(yr,'USA','all','PFX') = sum(r, sum(s, x0_(yr,r,s)) + hhadj0_(yr,r) + bopdef0_(yr,r) - sum(s, m0_(yr,r,s)));
 display zp, ibal, mkt;
 
-* -------------------------------------------------------------------
+
+* ------------------------------------------------------------------------------
 * Verify there are no negative numbers for %year%:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 parameter
     negnum 	Check on negative numbers;
@@ -475,9 +473,9 @@ alias(p,*);
 abort$(round(smin(p, negnum(p)),6) < 0) "Negative numbers exist in regionalized parameters.";
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Check microconsistency in a regional accounting model for %year%:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 $include statemodel.gms
 statemodel.workspace = 100;
@@ -488,9 +486,9 @@ solve statemodel using mcp;
 abort$(statemodel.objval > 1e-5) "Error in benchmark calibration with regional data.";
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Verify GDP consistency in income and expenditure approaches
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 set
     agt		GDP agents in reference model
@@ -518,7 +516,7 @@ refbudget(yr,'income',r,'C','tax') =
 refbudget(yr,'income',r,'C','py') = sum(g, yh0_(yr,r,g));
 refbudget(yr,'income',r,'C','pl') = sum(s, ld0_(yr,r,s));
 refbudget(yr,'income',r,'C','pk') = sum(s, kd0_(yr,r,s));
-refbudget(yr,'income',r,'C','pfx') = hhadj_(yr,r) + bopdef0_(yr,r);
+refbudget(yr,'income',r,'C','pfx') = hhadj0_(yr,r) + bopdef0_(yr,r);
 
 alias(un,*);
 
@@ -572,14 +570,14 @@ abort$(smax(yr, abs(chkgdp(yr,'total','chksum'))) > 1e-6) "Error in GDP consiste
 gdp0_(yr,r) = refgdp(yr,'expend',r,'total');
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * Output regionalized dataset:
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 
 * We include _ at the end of each parameter name to indicate all years of data
 * are included.
 
-EXECUTE_UNLOAD '%ds%.gdx'
+execute_unload '%ds%.gdx'
 
 * Sets:
 
@@ -591,7 +589,7 @@ ys0_,ld0_,kd0_,id0_,ty0_,
 
 * Consumption data:
 
-yh0_,fe0_,cd0_,c0_,i0_,g0_,bopdef0_,hhadj_,
+yh0_,fe0_,cd0_,c0_,i0_,g0_,bopdef0_,hhadj0_,
 
 * Trade data:
 
@@ -606,6 +604,6 @@ md0_,nm0_,dm0_,
 gdp0_;
 
 
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------
 * End
-* -------------------------------------------------------------------
+* ------------------------------------------------------------------------------

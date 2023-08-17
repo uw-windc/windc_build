@@ -1,4 +1,4 @@
-* Oil and natural gas are separated in bluenote.gms.
+* Oil and natural gas are separated in bluenote.gms, as is electricity.
 
 SET ss "Sectors in the target dataset" /
 		oil	"Petroleum products",

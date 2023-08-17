@@ -1,7 +1,7 @@
 $title Balance the national dataset
 
 * hotrun the calibration routine for a single year
-*. $set run 2017
+* $set run 2017
 
 
 * -------------------------------------------------------------------
@@ -17,14 +17,11 @@ $if not set matbal $set matbal ls
 * set years of the dataset
 $if not set run $set run 1997*2017
 
-* file separator
-$set sep %system.dirsep%
-
 * options for directories
 $if not set gengdx $set gengdx "gdx"
 
 * set and create loadpoint directory if not exist
-$set lpdir loadpoint%sep%
+$set lpdir loadpoint/
 $if not dexist %lpdir% $call mkdir %lpdir%
 
 * option for use of neos optimization surver
@@ -160,7 +157,7 @@ set
 		fbt	"Food and beverage stores (445)"
 		gmt	"General merchandise stores (452)" /;
 
-$gdxin 'gdx%sep%national_cgeparm_raw.gdx'
+$gdxin 'gdx/national_cgeparm_raw.gdx'
 $loaddc m
 alias (i,j);
 
@@ -461,8 +458,8 @@ loop(yr,
 *	windows and various Unix shells.  
 
 	put_utility kutl, 'shell' / 'test -d %lpdir%',yr.tl,' || mkdir %lpdir%',yr.tl,' >nul';
-	put_utility kutl, 'shell' / 'test -f %lpdir%',yr.tl,'%sep%%matbal%_p.gdx || ',
-				' cp  %gams.scrdir%p.gdx %lpdir%',yr.tl,'%sep%%matbal%_p.gdx >nul';
+	put_utility kutl, 'shell' / 'test -f %lpdir%',yr.tl,'/%matbal%_p.gdx || ',
+				' cp  %gams.scrdir%p.gdx %lpdir%',yr.tl,'/%matbal%_p.gdx >nul';
 );
 
 * -------------------------------------------------------------------
@@ -531,8 +528,15 @@ $onechov >%gams.scrdir%loadyr.gms
 	x0_.UP(i)$x0(i)  = abs(upb * x0(i));
 	m0_.UP(i)$m0(i)  = abs(upb * m0(i));
 	md0_.UP(m,i)$md0(m,i)  = abs(upb * md0(m,i));
+
+
+* Assume zero values remoain zero values for multi-dimensional parameters:
+
 	ys0_.fx(i,j)$(not ys0(i,j)) = 0;
 	id0_.fx(i,j)$(not id0(i,j)) = 0;
+	fd0_.fx(i,fd)$(not fd0(i,fd)) = 0;
+	md0_.fx(m,i)$(not md0(m,i)) = 0;
+	ms0_.fx(i,m)$(not ms0(i,m)) = 0;
 
 * Fix certain parameters -- exogenous portions of final demand, value
 * added, imports, exports and household supply.
@@ -639,11 +643,39 @@ $onechov >%gams.scrdir%unloadyr.gms
 			sum((m,i)$md0(m,i), 1$(md0_.L(m,i)=md0_.UP(m,i)));
 
 
-	report(yr,'ys0%') = 100 * sum((j,i)$ys0(j,i), abs(ys0(j,i)) * sqr(ys0_.L(j,i)/ys0(j,i) - 1)) /
-				  sum((j,i)$ys0(j,i), abs(ys0(j,i)));
+	report(yr,'ys0%') = 100 * sum((j,i)$ys0(j,i), 	abs(ys0(j,i)) * sqr(ys0_.L(j,i)/ys0(j,i) - 1)) /
+				  sum((j,i)$ys0(j,i), 	abs(ys0(j,i)));
 
-	report(yr,'id0%') = 100 * sum((i,j)$id0(i,j),	abs(id0(i,j)) * sqr(id0_.L(i,j)/id0(i,j) - 1))  /
-				  sum((i,j)$id0(i,j),	abs(id0(i,j)));
+	report(yr,'id0%') = 100 * sum((i,j)$id0(i,j), 	abs(id0(i,j)) * sqr(id0_.L(i,j)/id0(i,j) - 1))  /
+				  sum((i,j)$id0(i,j), 	abs(id0(i,j)));
+
+	report(yr,'fs0%')$sum(i, fs0(i)) = 100 * sum((i)$fs0(i), abs(fs0(i)) * sqr(fs0_.L(i)/fs0(i) - 1))  /
+				  sum((i)$fs0(i),	abs(fs0(i)));
+
+	report(yr,'ms0%') = 100 * sum((i,m)$ms0(i,m),	abs(ms0(i,m)) * sqr(ms0_.L(i,m)/ms0(i,m) - 1))  /
+				  sum((i,m)$ms0(i,m),	abs(ms0(i,m)));
+
+	report(yr,'md0%') = 100 * sum((m,i)$md0(m,i),	abs(md0(m,i)) * sqr(md0_.L(m,i)/md0(m,i) - 1))  /
+				  sum((m,i)$md0(m,i),	abs(md0(m,i)));
+
+	report(yr,'y0%') = 100 *  sum((i)$y0(i),	abs(y0(i)) * sqr(y0_.L(i)/y0(i) - 1))  /
+				  sum((i)$y0(i),	abs(y0(i)));
+
+	report(yr,'fd0%') = 100 * sum((i,fd)$fd0(i,fd),	abs(fd0(i,fd)) * sqr(fd0_.L(i,fd)/fd0(i,fd) - 1))  /
+				  sum((i,fd)$fd0(i,fd),	abs(fd0(i,fd)));
+
+	report(yr,'va0%') = 100 * sum((va,j)$va0(va,j),	abs(va0(va,j)) * sqr(va0_.L(va,j)/va0(va,j) - 1))  /
+				  sum((va,j)$va0(va,j),	abs(va0(va,j)));
+
+	report(yr,'a0%') = 100 *  sum((i)$a0(i),	abs(a0(i)) * sqr(a0_.L(i)/a0(i) - 1))  /
+				  sum((i)$a0(i),	abs(a0(i)));
+
+	report(yr,'x0%') = 100 *  sum((i)$x0(i),	abs(x0(i)) * sqr(x0_.L(i)/x0(i) - 1))  /
+				  sum((i)$x0(i),	abs(x0(i)));
+
+	report(yr,'m0%') = 100 *  sum((i)$m0(i),	abs(m0(i)) * sqr(m0_.L(i)/m0(i) - 1))  /
+				  sum((i)$m0(i),	abs(m0(i)));
+
 
 	nzlog("ys0",yr,'d0_%')    = 100 * card(ys0)/(card(j)*card(i));
 	nzlog("ys0",yr,'d_%')     = 100 * sum((j,i),1$ys0_.L(i,j))/(card(j)*card(i));
@@ -664,6 +696,41 @@ $onechov >%gams.scrdir%unloadyr.gms
 	nzlog("va0",yr,'d_%')     = 100 * sum((va,j),1$va0_.L(va,j))/(card(va)*card(j));
 	nzlog("va0",yr,'nzgain%') = 100 * sum((va,j)$(NOT va0(va,j)), 1$round(va0_.L(va,j),6))/(card(va)*card(j));
 	nzlog("va0",yr,'nzloss%') = 100 * sum((va,j)$va0(va,j),  1$(not round(va0_.L(va,j),6)))/(card(va)*card(j));
+
+	nzlog("fs0",yr,'d0_%')	  = 100 * card(fs0)/(card(i));
+	nzlog("fs0",yr,'d_%')	  = 100 * sum(i,1$fs0_.L(i))/(card(i));
+	nzlog("fs0",yr,'nzgain%') = 100 * sum((i)$(NOT fs0(i)), 1$round(fs0_.L(i),6))/card(i);
+	nzlog("fs0",yr,'nzloss%') = 100 * sum((i)$fs0(i), 1$(not round(fs0_.L(i),6)))/card(i);
+
+	nzlog("ms0",yr,'d0_%')	  = 100 * card(ms0)/(card(i)*card(m));
+	nzlog("ms0",yr,'d_%')	  = 100 * sum((i,m),1$ms0_.L(i,m))/(card(i)*card(m));
+	nzlog("ms0",yr,'nzgain%') = 100 * sum((i,m)$(NOT ms0(i,m)), 1$round(ms0_.L(i,m),6))/(card(i)*card(m));
+	nzlog("ms0",yr,'nzloss%') = 100 * sum((i,m)$ms0(i,m), 1$(not round(ms0_.L(i,m),6)))/(card(i)*card(m));
+
+	nzlog("md0",yr,'d0_%')	  = 100 * card(md0)/(card(i)*card(m));
+	nzlog("md0",yr,'d_%')	  = 100 * sum((m,i),1$md0_.L(m,i))/(card(i)*card(m));
+	nzlog("md0",yr,'nzgain%') = 100 * sum((m,i)$(NOT md0(m,i)), 1$round(md0_.L(m,i),6))/(card(i)*card(m));
+	nzlog("md0",yr,'nzloss%') = 100 * sum((m,i)$md0(m,i), 1$(not round(md0_.L(m,i),6)))/(card(i)*card(m));
+
+	nzlog("y0",yr,'d0_%')	  = 100 * card(y0)/(card(i));
+	nzlog("y0",yr,'d_%')	  = 100 * sum(i,1$y0_.L(i))/(card(i));
+	nzlog("y0",yr,'nzgain%') = 100 * sum((i)$(NOT y0(i)), 1$round(y0_.L(i),6))/card(i);
+	nzlog("y0",yr,'nzloss%') = 100 * sum((i)$y0(i), 1$(not round(y0_.L(i),6)))/card(i);
+
+	nzlog("a0",yr,'d0_%')	  = 100 * card(a0)/(card(i));
+	nzlog("a0",yr,'d_%')	  = 100 * sum(i,1$a0_.L(i))/(card(i));
+	nzlog("a0",yr,'nzgain%') = 100 * sum((i)$(NOT a0(i)), 1$round(a0_.L(i),6))/card(i);
+	nzlog("a0",yr,'nzloss%') = 100 * sum((i)$a0(i), 1$(not round(a0_.L(i),6)))/card(i);
+
+	nzlog("x0",yr,'d0_%')	  = 100 * card(x0)/(card(i));
+	nzlog("x0",yr,'d_%')	  = 100 * sum(i,1$x0_.L(i))/(card(i));
+	nzlog("x0",yr,'nzgain%') = 100 * sum((i)$(NOT x0(i)), 1$round(x0_.L(i),6))/card(i);
+	nzlog("x0",yr,'nzloss%') = 100 * sum((i)$x0(i), 1$(not round(x0_.L(i),6)))/card(i);
+
+	nzlog("m0",yr,'d0_%')	  = 100 * card(m0)/(card(i));
+	nzlog("m0",yr,'d_%')	  = 100 * sum(i,1$m0_.L(i))/(card(i));
+	nzlog("m0",yr,'nzgain%') = 100 * sum((i)$(NOT m0(i)), 1$round(m0_.L(i),6))/card(i);
+	nzlog("m0",yr,'nzloss%') = 100 * sum((i)$m0(i), 1$(not round(m0_.L(i),6)))/card(i);
 
 	nzsum("ys0",yr) = sum((j,i)$(NOT ys0(j,i)), ys0_.L(j,i));
 	nzsum("fs0",yr) = sum((i)$(NOT fs0(i)), fs0_.L(i));
@@ -716,7 +783,7 @@ $include %gams.scrdir%loadyr
 
 * Read the starting point:
 
-	put_utility kutl, 'gdxin'/'%lpdir%',yr.tl,'%sep%%matbal%_p.gdx';
+	put_utility kutl, 'gdxin'/'%lpdir%',yr.tl,'/%matbal%_p.gdx';
 	execute_loadpoint;
 
 	put_utility kutl, 'title'/'Calibrating for ',yr.tl,' with %matbal% objective function.';
@@ -747,7 +814,7 @@ abort$(smax(yr, report(yr,' ')) > 2) "Matrix balancing problem is infeasible for
 
 kutl.nw=0; kutl.nd=0;
 loop(yr$solveno(yr),
-  put_utility kutl, 'exec'/'mv -f balance_p',solveno(yr),'.gdx  %lpdir%',yr.tl,'%sep%%matbal%_p.gdx';
+  put_utility kutl, 'exec'/'mv -f balance_p',solveno(yr),'.gdx  %lpdir%',yr.tl,'/%matbal%_p.gdx';
 );
 
 
@@ -790,7 +857,7 @@ set
 
 va_(va) = va(va)$(not sameas(va,"othtax"));
 
-execute_unload 'gdx%sep%nationaldata_%matbal%.gdx'
+execute_unload 'gdx/nationaldata_%matbal%.gdx'
     yr, i, fd, ts, va_=va, m, r,
     y_0,ys_0,ty_0,fs_0,id_0,fd_0,va_0,ts_0,m_0,x_0,mrg_0,trn_0,duty_0,
     sbd_0,tax_0,ms_0,md_0,s_0,a_0,bopdef_0,ta_0,tm_0;

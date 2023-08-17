@@ -1,0 +1,23 @@
+* Define aggregation to Census divisions
+
+set	rr      Census divisions are regions in the target dataset /
+		neg     "New England" 
+		mid     "Mid Atlantic" 
+		enc     "East North Central" 
+		wnc     "West North Central" 
+		sac     "South Atlantic" 
+		esc     "East South Central" 
+		wsc     "West South Central" 
+		mtn     "Mountain" 
+		pac     "Pacific" /;
+
+set     rmap(rr,r)      Mapping of target regions rr and source regions r /
+		   neg.(ct,me,ma,nh,ri,vt)
+		   mid.(nj,ny,pa)
+		   enc.(il,in,mi,oh,wi)
+		   wnc.(ia,ks,mn,mo,ne,nd,sd)
+		   sac.(de,fl,ga,md,dc,nc,sc,va,wv)
+		   esc.(al,ky,ms,tn)
+		   wsc.(ar,la,ok,tx)
+		   mtn.(az,co,id,mt,nv,nm,ut,wy)
+		   pac.(ak,ca,hi,or,wa) /;

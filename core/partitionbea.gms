@@ -1,11 +1,5 @@
 $title Partition BEA IO matricies into CGE parameter arrays
 
-* -------------------------------------------------------------------
-* Set options:
-* -------------------------------------------------------------------
-
-$set sep %system.dirsep%
-
 
 * -------------------------------------------------------------------
 * Read in dataset:
@@ -281,7 +275,7 @@ ta0(yr,i)$(tax0(yr,i)-sbd0(yr,i)) = (tax0(yr,i) - sbd0(yr,i))/a0(yr,i);
 * Output non-calibrated parameters:
 * -------------------------------------------------------------------
 
-execute_unload 'gdx%sep%national_cgeparm_raw.gdx'
+execute_unload 'gdx/national_cgeparm_raw.gdx'
     yr,i,va,fd,ts,m,
     y0,ys0,fs0,id0,fd0,va0,ts0,m0,x0,mrg0,trn0,duty0,sbd0,
     tax0,ms0,md0,s0,a0,bopdef,ta0,tm0;

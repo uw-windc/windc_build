@@ -2,14 +2,6 @@ $title State government finance (SGF) shares
 
 
 * -------------------------------------------------------------------
-* Set options
-* -------------------------------------------------------------------
-
-* file separator
-$set sep %system.dirsep%
-
-
-* -------------------------------------------------------------------
 * Read in state level SGF data
 * -------------------------------------------------------------------
 
@@ -36,7 +28,7 @@ $gdxin
 
 set
     map(g,ec) Mapping between SGF and WiNDC indices /
-$include 'maps%sep%mapsgf.map'
+$include 'maps/mapsgf.map'
 /;
 
 parameter
@@ -69,7 +61,7 @@ abort$(round(smax((yr,g), sum(r, sgf_shr(yr,r,g))),6) <> 1) "Regional SGF shares
 * Output regional shares
 * -------------------------------------------------------------------
 
-execute_unload 'gdx%sep%shares_sgf.gdx' sgf_shr;
+execute_unload 'gdx/shares_sgf.gdx' sgf_shr;
 
 
 * -------------------------------------------------------------------

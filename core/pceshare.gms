@@ -2,14 +2,6 @@ $title Personal consumer expenditure (PCE) shares
 
 
 * -------------------------------------------------------------------
-* Set options
-* -------------------------------------------------------------------
-
-* file separator
-$set sep %system.dirsep%
-
-
-* -------------------------------------------------------------------
 * Read in state level PCE data
 * -------------------------------------------------------------------
 
@@ -36,7 +28,7 @@ $gdxin
 
 set
     map(g,pg) 	Mapping between pce and WiNDC indices /
-$include 'maps%sep%mappce.map'
+$include 'maps/mappce.map'
 /;
 
 parameter
@@ -56,7 +48,7 @@ abort$(round(smax((yr,g), sum(r, pce_shr(yr,r,g))),6) <> 1) "Regional PCE shares
 * Output regional shares
 * -------------------------------------------------------------------
 
-execute_unload 'gdx%sep%shares_pce.gdx' pce_shr;
+execute_unload 'gdx/shares_pce.gdx' pce_shr;
 
 
 * -------------------------------------------------------------------
