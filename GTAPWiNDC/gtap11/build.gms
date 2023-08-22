@@ -1,32 +1,21 @@
 $title	Build GTAP in GAMS from GTAP Datasets
 
-$set lstdir  lst/
-$set gdxdir  gdx/
+*--------------------------------
+* Command line options:
+*
+*	--task
+*	Indicate a single task. Options include: "gdx2gdx", "filter", "aggregate" and "replicate"
+*	No task indicates build all the datasets.
+*
+*	--start
+*	Begin the computations at a set starting point. Options are the same as above.
+*----------------------------------
 
-$if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
-$if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
 
-*	Indicate a single task.  If no task is specified, then build all 
-*	datasets.
-
-*	The tasks include "gdx2gdx", "filter", "aggregate" and "replicate"
-
-*$set task gdx2gdx
-*$set start filter
-
-parameter	myerrorlevel	Assigned to error level of the latest executation statement;
-
-set	seq	Sequencing set for filter tolerance /1*10/;
-
-set
-	yr		Base years /2017/,
-	reltol		Filter tolance /4/
-	target		Aggregations /g20_10,  g20_32,  g20_43 /;
-
-*loop(yr,
-*$if not dexist yr $call mkdir yr;
-*);
-
+*-------------------------------
+*	Change the following to modify which years are run, the relative
+*	tolerance and the aggregations.
+*
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
 *	from the code.
@@ -37,10 +26,16 @@ set
 *.	reltol		Filter tolance /3,4,5/
 *.	target		Aggregations /g20_10,  g20_32,  g20_43, 
 *.				      wb12_10, wb12_32, wb12_43/;
+*---------------------------------
 
-file kput; kput.lw=0; put kput;
+set
+	yr		Base years /2017/,
+	reltol		Filter tolance /4/
+	target		Aggregations /g20_10,  g20_32,  g20_43 /;
 
-*	Here we indicate the location of the GTAP data files.
+
+*---------------------------
+* 	Here we indicate the location of the GTAP data files.
 
 *	The code works with the following archive -- note that the
 *	file name for a GTAP user may be different.
@@ -54,8 +49,25 @@ file kput; kput.lw=0; put kput;
 *	 56027868  04-27-23 16:30   GDX11.zip
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
-	
+*----------------------------------------
 $if not set zipfile $set zipfile ../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
+
+
+$set lstdir  lst/
+$set gdxdir  gdx/
+
+$if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
+$if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
+
+
+parameter	myerrorlevel	Assigned to error level of the latest executation statement;
+
+set	seq	Sequencing set for filter tolerance /1*10/;
+
+
+file kput; kput.lw=0; put kput;
+
+
 
 ****************
 * Remove these *
@@ -90,7 +102,7 @@ loop(yr,
 
 $if set task $exit
 
-*execute 'pause';
+
 
 $label filter
 
@@ -106,7 +118,7 @@ loop(yr,
 
 $if set task $exit
 
-*execute 'pause';
+
 
 $label aggregate
 
@@ -121,7 +133,7 @@ loop((yr,target),
 
 $if set task $exit
 
-*execute 'pause';
+
 
 $label replicate
 

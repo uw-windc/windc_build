@@ -8,19 +8,33 @@ $title	Build GTAP9inGAMS from GTAP Datasets
 *$set task filter
 *.$set start gdx2gdx
 
-parameter	myerrorlevel	Assigned to error level of the latest executation statement;
+*-------------------------------
+*	Change the following to modify which years are run, the relative
+*	tolerance and the aggregations.
+*
+*	Data files exist for 2004 and 2007, but these do not have carbon
+*	and energy data.  They could be used if those inputs are dropped
+*	from the code.
 
-set	seq	Sequencing set for filter tolerance /1*10/;
+*	Here is the full set of data files which can be processed:
+
+*.	yr		Base years /2011,2014,2017/,
+*.	reltol		Filter tolance /3,4,5/
+*.	target		Aggregations /g20_10,  g20_32,  g20_43, 
+*.				      wb12_10, wb12_32, wb12_43/;
+*---------------------------------
 
 set
 	yr		Base years /2011/,
 	reltol		Filter tolance /4/
 	target		Aggregations /g20_10,  g20_32,  g20_43 /;
 
-*.	yr		Base years /2004,2007,2011/,
-*.	reltol		Filter tolance /3,4,5/
-*.	target		Aggregations /g20_10,  g20_32,  g20_43, 
-*.				      wb12_10, wb12_32, wb12_43/;
+
+
+
+parameter	myerrorlevel	Assigned to error level of the latest executation statement;
+
+set	seq	Sequencing set for filter tolerance /1*10/;
 
 file kput; kput.lw=0; put kput;
 
@@ -53,9 +67,6 @@ set		flexaggfile /
 		2011	"%flexagg%flexagg9aY11.zip" /;
 
 
-*****************
-** Is this a bug? The -yr is fixed at 2004
-*****************
 
 loop(yr,
 	put_utility 'shell' / 'gams flex2gdx --yr=',yr.tl,' --flexaggfile=',flexaggfile.te(yr),' o=',yr.tl,'\flex2gdx.lst';
@@ -78,8 +89,28 @@ $label filter
 loop(yr,
   loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams filter --yr='yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\filter_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\filter_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
 $if set task $exit
+
+
+
+$label aggregate
+
+loop((yr,target),
+
+	put_utility "title" / "Aggeragating: ",yr.tl," Target: ",target.tl;
+	put_utility "shell" /"gams aggregate --yr=",yr.tl," --target=",target.tl," o=",yr.tl,"\aggregate_",target.tl,".lst";
+
+);
+
+
+$label replicate
+loop((yr,target),
+
+	put_utility "title" / "Replicating: : ",yr.tl,"Target: ",target.tl;
+	put_utility "shell" /"gams replicate --yr=",yr.tl," --ds=",target.tl," o=",yr.tl,"\replicate_",target.tl,".lst";
+
+);
