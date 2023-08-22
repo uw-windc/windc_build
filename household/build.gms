@@ -23,10 +23,10 @@ $set invest "static"
 $set capital_ownership "all"
 
 * set regional mapping (state,census_divisions,census_regions,national)
-$set rmap "census_regions"
+$set rmap "state"
 
 * set sectoral mapping (windc,gtap_32,sage,gtap_10,macro)
-$set smap "sage"
+$set smap "bluenote"
 
 
 * ------------------------------------------------------------------------------

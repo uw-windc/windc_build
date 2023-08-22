@@ -33,8 +33,8 @@ alias(s,g),(r,q);
 * Load year of parameters
 
 parameter
-    ys0(r,g,s)		Sectoral supply,
-    id0(r,s,g)		Intermediate demand,
+    ys0(r,s,g)		Sectoral supply,
+    id0(r,g,s)		Intermediate demand,
     ld0(r,s)		Labor demand,
     kd0(r,s)		Capital demand,
     ty0(r,s)		Output tax on production,
