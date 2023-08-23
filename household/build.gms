@@ -26,7 +26,7 @@ $set capital_ownership "all"
 $set rmap "state"
 
 * set sectoral mapping (windc,gtap_32,sage,gtap_10,macro)
-$set smap "bluenote"
+$set smap "bluenote,gtap_32"
 
 
 * ------------------------------------------------------------------------------
