@@ -11,7 +11,7 @@ $title Build routine for the windc household dataset
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$set year 2017
+$if not set year $set year 2000*2017
 
 * set household data (cps, soi)
 $set hhdata "cps"
@@ -65,7 +65,7 @@ set
     rmap		Regional mappings /%rmap%/,
     smap		Sectoral mappings /%smap%/;
 
-
+parameter myerrorlevel "For error checking when calling files.";
 *------------------------------------------------------------------------------
 * Household build routine
 *------------------------------------------------------------------------------
@@ -95,6 +95,10 @@ loop((year,hhdata,invest,capital_ownership),
 	' --year=',year.tl,' --hhdata=',hhdata.tl,' --invest=',invest.tl,
 	' --capital_ownership=',capital_ownership.tl,' --gr=%gr% --ir=%ir% --delta=%delta%',
 	' --puttitle=no',' lo=4 lf=%lstdir%hhcalib_',year.tl,'_',hhdata.tl,'_',invest.tl,'.log';
+
+    myerrorlevel = errorlevel;
+    abort$(myerrorlevel>=2) "There was an error. Check %lstdir%hhcalib_year_%hhdata%_%invest%.lst"
+
 );
 
 $if set runscript $exit
