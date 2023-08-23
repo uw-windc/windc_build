@@ -5,9 +5,6 @@ $title Gross state product (GSP) shares
 * Set options
 * ------------------------------------------------------------------------------
 
-* file separator
-$set sep %system.dirsep%
-
 * matrix balancing method defines which dataset is loaded
 $if not set matbal $set matbal ls
 
@@ -18,6 +15,7 @@ $if not set matbal $set matbal ls
 
 set
     yr 		Years in WiNDC Database,
+    lyr		Years for computing rolling averages,
     sr 		Super Regions in WiNDC Database,
     r(sr) 	Regions in WiNDC Database,
     s 		BEA Goods and sectors categories,
@@ -28,7 +26,7 @@ parameter
     gsp_units(sr,yr,gdpcat,si,*) Annual gross state product with units as domain;
 
 $gdxin '../data/core/windc_base.gdx'
-$load s=i yr sr r
+$load s=i yr sr r lyr=yr
 $load gdpcat<gsp_units.dim3
 $load si<gsp_units.dim4
 $load gsp_units
@@ -37,7 +35,7 @@ $gdxin
 parameter
     va_0(yr,*,s) 	Value added from national dataset;
 
-$gdxin 'gdx%sep%nationaldata_%matbal%.gdx'
+$gdxin 'gdx/nationaldata_%matbal%.gdx'
 $load va_0
 $gdxin
 
@@ -67,7 +65,7 @@ gspcalc(r,yr,'gdp',si) = gspcalc(r,yr,'cmp',si) + gspcalc(r,yr,'gos',si) + gspca
 
 set
     mapsec(si,s) 	Mapping between state sectors and national sectors /
-$INCLUDE 'maps%sep%mapgsp.map'
+$INCLUDE 'maps/mapgsp.map'
 /;
 
 parameter
@@ -94,6 +92,7 @@ gspcat0(yr,r,s,gdpcat) = sum(mapsec(si,s), gsp_units(r,yr,gdpcat,si,"millions of
 
 parameter
     region_shr 		Regional share of value added,
+    rs_exist		Verify existance of region shares for needed sectors,
     labor_shr 		Estimated share of regional value added due to labor,
     klshare		Reported capital-labor shares in data,
     problem_shares	QA flagged region-sectors;
@@ -106,13 +105,12 @@ region_shr(yr,r,s)$(sum(r.local, gsp0(yr,r,s,'Reported'))) = gsp0(yr,r,s,'Report
 region_shr(yr,r,s)$sum(r.local, region_shr(yr,r,s)) = region_shr(yr,r,s) /
     sum(r.local, region_shr(yr,r,s));
 
+* Verify regional shares exist for all sector-year observations in the io data
+
+rs_exist(yr,s)$(va_0(yr,'compen',s) + va_0(yr,'surplus',s) and not (sum(r, region_shr(yr,r,s)))) = 1;
+abort$(sum((yr,s), rs_exist(yr,s))>0) 'Inconsistency in region shares';
+
 * Attribute the difference between reported and calculated gdp to capital
-
-klshare(yr,r,s,'k')$(gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s)) =
-    (gsp0(yr,r,s,'Diff') + cap0(yr,r,s)) / (gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s));
-
-klshare(yr,r,s,'k_nat')$(va_0(yr,'compen',s) + va_0(yr,'surplus',s)) =
-    va_0(yr,'surplus',s) / (va_0(yr,'compen',s) + va_0(yr,'surplus',s));
 
 klshare(yr,r,s,'l')$(gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s)) =
     compen0(yr,r,s) / (gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s));
@@ -120,29 +118,77 @@ klshare(yr,r,s,'l')$(gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s)) =
 klshare(yr,r,s,'l_nat')$(va_0(yr,'compen',s) + va_0(yr,'surplus',s)) =
     va_0(yr,'compen',s) / (va_0(yr,'compen',s) + va_0(yr,'surplus',s));
 
-* there are instances where capital payments are negative, dominate value added,
+klshare(yr,r,s,'k')$region_shr(yr,r,s) = 1 - klshare(yr,r,s,'l');
+
+klshare(yr,r,s,'k_nat')$region_shr(yr,r,s) = 1 - klshare(yr,r,s,'l_nat');
+
+* There is a discrepency with the average national k-l shares between the IO
+* data and GSP data. Scale GSP shares to lineup with IO shars.
+
+parameter
+    chk_national_shares,
+    delta_shr;
+
+chk_national_shares(yr,s,'gsp')$sum(r,gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s)) =
+    sum(r, compen0(yr,r,s)) / sum(r,gsp0(yr,r,s,'Diff') + cap0(yr,r,s) + compen0(yr,r,s));
+
+chk_national_shares(yr,s,'io')$(va_0(yr,'compen',s) + va_0(yr,'surplus',s)) =
+    va_0(yr,'compen',s) / (va_0(yr,'compen',s) + va_0(yr,'surplus',s));
+
+delta_shr(yr,r,s,'shr')$chk_national_shares(yr,s,'gsp') = chk_national_shares(yr,s,'io')/chk_national_shares(yr,s,'gsp');
+delta_shr(yr,r,s,'l') = klshare(yr,r,s,'l');
+delta_shr(yr,r,s,'l-diff') = klshare(yr,r,s,'l') * delta_shr(yr,r,s,'shr');
+klshare(yr,r,s,'l') = klshare(yr,r,s,'l') * delta_shr(yr,r,s,'shr');
+klshare(yr,r,s,'k') = 1 - klshare(yr,r,s,'l');
+
+* There are instances where capital payments are negative, dominate value added,
 * or are significantly different from the national averages. assign these
 * instances to a parameter and allow a matrix balancing routine change them
 * slightly to target national labor payments consistent with NIPA accounts.
 
 problem_shares(yr,r,s,'negative') = 1$(klshare(yr,r,s,'k')<0);
-problem_shares(yr,r,s,'unity') = 1$(klshare(yr,r,s,'k')=1);
+problem_shares(yr,r,s,'unity') = 1$(klshare(yr,r,s,'k')>=1);
 problem_shares(yr,r,s,'sig_diff')$klshare(yr,r,s,'k_nat') =
-    1$(abs(klshare(yr,r,s,'k') - klshare(yr,r,s,'k_nat'))>.5);
+    1$(abs(klshare(yr,r,s,'k') - klshare(yr,r,s,'k_nat'))>.75);
 problem_shares(yr,r,s,'tot') = problem_shares(yr,r,s,'negative') +
     problem_shares(yr,r,s,'unity') + problem_shares(yr,r,s,'sig_diff');
+problem_shares(yr,r,s,'tot')$problem_shares(yr,r,s,'tot') = 1;
+
+parameter
+    pct_problem	Compute percent of shares that are problematic;
+
+pct_problem(yr,"year") = sum((r,s), problem_shares(yr,r,s,'tot')) / sum((r,s)$region_shr(yr,r,s), 1);
+pct_problem(s,"sector")$sum((r,yr)$region_shr(yr,r,s), 1) = sum((r,yr), problem_shares(yr,r,s,'tot')) / sum((r,yr)$region_shr(yr,r,s), 1);
+pct_problem(r,"region")$sum((s,yr)$region_shr(yr,r,s), 1) = sum((s,yr), problem_shares(yr,r,s,'tot')) / sum((s,yr)$region_shr(yr,r,s), 1);
+
+* Replace problem shares with national average
+
+klshare(yr,r,s,'l')$(problem_shares(yr,r,s,'tot') and region_shr(yr,r,s)) = klshare(yr,r,s,'l_nat');
+klshare(yr,r,s,'k')$region_shr(yr,r,s) = 1 - klshare(yr,r,s,'l');
+
+* Define year set to calculate averages over -- assume boundaries get full
+* window of time
+
+parameter
+    numyear	Number of other years in rolling average (use even numbers) /8/;
+
+set
+    loopyr(yr,lyr);
+alias(yr,yyr);
+
+loopyr(yr,lyr)$(yr.val <= lyr.val+numyear/2 and yr.val >= lyr.val - numyear/2) = yes;
 
 * Define temporary data containers serving as looping parameters
 
 parameter klshare_, problem_shares_, gspbal, save, region_shr_,ld0,kd0;
 
-* design balancing routine to shift share, targetting national value share for
+* Design balancing routine to shift share, targetting national value share for
 * labor (to keep NIPA totals constant)
 
 nonnegative
 variables
-    K_SHR(r,s)	Capital value share,
-    L_SHR(r,s)	Labor value share;
+    K_SHR(r)	Capital value share,
+    L_SHR(r)	Labor value share;
 
 variable
     OBJ		Objective function (norm of deviation);
@@ -150,75 +196,79 @@ variable
 equations
     objdef	Objective function,
     shrdef	Value shares sum to unity,
-    lshrdef	Constraint on aggregate labor payments;
+    lshrdef	Constraint on aggregate labor payments,
+    kshrdef	Constraint on aggregate capital payments;
 
-lshrdef(s)..
-    sum(r, L_SHR(r,s)*region_shr_(r,s)*(ld0(s)+kd0(s))) =e= ld0(s);
+lshrdef..
+    sum(r, L_SHR(r)*region_shr_(r)*(ld0+kd0)) =e= ld0;
 
-shrdef(r,s)..
-    L_SHR(r,s) + K_SHR(r,s) =e= 1;
+kshrdef..
+    sum(r, K_SHR(r)*region_shr_(r)*(ld0+kd0)) =e= kd0;
+
+shrdef(r)$region_shr_(r)..
+    L_SHR(r) + K_SHR(r) =e= 1;
+
+* Define the objective function to minimize deviations from national and
+* reported data. compute over rolling years to avoid oscillations in the
+* reported gsp data.
 
 objdef..
-    OBJ =e= sum((r,s)$(gspbal(r,s) and problem_shares_(r,s)),
-		abs(klshare_(r,s,'k_nat'))*sqr(K_SHR(r,s)/klshare_(r,s,'k_nat')) - 1) +
-            sum((r,s)$(gspbal(r,s) and problem_shares_(r,s)),
-		abs(klshare_(r,s,'l_nat'))*sqr(L_SHR(r,s)/klshare_(r,s,'l_nat')) - 1) +
-            sum((r,s)$(gspbal(r,s) and not problem_shares_(r,s)),
-		abs(klshare_(r,s,'k'))*sqr(K_SHR(r,s)/klshare_(r,s,'k')) - 1) +
-            sum((r,s)$(gspbal(r,s) and not problem_shares_(r,s)),
-		abs(klshare_(r,s,'l'))*sqr(L_SHR(r,s)/klshare_(r,s,'l')) - 1);
+    OBJ =e= sum((r,lyr)$(region_shr_(r) and klshare_(r,lyr,'l')),
+	abs(gspbal(r))*sqr(L_SHR(r)/klshare_(r,lyr,'l') - 1));
 
-model solve_shares /objdef, shrdef, lshrdef/;
+model solve_shares /objdef, shrdef, lshrdef, kshrdef/;
 
-* Loop over years of data
+* Solve the model for each year and sector in the dataset
 
-loop(yr,
+loop((yr,s)$va_0(yr,'compen',s),
 
-    klshare_(r,s,'k_nat') = klshare(yr,r,s,'k_nat');
-    klshare_(r,s,'l_nat') = klshare(yr,r,s,'l_nat');
-    klshare_(r,s,'k') = klshare(yr,r,s,'k');
-    klshare_(r,s,'l') = klshare(yr,r,s,'l');
+    klshare_(r,lyr,'l')$loopyr(yr,lyr) = klshare(lyr,r,s,'l');
 
-    problem_shares_(r,s) = problem_shares(yr,r,s,'tot');
+    gspbal(r) = gsp0(yr,r,s,'Reported');
 
-    gspbal(r,s) = gsp0(yr,r,s,'Reported');
+    ld0 = va_0(yr,'compen',s);
+    kd0 = va_0(yr,'surplus',s);
 
-    ld0(s) = va_0(yr,'compen',s);
-    kd0(s) = va_0(yr,'surplus',s);
+    region_shr_(r) = region_shr(yr,r,s);
 
-    region_shr_(r,s) = region_shr(yr,r,s);
+    L_SHR.L(r)$region_shr_(r) = klshare(yr,r,s,'l');
+    K_SHR.L(r)$region_shr_(r) = klshare(yr,r,s,'k');
 
-    K_SHR.L(r,s) = klshare(yr,r,s,'k');
-    L_SHR.L(r,s) = klshare(yr,r,s,'l');
+    L_SHR.LO(r)$region_shr_(r) = 0.25 * klshare(yr,r,s,'l_nat');
+    K_SHR.LO(r)$region_shr_(r) = 0.25 * klshare(yr,r,s,'k_nat');
 
-    K_SHR.UP(r,s) = 1;
-    L_SHR.up(r,s) = 1;
+* Fix shares to zero if region_shr is zero
+
+    L_SHR.FX(r)$(not region_shr(yr,r,s)) = 0;
+    K_SHR.FX(r)$(not region_shr(yr,r,s)) = 0;
     
-* K_SHR.FX(yr,r,s)$(not problem_shares(yr,r,s,'tot')) = klshare(yr,r,s,'k');
-* L_SHR.FX(yr,r,s)$(not problem_shares(yr,r,s,'tot')) = klshare(yr,r,s,'l');
-
-    K_SHR.FX(r,'use') = 1;
-    L_SHR.FX(r,'use') = 0;
-    K_SHR.FX(r,'oth') = 1;
-    L_SHR.FX(r,'oth') = 0;
-
     solve solve_shares minimizing OBJ using QCP;
+    abort$(solve_shares.modelstat>2) "GSP share generation is infeasible";
 
-    save(yr,r,s,'k') = K_SHR.L(r,s);
-    save(yr,r,s,'l') = L_SHR.L(r,s);
+    save(yr,r,s,'k') = K_SHR.L(r);
+    save(yr,r,s,'l') = L_SHR.L(r);
+
+* Reset loop parameters
+
+    klshare_(r,lyr,'l') = 0;
+    
+* Reset bounds on veriables
+
+    L_SHR.LO(r) = 0;
+    L_SHR.UP(r) = inf;
+
+    K_SHR.LO(r) = 0;
+    K_SHR.UP(r) = inf;
 );
 
+* Report share stability:
+
 parameter
-    comp_shares		Report comparisons;
+    stability		Stability check;
 
-comp_shares(yr,r,s,'k_solve') = save(yr,r,s,'k');
-comp_shares(yr,r,s,'k_nat') = klshare(yr,r,s,'k_nat');
-comp_shares(yr,r,s,'k_dat') = klshare(yr,r,s,'k');
-
-comp_shares(yr,r,s,'l_solve') = save(yr,r,s,'l');
-comp_shares(yr,r,s,'l_nat') = klshare(yr,r,s,'l_nat');
-comp_shares(yr,r,s,'l_dat') = klshare(yr,r,s,'l');
-display comp_shares;
+stability(s,r,yr)$save(yr,r,s,'l') = round(save(yr,r,s,'l')/klshare(yr,r,s,'l_nat'),5);
+* execute_unload 'stability_chk.gdx' stability;
+* execute 'gdxxrw stability_chk.gdx par=stability rng=pivotdata!A2 cdim=0';
 
 * Save labor share from model solution
 
@@ -229,7 +279,7 @@ labor_shr(yr,r,s) = save(yr,r,s,'l');
 * Output regional shares
 * ------------------------------------------------------------------------------
 
-execute_unload 'gdx%sep%shares_gsp.gdx' region_shr, labor_shr;
+execute_unload 'gdx/shares_gsp.gdx' region_shr, labor_shr;
 
 
 * ------------------------------------------------------------------------------

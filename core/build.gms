@@ -1,25 +1,22 @@
 $title Build routine for the windc core dataset
 
 * to run individual build scripts, set %runscript% environment variable:
-*$set runscript usatradeshare
 
-*$set start fafshare
+* $set runscript usatradeshare
+
 
 
 * ------------------------------------------------------------------------------
 * Set options:
 * ------------------------------------------------------------------------------
 
-* system separator
-$set sep %system.dirsep%
-
 * use neos for calibration rather than local solvers? 
 $if not set neos $set neos "no"
 
 * create environment variables for gdx and list directory:
-$set lstdir  lst%sep%
-$set gdxdir  gdx%sep%
-$set lpdir   loadpoint%sep%
+$set lstdir  lst/
+$set gdxdir  gdx/
+$set lpdir   loadpoint/
 
 * dataset to be generated
 $set ds	%system.fp%WiNDCdatabase
@@ -34,7 +31,6 @@ $if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
 $if not dexist "%lpdir%"	$CALL mkdir "%lpdir%"
 
 $if set runscript $goto %runscript%
-$if set start     $goto %start%
 
 
 *------------------------------------------------------------------------------

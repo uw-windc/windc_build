@@ -2,20 +2,6 @@ $title Census Trade shares
 
 
 * -------------------------------------------------------------------
-* Set options
-* -------------------------------------------------------------------
-
-* file separator
-$set sep %system.dirsep%
-
-
-
-*---------
-* Raw data directory
-*---------
-$set gdxdir "../data/core"
-
-* -------------------------------------------------------------------
 * Read in state level USA Trade Online data
 * -------------------------------------------------------------------
 
@@ -47,7 +33,7 @@ $gdxin
 
 set
     map(n,s) Mapping between naics codes and sectors /
-$include 'maps%sep%mapusatrd.map'
+$include 'maps/mapusatrd.map'
 /;
 
 parameter
@@ -92,8 +78,8 @@ set
 parameter
     usda(r,ayr)	State level exports from usda of total agricultural output;
 
-$call 'csv2gdx %gdxdir%%sep%usda_time_series_exports.csv output=%gdxdir%%sep%usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
-$gdxin '%gdxdir%%sep%usda_time_series_exports.gdx'
+$call 'csv2gdx ../data/core/usda_time_series_exports.csv output=gdx/usda_time_series_exports.gdx id=usda useheader=yes index=(1,2) value=3 CheckDate=yes';
+$gdxin 'gdx/usda_time_series_exports.gdx'
 $load ayr=Dim2
 $loaddc usda
 $gdxin
@@ -118,7 +104,7 @@ usatrd_shr(ayr,r,'agr','exports') = usda(r,ayr) / sum(r.local, usda(r,ayr));
 * Output regional shares
 * -------------------------------------------------------------------
 
-execute_unload 'gdx%sep%shares_usatrd.gdx' usatrd_shr, notinc;
+execute_unload 'gdx/shares_usatrd.gdx' usatrd_shr, notinc;
 
 
 * -------------------------------------------------------------------

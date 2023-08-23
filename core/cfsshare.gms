@@ -2,14 +2,6 @@ $title Regional purchase coefficients (RPC) from commodity flow survey (CFS)
 
 
 * -------------------------------------------------------------------
-* Set options
-* -------------------------------------------------------------------
-
-* file separator
-$set sep %system.dirsep%
-
-
-* -------------------------------------------------------------------
 * Read in state level CFS data
 * -------------------------------------------------------------------
 
@@ -51,7 +43,7 @@ mrt0_(r,rr,n,sg)$(not sameas(r,rr)) = cfs2012_units(r,rr,n,sg,"millions of us do
 
 set
     map(sg,g)   Mapping between SCTG and WiNDC indicies /
-$include 'maps%sep%mapcfs.map'
+$include 'maps/mapcfs.map'
 /;
 
 * Note that WiNDC uses the RPC in the Armington nest. Therefore, we need to
@@ -103,7 +95,7 @@ rpc(r,'uti') = 0.9;
 * Output regional shares
 * -------------------------------------------------------------------
 
-execute_unload 'gdx%sep%cfs_rpcs.gdx' rpc;
+execute_unload 'gdx/cfs_rpcs.gdx' rpc;
 
 
 * -------------------------------------------------------------------

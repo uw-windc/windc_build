@@ -47,7 +47,7 @@ parameter
     c0_(yr,r)       Aggregate final demand,
     yh0_(yr,r,s)    Household production,
     bopdef0_(yr,r)  Balance of payments,
-    hhadj_(yr,r)    Household adjustment,
+    hhadj0_(yr,r)   Household adjustment,
     g0_(yr,r,s)     Government demand,
     i0_(yr,r,s)     Investment demand,
     xn0_(yr,r,g)    Regional supply to national market,
@@ -61,7 +61,7 @@ $loaddc ys0_ ld0_ kd0_ id0_ ty0_
 
 * Consumption data:
 
-$loaddc yh0_ cd0_ c0_ i0_ g0_ bopdef0_ hhadj_
+$loaddc yh0_ cd0_ c0_ i0_ g0_ bopdef0_ hhadj0_
 
 * Trade data:
 
@@ -97,7 +97,7 @@ parameters
     c0(r)		Aggregate final demand,
     yh0(r,g)		Household production,
     bopdef0(r)		Balance of payments,
-    hhadj(r)		Household adjustment,
+    hhadj0(r)		Household adjustment,
     g0(r,g)		Government demand,
     i0(r,g)		Investment demand,
     xn0(r,g)		Regional supply to national market,
@@ -130,7 +130,7 @@ xn0(r,g) = xn0_("%year%",r,g);
 xd0(r,g) = xd0_("%year%",r,g);
 dd0(r,g) = dd0_("%year%",r,g);
 nd0(r,g) = nd0_("%year%",r,g);
-hhadj(r) = hhadj_("%year%",r);
+hhadj0(r) = hhadj0_("%year%",r);
 
 * Define conditional tuples for endogenous region/commodity/industry pairings
 

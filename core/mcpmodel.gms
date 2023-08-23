@@ -179,13 +179,13 @@ $macro	I_PA_C(r,g)	(cd0(r,g)*(PI_C(r,"s")/PA(r,g))$cd0(r,g))
 * $demand:RA(r)
 * 	d:PC(r)		q:c0(r)
 * 	e:PY(r,g)	q:yh0(r,g)
-* 	e:PFX		q:(bopdef0(r) + hhadj(r))
+* 	e:PFX		q:(bopdef0(r) + hhadj0(r))
 * 	e:PA(r,g)	q:(-g0(r,g) - i0(r,g))
 * 	e:PL(r)		q:(sum(s,ld0(r,s)))
 * 	e:PK(r,s)	q:kd0(r,s)
 
 $macro	E_RA_PY(r,g)	(yh0(r,g))
-$macro	E_RA_PFX(r)	(bopdef0(r)+hhadj(r))
+$macro	E_RA_PFX(r)	(bopdef0(r)+hhadj0(r))
 $macro	E_RA_PA(r,g)	(-g0(r,g)-i0(r,g))
 $macro	E_RA_PL(r)	(sum(s,ld0(r,s)))
 $macro	E_RA_PK(r,s)	(kd0(r,s))
@@ -273,7 +273,7 @@ bal_RA(r)..	RA(r) =e=
 
 			+ PL(r)*E_RA_PL(r)
 
-*	Income associated with bopdef(r) and hhadj(r):
+*	Income associated with bopdef(r) and hhadj0(r):
 
 			+ PFX*E_RA_PFX(r)
 

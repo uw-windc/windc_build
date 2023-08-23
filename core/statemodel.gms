@@ -4,9 +4,6 @@ $title State accounting model to verify benchmark consistency
 * Set options:
 * -------------------------------------------------------------------
 
-* file separator
-$set sep %system.dirsep%
-
 * set year
 $if not set year $set year 2017
 
@@ -35,7 +32,7 @@ parameters
     c0(r)	Aggregate final demand,
     yh0(r,g)	Household production,
     bopdef0(r)	Balance of payments,
-    hhadj(r)	Household adjustment,
+    hhadj0(r)	Household adjustment,
     g0(r,g)	Government demand,
     i0(r,g)	Investment demand,
     xn0(r,g)	Regional supply to national market,
@@ -68,7 +65,7 @@ xn0(r,g) = xn0_("%year%",r,g);
 xd0(r,g) = xd0_("%year%",r,g);
 dd0(r,g) = dd0_("%year%",r,g);
 nd0(r,g) = nd0_("%year%",r,g);
-hhadj(r) = hhadj_("%year%",r);
+hhadj0(r) = hhadj0_("%year%",r);
 
 sets
     y_(r,s) 	Sectors and regions with positive production,
@@ -140,7 +137,7 @@ $prod:C(r)  s:1
 $demand:RA(r)
 	d:PC(r)		q:c0(r)
 	e:PY(r,g)	q:yh0(r,g)
-	e:PFX		q:(bopdef0(r) + hhadj(r))
+	e:PFX		q:(bopdef0(r) + hhadj0(r))
 	e:PA(r,g)	q:(-g0(r,g) - i0(r,g))
 	e:PL(r)		q:(sum(s,ld0(r,s)))
 	e:PK(r,s)	q:kd0(r,s)
