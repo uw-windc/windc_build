@@ -55,7 +55,7 @@ $if not set hhdata $set hhdata "cps"
 $if not set invest $set invest "static"
 
 * switch for assumption on domestic capital ownership (all vs. partial)
-$if not set capital_ownership $set capital_ownership "partial"
+$if not set capital_ownership $set capital_ownership "all"
 
 * allow end of line comments
 $eolcom !

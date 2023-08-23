@@ -28,7 +28,7 @@ set
 
 $gdxin '%datafile%'
 $loaddc s r m gm h trn
-alias(s,g),(r,q);
+alias(s,g),(r,rr,q);
 
 * Load year of parameters
 
