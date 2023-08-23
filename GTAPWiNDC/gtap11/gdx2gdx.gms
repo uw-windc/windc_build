@@ -344,7 +344,7 @@ set	r	Regions /
    	BEN	Benin
    	BFA	Burkina Faso
    	CMR	Cameroon
-   	CIV	C�te d'Ivoire
+   	CIV	C�te dIvoire
    	GHA	Ghana
    	GIN	Guinea
    	MLI	Mali
@@ -555,6 +555,8 @@ $if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --
 $call gmsunzip -j %zipfile% *GDX%syr%.zip   -d %tmpdir%
 $call gmsunzip -j %tmpdir%GDX%syr%.zip -d %tmpdir%
 
+
+
 *	This program can be included or it can run "stand-alone":
 
 $ifthen.standalone not defined ff 
@@ -633,6 +635,10 @@ $loaddc maks makb evfb evfp vdfb vdfp vdpb vdpp vdgb vdgp
 $loaddc vdib vdip vmfb vmfp vmpb vmpp vmgb vmgp vmib vmip
 $loaddc vfob vxsb vcif vmsb pop
 $loaddc vst_=vst vtwr_=vtwr
+
+
+
+
 
 *	Read the elasticity parameters:
 

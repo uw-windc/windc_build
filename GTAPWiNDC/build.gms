@@ -1,12 +1,31 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
-$set start windc_model
+*$set start windc_model
+
+
+*-----------------------
+*   If the value of gtapingams is not set via command line,
+*   then set its value. If the data for gtap11 exists, then
+*   gtapingams will be set to gtap11, otherwise gtap9
+*-----------------------
+
+
+$ifThen not set gtapingams
+$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
+$set gtapingams  gtap11/
+$else
+$set gtapingams gtap9/
+$endif
+$endif
+
+
+
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug yes
+$set debug no
 
 *	Pause after each step?
 
@@ -30,7 +49,7 @@ $if set start $goto %start%
 
 $log	Ready to run gtap_model for g20_32 (no output)
 $if not %pause%==no $call pause
-$if not %debug%==no $call gams gtap_model --ds=g20_32 o=lst\gtap_model_32.lst
+$if not %debug%==no $call gams gtap_model --ds=g20_32 --gtapingams=%gtapingams% o=lst\gtap_model_32.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtap_model.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms"
@@ -41,7 +60,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms"
 * ------------------------------------------------------------------------
 $log	Ready to run WRITE_STUB (datasets\gtapwindc\32_stub.gdx)
 $if not %pause%==no $call pause
-$call gams write_stub --ds=g20_32 o=lst\write_stub_32.lst --ds=g20_32 --dsout=datasets\gtapwindc\32_stub.gdx
+$call gams write_stub --ds=g20_32 o=lst\write_stub_32.lst --ds=g20_32 --gtapingams=%gtapingams% --dsout=datasets\gtapwindc\32_stub.gdx
 
 $if errorlevel 1 $log   "Non-zero return code from write_stub.gms"
 $if errorlevel 1 $abort "Non-zero return code from write_stub.gms"
@@ -65,7 +84,6 @@ $log	"Ready to run WINDC_MODEL  (datasets\windc\32.gdx)"
 $if not %pause%==no $call pause
 $call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
 
-$exit
 
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"
 $if errorlevel 1 $abort "Non-zero return code from windc_model.gms"
@@ -100,6 +118,15 @@ $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets\gtapw
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 
+
+
+
+
+$exit
+
+
+
+
 * ------------------------------------------------------------------------
 *	Bring together GTAP and USDA data to disaggregate AGR to
 *	pdr, wht, gro, v_f, osd, c_b, pfb, ocr, ctl, oap, rmk and wol,
@@ -115,7 +142,7 @@ $label verify43
 *	------------------------------------------------------------------------
 $log	Ready to replicate GTAP benchmark for g20_43  (no output)
 $if not %pause%==no $call pause
-$if not %debug%==no $call gams gtap_model --ds=g20_43 o=lst\gtap_model_43.lst
+$if not %debug%==no $call gams gtap_model --ds=g20_43 --gtapingams=%gtapingams% o=lst\gtap_model_43.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtap_model.gms with g20_43"
 $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms with g20_43"
@@ -146,6 +173,8 @@ $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets\gtapw
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 
+
+
 $label agrdisagg
 * ------------------------------------------------------------------------
 *	Disaggregate the agricultural sectors in the 32 sector WiNDC
@@ -156,16 +185,18 @@ $log	Ready to disaggreate agricultural sectors (datasets\windc\43.gdx)
 $if not %pause%==no $call pause
 
 $set windc_datafile ..\household\datasets\WINDC_cps_static_gtap_32_state.gdx
-$call gams agrdisagg --windc_datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --dsout=datasets\windc\43.gdx o=lst\agrdisagg.lst
+$call gams agrdisagg --windc_datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapingams=%gtapingams% --dsout=datasets\windc\43.gdx o=lst\agrdisagg.lst
 
 $if errorlevel 1 $log   "Non-zero return code from agrdisagg.gms"
 $if errorlevel 1 $abort "Non-zero return code from agrdisagg.gms"
+
+
 
 $label windc_model_43
 * ------------------------------------------------------------------------
 *	Verify consistency of the disaggregate dataset:
 * ------------------------------------------------------------------------
-$log	"Ready to check WiNDC model with datasets\windc\43.gdx (no output)
+$log	"Ready to check WiNDC model with datasets\windc\43.gdx (no output)"
 $if not %pause%==no $call pause
 $if not %debug%==no $call gams windc_model --windc_datafile=datasets\windc\43.gdx o=lst\windc_model_43.lst --oneyear=true
 
