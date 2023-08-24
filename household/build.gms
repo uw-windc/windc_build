@@ -11,7 +11,7 @@ $title Build routine for the windc household dataset
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2000*2017
+$if not set year $set year 2017
 
 * set household data (cps, soi)
 $set hhdata "cps"
@@ -86,7 +86,10 @@ loop(hhdata,
 * Calibrate household accounts to match %hhdata%:
 
 $label hhcalib
+
 loop((year,hhdata,invest,capital_ownership),
+
+    hhcalib_error(year,hhdata,invest,capital_ownership) = yes;
 
     put_utility 'title' /'Calibrating ',year.tl,' with ',hhdata.tl,' with invest=',invest.tl,
 	' with capital_ownership=',capital_ownership.tl;
@@ -97,8 +100,9 @@ loop((year,hhdata,invest,capital_ownership),
 	' --puttitle=no',' lo=4 lf=%lstdir%hhcalib_',year.tl,'_',hhdata.tl,'_',invest.tl,'.log';
 
     myerrorlevel = errorlevel;
-    abort$(myerrorlevel>=2) "There was an error. Check %lstdir%hhcalib_year_%hhdata%_%invest%.lst"
-
+    abort$(myerrorlevel>=2) "There was an error in hhcalib.";
+*Only verified the calibration for 2016 and 2017. The bounds on the variables are likely driving the infeasibilities in other years. You may need to change constraints placed on household variables in hhcalib."
+ 
 );
 
 $if set runscript $exit
@@ -158,6 +162,10 @@ loop(aggregate(hhdata,invest,capital_ownership,year,rmap,smap),
 	'_',smap.tl,'_',rmap.tl,'.lst',
 	' lo=4 lf=%lstdir%aggr_',hhdata.tl,'_',invest.tl,'_',capital_ownership.tl,'_',
 	year.tl,'_',smap.tl,'_',rmap.tl,'.log';
+
+    myerrorlevel = errorlevel;
+    abort$(myerrorlevel>=2) "There was an error in aggr.";
+
 );
 
 $if set runscript $exit
