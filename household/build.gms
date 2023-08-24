@@ -80,6 +80,9 @@ $if set start $goto %start%
 loop(hhdata,
     put_utility 'title' /'Reading household dataset from ',hhdata.tl;
     put_utility 'exec'/'gams ',hhdata.tl,'_data o=%lstdir%',hhdata.tl,'_data.lst lo=4 lf=%lstdir%',hhdata.tl,'_data.log';
+
+    myerrorlevel = errorlevel;
+    abort$(myerrorlevel>=2) "There was an error loading the data.  Did you place the data in the correct location?";
 );
 
 
