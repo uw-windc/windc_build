@@ -41,6 +41,7 @@ $if not dexist lst		  $call mkdir lst
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
 
+
 $if set start $goto %start%
 
 * ------------------------------------------------------------------------
@@ -76,13 +77,14 @@ $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets\gtapw
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 
+
 * ------------------------------------------------------------------------
 *        Generate a gdx file with the CPS household dataset:
 * ------------------------------------------------------------------------
 $label windc_model
 $log	"Ready to run WINDC_MODEL  (datasets\windc\32.gdx)"
 $if not %pause%==no $call pause
-$call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
+$call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_all_2017_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
 
 
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"

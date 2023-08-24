@@ -1,8 +1,19 @@
 $stitle		Read or Write a WiNDC Household Dataset 
 
+
+
+*	Default dataset to read:
+
+*	N.B. Default specification is to skip loading a single year.  If you
+*	want to load one year's data, then $set year in the calling program.
+*	$if not set year $set year 2017
+
+$if not set year $set year 2017
+
+
 *	Source data is stored here:
 
-$if not set ds             $set ds cps_static_gtap_32_state
+$if not set ds             $set ds cps_static_all_%year%_gtap_32_state
 $if not set datadir        $set datadir ..\household\datasets\
 $if not set windc_datafile $set windc_datafile %datadir%WiNDC_%ds%.gdx
 
@@ -10,21 +21,16 @@ $if not set windc_datafile $set windc_datafile %datadir%WiNDC_%ds%.gdx
 * set options
 * --------------------------------------------------------------------------
 
-*	N.B. Default specification is to skip loading a single year.  If you
-*	want to load one year's data, then $set year in the calling program.
-*	$if not set year $set year 2017
-
-*	Default dataset to read:
-
-
-
-$if not set year $set year 2017
 
 *	The data directory is defined relative to the location of this file:
 
 *	Branch to read a single year dataset:
 
-$if set oneyear $goto oneyear
+*$if set oneyear $goto oneyear
+
+* Household build was updated to only export single year data. This means
+* we skip to one year. 
+$goto oneyear
 
 * --------------------------------------------------------------------------
 * read data
@@ -243,7 +249,7 @@ parameter
     c0(r)       	Aggregate final demand,
     yh0(r,s)    	Household production,
     bopdef0(r)  	Balance of payments,
-    hhadj(r)    	Household adjustment,
+    hhadj0(r)    	Household adjustment,
     g0(r,s)     	Government demand,
     i0(r,s)     	Investment demand,
     xn0(r,g)    	Regional supply to national market,
@@ -252,7 +258,7 @@ parameter
     nd0(r,g)    	Regional demand from national market,
 
 * household data
-    pop(r,h)		Population (households or returns in millions),
+    pop0(r,h)		Population (households or returns in millions),
     le0(r,q,h)		Household labor endowment,
     ke0(r,h)		Household interest payments,
     tk0(r)		Capital tax rate,
@@ -267,7 +273,7 @@ parameter
 $loaddc ys0 ld0 kd0 id0 ty0
 
 * aggregate consumption data:
-$loaddc yh0 cd0 c0 i0 g0 bopdef0 hhadj
+$loaddc yh0 cd0 c0 i0 g0 bopdef0 hhadj0
 
 * trade data:
 $loaddc s0 xd0 xn0 x0 rx0 a0 nd0 dd0 m0 ta0 tm0
@@ -276,7 +282,7 @@ $loaddc s0 xd0 xn0 x0 rx0 a0 nd0 dd0 m0 ta0 tm0
 $loaddc md0 nm0 dm0
 
 * household data:
-$loaddc le0 ke0 tk0 tl0 cd0_h c0_h sav0 hhtrn0 pop
+$loaddc le0 ke0 tk0 tl0 cd0_h c0_h sav0 hhtrn0 pop0
 
 * Calculate foreign savings:
 
