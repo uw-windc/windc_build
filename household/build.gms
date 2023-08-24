@@ -14,19 +14,19 @@ $title Build routine for the windc household dataset
 $if not set year $set year 2017
 
 * set household data (cps, soi)
-$set hhdata "cps"
+$if not set hhdata $set hhdata "cps"
 
 * set investment calibration (static, dynamic)
-$set invest "static"
+$if not set invest $set invest "static"
 
 * set assumption on capital ownership (all,partial)
-$set capital_ownership "all"
+$if not set capital_ownership $set capital_ownership "all"
 
 * set regional mapping (state,census_divisions,census_regions,national)
-$set rmap "state"
+$if not set rmap $set rmap "state"
 
-* set sectoral mapping (windc,gtap_32,sage,gtap_10,macro)
-$set smap "bluenote,gtap_32"
+* set sectoral mapping (windc,gtap_32,sage,gtap_10,macro,bluenote)
+$if not set smap $set smap "gtap_32"
 
 
 * ------------------------------------------------------------------------------
@@ -91,8 +91,6 @@ loop(hhdata,
 $label hhcalib
 
 loop((year,hhdata,invest,capital_ownership),
-
-    hhcalib_error(year,hhdata,invest,capital_ownership) = yes;
 
     put_utility 'title' /'Calibrating ',year.tl,' with ',hhdata.tl,' with invest=',invest.tl,
 	' with capital_ownership=',capital_ownership.tl;
