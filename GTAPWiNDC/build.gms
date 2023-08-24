@@ -1,6 +1,16 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
+***** run after the core and household builds are complete!! *****
+
+
 *$set start windc_model
+
+* ------------------------------------------------------------------------------
+* Set options
+* ------------------------------------------------------------------------------
+
+* set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
+$if not set year $set year 2017
 
 
 *-----------------------
@@ -84,7 +94,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 $label windc_model
 $log	"Ready to run WINDC_MODEL  (datasets\windc\32.gdx)"
 $if not %pause%==no $call pause
-$call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_all_2017_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
+$call gams windc_model --windc_datafile=..\household\datasets\WINDC_cps_static_all_%year%_gtap_32_state.gdx gdx=datasets\windc\32.gdx o=lst\windc_model_32.lst
 
 
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"
