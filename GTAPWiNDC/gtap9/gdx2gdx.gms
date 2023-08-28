@@ -1,8 +1,5 @@
 $title	Translate GTAP 9 Distribution Data into GTAPinGAMS Format
 
-*	File separator:
-
-$set fs %system.dirsep% 
 
 $if not set yr		$set yr 2011
 
@@ -227,7 +224,7 @@ set	ff(*)	Factors in GTAP 9 nomenclature /
 	capital		"Capital"
 	natlres		"Natural Resources" /;
 
-$call gmsunzip -j %system.fp%%yr%%fs%flexagg9a.zip -d %tmpdir%
+$call gmsunzip -j %system.fp%/%yr%/flexagg9a.zip -d %tmpdir%
 
 *	Read these sets to verify that they are consistent:
 
@@ -698,12 +695,12 @@ set	metadata	Information about the dataset aggregation /
 	username	"%system.username%",
 	computername	"%system.computername%",
 	gamsversion	"%system.gamsversion%",
-	gamsprogram	"%system.fp%%system.fn%%system.fe%"/;
+	gamsprogram	"%system.fp%/%system.fn%%system.fe%"/;
 
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%system.fp%%yr%%system.dirsep%gtapingams.gdx',
+execute_unload '%system.fp%/%yr%%system.dirsep%gtapingams.gdx',
 		r, f, g, i,  vfm, 
 		vdfm, vifm, vxmd, vst, vtwr, vtrev,
 		rto, rtf, rtfd, rtfi, rtxs, rtms, 

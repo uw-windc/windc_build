@@ -3,15 +3,12 @@ $stitle	Read the GTAPinGAMS Data
 $if not set yr $set yr 2011
 $if not set ds $set ds gtapingams
 $setglobal ds %ds%
-$if not set fs $set fs %system.dirsep%
-$if not set datadir $set datadir %system.fp%%yr%%fs%
+$if not set datadir $set datadir %system.fp%/%yr%/
 
 set	f	Factor labels for GTAPinGAMS,
 	g(*)	Goods and final demand,
 	i(g)	Commodities,
 	r(*)	Regions ;
-
-$set fs %system.dirsep%
 
 $gdxin %datadir%%ds%.gdx
 $loaddc f g r i

@@ -181,7 +181,7 @@ display eneadj;
 *	Drop bilateral energy trade which have no corresponding economic transaction
 evt(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 
-execute_unload '%system.fp%%yr%\gtapingams_%reltol%.gdx',f,g,i,r,pol,
+execute_unload '%system.fp%/%yr%/gtapingams_%reltol%.gdx',f,g,i,r,pol,
 	vfm,vdfm,vifm,vxmd,vst,vtwr,
 	rto,rtf,rtfd,rtfi,rtxs,rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, 

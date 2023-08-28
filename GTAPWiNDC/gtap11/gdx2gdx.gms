@@ -1,8 +1,8 @@
 $title	Read the GTAP 11 Data (GDX format) and Write in GTAPinGAMS Format
 
-$set fs %system.dirsep%
-$call mkdir %gams.scrdir%%fs%gtapingams
-$set tmpdir %gams.scrdir%%fs%gtapingams%fs%
+
+$call mkdir %gams.scrdir%/gtapingams
+$set tmpdir %gams.scrdir%/gtapingams/
 
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)

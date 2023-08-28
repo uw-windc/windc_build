@@ -2,11 +2,11 @@ $title	Disaggregate Subregions in USA for 2014 based on WINDC Benchmark
 
 *	Point to a WiNDC dataset which has only 32 sectors:
 
-$if not set gdxfile $set gdxfile datasets\windc\32.gdx
+$if not set gdxfile $set gdxfile datasets/windc/32.gdx
 
 *	Name the GTAPWiNDC dataset to be produced:
 
-$if not set dsout      $set dsout datasets\gtapwindc\43.gdx
+$if not set dsout      $set dsout datasets/gtapwindc/43.gdx
 
 *	Start off by reading the sets of subregions and 
 *	households in the WiNDC dataset:
@@ -33,7 +33,7 @@ alias (s,ss);
 
 *	Read the GTAPWiNDC stub dataset:
 
-$if not set gtapwindc_datafile $set gtapwindc_datafile datasets\gtapwindc\43_stub
+$if not set gtapwindc_datafile $set gtapwindc_datafile datasets/gtapwindc/43_stub
 
 $include gtapwindc_data
 

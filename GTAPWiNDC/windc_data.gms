@@ -14,7 +14,7 @@ $if not set year $set year 2017
 *	Source data is stored here:
 
 $if not set ds             $set ds cps_static_all_%year%_gtap_32_state
-$if not set datadir        $set datadir ..\household\datasets\
+$if not set datadir        $set datadir ../household/datasets/
 $if not set windc_datafile $set windc_datafile %datadir%WiNDC_%ds%.gdx
 
 * --------------------------------------------------------------------------
@@ -197,7 +197,7 @@ $ontext
 *	Read labor tax rates downstream we can read marginal tax rates and impose
 *	these on the GTAPWiNDC dataset:
 
-$set cpsdir ..\household\data_sources\cps\
+$set cpsdir ../household/data_sources/cps/
 $set file %cpsdir%labor_tax_rates.csv
 $call csv2gdx %file%  id=tli   useheader=yes index=1,2 values=3 output="%gams.scrdir%tl.gdx"  trace=3
 $call csv2gdx %file%  id=tlp   useheader=yes index=1,2 values=4 output="%gams.scrdir%tfica.gdx" trace=3

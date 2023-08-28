@@ -67,7 +67,7 @@ set		flexaggfile /
 		2011	"%flexagg%flexagg9aY11.zip" /;
 
 
-put_utility 'shell' / "if exist %system.fp%tmp\nul rmdir /q /s %system.fp%tmp";
+put_utility 'shell' / "if exist %system.fp%tmp/nul rmdir /q /s %system.fp%tmp";
 put_utility 'shell' / "mkdir %system.fp%tmp";
 
 loop(yr,
@@ -81,7 +81,7 @@ $label gdx2gdx
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
 *	put_utility 'shell' / 'mkdir %system.fp%',yr.tl;
-	put_utility 'shell' / 'gams %system.fp%gdx2gdx --yr=\',yr.tl,' o=%system.fp%',yr.tl,'\gdx2gdx.lst';
+	put_utility 'shell' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' o=%system.fp%',yr.tl,'/gdx2gdx.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
 );
@@ -91,7 +91,7 @@ $label filter
 loop(yr,
   loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams %system.fp%filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'\filter_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams %system.fp%filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'/filter_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
@@ -104,7 +104,7 @@ $label aggregate
 loop((yr,target),
 
 	put_utility "title" / "Aggeragating: ",yr.tl," Target: ",target.tl;
-	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%",yr.tl,"\aggregate_",target.tl,".lst";
+	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%",yr.tl,"/aggregate_",target.tl,".lst";
 
 );
 
@@ -113,6 +113,6 @@ $label replicate
 loop((yr,target),
 
 	put_utility "title" / "Replicating: : ",yr.tl,"Target: ",target.tl;
-	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%",yr.tl,"\replicate_",target.tl,".lst";
+	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%",yr.tl,"/replicate_",target.tl,".lst";
 
 );

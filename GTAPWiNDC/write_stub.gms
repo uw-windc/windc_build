@@ -1,8 +1,8 @@
 $title	GTAPinGAMS Model in Canonical Form -- Produce a Stub Dataset
 
-$set fs %system.dirsep%
+*.$set fs %system.dirsep%
 
-$if not set dsout $set dsout datasets\gtapwindc\43_stub
+$if not set dsout $set dsout datasets/gtapwindc/43_stub
 
 
 

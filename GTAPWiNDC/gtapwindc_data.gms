@@ -1,9 +1,9 @@
 $title	GAMS Code to Read a GTAPWINDC Dataset
 
-$set fs %system.dirsep% 
+*.$set fs %system.dirsep% 
 
 $if not set ds                 $set ds 32
-$if not set gtapwindc_datafile $set gtapwindc_datafile datasets%fs%gtapwindc%fs%%ds%.gdx
+$if not set gtapwindc_datafile $set gtapwindc_datafile datasets/gtapwindc/%ds%.gdx
 
 sets	
 	r(*)		Regions (countries)
