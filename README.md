@@ -131,19 +131,15 @@ In addition to the routines to generate the datasets, the directory `bluenote` h
 ## GTAPWiNDC
 The GTAPWiNDC buildstream incorporates data from either the publicly available GTAP 9 release or proprietary GTAP 11 release. To inquire about obtaining a license for the GTAP 11 database, visit the [GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). The GTAP version 9 database is included in our data distribution.
 
-First, the file `GTAPWiNDC/gtapingams.gms` controls which version of the GTAP database you'll be using. By default this file specifies gtap9. To switch to gtap11, change this file to read:
-
-```
-$setglobal gtapingams  gtap11\
-*$setglobal gtapingams  gtap9\
-```
-In words, delete the `*` from the beginning of line 3 and add a `*` to the beginning of line 4. 
-
-Second, navigate to the subdirectory `GTAPWiNDC/gtapN` where N is either 9 or 11, depending on the version of the data you wish to build. Run the command:
+First, you must build both `core` and `household` prior to building `GTAPWiNDC`. Navigate to the `GTAPWiNDC` directory and run
 
     gams build.gms
 
-You must run both `core` and `household` before running this command. This will build the GTAP in WiNDC dataset. 
+If you have placed the files for GTAP 11 in the correct location, this will automatically use these files. If not, it will default to GTAP9. 
 
-Finally, 
+|Command| Options |
+|---|---|
+|year | <span style="color:blue">2017, 2014</span>[^GTAP11], 2011, 2007, 2004| 
+|aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
 
+[^GTAP11]:GTAP 11 only
