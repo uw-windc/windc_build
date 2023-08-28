@@ -143,3 +143,11 @@ If you have placed the files for GTAP 11 in the correct location, this will auto
 |aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
 
 [^GTAP11]:GTAP 11 only
+
+These options can either be set on the command line using the `--command=option` syntax, e.g.:
+
+    gams build.gms --year=2014
+
+Or directly in the GTAPWiNDC/build.gms file.
+
+
