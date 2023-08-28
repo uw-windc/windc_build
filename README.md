@@ -139,7 +139,7 @@ If you have placed the files for GTAP 11 in the correct location, this will auto
 
 |Command| Options |
 |---|---|
-|year | <span style="color:blue">2017, 2014</span>[^GTAP11], 2011, 2007, 2004| 
+|year | 2017[^GTAP11], 2014[^GTAP11], 2011, 2007, 2004| 
 |aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
 
 [^GTAP11]:GTAP 11 only
