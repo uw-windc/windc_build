@@ -67,7 +67,7 @@ If you don't have access to a GAMS license including needed solver licenses, you
 
 Once the core WiNDC database is generated, it can be loaded into a general equilibrium model in GAMS. The file `windc_coredata.gms` demonstrates how to read data from the database and extract data for a specific year. The file `replicate.gms` includes a simple general equilibrium model in MCP and MPSGE format, verifies benchmark consistency, solves a counterfactual (tariff shock) and verifies consistency at that point as well.
 
-## Households
+## Household
 The WiNDC household buildstream is an extension to the core WiNDC buildstream. The household buildstream generates disaggregated consumer accounts based on the core WiNDC database, CPS and SOI data. The key challenges were denominating reasonable transfer income and understanding income tax liabilities, savings, capital ownership versus demands, salaries and wages. We provide a static and a dynamic calibration and use income elasticities to separate household level commodity expenditures. The [presentation on the household build](https://windc.wisc.edu/2021-windc-meeting-hh.pdf) at the WiNDC Annual Meeting 2021 offers a detailed description of the calibration routine.
 
 Navigate to the subdirectory household. This directory contains the necessary input data (subdirectory `data_sources`) and all GAMS code needed to generate the WiNDC household datasets for the years 2015 to 2017. In addition to the data in the subdirectory `data_sources`, the WiNDC household buildstream takes as input the core WiNDC database, so make sure that the GDX file `WiNDCdatabase.gdx` is in the directory `core`.
