@@ -1,17 +1,8 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
-***** run after the core and household builds are complete!! *****
-
-
-*$set start windc_model
-
-* ------------------------------------------------------------------------------
-* Set options
-* ------------------------------------------------------------------------------
-
-* set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2017
-
+*---------------------- 
+* run after the core and household builds are complete!! 
+* ---------------------
 
 *-----------------------
 *   If the value of gtapingams is not set via command line,
@@ -28,15 +19,28 @@ $set gtapingams gtap9/
 $endif
 $endif
 
-$set year 2011
-$set gtapingams gtap9/
 
+* ------------------------------------------------------------------------------
+* Set options
+* ------------------------------------------------------------------------------
+
+* set year(s) to compute data 
+* -- gtap11: 2017, 2014, 2011, 2007, 2004
+* -- gtap9 : 2011, 2007, 2004
+$if not set year $set year 2017
+
+* set aggregations g20_10,  g20_32,  g20_43, 
+*				      wb12_10, wb12_32, wb12_43
+$if not set aggeregation $set aggeregation g20_32
+
+*----------------------------------------
+* Test if the target aggregation exists. If not, generate the aggeregation
+*----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
 $call gams %gtapingams%build.gms o=lst/gtap.lst 
 $endif
 
 
-$exit
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
