@@ -28,7 +28,9 @@ $set gtapingams gtap9/
 $endif
 $endif
 
-
+$ifThen not exist "%gtapingams%/2017/g20_32.gdx"
+$call gams %gtapingams%build.gms o=lst/gtap.lst 
+$endif
 
 
 * ------------------------------------------------------------------------
