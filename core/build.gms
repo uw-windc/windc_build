@@ -13,6 +13,9 @@ $title Build routine for the windc core dataset
 * use neos for calibration rather than local solvers? 
 $if not set neos $set neos "no"
 
+* run huber calibartion routine?
+$if not set huber $set huber "no"
+
 * create environment variables for gdx and list directory:
 $set lstdir  lst/
 $set gdxdir  gdx/
@@ -67,8 +70,10 @@ $label calibrate
 $set script calibrate
 $if %system.filesys% == MSNT $call 'title Calibrating the national model.'
 
+$ifthen not %huber% == "no"
 $call 'gams calibrate.gms --neos=%neos% o="%lstdir%calibrate_huber.lst" --matbal=huber';
 $if errorlevel 1 $abort "ERROR: calibrate.gms generated an error. See %lstdir%calibrate_huber.lst";
+$endif
 
 $call 'gams calibrate.gms --neos=%neos% o="%lstdir%calibrate_ls.lst" --matbal=ls';
 $if errorlevel 1 $abort "ERROR: calibrate.gms generated an error. See %lstdir%calibrate_ls.lst";
@@ -151,10 +156,12 @@ $if %system.filesys% == MSNT $call 'title Regionalizing national summary account
 $call 'gams %script%.gms --neos=%neos%  o="%lstdir%%script%.lst" --ds=%ds%';
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
 
+$ifthen not %huber% == "no"
 * name of the output dataset and put it in the calling directory:
 $call 'gams %script%.gms --matbal=huber --ds=%ds%_huber --neos=%neos%  o="%lstdir%%script%_huber.lst"';
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
 $if set runscript $exit
+$endif
 
 * verify benchmark consistency in both MGE and MCP models, solve a counter-factual
 * and verify consistency at that point as well.
@@ -166,9 +173,11 @@ $if %system.filesys% == MSNT $call 'title Verifying consistency of mgemodel and 
 $call 'gams %script%.gms --neos=%neos%  o="%lstdir%%script%.lst" --ds=%ds%'
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst"
 
+$ifthen not %huber% == "no"
 $call 'gams %script%.gms --neos=%neos%  o="%lstdir%%script%_huber.lst" --ds=%ds%_huber';
 $if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
 $if set runscript $exit
+$endif
 
 
 * ------------------------------------------------------------------------------
