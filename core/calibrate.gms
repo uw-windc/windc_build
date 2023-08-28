@@ -20,8 +20,11 @@ $if not set run $set run 1997*2017
 * options for directories
 $if not set gengdx $set gengdx "gdx"
 
-* set and create loadpoint directory if not exist
-$set lpdir loadpoint/
+* set and create loadpoint directory if not exist, this appears to be the only
+* place where system.dirsep is necessary. Below we create a nested directory 
+* structure and GAMS isn't doing this correctly on Windows due to passing 
+* to the shell.
+$set lpdir loadpoint%system.dirsep%
 $if not dexist %lpdir% $call mkdir %lpdir%
 
 * option for use of neos optimization surver
@@ -460,6 +463,7 @@ loop(yr,
 	put_utility kutl, 'shell' / 'test -d %lpdir%',yr.tl,' || mkdir %lpdir%',yr.tl,' >nul';
 	put_utility kutl, 'shell' / 'test -f %lpdir%',yr.tl,'/%matbal%_p.gdx || ',
 				' cp  %gams.scrdir%p.gdx %lpdir%',yr.tl,'/%matbal%_p.gdx >nul';
+
 );
 
 * -------------------------------------------------------------------
@@ -783,8 +787,11 @@ $include %gams.scrdir%loadyr
 
 * Read the starting point:
 
-	put_utility kutl, 'gdxin'/'%lpdir%',yr.tl,'/%matbal%_p.gdx';
-	execute_loadpoint;
+* This reads data from a loadpoint file, but (MP) can't find where it is initially
+* written. That means it overwrites all parameters to be empty.
+
+*put_utility kutl, 'gdxin'/'%lpdir%',yr.tl,'/%matbal%_p.gdx';
+*	execute_loadpoint;
 
 	put_utility kutl, 'title'/'Calibrating for ',yr.tl,' with %matbal% objective function.';
 
