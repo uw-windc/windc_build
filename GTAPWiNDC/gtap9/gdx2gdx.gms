@@ -8,7 +8,8 @@ $if not set yr		$set yr 2011
 
 *	Use the GAMS scratch directory to hold temporary files:
 
-$set tmpdir %gams.scrdir%
+$set tmpdir %system.fp%/tmp/
+*%gams.scrdir%
 
 set	ii	Commodities in GTAP 9 nomenclature/
 	pdr	"Paddy rice",
@@ -226,7 +227,7 @@ set	ff(*)	Factors in GTAP 9 nomenclature /
 	capital		"Capital"
 	natlres		"Natural Resources" /;
 
-$call gmsunzip -j %yr%%fs%flexagg9a.zip -d %tmpdir%
+$call gmsunzip -j %system.fp%%yr%%fs%flexagg9a.zip -d %tmpdir%
 
 *	Read these sets to verify that they are consistent:
 
@@ -702,7 +703,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%yr%%system.dirsep%gtapingams.gdx',
+execute_unload '%system.fp%%yr%%system.dirsep%gtapingams.gdx',
 		r, f, g, i,  vfm, 
 		vdfm, vifm, vxmd, vst, vtwr, vtrev,
 		rto, rtf, rtfd, rtfi, rtxs, rtms, 

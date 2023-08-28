@@ -258,7 +258,7 @@ $macro SFM(sf,j,r) (vfm(sf,j,r)*(PS(sf,j,r)/PVFM(sf,r))**etaf(sf))
 *	Generate code for model calibration:
 
 $setlocal datetime %system.date%%system.time%
-$onechov >gmr_mcp.gen
+$onechov > %system.fp%gmr_mcp.gen
 *       Calibration code for gmr_mcp.gms (%datetime%)    >gmr_mcp.gen
 
 cf0(g,r) = sum(f, vfm(f,g,r)*(1+rtf0(f,g,r)));
@@ -353,7 +353,7 @@ sets
 	hi_RA_PM(%h_RA%,%i_PM%)		Endowment domain
 	hi_RA_PF(%h_RA%,%i_PF%)		Endowment domain;
 
-$onechov >>gmr_mcp.gen
+$onechov >> %system.fp%gmr_mcp.gen
 
 j_Y(g,r) = yes$vom(g,r);
 j_M(i,r) = yes$vim(i,r);
@@ -559,7 +559,7 @@ model gmr_mcp /
 RA.L(r) = vom("c",r);
 
 
-$include gmr_mcp.gen
+$include %system.fp%gmr_mcp.gen
 
 *	Benchmark replication of the MCP model:
 
@@ -580,14 +580,14 @@ abort$round(gmr_mge.objval,3) "Counterfactual solution fails with the MGE model.
 
 RA.FX("USA") = RA.L("USA");
 gmr_mcp.iterlim = 0;
-$include gmr_mcp.gen
+$include %system.fp%gmr_mcp.gen
 solve gmr_mcp using mcp;
 abort$round(gmr_mcp.objval,3) "Counterfactual replication fails with the MCP model.";
 
 *	Cleanup to check that we are not too far off:
 
 gmr_mcp.iterlim = 10000;
-$include gmr_mcp.gen
+$include %system.fp%gmr_mcp.gen
 solve gmr_mcp using mcp;
 abort$round(gmr_mcp.objval,3) "Cleanup solution fails with the MCP model.";
 
