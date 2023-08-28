@@ -50,11 +50,11 @@ set
 *	 56111941  04-27-23 16:30   GDX14.zip
 *	 56161607  04-27-23 16:30   GDX17.zip
 *----------------------------------------
-$if not set zipfile $set zipfile ../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
+$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
 
 
-$set lstdir  lst/
-$set gdxdir  gdx/
+$set lstdir  %system.fp%lst/
+$set gdxdir  %system.fp%gdx/
 
 $if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
 $if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
@@ -93,8 +93,8 @@ loop(yr,
 
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
-	put_utility 'shell' / 'mkdir ',yr.tl;
-	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
+	put_utility 'exec' / 'mkdir %system.fp%',yr.tl;
+	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=%system.fp%',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 *	if (errorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
@@ -111,7 +111,7 @@ $label filter
 loop(yr,
  loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams filter --yr='yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\calibrate_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams %system.fp%filter --yr='yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'\calibrate_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
@@ -126,7 +126,7 @@ $label aggregate
 
 loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;
-	put_utility 'shell' / 'gams aggregate --yr=',yr.tl,' --target=',target.tl,' o=',yr.tl,'\aggregate_',target.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%aggregate --yr=',yr.tl,' --target=',target.tl,' o=%system.fp%',yr.tl,'\aggregate_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from aggregate.gms"; );
 );
@@ -142,7 +142,7 @@ $label replicate
 
 loop((yr,target),
 	put_utility 'title' /'replicate: ',yr.tl,' : ', target.tl;
-	put_utility 'shell' / 'gams replicate --yr=',yr.tl,' --ds=',target.tl,' o=',yr.tl,'\gmr_',target.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%replicate --yr=',yr.tl,' --ds=',target.tl,' o=%system.fp%',yr.tl,'\gmr_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from replicate.gms"; );
 );
