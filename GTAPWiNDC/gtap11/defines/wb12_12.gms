@@ -1,5 +1,5 @@
-$batinclude mappings wbregions_12
-$batinclude mappings wbsectors_12
+$batinclude %system.fp%../mappings wbregions_12
+$batinclude %system.fp%../mappings wbsectors_12
 
 set ff  /
 	lab	Labor
