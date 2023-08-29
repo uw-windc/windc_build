@@ -4,6 +4,7 @@
 *   gtapingams will be set to gtap11, otherwise gtap9
 *-----------------------
 
+
 $ifThen not set gtapingams
 $ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
 $set gtapingams  gtap11/

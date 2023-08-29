@@ -10,7 +10,15 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 *   gtapingams will be set to gtap11, otherwise gtap9
 *-----------------------
 
-$include gtapingams;
+*$include gtapingams
+
+$ifThen not set gtapingams
+$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
+$set gtapingams  gtap11/
+$else
+$set gtapingams gtap9/
+$endif
+$endif
 
 
 * ------------------------------------------------------------------------------
@@ -30,7 +38,7 @@ $if not set aggeregation $set aggeregation g20_32
 * Test if the target aggregation exists. If not, generate the aggeregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --target=g20_32 o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
 $endif
 
 
@@ -75,7 +83,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms"
 * ------------------------------------------------------------------------
 $log	Ready to run WRITE_STUB (datasets/gtapwindc/32_stub.gdx)
 $if not %pause%==no $call pause
-$call gams write_stub --ds=g20_32 o=lst/write_stub_32.lst --ds=g20_32 --gtapingams=%gtapingams% --dsout=datasets/gtapwindc/32_stub.gdx
+$call gams write_stub --ds=g20_32 o=lst/write_stub_32.lst --gtapingams=%gtapingams% --dsout=datasets/gtapwindc/32_stub.gdx
 
 $if errorlevel 1 $log   "Non-zero return code from write_stub.gms"
 $if errorlevel 1 $abort "Non-zero return code from write_stub.gms"
