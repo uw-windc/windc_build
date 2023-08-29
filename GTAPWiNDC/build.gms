@@ -37,7 +37,7 @@ $if not set aggeregation $set aggeregation g20_32
 * Test if the target aggregation exists. If not, generate the aggeregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --yr=%year% --target=g20_32 o=lst/gtap.lst 
 $endif
 
 
