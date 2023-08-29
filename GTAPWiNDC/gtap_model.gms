@@ -7,14 +7,7 @@ $title	GTAPinGAMS Model in Canonical Form
 *-----------------------
 
 
-$ifThen not set gtapingams
-$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
-$set gtapingams  gtap11/
-$else
-$set gtapingams gtap9/
-$endif
-$endif
-
+$include gtapingams;
 
 
 *$include gtapingams
