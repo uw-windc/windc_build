@@ -142,6 +142,7 @@ If you have placed the files for GTAP 11 in the correct location, this will auto
 |year | 2017[^GTAP11], 2014[^GTAP11], 2011, 2007, 2004| 
 |aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
 
+[^GTAP11]:GTAP 11 only
 
 
 These options can either be set on the command line using the `--command=option` syntax, e.g.:
@@ -153,15 +154,26 @@ Or directly in the GTAPWiNDC/build.gms file.
 
 File Listing:
 
-1. `build.gms`
-2. `gtap_model.gms`
-3. `write_stub.gms`
+1. `build.gms` - Main build method for the package. Detailed above.
+2. `gtap_model.gms` - 
+3. `write_stub.gms` - 
 4. `gtapwindc_mge.gms`
 5. `windc_model.gms`
 6. `regiondisagg.gms`
 7. `agrdissagg.gms`
 8. `gtapwindc_data.gms`
-9. `windc_data.gms`
+9. `windc_data.gms` - Method to load the WiNDC household data. Options: ds, datadir, datafile
 
 
-[^GTAP11]:GTAP 11 only
+
+
+
+### GTAP 11
+
+1. `build.gms`
+2. `gdx2gdx.gms`
+3. `filter.gms`
+4. `aggregate.gms`
+5. `replicate.gms`
+
+### GTAP 9
