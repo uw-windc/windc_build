@@ -1,34 +1,34 @@
 $title	Build GTAP9inGAMS from GTAP Datasets
 
-*	Indicate a single task.  If no task is specified, then build all 
-*	datasets.
-
-*	The tasks include "flex2gdx", "gdx2gdx", "filter", "aggregate" and "replicate"
-
-*$set task filter
-*.$set start gdx2gdx
-
-*-------------------------------
-*	Change the following to modify which years are run, the relative
-*	tolerance and the aggregations.
+*--------------------------------
+* Command line options:
 *
+*	--task
+*	Indicate a single task. Options include: "gdx2gdx", "filter", "aggregate" and "replicate"
+*	No task indicates build all the datasets.
+*
+*	--start
+*	Begin the computations at a set starting point. Options are the same as above.
+*----------------------------------
+
+* set year(s) to compute data (2017, 2014, 2011)
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
 *	from the code.
+$if not set year $set year 2017
 
-*	Here is the full set of data files which can be processed:
+* Set filter tolerances (3, 4, 5)
+$if not set relative_tolerance $set relative_tolerance 4
 
-*.	yr		Base years /2011,2014,2017/,
-*.	reltol		Filter tolance /3,4,5/
-*.	target		Aggregations /g20_10,  g20_32,  g20_43, 
-*.				      wb12_10, wb12_32, wb12_43/;
-*---------------------------------
+* Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
+$if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
+
+
 
 set
-	yr		Base years /2011/,
-	reltol		Filter tolance /4/
-	target		Aggregations /g20_10,  g20_32,  g20_43 /;
-
+	yr		Base years / %year% /,
+	reltol		Filter tolance / %relative_tolerance%/
+	target		Aggregations / %aggregation% /;
 
 
 
