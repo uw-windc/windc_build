@@ -151,4 +151,17 @@ These options can either be set on the command line using the `--command=option`
 Or directly in the GTAPWiNDC/build.gms file.
 
 
+File Listing:
+
+1. `build.gms`
+2. `gtap_model.gms`
+3. `write_stub.gms`
+4. `gtapwindc_mge.gms`
+5. `windc_model.gms`
+6. `regiondisagg.gms`
+7. `agrdissagg.gms`
+8. `gtapwindc_data.gms`
+9. `windc_data.gms`
+
+
 [^GTAP11]:GTAP 11 only
