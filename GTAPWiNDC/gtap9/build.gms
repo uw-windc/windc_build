@@ -93,7 +93,7 @@ loop(yr,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
 	put_utility 'shell' /'gams %system.fp%filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'/filter_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
-	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
+	if (myerrorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
 $if set task $exit
 
@@ -105,7 +105,8 @@ loop((yr,target),
 
 	put_utility "title" / "Aggeragating: ",yr.tl," Target: ",target.tl;
 	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%",yr.tl,"/aggregate_",target.tl,".lst";
-
+	myerrorlevel = errorlevel;
+	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms";
 );
 
 
@@ -114,5 +115,6 @@ loop((yr,target),
 
 	put_utility "title" / "Replicating: : ",yr.tl,"Target: ",target.tl;
 	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%",yr.tl,"/replicate_",target.tl,".lst";
-
+	myerrorlevel = errorlevel;
+	if (myerrorlevel>0, abort "Non-zero return code from replicatge.gms";
 );
