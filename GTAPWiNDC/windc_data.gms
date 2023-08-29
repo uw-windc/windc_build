@@ -27,7 +27,14 @@ set
     trn     Transfer types;    
 
 $gdxin '%datafile%'
-$loaddc s r m gm h trn
+
+*	Don't read s if it has already been defined.  This is 
+*	essential for disaggregation:
+
+$if not defined s $loaddc s
+
+$loaddc r m gm h trn
+
 alias(s,g),(r,q);
 
 * Load year of parameters

@@ -15,14 +15,13 @@ $title	Build GTAP9inGAMS from GTAP Datasets
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
 *	from the code.
-$if not set year $set year 2017
+$if not set year $set year 2011
 
 * Set filter tolerances (3, 4, 5)
 $if not set relative_tolerance $set relative_tolerance 4
 
 * Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
-
 
 
 set
@@ -66,7 +65,6 @@ set		flexaggfile /
 		2007	"%flexagg%flexagg9aY07.zip"
 		2011	"%flexagg%flexagg9aY11.zip" /;
 
-
 put_utility 'shell' / "if exist %system.fp%tmp/nul rmdir /q /s %system.fp%tmp";
 put_utility 'shell' / "mkdir %system.fp%tmp";
 
@@ -106,7 +104,7 @@ loop((yr,target),
 	put_utility "title" / "Aggeragating: ",yr.tl," Target: ",target.tl;
 	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%",yr.tl,"/aggregate_",target.tl,".lst";
 	myerrorlevel = errorlevel;
-	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms";
+	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms";);
 );
 
 
@@ -116,5 +114,5 @@ loop((yr,target),
 	put_utility "title" / "Replicating: : ",yr.tl,"Target: ",target.tl;
 	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%",yr.tl,"/replicate_",target.tl,".lst";
 	myerrorlevel = errorlevel;
-	if (myerrorlevel>0, abort "Non-zero return code from replicatge.gms";
+	if (myerrorlevel>0, abort "Non-zero return code from replicatge.gms";);
 );

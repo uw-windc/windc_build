@@ -1,24 +1,22 @@
 $title	Translate GTAP Distribution Data into GDX
 
-
-$if not set yr		$set yr 2011
+$if not set yr $set yr 2011
 
 $if %yr%==2004 $set year 04
 $if %yr%==2007 $set year 07
 $if %yr%==2011 $set year 11
 
-$if not dexist %system.fp%/%yr% $call mkdir %system.fp%/%yr%
+$if not dexist %system.fp%%yr% $call mkdir %system.fp%%yr%
 
 *	Directory in which to find the GTAP zip files:
 
-$if not set flexaggfile $set flexaggfile %system.fp%/../../data/GTAPWiNDC/gtap9/flexagg9aY%year%.zip
+$if not set flexaggfile $set flexaggfile %system.fp%../../data/GTAPWiNDC/gtap9/flexagg9aY%year%.zip
 
 $if not exist "%flexaggfile%" $abort Cannot find GTAP data file: "%flexaggfile%".
 
 *	Use the GAMS scratch directory to hold temporary files:
 
-$set tmpdir %system.fp%/tmp/
-*%gams.scrdir%
+$set tmpdir %gams.scrdir%
 
 *	Unload the har files:
 
@@ -48,11 +46,9 @@ $if not exist %tmpdir%gsddat.gdx	$goto missinggdxfiles
 $if not exist %tmpdir%gsdpar.gdx	$goto missinggdxfiles
 $if not exist %tmpdir%gsdemiss.gdx	$goto missinggdxfiles
 
-$set gdxdatafile %yr%/flexagg9a.zip
+$set gdxdatafile %system.fp%%yr%/flexagg9a.zip
 $log  'gmszip -j %gdxdatafile% %tmpdir%*.gdx'
 $call 'gmszip -j %gdxdatafile% %tmpdir%*.gdx'
-
-
 
 $exit
 

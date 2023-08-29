@@ -10,16 +10,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 *   gtapingams will be set to gtap11, otherwise gtap9
 *-----------------------
 
-*$include gtapingams
-
-$ifThen not set gtapingams
-$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
-$set gtapingams  gtap11/
-$else
-$set gtapingams gtap9/
-$endif
-$endif
-
+$include gtapingams
 
 * ------------------------------------------------------------------------------
 * Set options
@@ -41,17 +32,19 @@ $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
 $call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
 $endif
 
+$exit
+
 
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug no
+$set debug yes
 
 *	Pause after each step?
 
-$set pause no
+$set pause yes
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 
@@ -62,7 +55,6 @@ $if not dexist lst		  $call mkdir lst
 
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
-
 
 $if set start $goto %start%
 

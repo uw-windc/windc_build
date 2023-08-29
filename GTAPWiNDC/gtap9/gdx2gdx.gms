@@ -5,8 +5,7 @@ $if not set yr		$set yr 2011
 
 *	Use the GAMS scratch directory to hold temporary files:
 
-$set tmpdir %system.fp%/tmp/
-*%gams.scrdir%
+$set tmpdir %gams.scrdir%
 
 set	ii	Commodities in GTAP 9 nomenclature/
 	pdr	"Paddy rice",
