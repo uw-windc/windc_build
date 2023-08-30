@@ -25,14 +25,7 @@ $if not set year $set year 2017
 *				      wb12_10, wb12_32, wb12_43
 $if not set aggeregation $set aggeregation g20_32
 
-*----------------------------------------
-* Test if the target aggregation exists. If not, generate the aggeregation
-*----------------------------------------
-$ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
-$endif
 
-$exit
 
 
 
@@ -40,11 +33,11 @@ $exit
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug yes
+$set debug no
 
 *	Pause after each step?
 
-$set pause yes
+$set pause no
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 
@@ -55,6 +48,15 @@ $if not dexist lst		  $call mkdir lst
 
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
+
+
+*----------------------------------------
+* Test if the target aggregation exists. If not, generate the aggeregation
+*----------------------------------------
+$ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
+$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
+$endif
+
 
 $if set start $goto %start%
 
