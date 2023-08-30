@@ -40,10 +40,11 @@ $set debug no
 $set pause no
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
+*   %system.dirsep% is necessary here because windows
 
 $if not dexist datasets		  $call mkdir datasets
-$if not dexist datasets/windc	  $call mkdir datasets/windc
-$if not dexist datasets/gtapwindc $call mkdir datasets/gtapwindc
+$if not dexist datasets%system.dirsep%windc	  $call mkdir "datasets%system.dirsep%windc"
+$if not dexist datasets%system.dirsep%gtapwindc $call mkdir "datasets%system.dirsep%gtapwindc"
 $if not dexist lst		  $call mkdir lst
 
 * ------------------------------------------------------------------------
