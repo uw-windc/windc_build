@@ -724,7 +724,6 @@ g_(g) = g(g);
 i_(i) = i(i);
 $if "%dropagr%"=="yes" g_("agr") = no; i_("agr") = no;
 
-
 execute_unload '%dsout%',
 	r,g_=g,i_=i,f,s,h,sf,mf,
 	vom, vafm, vfm, xn0, xd0, a0,

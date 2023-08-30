@@ -10,16 +10,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 *   gtapingams will be set to gtap11, otherwise gtap9
 *-----------------------
 
-*$include gtapingams
-
-$ifThen not set gtapingams
-$ifThen exist "../data/GTAPWiNDC/gtap11/GDX_AY1017.zip" 
-$set gtapingams  gtap11/
-$else
-$set gtapingams gtap9/
-$endif
-$endif
-
+$include gtapingams
 
 * ------------------------------------------------------------------------------
 * Set options
@@ -34,12 +25,7 @@ $if not set year $set year 2017
 *				      wb12_10, wb12_32, wb12_43
 $if not set aggeregation $set aggeregation g20_32
 
-*----------------------------------------
-* Test if the target aggregation exists. If not, generate the aggeregation
-*----------------------------------------
-$ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
-$endif
+
 
 
 
@@ -62,6 +48,14 @@ $if not dexist lst		  $call mkdir lst
 
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
+
+
+*----------------------------------------
+* Test if the target aggregation exists. If not, generate the aggeregation
+*----------------------------------------
+$ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
+$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
+$endif
 
 
 $if set start $goto %start%

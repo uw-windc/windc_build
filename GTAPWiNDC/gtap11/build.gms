@@ -11,7 +11,6 @@ $title	Build GTAP in GAMS from GTAP Datasets
 *	Begin the computations at a set starting point. Options are the same as above.
 *----------------------------------
 
-
 * set year(s) to compute data (2017, 2014, 2011)
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
@@ -24,15 +23,12 @@ $if not set relative_tolerance $set relative_tolerance 4
 * Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
-
-
 set
 	yr		Base years / %year% /,
 	reltol		Filter tolance / %relative_tolerance%/
 	target		Aggregations / %aggregation% /;
 
 
-*---------------------------
 * 	Here we indicate the location of the GTAP data files.
 
 *	The code works with the following archive -- note that the
@@ -57,14 +53,12 @@ $set gdxdir  %system.fp%gdx/
 $if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
 $if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
 
-
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
 set	seq	Sequencing set for filter tolerance /1*10/;
 
 
 file kput; kput.lw=0; put kput;
-
 
 
 *--------------*

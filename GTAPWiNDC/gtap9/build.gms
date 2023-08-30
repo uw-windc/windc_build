@@ -24,7 +24,6 @@ $if not set relative_tolerance $set relative_tolerance 4
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
 
-
 set
 	yr		Base years / %year% /,
 	reltol		Filter tolance / %relative_tolerance%/
