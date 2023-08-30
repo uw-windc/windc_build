@@ -51,6 +51,10 @@ $if not dexist lst		  $call mkdir lst
 *	Jump to a starting point:
 
 
+$set start g20_43
+
+$if set start $goto %start%
+
 *----------------------------------------
 * Test if the target aggregation exists. If not, generate the aggeregation
 *----------------------------------------
@@ -59,7 +63,7 @@ $call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst
 $endif
 
 
-$if set start $goto %start%
+
 
 * ------------------------------------------------------------------------
 *	        Verify benchmark consistency of the canonical GTAP model:
@@ -143,8 +147,14 @@ $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 
 $exit
 
+$label g20_43
 
-
+*----------------------------------------
+* Test if the target aggregation exists. If not, generate the aggeregation
+*----------------------------------------
+$ifThen not exist "%gtapingams%/%year%/g20_43.gdx"
+$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_43 o=lst/gtap.lst 
+$endif
 
 * ------------------------------------------------------------------------
 *	Bring together GTAP and USDA data to disaggregate AGR to
@@ -203,8 +213,8 @@ $label agrdisagg
 $log	Ready to disaggreate agricultural sectors (datasets/windc/43.gdx)
 $if not %pause%==no $call pause
 
-$set windc_datafile ../household/datasets/WINDC_cps_static_gtap_32_state.gdx
-$call gams agrdisagg --windc_datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapingams=%gtapingams% --dsout=datasets/windc/43.gdx o=lst/agrdisagg.lst
+$set windc_datafile ../household/datasets/WINDC_cps_static_all_%year%_gtap_32_state.gdx
+$call gams agrdisagg --datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapingams=%gtapingams% --dsout=datasets/windc/43.gdx o=lst/agrdisagg.lst
 
 $if errorlevel 1 $log   "Non-zero return code from agrdisagg.gms"
 $if errorlevel 1 $abort "Non-zero return code from agrdisagg.gms"
