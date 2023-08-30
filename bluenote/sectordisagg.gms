@@ -19,7 +19,7 @@ $title Routine for disaggregating sectoring definitions
 * ------------------------------------------------------------------------------
 
 * Set aggregation environment variable
-$if not set smap $set smap test
+$if not set smap $set smap bluenote
 
 * Set year of data
 $set year 2017
@@ -60,7 +60,6 @@ parameter
     ms0(r,s,m)	Margin supply;
 
 ms0(r,s,m) = nm0(r,s,m) + dm0(r,s,m);
-
 
 
 * ------------------------------------------------------------------------------
@@ -444,8 +443,7 @@ parameter
     a0_nat(s)		Armington supply,
     fd0_nat(s,fdcat)	Final demand;
     
-$set ds '%core%WiNDCdatabase.gdx'
-$gdxin '%ds%'
+$gdxin '%core%WiNDCdatabase.gdx'
 $loaddc ys0_ id0_ ld0_ kd0_ ty0_ m0_ x0_ 
 $loaddc md0_ nm0_ dm0_ a0_ cd0_ g0_ i0_
 $gdxin
@@ -625,6 +623,7 @@ id0_control(g,ss_det) = sum((mapy(yr_det),s), bea_share_double(yr_det,g,g,ss_det
 id0_control(gg_det,s) = sum((mapy(yr_det),g), bea_share_double(yr_det,gg_det,g,s,s,'id0_row') * sum(r, id0(r,g,s)));
 id0_control(g,s) = sum(r, id0(r,g,s)) - sum(disagg(g,gg_det), id0_control(gg_det,s)) -
     sum(disagg(s,ss_det), id0_control(g,ss_det)) - sum((disagg(g,gg_det),disaggg(s,ss_det)), id0_control(gg_det,ss_det));
+display id0_control;
 abort$(smax((g,s),round(sum((chkmap(ms,s),cm(ns,g)), id0_control(ns,ms)) - sum(r, id0(r,g,s)),5))>0) 'id0 controls totals are inconsistent';
 
 ld0_control(ss_det) = sum((mapy(yr_det),as), bea_share_double(yr_det,ss_det,as,'compen','compen','va0') * sum(r, ld0(r,as)));
@@ -764,8 +763,22 @@ equations
     cdh_consum, i_consum, g_consum;
 
 objcon..
-    OBJ =e= sum((ms,ns)$ys0_control(ms,ns), abs(ys0_control(ms,ns))*sqr(ys_con(ms,ns)/ys0_control(ms,ns) - 1)) +
-	    sum((ms,ns)$id0_control(ms,ns), abs(id0_control(ms,ns))*sqr(id_con(ms,ns)/id0_control(ms,ns) - 1)) +
+    OBJ =e= sum((ms,ns)$ys0_control(ms,ns), sqr(ys_con(ms,ns) - ys0_control(ms,ns))) +
+	    sum((ns,ms)$id0_control(ns,ms), sqr(id_con(ns,ms) - id0_control(ns,ms))) +
+	    sum((ms)$ld0_control(ms), sqr(ld_con(ms) - ld0_control(ms))) +
+	    sum((ms)$kd0_control(ms), sqr(kd_con(ms) - kd0_control(ms))) +
+	    sum((ms)$a0_control(ms), sqr(a_con(ms) - a0_control(ms))) +
+	    sum((ms)$x0_control(ms), sqr(x_con(ms) - x0_control(ms))) +
+	    sum((ms)$m0_control(ms), sqr(m_con(ms) - m0_control(ms))) +
+	    sum((ms,m)$ms0_control(ms,m), sqr(ms_con(ms,m) - ms0_control(ms,m))) +
+	    sum((m,ms)$md0_control(m,ms), sqr(md_con(m,ms) - md0_control(m,ms))) +
+	    sum((ms,h)$cd0_h_control(ms,h), sqr(cdh_con(ms,h) - cd0_h_control(ms,h))) +
+	    sum((ms)$i0_control(ms), sqr(i_con(ms) - i0_control(ms))) +
+	    sum((ms)$g0_control(ms), sqr(g_con(ms) - g0_control(ms)));
+
+$ontext
+OBJ =e= sum((ms,ns)$ys0_control(ms,ns), abs(ys0_control(ms,ns))*sqr(ys_con(ms,ns)/ys0_control(ms,ns) - 1)) +
+	    sum((ns,ms)$id0_control(ns,ms), abs(id0_control(ns,ms))*sqr(id_con(ns,ms)/id0_control(ns,ms) - 1)) +
 	    sum((ms)$ld0_control(ms), abs(ld0_control(ms))*sqr(ld_con(ms)/ld0_control(ms) - 1)) +
 	    sum((ms)$kd0_control(ms), abs(kd0_control(ms))*sqr(kd_con(ms)/kd0_control(ms) - 1)) +
 	    sum((ms)$a0_control(ms), abs(a0_control(ms))*sqr(a_con(ms)/a0_control(ms) - 1)) +
@@ -776,6 +789,7 @@ objcon..
 	    sum((ms,h)$cd0_h_control(ms,h), abs(cd0_h_control(ms,h))*sqr(cdh_con(ms,h)/cd0_h_control(ms,h) - 1)) + 
 	    sum((ms)$i0_control(ms), abs(i0_control(ms))*sqr(i_con(ms)/i0_control(ms) - 1)) +
 	    sum((ms)$g0_control(ms), abs(g0_control(ms))*sqr(g_con(ms)/g0_control(ms) - 1));
+$offtext
 
 zpy_con(ms)..
     (1-ty0_control(ms))*sum(ns, ys_con(ms,ns)) =e= 
@@ -828,23 +842,10 @@ g_consum(s)..
 cdh_consum(s,h)..
     sum(chkmap(ms,s), cdh_con(ms,h)) =e= sum(r, cd0_h(r,s,h));
 
-model adjust_controls / objcon, zpy_con, zpa_con, mkta_con, mktm_con,
-    ys_consum, id_consum, ld_consum, kd_consum, 
-    a_consum, x_consum, ms_consum, m_consum, md_consum,
-    cdh_consum, i_consum, g_consum /;
-
-ys_con.fx(ms,ns)$(not ys0_control(ms,ns)) = 0;
-id_con.fx(ms,ns)$(not id0_control(ms,ns)) = 0;
-ld_con.fx(ms)$(not ld0_control(ms)) = 0;
-kd_con.fx(ms)$(not kd0_control(ms)) = 0;
-a_con.fx(ms)$(not a0_control(ms)) = 0;
-x_con.fx(ms)$(not x0_control(ms)) = 0;
-ms_con.fx(ms,m)$(not ms0_control(ms,m)) = 0;
-md_con.fx(m,ms)$(not md0_control(m,ms)) = 0;
-m_con.fx(ms)$(not m0_control(ms)) = 0;
-cdh_con.fx(ms,h)$(not cd0_h_control(ms,h)) = 0;
-i_con.fx(ms)$(not i0_control(ms)) = 0;
-g_con.fx(ms)$(not g0_control(ms)) = 0;
+model adjust_controls /
+    objcon, zpy_con, zpa_con, mkta_con, mktm_con, ys_consum,
+    id_consum, ld_consum, kd_consum, a_consum, x_consum,
+    ms_consum, m_consum, md_consum, cdh_consum, i_consum, g_consum /;
 
 option qcp=cplex;
 solve adjust_controls minimizing OBJ using QCP;
@@ -895,23 +896,29 @@ g0_control(ms) = g_con.l(ms);
 * Contruct regional shares using qcew
 * ------------------------------------------------------------------------------
 
-* Relying on QCEW to produce regional shares produces infeasibilities in the
-* below balancing routine because there are some inconcistencies with that
-* dataset relative to windc (and BEA). For instance, there are instances where
-* region_shr * control total > windc value for the aggregate sector. Therefore,
-* we use QCEW in two ways -- (1) calculate regional heterogeneity of a sectors
-* production, and (2) within each region that has production, quantify the
-* allocation of labor to disaggregate sectors.
+* Relying on QCEW to produce regional shares produces. Note that we don't target
+* region_shr * control specifically due to infeasibilities in the below
+* balancing routine because there are some inconcistencies with that dataset
+* relative to windc (and BEA). For instance, there are instances where
+* region_shr * control total > windc value for the aggregate sector.
 
 parameter
     region_shr(r,*)	Regional shares based on QCEW data,
-    sector_shr(r,*)	Secotral shares based on QCEW data,
-    scale_shr(r,*)	Scale shares to prevent inconsistencies with WiNDC data;
+    sector_shr(r,*)	Sectoral shares based on QCEW data;
 
 region_shr(r,ss_det) = sum(s, qcew(r,s,ss_det)) / sum((r.local,s), qcew(r,s,ss_det));
 region_shr(r,s)$(sum(ss_det, disagg(s,ss_det)) and sum(g, ys0(r,s,g))) =
     sum(s_det$(not ss_det(s_det)), qcew(r,s,s_det)) /
     sum((r.local,s_det)$(not ss_det(s_det)), qcew(r,s,s_det));
+display region_shr;
+
+* Adjust region_shr in instances when region_shr is zero for both the aggregate
+* and disaggregate sectors, but windc suggests positive production for the
+* aggregate sector:
+
+region_shr(r,s)$(sum(ss_det$disagg(s,ss_det), 1) and not sum(chkmap(ms,s),region_shr(r,ms))) = 1e-5;
+
+* Sectoral shares to act as lower bounds:
 
 sector_shr(r,ss_det)$sum(disagg(s,ss_det),sum(g_det, qcew(r,s,g_det))) =
     sum(s, qcew(r,s,ss_det)) / sum(disagg(s,ss_det),sum(g_det, qcew(r,s,g_det)));
@@ -920,59 +927,22 @@ sector_shr(r,s)$(sum(ss_det, disagg(s,ss_det)) and sum(g, ys0(r,s,g))) =
     1 - sum(disagg(s,ss_det), sector_shr(r,ss_det));
 
 
-$ontext
-* Scale region_shr such that region_shr * control <= windc value for aggregate sector
-
-scale_shr(r,ss_det) = sum(s$disagg(s,ss_det), ys0(r,s,s)) - region_shr(r,ss_det) * ys0_control(ss_det,ss_det);
-scale_shr(r,ss_det)$(scale_shr(r,ss_det)>0) = 0;
-display scale_shr;
-
-nonnegative
-variables
-    share(r,*);
-
-equations
-    objshr, shr_def, ys0_shr, ld0_shr, kd0_shr, id0_shr;
-
-objshr..
-    OBJ =e= sum((r,ss_det)$region_shr(r,ss_det),
-	region_shr(r,ss_det)*sqr(share(r,ss_det)/region_shr(r,ss_det) - 1));
-
-shr_def(ss_det)..
-    sum(r, share(r,ss_det)) =e= 1;
-
-ys0_shr(r,ss_det)..
-    share(r,ss_det)*ys0_control(ss_det,ss_det) =l= sum(s$disagg(s,ss_det), ys0(r,s,s));
-
-ld0_shr(r,ss_det)..
-    share(r,ss_det)*ld0_control(ss_det) =l= sum(s$disagg(s,ss_det), ld0(r,s));
-
-kd0_shr(r,ss_det)..
-    share(r,ss_det)*kd0_control(ss_det) =l= sum(s$disagg(s,ss_det), kd0(r,s));
-
-id0_shr(r,ss_det)..
-    share(r,ss_det)*id0_control(ss_det,ss_det) =l= sum(s$disagg(s,ss_det), id0(r,s,s));
-
-model solve_shr /objshr, shr_def, ys0_shr, ld0_shr, kd0_shr, id0_shr/;
-
-share.l(r,ss_det) = region_shr(r,ss_det);
-* share.lo(r,ss_det) = 0.1 * region_shr(r,ss_det);
-share.fx(r,ss_det)$(not region_shr(r,ss_det)) = 0;
-
-option qcp=cplex;
-solve solve_shr minimizing OBJ using QCP;
-$exit
-region_shr(r,ss_det) = share.l(r,ss_det);
-region_shr(r,s)$(not sum(ss_det,disagg(s,ss_det))) = sum(g, ys0(r,s,g)) / sum((r.local,g), ys0(r,s,g));
-$offtext
-
 
 * ------------------------------------------------------------------------------
 * Contruct balancing routine, only endogenizing sectors to disaggregate
 * ------------------------------------------------------------------------------
 
-variable
-    OBJ;
+* For regions without a disaggregate sector, we cannot fix original values
+* but choose a different tax rate. This is causing an inconsistency. Note that
+* it is not an error for sectors like ele_uti because every state produces
+* electricity.
+
+parameter
+    ty0_disagg(r,*);
+
+ty0_disagg(r,ss_det)$(region_shr(r,ss_det)) = ty0_control(ss_det);
+ty0_disagg(r,s)$(sum(disagg(s,ss_det), region_shr(r,ss_det))) = ty0_control(s);
+ty0_disagg(r,s)$(not ty0_disagg(r,s)) = ty0(r,s);
 
 nonnegative
 variables
@@ -986,54 +956,50 @@ equations
     
     zp_y, zp_x, zp_a, zp_ms, mkt_pa, mkt_py, mkt_pn, mkt_pd,
 
-    ys_sum, id_sum, ld_sum, kd_sum, ty_sum, x_sum, xn_sum, xd_sum, rx_sum,
-    a_sum, ta_sum, tm_sum, m_sum, i_sum, g_sum, cdh_sum,
-    nd_sum, dd_sum, md_sum, nm_sum, dm_sum;
+    ys_sum, id_sum, ld_sum, kd_sum, x_sum, xn_sum, xd_sum, rx_sum,
+    a_sum, m_sum, i_sum, g_sum, cdh_sum, nd_sum, dd_sum, md_sum,
+    nm_sum, dm_sum,
+
+    md_split;
 
 objdef..
     OBJ =e= sum((r,ms,ns)$(region_shr(r,ms)*ys0_control(ms,ns)),
-		abs(region_shr(r,ms)*ys0_control(ms,ns)) *
+ 		abs(region_shr(r,ms)*ys0_control(ms,ns)) *
 		sqr(ys_v(r,ms,ns)/(region_shr(r,ms)*ys0_control(ms,ns)) - 1)) +
     	    sum((r,ns,ms)$(region_shr(r,ms)*id0_control(ns,ms)),
-		abs(region_shr(r,ms)*id0_control(ns,ms)) *
+ 		abs(region_shr(r,ms)*id0_control(ns,ms)) *
 	    	sqr(id_v(r,ns,ms)/(region_shr(r,ms)*id0_control(ns,ms)) - 1)) +
-    	    sum((r,ms)$(region_shr(r,ms)*ld0_control(ms)),
-		abs(region_shr(r,ms)*ld0_control(ms)) *
+   	    sum((r,ms)$(region_shr(r,ms)*ld0_control(ms)),
+ 		abs(region_shr(r,ms)*ld0_control(ms)) *
 	    	sqr(ld_v(r,ms)/(region_shr(r,ms)*ld0_control(ms)) - 1)) +
     	    sum((r,ms)$(region_shr(r,ms)*kd0_control(ms)),
 		abs(region_shr(r,ms)*kd0_control(ms)) *
-	    	sqr(kd_v(r,ms)/(region_shr(r,ms)*kd0_control(ms)) - 1)) +
-* zero penalty    
-    	    1e6 * (
-	    sum((r,ms,ns)$(not region_shr(r,ms)*ys0_control(ms,ns)),
-		ys_v(r,ms,ns)) +
-    	    sum((r,ns,ms)$(not region_shr(r,ms)*id0_control(ns,ms)),
-	    	id_v(r,ns,ms)));
+	    	sqr(kd_v(r,ms)/(region_shr(r,ms)*kd0_control(ms)) - 1));
 
-zp_y(r,ms)$afs(ms)..
-    (1-ty0_control(ms))*sum(ns, ys_v(r,ms,ns)) =e=
+zp_y(r,ms)..
+    (1-ty0_disagg(r,ms))*sum(ns, ys_v(r,ms,ns)) =e=
     sum(ns, id_v(r,ns,ms)) + ld_v(r,ms) + (1+tk0(r))*kd_v(r,ms);
 
-zp_x(r,ms)$afs(ms)..
+zp_x(r,ms)..
     x_v(r,ms) - rx_v(r,ms) + xn_v(r,ms) + xd_v(r,ms) =e= s_v(r,ms);
 
-zp_a(r,ms)$afs(ms)..
+zp_a(r,ms)..
     (1-ta0_control(ms))*a_v(r,ms) + rx_v(r,ms) =e=
     nd_v(r,ms) + dd_v(r,ms) + (1+tm0_control(ms))*m_v(r,ms) + sum(m, md_v(r,m,ms));
 
 zp_ms(r,m)..
     sum(ms, md_v(r,m,ms)) =e= sum(ms, nm_v(r,ms,m) + dm_v(r,ms,m));
 
-mkt_pa(r,ms)$afs(ms)..
+mkt_pa(r,ms)..
     a_v(r,ms) =e= sum(ns, id_v(r,ms,ns)) + sum(h, cdh_v(r,ms,h)) + i_v(r,ms) + g_v(r,ms);
 
-mkt_py(r,ms)$afs(ms)..
+mkt_py(r,ms)..
     sum(ns, ys_v(r,ns,ms)) =e= s_v(r,ms);
 
-mkt_pn(ms)$afs(ms)..
+mkt_pn(ms)..
     sum(r, xn_v(r,ms)) =e= sum(r, nd_v(r,ms) + sum(m, nm_v(r,ms,m)));
 
-mkt_pd(r,ms)$afs(ms)..
+mkt_pd(r,ms)..
     xd_v(r,ms) =e= dd_v(r,ms) + sum(m, dm_v(r,ms,m));
 
 ys_sum(r,s,g)$(afs(s) or aafs(g))..
@@ -1090,35 +1056,52 @@ g_sum(r,s)$afs(s)..
 cdh_sum(r,s,h)$afs(s)..
     sum(chkmap(ms,s), cdh_v(r,ms,h)) =e= cd0_h(r,s,h);
 
-model sectordisagg /objdef, zp_y, zp_x, zp_a, zp_ms, mkt_pa, mkt_py, mkt_pn, mkt_pd,
+md_split(r,m,ms)$afs(ms)..
+    md_v(r,m,ms) * sum(m.local,md0_control(m,ms)) =e= sum(m.local, md_v(r,m,ms)) * md0_control(m,ms);
+
+* Declare model equations:
+
+model sectordisagg /
+      objdef, zp_y, zp_x, zp_a, zp_ms, mkt_pa, mkt_py, mkt_pn, mkt_pd,
       ys_sum, id_sum, ld_sum, kd_sum, x_sum, xn_sum, xd_sum, rx_sum, a_sum,
-      m_sum, i_sum, g_sum, cdh_sum, nd_sum, dd_sum, md_sum, nm_sum, dm_sum/;
+      m_sum, i_sum, g_sum, cdh_sum, nd_sum, dd_sum, md_sum, nm_sum, dm_sum,
+      md_split /;
 
-* Level values based on region_share and control totals:
+* Level values based on region_share, sector_share, and control totals:
 
-ys_v.l(r,ms,ns)$(afs(ms) or aafs(ns)) = region_shr(r,ms) * ys0_control(ms,ns);
-id_v.l(r,ns,ms)$(afs(ms) or aafs(ns)) = region_shr(r,ms) * id0_control(ns,ms);
+ys_v.l(r,s,ns)$(aafs(ns)) = sum(chkmap(ns,g), ys0(r,s,g));
+ys_v.l(r,ms,ns)$(afs(ms)) = region_shr(r,ms) * ys0_control(ms,ns);
+id_v.l(r,ns,s)$(aafs(ns)) = sum(chkmap(ns,g), id0(r,g,s));
+id_v.l(r,ns,ms)$(afs(ms)) = region_shr(r,ms) * id0_control(ns,ms);
 ld_v.l(r,ms)$afs(ms) = region_shr(r,ms) * ld0_control(ms);
 kd_v.l(r,ms)$afs(ms) = region_shr(r,ms) * kd0_control(ms);
 
-x_v.l(r,ms)$afs(ms) = region_shr(r,ms) * x0_control(ms);
-xn_v.l(r,s)$afs(s) = xn0(r,s);
-xd_v.l(r,s)$afs(s) = xd0(r,s);
-s_v.l(r,s)$afs(s) = s0(r,s);
+x_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), x0(r,s)) / sum((r.local,chkmap(ms,s)), x0(r,s)) * x0_control(ms);
+xn_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), xn0(r,s));
+xd_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), xd0(r,s));
+s_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), s0(r,s));
 
-a_v.l(r,ms)$afs(ms) = region_shr(r,ms) * a0_control(ms);
-rx_v.l(r,s)$afs(s) = rx0(r,s);
-nd_v.l(r,s)$afs(s) = nd0(r,s);
-dd_v.l(r,s)$afs(s) = dd0(r,s);
-m_v.l(r,ms)$afs(ms) = region_shr(r,ms) * m0_control(ms);
-md_v.l(r,m,s)$afs(s) = md0(r,m,s);
+a_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), a0(r,s)) / sum((r.local,chkmap(ms,s)), a0(r,s)) * a0_control(ms);
+rx_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), rx0(r,s));
+nd_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), nd0(r,s));
+dd_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), dd0(r,s));
+m_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), m0(r,s)) / sum((r.local,chkmap(ms,s)), m0(r,s)) * m0_control(ms);
+md_v.l(r,m,ms)$afs(ms) = sum(chkmap(ms,s), md0(r,m,s)) / sum((r.local,chkmap(ms,s)), md0(r,m,s)) * md0_control(m,ms);
 
-nm_v.l(r,s,m)$afs(s) = nm0(r,s,m);
-dm_v.l(r,s,m)$afs(s) = dm0(r,s,m);
+nm_v.l(r,ms,m)$afs(ms) = (sum(chkmap(ms,s), nm0(r,s,m))/sum(chkmap(ms,s),nm0(r,s,m) + dm0(r,s,m))) *
+    sum(chkmap(ms,s), ms0(r,s,m)) / sum((r.local,chkmap(ms,s)), ms0(r,s,m)) * ms0_control(ms,m);
+dm_v.l(r,ms,m)$afs(ms) = (sum(chkmap(ms,s), dm0(r,s,m))/sum(chkmap(ms,s),nm0(r,s,m) + dm0(r,s,m))) *
+    sum(chkmap(ms,s), ms0(r,s,m)) / sum((r.local,chkmap(ms,s)), ms0(r,s,m)) * ms0_control(ms,m);
 
-cdh_v.l(r,ms,h)$afs(ms) = region_shr(r,ms) * cd0_h_control(ms,h);
-i_v.l(r,ms)$afs(ms) = region_shr(r,ms) * i0_control(ms);
-g_v.l(r,ms)$afs(ms) = region_shr(r,ms) * g0_control(ms);
+cdh_v.l(r,ms,h)$afs(ms) = sum(chkmap(ms,s), cd0_h(r,s,h)) / sum((r.local,chkmap(ms,s)), cd0_h(r,s,h)) * cd0_h_control(ms,h);
+i_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), i0(r,s)) / sum((r.local,chkmap(ms,s)), i0(r,s)) * i0_control(ms);
+g_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), g0(r,s)) / sum((r.local,chkmap(ms,s)), g0(r,s)) * g0_control(ms);
+
+* Put lower bounds on production variables:
+
+ld_v.lo(r,ms)$(afs(ms) and region_shr(r,ms)) = 0.1 * sector_shr(r,ms) * sum(chkmap(ms,s), ld0(r,s));
+kd_v.lo(r,ms)$(afs(ms) and region_shr(r,ms)) = 0.1 * sector_shr(r,ms) * sum(chkmap(ms,s), kd0(r,s));
+id_v.lo(r,ns,ms)$(afs(ms) and region_shr(r,ms) and id0_control(ns,ms)) = 1e-4 * sector_shr(r,ms) * sum((chkmap(ms,s),cm(ns,g)), id0(r,g,s));
 
 * Fix production variables in regions with no region_shr to zero:
 
@@ -1127,10 +1110,15 @@ id_v.fx(r,ns,ss_det)$(not region_shr(r,ss_det)) = 0;
 ld_v.fx(r,ss_det)$(not region_shr(r,ss_det)) = 0;
 kd_v.fx(r,ss_det)$(not region_shr(r,ss_det)) = 0;
 
+ys_v.fx(r,s,ns)$(sum(ss_det, disagg(s,ss_det)) and not region_shr(r,s)) = 0;
+id_v.fx(r,ns,s)$(sum(ss_det, disagg(s,ss_det)) and not region_shr(r,s)) = 0;
+ld_v.fx(r,s)$(sum(ss_det, disagg(s,ss_det)) and not region_shr(r,s)) = 0;
+kd_v.fx(r,s)$(sum(ss_det, disagg(s,ss_det)) and not region_shr(r,s)) = 0;
+
 * Fix disaggrgate sectors to zero when they do not exist in control totals:
 
-* ys_v.fx(r,ms,ns)$(not ys0_control(ms,ns)) = 0;
-* id_v.fx(r,ns,ms)$(not id0_control(ns,ms)) = 0;
+ys_v.fx(r,ms,ns)$(not ys0_control(ms,ns)) = 0;
+id_v.fx(r,ns,ms)$(not id0_control(ns,ms)) = 0;
 ld_v.fx(r,ms)$(not ld0_control(ms)) = 0;
 kd_v.fx(r,ms)$(not kd0_control(ms)) = 0;
 x_v.fx(r,ms)$(not x0_control(ms)) = 0;
@@ -1139,6 +1127,9 @@ m_v.fx(r,ms)$(not m0_control(ms)) = 0;
 cdh_v.fx(r,ms,h)$(not cd0_h_control(ms,h)) = 0;
 i_v.fx(r,ms)$(not i0_control(ms)) = 0;
 g_v.fx(r,ms)$(not g0_control(ms)) = 0;
+md_v.fx(r,m,ms)$(not md0_control(m,ms)) = 0;
+nm_v.fx(r,ms,m)$(not ms0_control(ms,m)) = 0;
+dm_v.fx(r,ms,m)$(not ms0_control(ms,m)) = 0;
 
 * Fix unaffected sectors:
 
@@ -1196,10 +1187,6 @@ display report_prodstr;
 
 * execute_unload 'chk_prod.gdx' report_prodstr;
 * execute 'gdxxrw chk_prod.gdx par=report_prodstr rng=data!A2 cdim=0';
-* $exit
-
-* How close to reconciled control totals are we? we are creating data in some
-* places at the national level.
 
 alias(u,*);
 report_control(ms,ns,'ys0','cal') = sum(r, ys_v.l(r,ms,ns));
@@ -1210,7 +1197,7 @@ report_control(ns,ms,'id0','control') = id0_control(ms,ns);
 
 report_control(ms,ns,u,'diff') = report_control(ms,ns,u,'cal') - report_control(ms,ns,u,'control');
 display report_control;
-$exit
+
 
 * ------------------------------------------------------------------------------
 * Remove tiny values
@@ -1231,84 +1218,83 @@ parameters
     xn0_cal(r,*)	National supply of goods and services,
     xd0_cal(r,*)	Local supply of goods and services,
     md0_cal(r,*,*)	Margin demand,
-    ms0_cal(r,*,*)	Margin supply,
+    nm0_cal(r,*,*)	Margin supply from national market,
+    dm0_cal(r,*,*)	Margin supply from local market,
     a0_cal(r,*)		Armington supply,
     ta0_cal(r,*)	Tax net subsidy revenue on intermediate demand,
     tm0_cal(r,*)	Import tariff revenue,
     cd0_cal(r,*)	Final demand,
+    c0_cal(r)		Aggregate final demand,
     cd0_h_cal(r,*,*) 	Household final demand,
+    c0_h_cal(r,*)	Aggregate household final demand,
     g0_cal(r,*)		Government demand,
     i0_cal(r,*)		Investment demand;
 
-ys0_cal(r,ms,ns) = ys_v.l(r,ms,ns);
-id0_cal(r,ns,ms) = id_v.l(r,ns,ms);
-ld0_cal(r,ms) = ld_v.l(r,ms);
-kd0_cal(r,ms) = kd_v.l(r,ms);
-ty0_cal(r,ms)$sum(ns, ys0_cal(r,ms,ns)) = ty0_control(ms);
+ys0_cal(r,ms,ns) = round(ys_v.l(r,ms,ns),8);
+id0_cal(r,ns,ms) = round(id_v.l(r,ns,ms),8);
+ld0_cal(r,ms) = round(ld_v.l(r,ms),8);
+kd0_cal(r,ms) = round(kd_v.l(r,ms),8);
+ty0_cal(r,ms) = ty0_disagg(r,ms);
 
-x0_cal(r,ms) = x_v.l(r,ms);
-xn0_cal(r,ms) = xn_v.l(r,ms);
-xd0_cal(r,ms) = xd_v.l(r,ms);
-s0_cal(r,ms) = s_v.l(r,ms);
+x0_cal(r,ms) = round(x_v.l(r,ms),8);
+xn0_cal(r,ms) = round(xn_v.l(r,ms),8);
+xd0_cal(r,ms) = round(xd_v.l(r,ms),8);
+s0_cal(r,ms) = round(s_v.l(r,ms),8);
 
-a0_cal(r,ms) = a_v.l(r,ms);
-ta0_cal(r,ms)$a0_cal(r,ms) = ta0_control(ms);
-rx0_cal(r,ms) = rx_v.l(r,ms);
-nd0_cal(r,ms) = nd_v.l(r,ms);
-dd0_cal(r,ms) = dd_v.l(r,ms);
-m0_cal(r,ms) = m_v.l(r,ms);
-tm0_cal(r,ms)$m0_cal(r,ms) = tm0_control(ms);
-md0_cal(r,m,ms) = md_v.l(r,m,ms);
+a0_cal(r,ms) = round(a_v.l(r,ms),8);
+ta0_cal(r,ms) = ta0_control(ms);
+rx0_cal(r,ms) = round(rx_v.l(r,ms),8);
+nd0_cal(r,ms) = round(nd_v.l(r,ms),8);
+dd0_cal(r,ms) = round(dd_v.l(r,ms),8);
+m0_cal(r,ms) = round(m_v.l(r,ms),8);
+tm0_cal(r,ms) = tm0_control(ms);
+md0_cal(r,m,ms) = round(md_v.l(r,m,ms),8);
 
-parameter
-    chk;
-chk(r,ms,'ta_cal') = ta0_cal(r,ms);
-chk(r,s,'ta_orig') = ta0(r,s);
+nm0_cal(r,ms,m) = round(nm_v.l(r,ms,m),8);
+dm0_cal(r,ms,m) = round(dm_v.l(r,ms,m),8);
+cd0_h_cal(r,ms,h) = round(cdh_v.l(r,ms,h),8);
+cd0_cal(r,ms) = sum(h, cd0_h_cal(r,ms,h));
+c0_cal(r) = sum(ms, cd0_cal(r,ms));
+c0_h_cal(r,h) = sum(ms, cd0_h_cal(r,ms,h));
+i0_cal(r,ms) = round(i_v.l(r,ms),8);
+g0_cal(r,ms) = round(g_v.l(r,ms),8);
 
-chk(r,ms,'tm_cal') = tm0_cal(r,ms);
-chk(r,s,'tm_orig') = tm0(r,s);
+gms(ms) = yes$(sum((r,m), nm0_cal(r,ms,m) + dm0_cal(r,ms,m)) or sum((r,m), md0_cal(r,m,ms)));
 
-chk(r,ms,'ty_cal') = ty0_cal(r,ms);
-chk(r,s,'ty_orig') = ty0(r,s);
-display chk;
-$exit
-
-
-
-    nm_v, dm_v, cdh_v, i_v, g_v;
-
-
+    
 * ------------------------------------------------------------------------------
-* Output disaggregated data in the temporary gdx directory:
+* Output disaggregated data:
 * ------------------------------------------------------------------------------
 
-execute_unload "%gdxdir%%hhdata%.gdx"
+execute_unload "%gdxdir%WiNDC_%ds%_%smap%.gdx"
 
 * Sets:
 
-yr,r,ms=s,m,gms=gm,h,trn,
+    r, ms=s, m, gms=gm, h, trn,
 
 * Production data:
 
-ys_0=ys0_,ld_0=ld0_,kd_0=kd0_,id_0=id0_,ty_0=ty0_,
+    ys0_cal=ys0, ld0_cal=ld0, kd0_cal=kd0, id0_cal=id0, ty0_cal=ty0, yh0,
 
 * Consumption data:
 
-yh_0=yh0_,cd_0=cd0_,c_0=c0_,i_0=i0_,g_0=g0_,bopdef_0=bopdef0_,hhad_j=hhadj_,
+    cd0_cal=cd0, cd0_h_cal=cd0_h, c0, c0_h, i0_cal=i0, g0_cal=g0,
+    bopdef0, hhadj0,
+    
 
 * Trade data:
 
-s_0=s0_,xd_0=xd0_,xn_0=xn0_,x_0=x0_,rx_0=rx0_,a_0=a0_,nd_0=nd0_,dd_0=dd0_,
-m_0=m0_,ta_0=ta0_,tm_0=tm0_,
+    s0_cal=s0,xd0_cal=xd0,xn0_cal=xn0,x0_cal=x0,rx0_cal=rx0,a0_cal=a0,
+    nd0_cal=nd0,dd0_cal=dd0,m0_cal=m0,ta0_cal=ta0,tm0_cal=tm0,
 
 * Margins:
 
-md_0=md0_,nm_0=nm0_,dm_0=dm0_,
+    md0_cal=md0, nm0_cal=nm0, dm0_cal=dm0,
 
 * Household data:
 
-pop_0=pop_,le_0=le0_,ke_0=ke0_,tk_0=tk0_,tl_0=tl0_,cd_0h_=cd0_h_,c_0h_=c0_h_,
-sav_0=sav0_,trn_0=trn0_,hhtrn_0=hhtrn0_;
+    le0, ke0, tk0, tl_avg0, tl0, tfica0, sav0, trn0, hhtrn0,
+    pop0, fsav0, fint0;
 
 
 * ------------------------------------------------------------------------------
