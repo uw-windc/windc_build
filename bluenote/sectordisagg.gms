@@ -19,10 +19,10 @@ $title Routine for disaggregating sectoring definitions
 * ------------------------------------------------------------------------------
 
 * Set aggregation environment variable
-$if not set smap $set smap bluenote
+$if not set smap $set smap sage
 
 * Set year of data
-$set year 2017
+$set year 2016
 
 * Set household datset option
 $set ds cps_static_all_%year%
@@ -131,6 +131,68 @@ $gdxin
 
 qcew(r,s,s_det) = qcew_(r,'2016',s,s_det);
 
+* Sectors missing in QCEW data: con, fnd, ore, slg, sle, fdd
+
+set
+    miss(s)	Missing aggregate sectors in qcew data,
+    md(s_det)	Missing detailed sectors in qcew data;
+
+miss(s)$(not sum((r,s_det), qcew(r,s,s_det))) = yes;
+
+* Make assumptions about distribution of missing sectors. Note that absolute
+* QCEW data not important in this program, but rather the regional
+* heterogeneity. Everything is relative.
+
+* (1) con, construction -- assume subsectors follow aggregation regional
+* disaggregation and are evenly split.
+
+qcew(r,'con',s_det)$sector_map(s_det,'con') = ld0(r,'con');
+
+* (2) fnd, federal non-defense -- single subsector
+
+qcew(r,'fnd',s_det)$sector_map(s_det,'fnd') = ld0(r,'fnd');
+
+* (3) ore, other real estate -- single subsector
+
+qcew(r,'ore',s_det)$sector_map(s_det,'ore') = ld0(r,'ore');
+
+* (4) slg, state and local government services -- assume distribution similar to
+* private services
+
+qcew(r,'slg','edu_slg') = sum(s_det, qcew(r,'edu',s_det));
+qcew(r,'slg','hea_slg') = sum(s_det, qcew(r,'amb',s_det));
+qcew(r,'slg','oth_slg') = qcew(r,'slg','edu_slg') + qcew(r,'slg','hea_slg');
+
+* (5) sle, state and local government enterprises -- assume distribution similar
+* to private serivces
+
+qcew(r,'sle','trn_sle') = sum(s_det, qcew(r,'grd',s_det));
+qcew(r,'sle','ele_sle') = qcew(r,'uti','ele_uti');
+qcew(r,'sle','ent_sle') = qcew(r,'sle','trn_sle') + qcew(r,'sle','ele_sle');
+
+* (6) fdd, federal government defense -- single subsector
+
+qcew(r,'fdd',s_det)$sector_map(s_det,'fdd') = ld0(r,'fdd');
+
+* (7) fen, partial missing of federal enterprises -- assume distribution similar
+* to private services
+
+qcew(r,'fen','ele_fen') = qcew(r,'uti','ele_uti');
+qcew(r,'fen','ofg_fen') = qcew(r,'fen','ele_fen') + qcew(r,'fen','pst_fen');
+
+* (8) hou, partial missing housing -- assume owner occupied and tenant occupied
+* the same
+
+qcew(r,'hou','own_hou') = qcew(r,'hou','rnt_hou');
+
+* (9) wht, partial missing of custom duties -- assume same as other category
+
+qcew(r,'wht','dut_wht') = qcew(r,'wht','ndg_wht');
+
+* Verify no other non use/oth sub-sectors are missing:
+
+md(s_det)$(not sum((r,s), qcew(r,s,s_det))) = yes;
+
 
 * ------------------------------------------------------------------------------
 * Construct CGE parameters using detailed tables
@@ -196,6 +258,20 @@ ys0_det(yr_det,j,i) = ys0_det(yr_det,j,i) - min(0, id0_det(yr_det,i,j));
 id0_det(yr_det,i,j) = max(0, id0_det(yr_det,i,j));
 
 va0_det(yr_det,va(ir_use),j(jc_use)) = use(yr_det,ir_use,jc_use);
+
+* Negative capital factors for some disaggregate sectors:
+
+set
+    neg(yr_det,i,va);
+
+neg(yr_det,i,'compen')$(va0_det(yr_det,'compen',i) < 0) = yes;
+neg(yr_det,i,'surplus')$(va0_det(yr_det,'surplus',i) < 0) = yes;
+
+* Set negative factor demands to zero and treat as outputs:
+
+ys0_det(yr_det,j,j) = ys0_det(yr_det,j,j) - min(0, sum(va$neg(yr_det,j,va), va0_det(yr_det,va,j)));
+va0_det(yr_det,va,j)$neg(yr_det,j,va) = max(0, va0_det(yr_det,va,j));
+
 x0_det(yr_det,i(ir_use)) = use(yr_det,ir_use,'exports');
 m0_det(yr_det,i(ir_supply)) = supply(yr_det,ir_supply,'imports');
 cif0_det(yr_det,i(ir_supply)) = supply(yr_det,ir_supply,"ciffob");
@@ -274,6 +350,37 @@ totaluse(yr_det,i,'id0+fd0+x0') =
 totaluse(yr_det,i,'chk') = round(totaluse(yr_det,i,'use') - totaluse(yr_det,i,'id0+fd0+x0'),2);
 display totaluse;
 
+* Check for negative numbers:
+parameter
+    chk_neg;
+
+chk_neg('ys0') = smin((yr_det,j,i),ys0_det(yr_det,j,i));
+chk_neg('fs0') = smin((yr_det,i),fs0_det(yr_det,i));
+chk_neg('id0') = smin((yr_det,i,j),id0_det(yr_det,i,j));
+chk_neg('fd0') = smin((yr_det,i,fdcat),fd0_det(yr_det,i,fdcat));
+chk_neg('va0') = smin((yr_det,va,j),va0_det(yr_det,va,j));
+chk_neg('m0') = smin((yr_det,i),m0_det(yr_det,i));
+chk_neg('x0') = smin((yr_det,i),x0_det(yr_det,i));
+chk_neg('y0') = smin((yr_det,i),y0_det(yr_det,i));
+chk_neg('a0') = smin((yr_det,i),a0_det(yr_det,i));
+chk_neg('ms0') = smin((yr_det,i,m),ms0_det(yr_det,i,m));
+chk_neg('md0') = smin((yr_det,m,i),md0_det(yr_det,m,i));
+
+* Remove all zero vales from positive parameters:
+
+ys0_det(yr_det,j,i) = max(0,ys0_det(yr_det,j,i));
+fs0_det(yr_det,i) = max(0,fs0_det(yr_det,i));
+id0_det(yr_det,i,j) = max(0,id0_det(yr_det,i,j));
+fd0_det(yr_det,i,fdcat) = max(0,fd0_det(yr_det,i,fdcat));
+va0_det(yr_det,'compen',j) = max(0,va0_det(yr_det,'compen',j));
+va0_det(yr_det,'surplus',j) = max(0,va0_det(yr_det,'surplus',j));
+m0_det(yr_det,i) = max(0,m0_det(yr_det,i));
+x0_det(yr_det,i) = max(0,x0_det(yr_det,i));
+y0_det(yr_det,i) = max(0,y0_det(yr_det,i));
+a0_det(yr_det,i) = max(0,a0_det(yr_det,i));
+ms0_det(yr_det,i,m) = max(0,ms0_det(yr_det,i,m));
+md0_det(yr_det,m,i) = max(0,md0_det(yr_det,m,i));
+
 
 * ------------------------------------------------------------------------------
 * Pick sectors to disaggregate:
@@ -337,28 +444,28 @@ parameter
     bea_share_single(yr_det,*,as,*)  	National detailed BEA shares (single dim),
     bea_share_double(yr_det,*,as,*,*,*)	National detailed BEA shares (double dim);
 
-bea_share_single(yr_det,ss_det,as,"y0")$sector_map(ss_det,as) =
+bea_share_single(yr_det,ss_det,as,"y0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), y0_det(yr_det,s_det))) =
     y0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), y0_det(yr_det,s_det));
 
-bea_share_single(yr_det,ss_det,as,"a0")$sector_map(ss_det,as) =
+bea_share_single(yr_det,ss_det,as,"a0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), a0_det(yr_det,s_det))) =
     a0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), a0_det(yr_det,s_det));
 
-bea_share_single(yr_det,ss_det,as,"x0")$sector_map(ss_det,as) =
+bea_share_single(yr_det,ss_det,as,"x0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), x0_det(yr_det,s_det))) =
     x0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), x0_det(yr_det,s_det));
 
-bea_share_single(yr_det,ss_det,as,"m0")$sector_map(ss_det,as) =
+bea_share_single(yr_det,ss_det,as,"m0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), m0_det(yr_det,s_det))) =
     m0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), m0_det(yr_det,s_det));
 
 bea_share_single(yr_det,ss_det,as,"duty0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), duty0_det(yr_det,s_det))) =
     duty0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), duty0_det(yr_det,s_det));
 
-bea_share_single(yr_det,ss_det,as,"tax0")$sector_map(ss_det,as) =
+bea_share_single(yr_det,ss_det,as,"tax0")$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), tax0_det(yr_det,s_det))) =
     tax0_det(yr_det,ss_det) / sum(s_det$sector_map(s_det,as), tax0_det(yr_det,s_det));
 
 bea_share_double(yr_det,ss_det,as,fdcat,fdcat,'fd0')$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), fd0_det(yr_det,s_det,fdcat))) =
     fd0_det(yr_det,ss_det,fdcat) / sum(s_det$sector_map(s_det,as), fd0_det(yr_det,s_det,fdcat));
 
-bea_share_double(yr_det,ss_det,as,va,va,'va0')$sector_map(ss_det,as) =
+bea_share_double(yr_det,ss_det,as,va,va,'va0')$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), va0_det(yr_det,va,s_det))) =
     va0_det(yr_det,va,ss_det) / sum(s_det$sector_map(s_det,as), va0_det(yr_det,va,s_det));
 
 bea_share_double(yr_det,ss_det,as,m,m,'md0')$(sector_map(ss_det,as) and sum(s_det$sector_map(s_det,as), md0_det(yr_det,m,s_det))) =
@@ -371,6 +478,11 @@ bea_share_double(yr_det,ss_det,as,m,m,'ms0')$(sector_map(ss_det,as) and sum(s_de
 * shares, row shares for aggregate sectors and column shares for aggregate
 * sectors
 
+set
+    secmap_na(s,s_det);
+secmap_na(s,s_det)$sector_map(s_det,s) = yes;
+secmap_na(s,ss_det) = no;
+
 alias(sector_map,secmap);
 bea_share_double(yr_det,gg_det,ag,ss_det,as,'id0_within')$(sector_map(ss_det,as) and sector_mapp(gg_det,ag) and sum((s_det,g_det)$(sector_map(s_det,as) and sector_mapp(g_det,ag)), id0_det(yr_det,g_det,s_det))) =
     id0_det(yr_det,gg_det,ss_det) / sum((s_det,g_det)$(sector_map(s_det,as) and sector_mapp(g_det,ag)), id0_det(yr_det,g_det,s_det));
@@ -378,8 +490,8 @@ bea_share_double(yr_det,gg_det,ag,ss_det,as,'id0_within')$(sector_map(ss_det,as)
 bea_share_double(yr_det,ag,ag,ss_det,as,'id0_column')$(sector_map(ss_det,as) and sum(secmap(g_det,ag)$(not disagg(ag,g_det)), sum((s_det)$(sector_map(s_det,as)), id0_det(yr_det,g_det,s_det)))) =
     sum(secmap(g_det,ag)$(not disagg(ag,g_det)), id0_det(yr_det,g_det,ss_det)) / sum(secmap(g_det,ag)$(not disagg(ag,g_det)), sum((s_det)$(sector_map(s_det,as)), id0_det(yr_det,g_det,s_det)));
 
-bea_share_double(yr_det,ag,ag,ss_det,as,'id0_column')$(afs(ag) and disagg(as,ss_det) and sum(sector_map(g_det,ag),id0_det(yr_det,g_det,ss_det))) =
-    (sum(sector_map(g_det,ag),id0_det(yr_det,g_det,ss_det)) - sum(sector_map(gg_det,ag),id0_det(yr_det,gg_det,ss_det))) / sum(sector_map(g_det,ag),id0_det(yr_det,g_det,ss_det));
+bea_share_double(yr_det,as,as,ss_det,as,'id0_column')$(afs(as) and disagg(as,ss_det) and sum(sector_map(g_det,as),id0_det(yr_det,g_det,ss_det))) =
+    (sum(sector_map(g_det,as),id0_det(yr_det,g_det,ss_det)) - sum(sector_map(gg_det,as),id0_det(yr_det,gg_det,ss_det))) / sum(sector_map(g_det,as),id0_det(yr_det,g_det,ss_det));
 
 bea_share_double(yr_det,gg_det,ag,as,as,'id0_row')$(sector_map(gg_det,ag) and sum(secmap(s_det,as)$(not disagg(as,s_det)), sum((g_det)$(sector_map(g_det,ag)), id0_det(yr_det,g_det,s_det)))) =
     sum(secmap(s_det,as)$(not disagg(as,s_det)), id0_det(yr_det,gg_det,s_det)) / sum(secmap(s_det,as)$(not disagg(as,s_det)), sum((g_det)$(sector_map(g_det,ag)), id0_det(yr_det,g_det,s_det)));
@@ -390,17 +502,18 @@ bea_share_double(yr_det,gg_det,ag,as,as,'id0_row')$(afs(as) and disagg(ag,gg_det
 bea_share_double(yr_det,ss_det,as,gg_det,ag,'ys0_within')$(sector_map(ss_det,as) and sector_mapp(gg_det,ag) and sum((s_det,g_det)$(sector_map(s_det,as) and sector_mapp(g_det,ag)), ys0_det(yr_det,s_det,g_det))) =
     ys0_det(yr_det,ss_det,gg_det) / sum((s_det,g_det)$(sector_map(s_det,as) and sector_mapp(g_det,ag)), ys0_det(yr_det,s_det,g_det));
 
-bea_share_double(yr_det,as,as,gg_det,ag,'ys0_column')$(sector_map(gg_det,ag) and sum(secmap(s_det,as), sum((g_det)$(sector_map(g_det,ag)), ys0_det(yr_det,s_det,g_det)))) =
+bea_share_double(yr_det,as,as,gg_det,ag,'ys0_column')$(sector_map(gg_det,ag) and sum(secmap(s_det,as)$(not disagg(as,s_det)), sum((g_det)$(sector_map(g_det,ag)), ys0_det(yr_det,s_det,g_det)))) =
     sum(secmap(s_det,as)$(not disagg(as,s_det)), ys0_det(yr_det,s_det,gg_det)) / sum(secmap(s_det,as)$(not disagg(as,s_det)), sum((g_det)$(sector_map(g_det,ag)), ys0_det(yr_det,s_det,g_det)));
 
 bea_share_double(yr_det,ag,ag,gg_det,ag,'ys0_column')$(disagg(ag,gg_det) and sum(sector_map(s_det,ag),ys0_det(yr_det,s_det,gg_det))) =
     (sum(sector_map(s_det,ag),ys0_det(yr_det,s_det,gg_det)) - sum(sector_map(ss_det,ag),ys0_det(yr_det,ss_det,gg_det))) / sum(sector_map(s_det,ag),ys0_det(yr_det,s_det,gg_det));
 
-bea_share_double(yr_det,ss_det,as,ag,ag,'ys0_row')$(sector_map(ss_det,as) and sum(secmap(g_det,ag), sum((s_det)$(sector_map(s_det,as)), ys0_det(yr_det,s_det,g_det)))) =
+bea_share_double(yr_det,ss_det,as,ag,ag,'ys0_row')$(sector_map(ss_det,as) and sum(secmap(g_det,ag)$(not disagg(ag,g_det)), sum((s_det)$(sector_map(s_det,as)), ys0_det(yr_det,s_det,g_det)))) =
     sum(secmap(g_det,ag)$(not disagg(ag,g_det)), ys0_det(yr_det,ss_det,g_det)) / sum(secmap(g_det,ag)$(not disagg(ag,g_det)), sum((s_det)$(sector_map(s_det,as)), ys0_det(yr_det,s_det,g_det)));
 
 bea_share_double(yr_det,ss_det,as,as,as,'ys0_row')$(disagg(as,ss_det) and sum(sector_map(g_det,as),ys0_det(yr_det,ss_det,g_det))) =
     (sum(sector_map(g_det,as),ys0_det(yr_det,ss_det,g_det)) - sum(sector_map(gg_det,as),ys0_det(yr_det,ss_det,gg_det))) / sum(sector_map(g_det,as),ys0_det(yr_det,ss_det,g_det));
+
 
 * Choose year of detailed data needed:
 
@@ -505,6 +618,100 @@ sum_det_two(s,m,'ms0','det') = sum(sector_map(s_det,s), ms0_det('2012',s_det,m))
 sum_det_two(s,m,'ms0','diff') = sum_det_two(s,m,'ms0','windc') - sum_det_two(s,m,'ms0','det');
 display sum_det_two;
 
+* Solve for shares for ys0 and id0:
+
+variables
+    OBJ;
+
+nonnegative
+variable
+    shr_ys0, shr_id0;
+
+equations
+    objshr, ys_within, ys_off, ys_column, ys_row, id_within, id_off, id_column, id_row;
+
+objshr..
+    OBJ =e= 1;
+
+alias(disagg,disaggg);
+
+ys_within(ss_det,gg_det)..
+    sum(mapy(yr_det), ys0_det(yr_det,ss_det,gg_det)) =e= sum((disagg(s,ss_det),disaggg(g,gg_det)), shr_ys0(ss_det,gg_det) * ys0_nat(s,g));
+
+ys_off(s,g)$(afs(s) or aafs(g))..
+    sum(mapy(yr_det), sum((sector_map(s_det,s),secmap(g_det,g))$(not ss_det(s_det) and not gg_det(g_det)), ys0_det(yr_det,s_det,g_det))) =e=
+    shr_ys0(s,g)*ys0_nat(s,g);
+
+ys_column(s,gg_det)..
+    sum(mapy(yr_det), sum(sector_map(s_det,s)$(not ss_det(s_det)), ys0_det(yr_det,s_det,gg_det))) =e= sum(disagg(g,gg_det), shr_ys0(s,gg_det) * ys0_nat(s,g));
+
+ys_row(ss_det,g)..
+    sum(mapy(yr_det), sum(sector_map(g_det,g)$(not gg_det(g_det)), ys0_det(yr_det,ss_det,g_det))) =e= sum(disagg(s,ss_det), shr_ys0(ss_det,g) * ys0_nat(s,g));
+
+id_within(ss_det,gg_det)..
+    sum(mapy(yr_det), id0_det(yr_det,ss_det,gg_det)) =e= sum((disagg(s,ss_det),disaggg(g,gg_det)), shr_id0(ss_det,gg_det) * id0_nat(s,g));
+
+id_off(s,g)$(afs(s) or aafs(g))..
+    sum(mapy(yr_det), sum((sector_map(s_det,s),secmap(g_det,g))$(not ss_det(s_det) and not gg_det(g_det)), id0_det(yr_det,s_det,g_det))) =e=
+    shr_id0(s,g)*id0_nat(s,g);
+
+id_column(s,gg_det)..
+    sum(mapy(yr_det), sum(sector_map(s_det,s)$(not ss_det(s_det)), id0_det(yr_det,s_det,gg_det))) =e= sum(disagg(g,gg_det), shr_id0(s,gg_det) * id0_nat(s,g));
+
+id_row(ss_det,g)..
+    sum(mapy(yr_det), sum(sector_map(g_det,g)$(not gg_det(g_det)), id0_det(yr_det,ss_det,g_det))) =e= sum(disagg(s,ss_det), shr_id0(ss_det,g) * id0_nat(s,g));
+
+
+model solveshares /objshr, ys_within, ys_off, ys_column, ys_row, id_within, id_off, id_column, id_row /;
+
+solve solveshares minimizing OBJ using LP;
+
+parameter
+    chk_solution;
+
+chk_solution(ss_det,as,gg_det,ag,'ys0') = sum(mapy(yr_det), bea_share_double(yr_det,ss_det,as,gg_det,ag,'ys0_within'));
+chk_solution(as,as,ag,ag,'ys0') = sum(mapy(yr_det), bea_share_double(yr_det,as,as,ag,ag,'ys0_within'));
+chk_solution(as,as,gg_det,ag,'ys0') = sum(mapy(yr_det), bea_share_double(yr_det,as,as,gg_det,ag,'ys0_column'));
+chk_solution(ss_det,as,ag,ag,'ys0') = sum(mapy(yr_det), bea_share_double(yr_det,ss_det,as,ag,ag,'ys0_row'));
+
+chk_solution(ss_det,as,gg_det,ag,'ys0_slv')$chk_solution(ss_det,as,gg_det,ag,'ys0') = shr_ys0.l(ss_det,gg_det);
+chk_solution(as,as,ag,ag,'ys0_slv') = shr_ys0.l(as,ag);
+chk_solution(as,as,gg_det,ag,'ys0_slv')$chk_solution(as,as,gg_det,ag,'ys0') = shr_ys0.l(as,gg_det);
+chk_solution(ss_det,as,ag,ag,'ys0_slv')$chk_solution(ss_det,as,ag,ag,'ys0') = shr_ys0.l(ss_det,ag);
+
+chk_solution(ss_det,as,gg_det,ag,'id0') = sum(mapy(yr_det), bea_share_double(yr_det,ss_det,as,gg_det,ag,'id0_within'));
+chk_solution(as,as,ag,ag,'id0') = sum(mapy(yr_det), bea_share_double(yr_det,as,as,ag,ag,'id0_within'));
+chk_solution(as,as,gg_det,ag,'id0') = sum(mapy(yr_det), bea_share_double(yr_det,as,as,gg_det,ag,'id0_column'));
+chk_solution(ss_det,as,ag,ag,'id0') = sum(mapy(yr_det), bea_share_double(yr_det,ss_det,as,ag,ag,'id0_row'));
+
+chk_solution(ss_det,as,gg_det,ag,'id0_slv')$chk_solution(ss_det,as,gg_det,ag,'id0') = shr_id0.l(ss_det,gg_det);
+chk_solution(as,as,ag,ag,'id0_slv') = shr_id0.l(as,ag);
+chk_solution(as,as,gg_det,ag,'id0_slv')$chk_solution(as,as,gg_det,ag,'id0') = shr_id0.l(as,gg_det);
+chk_solution(ss_det,as,ag,ag,'id0_slv')$chk_solution(ss_det,as,ag,ag,'id0') = shr_id0.l(ss_det,ag);
+
+* Reset bea shares based on solution:
+
+bea_share_double(yr_det,ss_det,as,gg_det,ag,'ys0_within') = 0;
+bea_share_double(yr_det,as,as,ag,ag,'ys0_within') = 0;
+bea_share_double(yr_det,as,as,gg_det,ag,'ys0_column') = 0;
+bea_share_double(yr_det,ss_det,as,ag,ag,'ys0_row') = 0;
+
+bea_share_double(yr_det,ss_det,as,gg_det,ag,'ys0_within')$chk_solution(ss_det,as,gg_det,ag,'ys0_slv') = chk_solution(ss_det,as,gg_det,ag,'ys0_slv');
+bea_share_double(yr_det,as,as,ag,ag,'ys0_within')$chk_solution(as,as,ag,ag,'ys0_slv') = chk_solution(as,as,ag,ag,'ys0_slv');
+bea_share_double(yr_det,as,as,gg_det,ag,'ys0_column')$chk_solution(as,as,gg_det,ag,'ys0_slv') = chk_solution(as,as,gg_det,ag,'ys0_slv');
+bea_share_double(yr_det,ss_det,as,ag,ag,'ys0_row')$chk_solution(ss_det,as,ag,ag,'ys0_slv') = chk_solution(ss_det,as,ag,ag,'ys0_slv');
+
+bea_share_double(yr_det,ss_det,as,gg_det,ag,'id0_within') = 0;
+bea_share_double(yr_det,as,as,ag,ag,'id0_within') = 0;
+bea_share_double(yr_det,as,as,gg_det,ag,'id0_column') = 0;
+bea_share_double(yr_det,ss_det,as,ag,ag,'id0_row') = 0;
+
+bea_share_double(yr_det,ss_det,as,gg_det,ag,'id0_within')$chk_solution(ss_det,as,gg_det,ag,'id0_slv') = chk_solution(ss_det,as,gg_det,ag,'id0_slv');
+bea_share_double(yr_det,as,as,ag,ag,'id0_within')$chk_solution(as,as,ag,ag,'id0_slv') = chk_solution(as,as,ag,ag,'id0_slv');
+bea_share_double(yr_det,as,as,gg_det,ag,'id0_column')$chk_solution(as,as,gg_det,ag,'id0_slv') = chk_solution(as,as,gg_det,ag,'id0_slv');
+bea_share_double(yr_det,ss_det,as,ag,ag,'id0_row')$chk_solution(ss_det,as,ag,ag,'id0_slv') = chk_solution(ss_det,as,ag,ag,'id0_slv');
+
+
 * Disaggregate summary sector data into detailed sector data at national level
 * to verify robustness of sharing methodology:
 
@@ -551,32 +758,32 @@ ms0_dis(ss_det,m,'diff') = round(ms0_dis(ss_det,m,'detailed') - ms0_dis(ss_det,m
 * unaffected column):
 
 ys0_dis(ss_det,gg_det,'summary') = sum((s,g), bea_share_double('2012',ss_det,s,gg_det,g,'ys0_within') * ys0_nat(s,g));
-ys0_dis(s,s,'summary') = bea_share_double('2012',s,s,s,s,'ys0_within') * ys0_nat(s,s);
+ys0_dis(s,g,'summary') = bea_share_double('2012',s,s,g,g,'ys0_within') * ys0_nat(s,g);
 ys0_dis(s,gg_det,'summary') = sum((g), bea_share_double('2012',s,s,gg_det,g,'ys0_column') * ys0_nat(s,g));
 ys0_dis(ss_det,g,'summary') = sum((s), bea_share_double('2012',ss_det,s,g,g,'ys0_row') * ys0_nat(s,g));
 
 ys0_dis(ss_det,gg_det,'detailed') = ys0_det('2012',ss_det,gg_det);
 ys0_dis(s,gg_det,'detailed') = sum(sector_map(s_det,s)$(not ss_det(s_det)), ys0_det('2012',s_det,gg_det));
 ys0_dis(ss_det,g,'detailed') = sum(sector_map(g_det,g)$(not gg_det(g_det)), ys0_det('2012',ss_det,g_det));
-ys0_dis(s,s,'detailed')$ys0_dis(s,s,'summary') = sum(sector_map(s_det,s)$(not ss_det(s_det)), ys0_det('2012',s_det,s_det));
+ys0_dis(s,g,'detailed')$ys0_dis(s,g,'summary') = sum((sector_map(s_det,s),secmap(g_det,g))$(not ss_det(s_det) and not gg_det(g_det)), ys0_det('2012',s_det,g_det));
 
 ys0_dis(ms,ns,'diff') = round(ys0_dis(ms,ns,'detailed') - ys0_dis(ms,ns,'summary'),1);
 
 id0_dis(gg_det,ss_det,'summary') = sum((s,g), bea_share_double('2012',gg_det,g,ss_det,s,'id0_within') * id0_nat(g,s));
-id0_dis(s,s,'summary') = bea_share_double('2012',s,s,s,s,'id0_within') * id0_nat(s,s);
+id0_dis(g,s,'summary') = bea_share_double('2012',g,g,s,s,'id0_within') * id0_nat(g,s);
 id0_dis(g,ss_det,'summary') = sum((s), bea_share_double('2012',g,g,ss_det,s,'id0_column') * id0_nat(g,s));
 id0_dis(gg_det,s,'summary') = sum((g), bea_share_double('2012',gg_det,g,s,s,'id0_row') * id0_nat(g,s));
 
 id0_dis(gg_det,ss_det,'detailed') = id0_det('2012',gg_det,ss_det);
 id0_dis(gg_det,s,'detailed') = sum(sector_map(s_det,s)$(not ss_det(s_det)), id0_det('2012',gg_det,s_det));
 id0_dis(g,ss_det,'detailed') = sum(sector_map(g_det,g)$(not gg_det(g_det)), id0_det('2012',g_det,ss_det));
-id0_dis(s,s,'detailed')$id0_dis(s,s,'summary') = sum(sector_map(s_det,s)$(not ss_det(s_det)), id0_det('2012',s_det,s_det));
+id0_dis(g,s,'detailed')$id0_dis(g,s,'summary') = sum((sector_map(s_det,s),secmap(g_det,g))$(not ss_det(s_det) and not gg_det(g_det)), id0_det('2012',g_det,s_det));
 
 id0_dis(ms,ns,'diff') = round(id0_dis(ms,ns,'detailed') - id0_dis(ms,ns,'summary'),1);
 
 * Display parameters to verify sharing procedure is robust:
 
-display m0_dis, x0_dis, a0_dis, fd0_dis, va0_dis, md0_dis, ms0_dis, id0_dis, ys0_dis;
+display m0_dis, x0_dis, a0_dis, fd0_dis, va0_dis, md0_dis, ms0_dis, ys0_dis, id0_dis;
 
 
 * ------------------------------------------------------------------------------
@@ -609,22 +816,22 @@ chkmap(ss_det,s)$disagg(s,ss_det) = yes;
 chkmap(s,s) = yes;
 alias(chkmap,cm);
 
+* No abort statements on ys0 and id0 because some shares >1 in optimization
+* problem due to differences between detailed and summary tables.
+
 ys0_control(ss_det,gg_det) = sum((mapy(yr_det),s,g), bea_share_double(yr_det,ss_det,s,gg_det,g,'ys0_within') * sum(r, ys0(r,s,g)));
 ys0_control(s,gg_det) = sum((mapy(yr_det),g), bea_share_double(yr_det,s,s,gg_det,g,'ys0_column') * sum(r, ys0(r,s,g)));
 ys0_control(ss_det,g) = sum((mapy(yr_det),s), bea_share_double(yr_det,ss_det,s,g,g,'ys0_row') * sum(r, ys0(r,s,g)));
-alias(disagg,disaggg);
-ys0_control(s,g) = sum(r, ys0(r,s,g)) - sum(disagg(g,gg_det), ys0_control(s,gg_det)) -
-    sum(disaggg(s,ss_det), ys0_control(ss_det,g)) - sum((disagg(s,ss_det),disaggg(g,gg_det)), ys0_control(ss_det,gg_det));
-abort$(smax((s,g),round(sum((chkmap(ms,s),cm(ns,g)), ys0_control(ms,ns)) - sum(r, ys0(r,s,g)),5))>0) 'ys0 controls totals are inconsistent';
-display ys0_control;
+ys0_control(s,g) = sum(mapy(yr_det), bea_share_double(yr_det,s,s,g,g,'ys0_within') * sum(r, ys0(r,s,g)));
+ys0_control(s,g)$(not sum(mapy(yr_det), bea_share_double(yr_det,s,s,g,g,'ys0_within'))) = sum(r, ys0(r,s,g));
+* abort$(smax((s,g),round(sum((chkmap(ms,s),cm(ns,g)), ys0_control(ms,ns)) - sum(r, ys0(r,s,g)),5))>0) 'ys0 controls totals are inconsistent';
 
 id0_control(gg_det,ss_det) = sum((mapy(yr_det),g,s), bea_share_double(yr_det,gg_det,g,ss_det,s,'id0_within') * sum(r, id0(r,g,s)));
 id0_control(g,ss_det) = sum((mapy(yr_det),s), bea_share_double(yr_det,g,g,ss_det,s,'id0_column') * sum(r, id0(r,g,s)));
 id0_control(gg_det,s) = sum((mapy(yr_det),g), bea_share_double(yr_det,gg_det,g,s,s,'id0_row') * sum(r, id0(r,g,s)));
-id0_control(g,s) = sum(r, id0(r,g,s)) - sum(disagg(g,gg_det), id0_control(gg_det,s)) -
-    sum(disagg(s,ss_det), id0_control(g,ss_det)) - sum((disagg(g,gg_det),disaggg(s,ss_det)), id0_control(gg_det,ss_det));
-display id0_control;
-abort$(smax((g,s),round(sum((chkmap(ms,s),cm(ns,g)), id0_control(ns,ms)) - sum(r, id0(r,g,s)),5))>0) 'id0 controls totals are inconsistent';
+id0_control(g,s) = sum(mapy(yr_det), bea_share_double(yr_det,g,g,s,s,'id0_within') * sum(r, id0(r,g,s)));
+id0_control(g,s)$(not sum(mapy(yr_det), bea_share_double(yr_det,g,g,s,s,'id0_within'))) = sum(r, id0(r,g,s));
+* abort$(smax((g,s),round(sum((chkmap(ms,s),cm(ns,g)), id0_control(ns,ms)) - sum(r, id0(r,g,s)),5))>0) 'id0 controls totals are inconsistent';
 
 ld0_control(ss_det) = sum((mapy(yr_det),as), bea_share_double(yr_det,ss_det,as,'compen','compen','va0') * sum(r, ld0(r,as)));
 ld0_control(s)$(sum(ss_det, disagg(s,ss_det))) = sum(r, ld0(r,s)) - sum(ss_det$disagg(s,ss_det), ld0_control(ss_det));
@@ -776,21 +983,6 @@ objcon..
 	    sum((ms)$i0_control(ms), sqr(i_con(ms) - i0_control(ms))) +
 	    sum((ms)$g0_control(ms), sqr(g_con(ms) - g0_control(ms)));
 
-$ontext
-OBJ =e= sum((ms,ns)$ys0_control(ms,ns), abs(ys0_control(ms,ns))*sqr(ys_con(ms,ns)/ys0_control(ms,ns) - 1)) +
-	    sum((ns,ms)$id0_control(ns,ms), abs(id0_control(ns,ms))*sqr(id_con(ns,ms)/id0_control(ns,ms) - 1)) +
-	    sum((ms)$ld0_control(ms), abs(ld0_control(ms))*sqr(ld_con(ms)/ld0_control(ms) - 1)) +
-	    sum((ms)$kd0_control(ms), abs(kd0_control(ms))*sqr(kd_con(ms)/kd0_control(ms) - 1)) +
-	    sum((ms)$a0_control(ms), abs(a0_control(ms))*sqr(a_con(ms)/a0_control(ms) - 1)) +
-	    sum((ms)$x0_control(ms), abs(x0_control(ms))*sqr(x_con(ms)/x0_control(ms) - 1)) +
-	    sum((ms)$m0_control(ms), abs(m0_control(ms))*sqr(m_con(ms)/m0_control(ms) - 1)) +
-	    sum((ms,m)$ms0_control(ms,m), abs(ms0_control(ms,m))*sqr(ms_con(ms,m)/ms0_control(ms,m) - 1)) +
-	    sum((m,ms)$md0_control(m,ms), abs(md0_control(m,ms))*sqr(md_con(m,ms)/md0_control(m,ms) - 1)) +
-	    sum((ms,h)$cd0_h_control(ms,h), abs(cd0_h_control(ms,h))*sqr(cdh_con(ms,h)/cd0_h_control(ms,h) - 1)) + 
-	    sum((ms)$i0_control(ms), abs(i0_control(ms))*sqr(i_con(ms)/i0_control(ms) - 1)) +
-	    sum((ms)$g0_control(ms), abs(g0_control(ms))*sqr(g_con(ms)/g0_control(ms) - 1));
-$offtext
-
 zpy_con(ms)..
     (1-ty0_control(ms))*sum(ns, ys_con(ms,ns)) =e= 
     sum(ns, id_con(ns,ms)) + ld_con(ms) + (1+tk0('wi'))*kd_con(ms);
@@ -806,46 +998,41 @@ mkta_con(ms)..
 mktm_con(m)..
     sum(ms, ms_con(ms,m)) =e= sum(ms, md_con(m,ms));
 
-ys_consum(s,g)..
-    sum((chkmap(ms,s),cm(ns,g)), ys_con(ms,ns)) =e= sum(r, ys0(r,s,g));
-
-id_consum(g,s)..
-    sum((chkmap(ns,g),cm(ms,s)), id_con(ns,ms)) =e= sum(r, id0(r,g,s));
-
-ld_consum(s)..
-    sum(chkmap(ms,s), ld_con(ms)) =e= sum(r, ld0(r,s));
-
-kd_consum(s)..
-    sum(chkmap(ms,s), kd_con(ms)) =e= sum(r, kd0(r,s));
-    
-x_consum(s)..
-    sum(chkmap(ms,s), x_con(ms)) =e= sum(r, x0(r,s));
-
-a_consum(s)..
-    sum(chkmap(ms,s), a_con(ms)) =e= sum(r, a0(r,s));
-
-m_consum(s)..
-    sum(chkmap(ms,s), m_con(ms)) =e= sum(r, m0(r,s));
-
-md_consum(m,s)..
-    sum(chkmap(ms,s), md_con(m,ms)) =e= sum(r, md0(r,m,s));
-
-ms_consum(s,m)..
-    sum(chkmap(ms,s), ms_con(ms,m)) =e= sum(r, ms0(r,s,m));
-
-i_consum(s)..
-    sum(chkmap(ms,s), i_con(ms)) =e= sum(r, i0(r,s));
-
-g_consum(s)..
-    sum(chkmap(ms,s), g_con(ms)) =e= sum(r, g0(r,s));
-
-cdh_consum(s,h)..
-    sum(chkmap(ms,s), cdh_con(ms,h)) =e= sum(r, cd0_h(r,s,h));
 
 model adjust_controls /
-    objcon, zpy_con, zpa_con, mkta_con, mktm_con, ys_consum,
-    id_consum, ld_consum, kd_consum, a_consum, x_consum,
-    ms_consum, m_consum, md_consum, cdh_consum, i_consum, g_consum /;
+    objcon, zpy_con, zpa_con, mkta_con, mktm_con /;
+
+* Maintain sparsity of the dataset:
+
+ys_con.fx(ms,ns)$(not ys0_control(ms,ns)) = 0;
+id_con.fx(ms,ns)$(not id0_control(ms,ns)) = 0;
+a_con.fx(ms)$(not a0_control(ms)) = 0;
+x_con.fx(ms)$(not x0_control(ms)) = 0;
+ms_con.fx(ms,m)$(not ms0_control(ms,m)) = 0;
+md_con.fx(m,ms)$(not md0_control(m,ms)) = 0;
+m_con.fx(ms)$(not m0_control(ms)) = 0;
+cdh_con.fx(ms,h)$(not cd0_h_control(ms,h)) = 0;
+i_con.fx(ms)$(not i0_control(ms)) = 0;
+g_con.fx(ms)$(not g0_control(ms)) = 0;
+
+* Fix factor demands for affected sectors:
+
+kd_con.fx(ms) = kd0_control(ms);
+ld_con.fx(ms) = ld0_control(ms);
+
+* Bounds on variables:
+
+ys_con.lo(ss_det,ss_det) = 0.5 * ys0_control(ss_det,ss_det);
+
+id_con.lo(ms,ns) = 0.1 * id0_control(ms,ns);
+a_con.lo(ms) = 0.1 * a0_control(ms);
+x_con.lo(ms) = 0.1 * x0_control(ms);
+ms_con.lo(ms,m) = 0.1 * ms0_control(ms,m);
+md_con.lo(m,ms) = 0.1 * md0_control(m,ms);
+m_con.lo(ms) = 0.1 * m0_control(ms);
+cdh_con.lo(ms,h) = 0.1 * cd0_h_control(ms,h);
+i_con.lo(ms) = 0.1 * i0_control(ms);
+g_con.lo(ms) = 0.1 * g0_control(ms);
 
 option qcp=cplex;
 solve adjust_controls minimizing OBJ using QCP;
@@ -866,6 +1053,14 @@ rep_adjust(ms,ns,'ys0','dif') = rep_adjust(ms,ns,'ys0','cal') - rep_adjust(ms,ns
 rep_adjust(ms,ns,'id0','dat') = id0_control(ns,ms);
 rep_adjust(ms,ns,'id0','cal') = id_con.l(ns,ms);
 rep_adjust(ms,ns,'id0','dif') = rep_adjust(ms,ns,'id0','cal') - rep_adjust(ms,ns,'id0','dat');
+
+rep_adjust(ms,' ','kd0','dat') = kd0_control(ms);
+rep_adjust(ms,' ','kd0','cal') = kd_con.l(ms);
+rep_adjust(ms,' ','kd0','dif') = rep_adjust(ms,' ','kd0','cal') - rep_adjust(ms,' ','kd0','dat');
+
+rep_adjust(ms,' ','ld0','dat') = kd0_control(ms);
+rep_adjust(ms,' ','ld0','cal') = kd_con.l(ms);
+rep_adjust(ms,' ','ld0','dif') = rep_adjust(ms,' ','ld0','cal') - rep_adjust(ms,' ','ld0','dat');
 
 rep_adjust(ms,' ','a0','dat') = a0_control(ms);
 rep_adjust(ms,' ','a0','cal') = a_con.l(ms);
@@ -904,9 +1099,10 @@ g0_control(ms) = g_con.l(ms);
 
 parameter
     region_shr(r,*)	Regional shares based on QCEW data,
-    sector_shr(r,*)	Sectoral shares based on QCEW data;
+    sector_shr(r,*)	Sectoral shares based on QCEW data,
+    adjust(r,*)		Subset of sets with discrepancy in data;
 
-region_shr(r,ss_det) = sum(s, qcew(r,s,ss_det)) / sum((r.local,s), qcew(r,s,ss_det));
+region_shr(r,ss_det)$sum((r.local,s), qcew(r,s,ss_det)) = sum(s, qcew(r,s,ss_det)) / sum((r.local,s), qcew(r,s,ss_det));
 region_shr(r,s)$(sum(ss_det, disagg(s,ss_det)) and sum(g, ys0(r,s,g))) =
     sum(s_det$(not ss_det(s_det)), qcew(r,s,s_det)) /
     sum((r.local,s_det)$(not ss_det(s_det)), qcew(r,s,s_det));
@@ -916,9 +1112,12 @@ display region_shr;
 * and disaggregate sectors, but windc suggests positive production for the
 * aggregate sector:
 
-region_shr(r,s)$(sum(ss_det$disagg(s,ss_det), 1) and not sum(chkmap(ms,s),region_shr(r,ms))) = 1e-5;
+adjust(r,s)$(sum(ss_det$disagg(s,ss_det), 1) and not sum(chkmap(ms,s),region_shr(r,ms))) = 1;
 
-* Sectoral shares to act as lower bounds:
+region_shr(r,s)$(adjust(r,s)) = 1e-5;
+
+* Sectoral shares to act as lower bounds, and adjust to account for changes to
+* region_shr:
 
 sector_shr(r,ss_det)$sum(disagg(s,ss_det),sum(g_det, qcew(r,s,g_det))) =
     sum(s, qcew(r,s,ss_det)) / sum(disagg(s,ss_det),sum(g_det, qcew(r,s,g_det)));
@@ -926,6 +1125,7 @@ sector_shr(r,ss_det)$sum(disagg(s,ss_det),sum(g_det, qcew(r,s,g_det))) =
 sector_shr(r,s)$(sum(ss_det, disagg(s,ss_det)) and sum(g, ys0(r,s,g))) =
     1 - sum(disagg(s,ss_det), sector_shr(r,ss_det));
 
+sector_shr(r,s)$(adjust(r,s)) = 1;
 
 
 * ------------------------------------------------------------------------------
@@ -960,7 +1160,7 @@ equations
     a_sum, m_sum, i_sum, g_sum, cdh_sum, nd_sum, dd_sum, md_sum,
     nm_sum, dm_sum,
 
-    md_split;
+    md_split, rpc_bound;
 
 objdef..
     OBJ =e= sum((r,ms,ns)$(region_shr(r,ms)*ys0_control(ms,ns)),
@@ -1059,13 +1259,17 @@ cdh_sum(r,s,h)$afs(s)..
 md_split(r,m,ms)$afs(ms)..
     md_v(r,m,ms) * sum(m.local,md0_control(m,ms)) =e= sum(m.local, md_v(r,m,ms)) * md0_control(m,ms);
 
+rpc_bound(r,ms)$afs(ms)..
+    dd_v(r,ms) * sum(chkmap(ms,s), dd0(r,s)+nd0(r,s)) =g= 0.25 * sum(chkmap(ms,s), dd0(r,s)) * (dd_v(r,ms) + nd_v(r,ms));
+
 * Declare model equations:
 
 model sectordisagg /
       objdef, zp_y, zp_x, zp_a, zp_ms, mkt_pa, mkt_py, mkt_pn, mkt_pd,
-      ys_sum, id_sum, ld_sum, kd_sum, x_sum, xn_sum, xd_sum, rx_sum, a_sum,
-      m_sum, i_sum, g_sum, cdh_sum, nd_sum, dd_sum, md_sum, nm_sum, dm_sum,
-      md_split /;
+      ld_sum, kd_sum, x_sum, m_sum, i_sum, g_sum, cdh_sum, rx_sum,
+      nm_sum, dm_sum, md_sum, xn_sum, xd_sum, nd_sum, dd_sum, 
+*      a_sum, id_sum, ys_sum, 
+      md_split, rpc_bound /;
 
 * Level values based on region_share, sector_share, and control totals:
 
@@ -1101,7 +1305,8 @@ g_v.l(r,ms)$afs(ms) = sum(chkmap(ms,s), g0(r,s)) / sum((r.local,chkmap(ms,s)), g
 
 ld_v.lo(r,ms)$(afs(ms) and region_shr(r,ms)) = 0.1 * sector_shr(r,ms) * sum(chkmap(ms,s), ld0(r,s));
 kd_v.lo(r,ms)$(afs(ms) and region_shr(r,ms)) = 0.1 * sector_shr(r,ms) * sum(chkmap(ms,s), kd0(r,s));
-id_v.lo(r,ns,ms)$(afs(ms) and region_shr(r,ms) and id0_control(ns,ms)) = 1e-4 * sector_shr(r,ms) * sum((chkmap(ms,s),cm(ns,g)), id0(r,g,s));
+id_v.lo(r,ns,ms)$(afs(ms) and region_shr(r,ms) and id0_control(ns,ms)) = 0.1 * sector_shr(r,ms) * sum((chkmap(ms,s),cm(ns,g)), id0(r,g,s));
+ys_v.lo(r,ms,ns)$(afs(ms) and region_shr(r,ms) and ys0_control(ms,ns)) = 0.1 * sector_shr(r,ms) * sum((chkmap(ms,s),cm(ns,g)), ys0(r,s,g));
 
 * Fix production variables in regions with no region_shr to zero:
 
@@ -1164,7 +1369,10 @@ solve sectordisagg minimizing OBJ using QCP;
 
 parameter
     report_prodstr	Report on modified production structures,
-    report_control	Report on differences with control totals;
+    report_control	Report on differences with control totals,
+    report_region	Report on regional distribution,
+    report_sum		Report differences in sums for uncontrolled parameters,
+    report_rpc		Report changes to regional purchase coefficients;
 
 report_prodstr(r,ms,ns,'nat')$((1-ty0_control(ms))*sum(ns.local, ys0_control(ms,ns)) and afs(ms)) =
     id0_control(ns,ms) / ((1-ty0_control(ms))*sum(ns.local, ys0_control(ms,ns)));
@@ -1185,9 +1393,6 @@ report_prodstr(r,ms,'k','cal')$((1-ty0_control(ms))*sum(ns.local, ys_v.l(r,ms,ns
     (1+tk0(r))*kd_v.l(r,ms) / ((1-ty0_control(ms))*sum(ns.local, ys_v.l(r,ms,ns)));
 display report_prodstr;
 
-* execute_unload 'chk_prod.gdx' report_prodstr;
-* execute 'gdxxrw chk_prod.gdx par=report_prodstr rng=data!A2 cdim=0';
-
 alias(u,*);
 report_control(ms,ns,'ys0','cal') = sum(r, ys_v.l(r,ms,ns));
 report_control(ms,ns,'ys0','control') = ys0_control(ms,ns);
@@ -1198,6 +1403,32 @@ report_control(ns,ms,'id0','control') = id0_control(ms,ns);
 report_control(ms,ns,u,'diff') = report_control(ms,ns,u,'cal') - report_control(ms,ns,u,'control');
 display report_control;
 
+* Verify that regional distribution is maintained:
+
+report_region(r,ms,'region_shr') = region_shr(r,ms);
+report_region(r,ms,'cal')$afs(ms) = sum(ns, ys_v.l(r,ms,ns)) / sum((ns,r.local), ys_v.l(r,ms,ns));
+display report_region;
+
+* Report on changes in uncontrolled parameters:
+
+report_sum(r,s,'a0') = sum(chkmap(ms,s), a_v.l(r,ms)) - a0(r,s);
+report_sum(r,s,'id0') = smax(g, sum((chkmap(ms,s),cm(ns,g)), id_v.l(r,ns,ms)) - id0(r,g,s));
+report_sum(r,s,'ys0') = smax(g, sum((chkmap(ms,s),cm(ns,g)), ys_v.l(r,ms,ns)) - ys0(r,s,g));
+display report_sum;
+
+* Report changes to regional purchase coefficients:
+
+report_rpc(r,ms,'cal')$(afs(ms) and dd_v.l(r,ms) + nd_v.l(r,ms)) =
+    dd_v.l(r,ms) / (dd_v.l(r,ms) + nd_v.l(r,ms));
+report_rpc(r,s,'dat')$(afs(s) and dd0(r,s) + nd0(r,s)) =
+    dd0(r,s) / (dd0(r,s) + nd0(r,s));
+display report_rpc;
+
+* Output worksheet highlighting changes:
+
+execute_unload 'chk_prod_%smap%.gdx' report_prodstr, report_region, report_control, report_sum, report_rpc;
+execute 'gdxxrw chk_prod_%smap%.gdx par=report_prodstr rng=data!A2 cdim=0 par=report_region rng=region_report!A2 cdim=0';
+    
 
 * ------------------------------------------------------------------------------
 * Remove tiny values
@@ -1230,34 +1461,34 @@ parameters
     g0_cal(r,*)		Government demand,
     i0_cal(r,*)		Investment demand;
 
-ys0_cal(r,ms,ns) = round(ys_v.l(r,ms,ns),8);
-id0_cal(r,ns,ms) = round(id_v.l(r,ns,ms),8);
-ld0_cal(r,ms) = round(ld_v.l(r,ms),8);
-kd0_cal(r,ms) = round(kd_v.l(r,ms),8);
+ys0_cal(r,ms,ns) = round(ys_v.l(r,ms,ns),6);
+id0_cal(r,ns,ms) = round(id_v.l(r,ns,ms),6);
+ld0_cal(r,ms) = round(ld_v.l(r,ms),6);
+kd0_cal(r,ms) = round(kd_v.l(r,ms),6);
 ty0_cal(r,ms) = ty0_disagg(r,ms);
 
-x0_cal(r,ms) = round(x_v.l(r,ms),8);
-xn0_cal(r,ms) = round(xn_v.l(r,ms),8);
-xd0_cal(r,ms) = round(xd_v.l(r,ms),8);
-s0_cal(r,ms) = round(s_v.l(r,ms),8);
+x0_cal(r,ms) = round(x_v.l(r,ms),6);
+xn0_cal(r,ms) = round(xn_v.l(r,ms),6);
+xd0_cal(r,ms) = round(xd_v.l(r,ms),6);
+s0_cal(r,ms) = round(s_v.l(r,ms),6);
 
-a0_cal(r,ms) = round(a_v.l(r,ms),8);
+a0_cal(r,ms) = round(a_v.l(r,ms),6);
 ta0_cal(r,ms) = ta0_control(ms);
-rx0_cal(r,ms) = round(rx_v.l(r,ms),8);
-nd0_cal(r,ms) = round(nd_v.l(r,ms),8);
-dd0_cal(r,ms) = round(dd_v.l(r,ms),8);
-m0_cal(r,ms) = round(m_v.l(r,ms),8);
+rx0_cal(r,ms) = round(rx_v.l(r,ms),6);
+nd0_cal(r,ms) = round(nd_v.l(r,ms),6);
+dd0_cal(r,ms) = round(dd_v.l(r,ms),6);
+m0_cal(r,ms) = round(m_v.l(r,ms),6);
 tm0_cal(r,ms) = tm0_control(ms);
-md0_cal(r,m,ms) = round(md_v.l(r,m,ms),8);
+md0_cal(r,m,ms) = round(md_v.l(r,m,ms),6);
 
-nm0_cal(r,ms,m) = round(nm_v.l(r,ms,m),8);
-dm0_cal(r,ms,m) = round(dm_v.l(r,ms,m),8);
-cd0_h_cal(r,ms,h) = round(cdh_v.l(r,ms,h),8);
+nm0_cal(r,ms,m) = round(nm_v.l(r,ms,m),6);
+dm0_cal(r,ms,m) = round(dm_v.l(r,ms,m),6);
+cd0_h_cal(r,ms,h) = round(cdh_v.l(r,ms,h),6);
 cd0_cal(r,ms) = sum(h, cd0_h_cal(r,ms,h));
 c0_cal(r) = sum(ms, cd0_cal(r,ms));
 c0_h_cal(r,h) = sum(ms, cd0_h_cal(r,ms,h));
-i0_cal(r,ms) = round(i_v.l(r,ms),8);
-g0_cal(r,ms) = round(g_v.l(r,ms),8);
+i0_cal(r,ms) = round(i_v.l(r,ms),6);
+g0_cal(r,ms) = round(g_v.l(r,ms),6);
 
 gms(ms) = yes$(sum((r,m), nm0_cal(r,ms,m) + dm0_cal(r,ms,m)) or sum((r,m), md0_cal(r,m,ms)));
 

@@ -28,7 +28,7 @@ set
 
 $gdxin '%datafile%'
 $loaddc s r m gm h trn
-alias(s,g),(r,rr,q);
+alias(s,g),(r,q);
 
 * Load year of parameters
 
@@ -95,13 +95,15 @@ $loaddc le0 ke0 tk0 tl_avg0 tl0 tfica0 cd0_h c0_h sav0 trn0 hhtrn0 pop0 fsav0 fi
 
 * Specify sparsity tuples
 
-sets	y_(r,s) "Sectors and regions with positive production",
-	x_(r,g) "Disposition by region",
-	a_(r,g) "Absorption by region";
+sets	y_(r,s) 	Sectors and regions with positive production,
+	x_(r,g) 	Disposition by region,
+	a_(r,g) 	Absorption by region,
+	pn_(g)  	National market;
 
 y_(r,s) = yes$(round(sum(g, ys0(r,s,g)),6)>0);
 x_(r,g) = yes$round(s0(r,g),6);
 a_(r,g) = yes$(round(a0(r,g) + rx0(r,g),6));
+pn_(g) = yes$(sum(r, dd0(r,g) + nd0(r,g) + sum(m, dm0(r,g,m) + nm0(r,g,m))));
 
 * calculate additional aggregate parameters
 totsav0 = sum((r,h),sav0(r,h));

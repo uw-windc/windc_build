@@ -5,13 +5,13 @@ $title Aggregation routine for windc-household datasets
 * --------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2017
+$if not set year $set year 2016
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
 
 * set investment calibration (static, dynamic)
-$if not set invest $set invest "dynamic"
+$if not set invest $set invest "static"
 
 * set assumption on capital ownership (all,partial)
 $if not set capital_ownership $set capital_ownership "all"
