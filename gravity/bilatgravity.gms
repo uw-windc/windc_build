@@ -61,7 +61,7 @@ parameter	market		Market balance conditions;
 market(i,"vom") = sum(s,vom(i,"usa",s));
 market(i,"vim") = vim(i,"usa");
 market(i,"vxm") = sum(r,vxmd(i,"usa",r)) + vst(i,"usa");
-market(i,"d0") = sum((s),xd0(i,"usa",s)+nd0(i,"usa",s));
+market(i,"d0") = sum((s),yl0(i,"usa",s)+nd0(i,"usa",s));
 market(i,"m0") = sum((s),md0(i,"usa",s));
 market(i,"dchk") = market(i,"vom") - market(i,"vxm") - market(i,"d0");
 market(i,"mchk") =  market(i,"vim") - market(i,"m0");
@@ -95,7 +95,7 @@ display mref, eref;
 
 *	Absorption -- net of tax:
 
-aref(i,s) = xd0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
+aref(i,s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
 
 parameter	thetay(i,s)	Output share of absorption
 		thetam(i,prt)	Import share of absorption
@@ -220,7 +220,7 @@ tau_m(i,prt,s) = 1;
 parameters
 		vdfm(i,ss,s)	Bilateral trade,
 		vifm(i,s)	Imports,
-		vxm(i,s)	Exports,
+		xref(i,s)	Exports,
 		dref(i,s)	Supply to the domestic market;
 
 $ontext
@@ -228,7 +228,7 @@ $model:bilat
 
 $sectors:
 	AD(i,s)$(aref(i,s) and ib(i))	! Absorption (Armington demand)
-	Y(i,s)$(vxm(i,s)   and ib(i))	! Exports
+	Y(i,s)$(xref(i,s)   and ib(i))	! Exports
 
 $commodities:
 	P(i,s)$(aref(i,s) and ib(i))	! Demand price
@@ -248,7 +248,7 @@ $prod:AD(i,s)$(aref(i,s) and ib(i))  s:esub_dm(i)  L:esub_ln(i)  m:esub_mm(i)  d
 
 
 $prod:Y(i,s)$(yref(i,s) and ib(i))   t:4
-	o:PFX		q:vxm(i,s)
+	o:PFX		q:xref(i,s)
 	o:PD(i,s)	q:dref(i,s)
 	i:PY(i,s)	q:yref(i,s) 
 
@@ -260,11 +260,6 @@ $prod:Y(i,s)$(yref(i,s) and ib(i))   t:4
 * 	i:PD(i,r,ss)	q:dd0(i,r,ss,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) L:$sameas(ss,s) d:$(not sameas(s,ss))
 * 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
 * 
-* $prod:X(i,r,s)$x_(i,r,s)  t:etrndn(i)
-* 	o:P(i,r)	q:xn0(i,r,s)
-* 	o:PD(i,r,s)	q:xd0(i,r,s)
-* 	i:PY(i,r,s)	q:vom(i,r,s)
-
 
 $demand:RA
 	d:PFX
@@ -283,7 +278,7 @@ PFX.FX = 1;
 *	and nested CES demand (no CET):
 
 parameter	a_0(i,s)	Absorption
-		xd_0(i,s)	Local supply
+		yd_0(i,s)	Local supply
 		nd_0(i,s)	Demand from national market
 		md_0(i,s)	Imports
 		n_0(i)		Aggregate national supply
@@ -312,7 +307,7 @@ $consumers:
 
 $prod:AD(i,s)$(a_0(i,s) and ib(i))  s:4  d:8
 	o:P(i,s)	q:a_0(i,s)
-	i:PY(i,s)	q:xd_0(i,s)	d:
+	i:PY(i,s)	q:yd_0(i,s)	d:
 	i:PN(i)		q:nd_0(i,s)	d:
 	i:PFX		q:md_0(i,s)	
 
@@ -421,21 +416,20 @@ $include gravity.gen
 	ns_0(ib,s) = PY.L(ib,s)*sum(ss$(not sameas(s,ss)),PY_AD.L(ib,s,ss));
 	xs_0(ib,s) = PY.L(ib,s)*sum(prt, PY_X.L(ib,s,prt));
 	y_0(ib,s)  = yref(ib,s);
-
 	a_0(ib,s)  = P.L(ib,s)*lamda_a(ib,s)*aref(ib,s)*AD.L(ib,s);
 	nd_0(ib,s) = sum(ss$(not sameas(s,ss)), PY.L(ib,ss)*PY_AD.L(ib,ss,s));
-	xd_0(ib,s) = PY.L(ib,s)*PY_AD.L(ib,s,s);
+	yd_0(ib,s) = PY.L(ib,s)*PY_AD.L(ib,s,s);
 	md_0(ib,s) = sum(prt, PM.L(ib,prt)*PM_AD.L(ib,prt,s));
 
 	n_0(ib)    = sum(s, ns_0(ib,s));
 	x_0(ib)     = sum(s,xs_0(ib,s));
 
-	shares(ib,s,"ds/y")$y_0(ib,s) = 100 * xd_0(ib,s)/y_0(ib,s);
+	shares(ib,s,"yd/y")$y_0(ib,s) = 100 * yd_0(ib,s)/y_0(ib,s);
 	shares(ib,s,"ns/y")$y_0(ib,s) = 100 * ns_0(ib,s)/y_0(ib,s);
 	shares(ib,s,"xs/y")$y_0(ib,s) = 100 * xs_0(ib,s)/y_0(ib,s);
 	shares(ib,s,"md/a")$a_0(ib,s) = 100 * md_0(ib,s)/a_0(ib,s);
 	shares(ib,s,"nd/a")$a_0(ib,s) = 100 * nd_0(ib,s)/a_0(ib,s);
-	shares(ib,s,"dd/a")$a_0(ib,s) = 100 * xd_0(ib,s)/a_0(ib,s);
+	shares(ib,s,"yd/a")$a_0(ib,s) = 100 * yd_0(ib,s)/a_0(ib,s);
 
 *	Calibrate the bilateral model:
 
@@ -446,7 +440,7 @@ $include gravity.gen
 	yref(ib(i),s) = yref(i,s)/scale(i);
 	vdfm(ib(i),ss,s) = PY_AD.L(i,ss,s)*PY.L(i,ss)/scale(i);
 	vifm(ib(i),s) = sum(prt, PM_AD.L(i,prt,s)*PM.L(i,prt))/scale(i);
-	vxm(ib(i),s) = sum(prt, PY_X.L(i,s,prt) * PY.L(i,s))/scale(i);
+	xref(ib(i),s) = sum(prt, PY_X.L(i,s,prt) * PY.L(i,s))/scale(i);
 	dref(ib(i),s) = sum(ss,vdfm(i,s,ss));
 
 *	Recalibrate prices to unity and replicate the bilateral model:
@@ -487,11 +481,9 @@ display solvelog;
 option shares:1:2:1;
 display shares;
 
-$exit
-
 set usa(r) /usa/;
 
-rtd(itrd(i),usa(r),s) = rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s));
+rtd(itrd(i),usa(r),s) = rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s));
 rtm(itrd(i),usa(r),s) = rtm(i,r,s)*md0(i,r,s);
 
 parameter	rates;
@@ -514,7 +506,7 @@ parameter	compare		Comparison of tax rates ;
 loop(itrd(i),
 	compare(i,s,"rtd0") = rtd0(i,"usa",s);
 	compare(i,s,"rtm0") = rtm0(i,"usa",s);
-	compare(i,s,"value0") = xd0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
+	compare(i,s,"value0") = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
 	compare(i,s,"value") = sum(ss,vdfm(i,ss,s))+vifm(i,s);
 	compare(i,s,"rt*")$(rtd(i,"usa",s)+rtm(i,"usa",s)) = 
 		(rtd(i,"usa",s)+rtm(i,"usa",s))/(sum(ss,vdfm(i,ss,s))+vifm(i,s));
@@ -532,37 +524,11 @@ loop(itrd(i),
 parameter	dd0(i,r,s,s)	Intra-national trade;
 dd0(itrd(i),usa,ss,s) = vdfm(i,ss,s);
 md0(itrd(i),usa,s) = vifm(i,s);
-xn0(itrd(i),usa,s) = vxm(i,s);
-xd0(itrd(i),usa,s) = dref(i,s);
-dd0(i,r,s,s)$(not usa(r)) = xd0(i,r,s);
-dd0(i,usa(r),s,s)$(not itrd(i)) = xd0(i,r,s);
+yl0(itrd(i),usa,s) = dref(i,s);
+dd0(i,r,s,s)$(not usa(r)) = yl0(i,r,s);
+dd0(i,usa(r),s,s)$(not itrd(i)) = yl0(i,r,s);
 nd0(itrd(i),usa,s) = 0;
 
-execute_unload 'gravity.gdx', dd0, md0, nd0, xn0, xd0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm;
-
-
-$exit
-
-parameter	thetan(i,s)	Share of domestic inputs;
-thetan(i,s) = thetay(i,s)/(1-sum(prt,thetam(i,prt)));
-
-parameter	thetad(i)	Domestic share;
-thetad(i) = 1 - sum(prt,thetam(i,prt));
-
-pmdef(ib(i),s)..	P_M(i,s) =e= sum(prt, thetam(i,prt)*(PM(i,prt)*tau_m(i,prt,s))**(1-esub_mm(i)))**(1/(1-esub_mm(i)));
-pndef(ib(i),s)..	P_N(i,s) =e= sum(ss$(not sameas(s,ss)), thetan(i,ss)/(1-thetan(i,s))*(PY(i,ss)*tau_d(i,ss,s))**(1-esub_nn(i)))**(1/(1-esub_nn(i)));
-pddef(ib(i),s)..	P_D(i,s) =e= (thetan(i,s)*(PY(i,s)*tau_d(i,s,s))**(1-esub_ln(i)) + (1-thetan(i,s))*P_N(i,s)**(1-esub_ln(i)))**(1/(1-esub_ln(i)));
-cdef(ib(i),s)..		C(i,s) =e= ( thetad(i)*P_D(i,s)**(1-esub_dm(i)) + (1-thetad(i))*P_M(i,s)**(1-esub_dm(i)) )**(1/(1-esub_dm(i)))
-
-profit(ib(i),s)..	C(i,s) =e= P(i,s)*lamda_a(i,s);
-
-pxdef(ib(i),prt)..	P_X(i,prt) =e= sum(s, thetae(i,s)*(PY(i,s)*tau_x(i,s,prt))**(1-esub_x(i)))**(1/(1-esub_x(i)));
-
-market_py(ib(i),s)..	yref(i,s)*SY(i,s) =e= sum(ss$aref(i,ss), ADS(i,ss) * tau_d(i,s,ss) * thetay(i,s) * aref(i,ss) * 
-					(C(i,s)/P_D(i,s))**esub_dm(i) * 
-					( (P_D(i,s)/(tau_d(i,s,s)*PY(i,s))**esub_ln(i))$sameas(s,ss) +
-					  ((P_D(i,s)/P_N(i,s))**esub_ln(i) * (P_N(i,s)/(tau_d(i,s,ss)*PY(i,s)))**esub_nn(i))$(not sameas(s,ss)) ) );
-market_pm(i,prt)..	
-
+*.execute_unload 'gravity.gdx', dd0, md0, nd0, xn0, yl0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm, shares;
 
 

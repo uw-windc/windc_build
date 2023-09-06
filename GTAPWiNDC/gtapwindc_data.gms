@@ -2,7 +2,7 @@ $title	GAMS Code to Read a GTAPWINDC Dataset
 
 *.$set fs %system.dirsep% 
 
-$if not set ds                 $set ds 32_stub
+$if not set ds                 $set ds 43_stub
 $if not set gtapwindc_datafile $set gtapwindc_datafile %system.fp%datasets/gtapwindc/%ds%.gdx
 
 sets	
@@ -54,9 +54,11 @@ parameters
 	a0(i,r,s)	Absorption
 	rtd(i,r,s)	Tax rate on domestic demand
 	rtd0(i,r,s)	Benchmark tax rate on domestic demand
+
 	yl0(i,r,s)	Local supply
 	nd0(i,r,s)	National market domestic absorption
 	md0(i,r,s)	Import absorption
+
 	rtm(i,r,s)	Tax rate on import demand
 	rtm0(i,r,s)	Benchmark tax rate on import demand
 	c0(r,s,h)	Total household consumption

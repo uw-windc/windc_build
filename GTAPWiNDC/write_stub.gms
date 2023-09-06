@@ -5,7 +5,6 @@ $title	GTAPinGAMS Model in Canonical Form -- Produce a Stub Dataset
 $if not set dsout $set dsout datasets/gtapwindc/32_stub
 
 
-
 *-----------------------
 *   If the value of gtapingams is not set via command line,
 *   then set its value. If the data for gtap11 exists, then

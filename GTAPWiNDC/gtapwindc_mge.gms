@@ -2,9 +2,9 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 *	Read the data:
 
-$if not set ds $set ds 32_stub
+$if not set ds $set ds 43
 
-$include %system.fp%gtapwindc_data
+$if not defined y_ $include %system.fp%gtapwindc_data
 
 set rb(r) /usa/;
 
@@ -43,14 +43,10 @@ $commodities:
 	PZ(i,r,s)$pz_(i,r,s)		  ! Armington composite price
 	PN(i,r)$pn_(i,r)		  ! National market price
 	P(i,r)$p_(i,r)			  ! Export market price
-
 	PC(r,s,h)$pc_(r,s,h)		  ! Consumption price 
-
 	PL(mf,r,s)$pf_(mf,r,s)		  ! Wage income
 	PK(sf,r)$pk_(sf,r)		  ! Capital income
-
 	PS(f,g,r,s)$ps_(f,g,r,s)	  ! Sector-specific primary factors
-
 	PM(i,r)$pm_(i,r)		  ! Import price
 	PT(j)$pt_(j)			  ! Transportation services
 
@@ -132,10 +128,6 @@ gtapwindc.iterlim = 0;
 
 $include gtapwindc.gen
 solve gtapwindc using mcp;
-
-$exit
-
-set	rb(r) /usa/;
 
 set	macct	Macro accounts /
 		C	Household consumption,

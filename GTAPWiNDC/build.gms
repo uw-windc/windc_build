@@ -121,7 +121,7 @@ $label regiondisagg32
 
 $log	"Ready to run regiondisagg (datasets/gtapwindc/32.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --windc_gdx=datasets/windc/32.gdx --gtapwindc_datafile=datasets/gtapwindc/32_stub --dsout=datasets/gtapwindc/32.gdx   o=lst/regiondisagg_32.lst 
+$call gams regiondisagg --ds=32 o=lst/regiondisagg_32.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 32.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
@@ -229,7 +229,7 @@ $label regiondisagg43
 
 $log	"Ready to run regiondisagg with 43 sector dataset  (datasets/gtapwindc/43.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --dropagr=yes --windc_gdx=datasets/windc/43.gdx --gtapwindc_datafile=datasets/gtapwindc/43_stub --dsout=datasets/gtapwindc/43.gdx   o=lst/regiondisagg_43.lst 
+$call gams regiondisagg  --ds=43 --dropagr=yes  o=lst/regiondisagg_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 43.gdx"

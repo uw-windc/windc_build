@@ -1,6 +1,6 @@
 $title	Disaggregate Subregions in USA for 2014 based on WINDC Benchmark
 
-$if not set ds $set ds 32
+$if not set ds $set ds 43
 
 *	Point to a WiNDC dataset:
 
@@ -48,6 +48,9 @@ parameter
     ke0(s,h)		Household interest payments,
     ld0(s,g)		Labor demand,
     kd0(s,g)		Capital demand,
+    ty0(s,g)		Output tax
+    tk0(s)		Capital tax
+    ys0(s,g,i)		Make
     i0(s,i)		Investment
     g0(s,i)		Government expenditure
 
@@ -63,8 +66,7 @@ parameters
     md0_windc(s,m,i)		Margin inputs
     cd0_windc(s,i,h)		Household level expenditures,
     hhtrn0_windc(s,h,trn)	Household transfers
-    s0_windc(s,i)		Regional supply to all markets
-    x0(s,i)			Regional supply to export markets,
+    xs0_windc(s,i)		Regional supply to export markets,
     yl0_windc(s,i)		Regional supply to local market,
     ns0_windc(s,i)		Regional supply to national market,
     m0_windc(s,i)		Import demand
@@ -72,7 +74,7 @@ parameters
     sav0_windc(s,h)		Base year savings;
 
 $gdxin %windc_datafile%
-$loaddc cd0_windc=cd0_h le0 tl0 ke0 ld0 kd0 x0 i0 g0 
+$loaddc le0 tl0 ke0 ld0 kd0 i0 g0 ys0 ty0 tk0
 
 *	Labor supply net of tax:
 
@@ -80,13 +82,13 @@ ls0(s,h) = sum(ss,le0(s,ss,h))*(1-tl0(s,h));
 
 *	Read and rename these parameters:
 
-$loaddc hhtrn0_windc=hhtrn0, ns0_windc=ns0 xd0_windc=xd0 nd0_windc=nd0 m0_windc=m0 s0_windc=s0 a0_windc=a0 sav0_windc=sav0
-$loaddc md0_windc=md0
+$loaddc cd0_windc=cd0_h a0_windc=a0 md0_windc=md0 yl0_windc=xd0 nd0_windc=nd0 ns0_windc=xn0 
+$loaddc hhtrn0_windc=hhtrn0, m0_windc=m0 sav0_windc=sav0 xs0_windc=x0
 
 *	Provide a comparison of trade flows in the two datasets:
 
 parameter	trade	Trade comparison: %windc_data% vs %ds%;
-trade(i,"exports","windc") = sum(s,x0(s,i));
+trade(i,"exports","windc") = sum(s,xs0_windc(s,i));
 trade(i,"imports","windc") = sum(s,m0_windc(s,i));
 trade(i,"exports","gtap") = sum(r,vxmd(i,"%rb%",r)) + vst(i,"%rb%");
 trade(i,"imports","gtap") = sum(r,vxmd(i,r,"%rb%")+sum(j,vtwr(i,j,r,"%rb%")));
@@ -107,7 +109,7 @@ display cshare;
 
 parameter	mshare(i,m)	Margin share (average);
 mshare(i,m)$sum((sb(s),hb(h)),cd0_windc(s,i,h))  
-	=	sum((sb(s),hb(h)),cd0_windc(s,i,h) * md0_windc(s,m,i)/a0_windc(s,i)) /
+	=	sum((sb(s),hb(h))$a0_windc(s,i),cd0_windc(s,i,h) * md0_windc(s,m,i)/a0_windc(s,i)) /
 		sum((sb(s),hb(h)),cd0_windc(s,i,h));
 display mshare;
 
@@ -134,7 +136,7 @@ display hhtrn_compare;
 option trn:0:0:1;
 display trn;
 
-		
+
 set	lf(f)	Labor factors /mgr, tec, clk, srv, lab/,
 	kf(f)	Capital factors /cap, lnd, res/;
 
@@ -152,7 +154,7 @@ loop(rb(r),
 	macroaccounts("$","K","GTAP") = sum((kf(f),s,h),evomh(kf,r,s,h));
 	macroaccounts("$","F","GTAP") = vb(r);
 	macroaccounts("$","T","GTAP") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
 				+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 				+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 
@@ -187,7 +189,7 @@ macroaccounts("%GDP",gdpitem,src)$macroaccounts("$","Expend_GDP",src)
 PARAMETER	trev		Tax revenue (total);
 loop(rb(r),
   trev = 	sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
 		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 		+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 );
@@ -195,9 +197,16 @@ loop(rb(r),
 *	Implement a proportional disaggregation:
 
 parameter	theta_va(g,s)	Production share,
-		theta_c(s,*)	Consumption share;
+		theta_c(s,*)	Consumption share,
+		va0(i,s)	Value added (labor + capital)
+		vatot(i)	Total sectoral value-added;
 
-theta_va(i,sb(s)) = (kd0(s,i)+ld0(s,i))/sum(s.local,kd0(s,i)+ld0(s,i));
+va0(i,sb(s)) = kd0(s,i)*(1+tk0(s)) + ld0(s,i) + sum(j,ys0(s,i,j))*(1+ty0(s,i));
+vatot(i) = sum(sb(s),va0(i,s));
+
+
+
+theta_va(i,sb(s))$vatot(i) = va0(i,s)/sum(s.local,va0(i,s));
 theta_va("g",sb(s)) = sum(i,g0(s,i))/sum((s.local,i),g0(s,i));
 theta_va("i",sb(s)) = sum(i,i0(s,i))/sum((s.local,i),i0(s,i));
 
@@ -213,24 +222,26 @@ display theta_c;
 vfm(f, j,rb,sb(s))    = theta_va(j,s)*vfm(f,j,rb,"rest");
 vafm(i,g,rb,sb(s))    = theta_va(g,s)*vafm(i,g,rb,"rest");
 cd0(i,rb,sb(s),hb(h)) = theta_c(s,h) * theta_c(s,"c") * cd0(i,rb,"rest","rest");
+
 c0(rb,sb(s),hb(h)) = sum(i,cd0(i,rb,s,h));
 
 vom(g,rb,sb(s)) = theta_va(g,s)*vom(g,rb,"rest");
-xd0(i,rb,sb(s)) = theta_va(i,s)*xd0(i,rb,"rest");
+yl0(i,rb,sb(s)) = theta_va(i,s)*yl0(i,rb,"rest");
+xs0(i,rb,sb(s)) = theta_va(i,s)*xs0(i,rb,"rest");
 
 a0(i,rb,sb(s)) = sum(g,vafm(i,g,rb,s)) + sum(h,cd0(i,rb,s,h));
 
 *	At some point we should compute domestic trade flows in the gravity model, but
 *	for the time being we assume that all states have the same sourcing shares:
 
-md0(i,rb,sb(s)) = md0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
-nd0(i,rb,sb(s)) = nd0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
-xd0(i,rb,sb(s)) = xd0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
+md0(i,rb,sb(s))$a0(i,rb,"rest") = md0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
+nd0(i,rb,sb(s))$a0(i,rb,"rest") = nd0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
+
 
 *	Exports to the national are calibrated:
 
-xn0(i,rb,sb(s)) = vom(i,rb,s) - xd0(i,rb,s);
-abort$(smin((i,rb,sb),xn0(i,rb,sb))<0) "Error: local demand exceeds supply.",xn0;
+ns0(i,rb,sb(s)) = vom(i,rb,s) - yl0(i,rb,s) - xs0(i,rb,s);
+abort$(smin((i,rb,sb),ns0(i,rb,sb))<0) "Error: local demand exceeds supply.",ns0;
 
 *	Factor supply:
 
@@ -302,6 +313,7 @@ SAV.L(sb(s),hb(h)) = sum(rb,sav0(rb,s,h));
 
 solve hhcalib using qcp minimizing OBJ;
 
+
 *	Create parameters to retain values from the stub dataset calibration:
 
 parameter	vom_rest, cd0_rest, evomh_rest, evom_rest;
@@ -317,13 +329,12 @@ vafm(i,g,rb,"rest") = 0;
 cd0(i,rb,"rest","rest") = 0;
 c0(rb,"rest","rest") = 0;
 vom(g,rb,"rest") = 0;
-xd0(i,rb,"rest") = 0;
-xn0(i,rb,"rest") = 0;
+yl0(i,rb,"rest") = 0;
+ns0(i,rb,"rest") = 0;
 a0(i,rb,"rest") = 0;
-xd0(i,rb,"rest") = 0;
 md0(i,rb,"rest") = 0;
 nd0(i,rb,"rest") = 0;
-xn0(i,rb,"rest") = 0;
+xs0(i,rb,"rest") = 0;
 evom(f,rb,"rest") = 0;
 evomh(f,rb,"rest","rest") = 0;
 sav0(rb,"rest","rest") = 0;
@@ -343,7 +354,7 @@ rtm0(i,rb,"rest") = 0;
 
 execute_unload '%dsout%_proportional',
 	r,g,i,f,s,h,sf,mf,
-	vom, vafm, vfm, xn0, xd0, a0,
+	vom, vafm, vfm, ns0, yl0, xs0, a0,
 	md0, nd0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,
 	etrndn, hhtrn0, sav0,
@@ -362,10 +373,17 @@ loop(rb,
 hhtrn0(rb,sb(s),hb(h),trn) = theta_t(s,h,trn) * T.L(s,h);
 sav0(rb,sb(s),hb(h)) = SAV.L(s,h);
 
+set	i_(i)	Commodities
+	g_(g)	Sectors;
+
+i_(i) = i(i); g_(g) = g(g);
+
+$if set dropagr i_("agr") = no; g_("agr") = no; cd0("agr",rb,sb,hb)=0;
+
 execute_unload '%dsout%',
-	r,g,i,f,s,h,sf,mf,
-	vom, vafm, vfm, xn0, xd0, a0,
-	md0, nd0, c0, cd0, evom, evomh, 
+	r,g_=g,i_=i,f,s,h,sf,mf,
+	vom, vafm, vfm, yl0, a0,
+	md0, xs0, nd0, ns0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,
 	etrndn, hhtrn0, sav0,
 	rto, rtf, rtf0, vim, vxmd, pvxmd, pvtwr, rtxs, rtms, vtw, vtwr, vst, vb,
@@ -382,7 +400,7 @@ loop(rb(r),
 	macroaccounts("$","F","GTAPWiNDC") = vb(r);
 	macroaccounts("$","T","GTAPWiNDC") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - 
 						rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
 				+ sum((f,g), rtf(f,g,r)*sum(sb(s),vfm(f,g,r,s)))
 				+ sum(g, rto(g,r)*sum(sb(s),vom(g,r,s)));
 
@@ -394,6 +412,7 @@ macroaccounts("%GDP",gdpitem,src)$macroaccounts("$","Expend_GDP",src)
 
 option macroaccounts:3:2:1;
 display macroaccounts;
+
 
 $exit
 
