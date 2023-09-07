@@ -33,7 +33,7 @@ alias (s,ss);
 
 *	Read the GTAPWiNDC stub dataset:
 
-$set gtapwindc_datafile datasets\gtapwindc\43_stub
+$if not set gtapwindc_datafile $set gtapwindc_datafile datasets\gtapwindc\43_stub
 
 $include gtapwindc_data
 

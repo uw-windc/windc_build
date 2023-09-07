@@ -737,7 +737,7 @@ TAXES.L(r,h) = taxes0(r,h);
 
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step2_%hhdata% using nlp minimizing OBJ;';
 solve calib_step2_%hhdata% using nlp minimizing OBJ;
-abort$(calib_step2_%hhdata%.modelstat > 2) "Model calib_step2_%hhdata% has status > 2.";
+abort$(calib_step2_%hhdata%.modelstat > 2) "Model has status>2, check lst/hhcalib_%year%_%hhdata%_%invest%.lst";
 
 * Construct reports on calibrated household accounts
 
@@ -947,7 +947,7 @@ CD.FX(r,g,h)$(not theta(r,g,h)) = 0;
 $if %puttitle%==yes put_utility kutl 'title' /'solve calib_step3_%hhdata% using nlp minimizing OBJ;';
 option nlp=ipopt;
 solve calib_step3_%hhdata% using nlp minimizing OBJ;
-abort$(calib_step3_%hhdata%.modelstat > 2) "Model calib_step3_%hhdata% has status > 2.";
+abort$(calib_step3_%hhdata%.modelstat > 2) "Model has status>2, check lst/hhcalib_%year%_%hhdata%_%invest%.lst";
 
 * Construct reports on expenditure side balancing routine
 

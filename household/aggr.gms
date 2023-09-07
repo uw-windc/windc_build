@@ -62,22 +62,22 @@ $include '%mapdir%%rmap%.map'
 set	bug(*)	Mapping errors;
 
 bug(r) = yes$(sum(rmap(rr,r),1)<>1);
-abort$card(bug) "Region in r not uniquely mapped.",bug;
+abort$card(bug) "Region in r not uniquely mapped. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 bug(s) = yes$(sum(smap(ss,s),1)<>1);
-abort$card(bug) "Sector in s not uniquely mapped.",bug;
+abort$card(bug) "Sector in s not uniquely mapped. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 bug(m) = yes$(sum(mmap(mm,m),1)<>1);
-abort$card(bug) "Margin in m not uniquely mapped.",bug;
+abort$card(bug) "Margin in m not uniquely mapped. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 bug(rr) = yes$(sum(rmap(rr,r),1)=0);
-abort$card(bug) "Region in rr has no constituents.",bug;
+abort$card(bug) "Region in rr has no constituents. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 bug(ss) = yes$(sum(smap(ss,s),1)=0);
-abort$card(bug) "Sector in ss has no constituents.",bug;
+abort$card(bug) "Sector in ss has no constituents. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 bug(mm) = yes$(sum(mmap(mm,m),1)=0);
-abort$card(bug) "Margin in mm has no constituents.",bug;
+abort$card(bug) "Margin in mm has no constituents. lst/aggr_%ds%_%smap%_%rmap%.lst",bug;
 
 alias (ss,gg), (rr,qq), (smap,gmap), (rmap,qmap);
 
