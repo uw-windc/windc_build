@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2016_sage
+$set ds cps_static_all_2016
 
 * Allow for end of line comments
 $eolcom !
@@ -185,10 +185,11 @@ $sysinclude mpsgeset static_hh_mge -mt=1
 
 * Set the numeraire:
 
-CPI.FX = 1;
+PFX.FX = 1;
 
 * Starting values for other auxiliary variables:
 
+CPI.L = 1;
 TRANS.L = 1;
 SAVRATE.L = 1;
 SSK.L = 1;
@@ -580,7 +581,7 @@ abort$round(static_hh_mcp.objval,3) "Benchmark calibration of static_hh_mcp fail
 
 * Perform the same simulation in both models:
 
-tl(r,h) = 0.5*tl0(r,h);
+tl(r,h) = 0.8*tl0(r,h);
 
 static_hh_mcp.iterlim=10000;
 $include %gams.scrdir%static_hh_mcp.gen

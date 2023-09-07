@@ -11,16 +11,16 @@ $title Build routine for the windc household dataset
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$set year 2017
+$set year 2016*2017
 
 * set household data (cps, soi)
-$set hhdata "cps"
+$set hhdata "cps,soi"
 
 * set investment calibration (static, dynamic)
 $set invest "static"
 
 * set assumption on capital ownership (all,partial)
-$set capital_ownership "all"
+$set capital_ownership "all,partial"
 
 * set regional mapping (state,census_divisions,census_regions,national)
 $set rmap "state"
