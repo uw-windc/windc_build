@@ -66,6 +66,7 @@ set
     smap		Sectoral mappings /%smap%/;
 
 parameter myerrorlevel "For error checking when calling files.";
+
 *------------------------------------------------------------------------------
 * Household build routine
 *------------------------------------------------------------------------------
@@ -102,7 +103,10 @@ loop((year,hhdata,invest,capital_ownership),
 
     myerrorlevel = errorlevel;
     abort$(myerrorlevel>=2) "There was an error in hhcalib.";
-*Only verified the calibration for 2016 and 2017. The bounds on the variables are likely driving the infeasibilities in other years. You may need to change constraints placed on household variables in hhcalib."
+
+*Only verified the calibration for 2016 and 2017. The bounds on the variables
+*are likely driving the infeasibilities in other years. You may need to change
+*constraints placed on household variables in hhcalib."
  
 );
 
