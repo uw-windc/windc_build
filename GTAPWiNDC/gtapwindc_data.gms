@@ -1,9 +1,9 @@
 $title	GAMS Code to Read a GTAPWINDC Dataset
 
-$set fs %system.dirsep% 
+*.$set fs %system.dirsep% 
 
-$if not set ds                 $set ds 32
-$if not set gtapwindc_datafile $set gtapwindc_datafile datasets%fs%gtapwindc%fs%%ds%.gdx
+$if not set ds                 $set ds 43_stub
+$if not set gtapwindc_datafile $set gtapwindc_datafile %system.fp%datasets/gtapwindc/%ds%.gdx
 
 sets	
 	r(*)		Regions (countries)
@@ -50,15 +50,17 @@ parameters
 	rtf0(f,g,r)	Benchmark primary factor tax rate
 	rtf(f,g,r)	Primary factor tax rate
 
-	xn0(i,r,s)	Commodity supply to national market
 	xd0(i,r,s)	Local domestic absorption
 	a0(i,r,s)	Absorption
 	rtd(i,r,s)	Tax rate on domestic demand
 	rtd0(i,r,s)	Benchmark tax rate on domestic demand
+
+	yl0(i,r,s)	Local supply
+	nd0(i,r,s)	National market domestic absorption
 	md0(i,r,s)	Import absorption
+
 	rtm(i,r,s)	Tax rate on import demand
 	rtm0(i,r,s)	Benchmark tax rate on import demand
-	nd0(i,r,s)	National market domestic absorption
 	c0(r,s,h)	Total household consumption
 	cd0(i,r,s,h)	Household consumption at market prices
 	evom(f,r,s)	Primary factor supply
@@ -66,6 +68,8 @@ parameters
 	hhtrn0(r,s,h,trn)	Household transfers
 	sav0(r,s,h)		Household saving
 	vim(i,r)		Aggregate imports at market prices
+	ns0(i,r,s)	National market supply
+	xs0(i,r,s)	Export market supply
 
 	vxmd(i,r,rr)	Trade - bilateral exports at market prices,
 	pvxmd(i,rr,r)	Import price (power of benchmark tariff)
@@ -90,13 +94,16 @@ $loaddc	vafm
 $loaddc	vfm
 $loaddc	rtf0
 $loaddc	rtf
-$loaddc	xn0
-$loaddc	xd0
 $loaddc	a0
 $loaddc	rtd0
-$loaddc	md0
-$loaddc	rtm0
 $loaddc	nd0
+$loaddc	yl0
+$loaddc	md0
+$loaddc ns0 
+*	ns0(i,r,s) = (vom(i,r,s) - xd0(i,r,s)) * vnm(i,r)/(vnm(i,r)+vxm(i,r));
+$loaddc xs0 
+*	xs0(i,r,s) = (vom(i,r,s) - xd0(i,r,s)) * vxm(i,r)/(vnm(i,r)+vxm(i,r));
+$loaddc	rtm0
 $loaddc	c0
 $loaddc	cd0
 $loaddc	evom
@@ -125,7 +132,8 @@ rtd(i,r,s) = rtd0(i,r,s);
 rtm(i,r,s) = rtm0(i,r,s);
 
 sets	y_(g,r,s)	Flag: Production
-	x_(i,r,s)	Flag: Disposition
+	x_(i,r)		Flag: Export demand
+	n_(i,r)		Flag: national market demand
 	z_(i,r,s)	Flag: Armington demand
 	c_(r,s,h)	Flag: Consumption
 	ft_(f,r,s)	Flag: Specific factor transformation
@@ -135,18 +143,34 @@ sets	y_(g,r,s)	Flag: Production
 
 	py_(g,r,s)	Flag: Output price
 	pz_(i,r,s)	Flag: Armington composite price
-	pd_(i,r,s)	Flag: Local goods price
-	p_(i,r)		Flag: National goods price
+	p_(i,r)		Flag: export oods price
 	pc_(r,s,h)	Flag: Consumption price 
 	pf_(f,r,s)	Flag: Primary factors rent
 	ps_(f,g,r,s)	Flag: Sector-specific primary factors
 	pm_(i,r)	Flag: Import price
+	pn_(i,r)	Flag: national market
 	pt_(j)		Flag: Transportation services
 
 	rh_(r,s,h)	Flag: representative household;
 
+parameter
+	vxm(i,r)	Aggregate exports at market prices
+	vnm(i,r)	Aggregate national market supply;
+
+vxm(i,r) = sum(rr,vxmd(i,r,rr))+vst(i,r);
+vnm(i,r) = sum(s,nd0(i,r,s));
+
+parameter	esubx(i)	Elasticity of substitution in export demand
+		esubn(i)	Elasticity of substitution in national demand;
+
+esubx(i) = 8;
+esubn(i) = 4;
+
+
 y_(g,r,s) = vom(g,r,s);
-x_(i,r,s) = vom(i,r,s);
+x_(i,r) = vxm(i,r);
+n_(i,r) = vnm(i,r);
+pn_(i,r) = n_(i,r);
 z_(i,r,s) = a0(i,r,s);
 c_(r,s,h) = c0(r,s,h);
 ft_(sf,r,s) = evom(sf,r,s);
@@ -154,8 +178,7 @@ m_(i,r) = vim(i,r);
 yt_(j) = vtw(j);
 py_(g,r,s) = vom(g,r,s);
 pz_(i,r,s) = a0(i,r,s);
-pd_(i,r,s) = xd0(i,r,s);
-p_(i,r) = sum(s,xn0(i,r,s));
+p_(i,r) = sum(s,xs0(i,r,s));
 pc_(r,s,h) = c0(r,s,h);
 pf_(f,r,s) = evom(f,r,s);
 ps_(sf,g,r,s) = vfm(sf,g,r,s);
@@ -163,11 +186,7 @@ pm_(i,r) = vim(i,r);
 pt_(j) = vtw(j);
 rh_(r,s,h) = c0(r,s,h);
 
-option x_:0:0:1;
-display x_;
-option vom:3:0:1;
-display vom;
-
+$ontext
 
 parameter	xchk;
 xchk(i,r,s,"xn0") = xn0(i,r,s);
@@ -185,16 +204,15 @@ mktchk(p_(i,r),"vst") = vst(i,r);
 mktchk(p_(i,r),"chk") = sum(s,xn0(i,r,s)) - (sum(s,nd0(i,r,s)) + sum(rr,vxmd(i,r,rr)) + vst(i,r));
 display "Cross check all indices:", mktchk;
 
-mktchk(p_(i,r),"xn0") = sum(x_(i,r,s),xn0(i,r,s));
+mktchk(p_(i,r),"ns0") = sum(s, ns0(i,r,s));
 mktchk(p_(i,r),"nd0") = sum(z_(i,r,s),nd0(i,r,s));
 mktchk(p_(i,r),"vxmd") =sum(m_(i,rr),vxmd(i,r,rr));
 mktchk(p_(i,r),"vst") = vst(i,r);
-mktchk(p_(i,r),"chk") = sum(x_(i,r,s),xn0(i,r,s)) - ( sum(z_(i,r,s),nd0(i,r,s)) + sum(m_(i,rr),vxmd(i,r,rr)) + vst(i,r)$yt_(i) );
+mktchk(p_(i,r),"chk") = sum(x_(i,r),vnm(i,r)) - ( sum(z_(i,r,s),nd0(i,r,s)) + sum(m_(i,rr),vxmd(i,r,rr)) + vst(i,r)$yt_(i) );
 display "Cross check on active domain:", mktchk;
 
-option xn0:3:0:1;
-display xn0;
 
+$offtext
 
 
 *	Adjust elasticities for other goods and services (these are somehow set

@@ -6,11 +6,11 @@ $title National accounting model to verify benchmark consistency of MGE and MCP 
 * -------------------------------------------------------------------
 
 * file separator
-$set sep %system.dirsep%
+*$set sep %system.dirsep%
 
 * matrix balancing method defines which dataset is loaded
 $if not set matbal $set matbal ls
-$if not set ds $set ds gdx%sep%nationaldata_%matbal%.gdx
+$if not set ds $set ds gdx/nationaldata_%matbal%.gdx
 
 * years verified for benchmark consistency
 $if not set run $set run 1997*2017

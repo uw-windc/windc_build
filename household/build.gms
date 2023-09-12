@@ -1,6 +1,8 @@
 $title Build routine for the windc household dataset
 
-***** run after the core build is complete!! *****
+*-----
+* run after the core build is complete!! 
+*-----
 
 * to run individual build scripts, set %runscript% environment variable:
 * $set runscript aggr

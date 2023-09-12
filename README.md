@@ -67,7 +67,7 @@ If you don't have access to a GAMS license including needed solver licenses, you
 
 Once the core WiNDC database is generated, it can be loaded into a general equilibrium model in GAMS. The file `windc_coredata.gms` demonstrates how to read data from the database and extract data for a specific year. The file `replicate.gms` includes a simple general equilibrium model in MCP and MPSGE format, verifies benchmark consistency, solves a counterfactual (tariff shock) and verifies consistency at that point as well.
 
-## Households
+## Household
 The WiNDC household buildstream is an extension to the core WiNDC buildstream. The household buildstream generates disaggregated consumer accounts based on the core WiNDC database, CPS and SOI data. The key challenges were denominating reasonable transfer income and understanding income tax liabilities, savings, capital ownership versus demands, salaries and wages. We provide a static and a dynamic calibration and use income elasticities to separate household level commodity expenditures. The [presentation on the household build](https://windc.wisc.edu/2021-windc-meeting-hh.pdf) at the WiNDC Annual Meeting 2021 offers a detailed description of the calibration routine.
 
 Navigate to the subdirectory household. This directory contains the necessary input data (subdirectory `data_sources`) and all GAMS code needed to generate the WiNDC household datasets for the years 2015 to 2017. In addition to the data in the subdirectory `data_sources`, the WiNDC household buildstream takes as input the core WiNDC database, so make sure that the GDX file `WiNDCdatabase.gdx` is in the directory `core`.
@@ -131,19 +131,49 @@ In addition to the routines to generate the datasets, the directory `bluenote` h
 ## GTAPWiNDC
 The GTAPWiNDC buildstream incorporates data from either the publicly available GTAP 9 release or proprietary GTAP 11 release. To inquire about obtaining a license for the GTAP 11 database, visit the [GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). The GTAP version 9 database is included in our data distribution.
 
-First, the file `GTAPWiNDC/gtapingams.gms` controls which version of the GTAP database you'll be using. By default this file specifies gtap9. To switch to gtap11, change this file to read:
-
-```
-$setglobal gtapingams  gtap11\
-*$setglobal gtapingams  gtap9\
-```
-In words, delete the `*` from the beginning of line 3 and add a `*` to the beginning of line 4. 
-
-Second, navigate to the subdirectory `GTAPWiNDC/gtapN` where N is either 9 or 11, depending on the version of the data you wish to build. Run the command:
+First, you must build both `core` and `household` prior to building `GTAPWiNDC`. Navigate to the `GTAPWiNDC` directory and run
 
     gams build.gms
 
-You must run both `core` and `household` before running this command. This will build the GTAP in WiNDC dataset. 
+If you have placed the files for GTAP 11 in the correct location, this will automatically use these files. If not, it will default to GTAP9. 
 
-Finally, 
+|Command| Options |
+|---|---|
+|year | 2017[^GTAP11], 2014[^GTAP11], 2011, 2007, 2004| 
+|aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
 
+[^GTAP11]:GTAP 11 only
+
+
+These options can either be set on the command line using the `--command=option` syntax, e.g.:
+
+    gams build.gms --year=2014
+
+Or directly in the GTAPWiNDC/build.gms file.
+
+
+File Listing:
+
+1. `build.gms` - Main build method for the package. Detailed above.
+2. `gtap_model.gms` - 
+3. `write_stub.gms` - 
+4. `gtapwindc_mge.gms`
+5. `windc_model.gms`
+6. `regiondisagg.gms`
+7. `agrdissagg.gms`
+8. `gtapwindc_data.gms`
+9. `windc_data.gms` - Method to load the WiNDC household data. Options: ds, datadir, datafile
+
+
+
+
+
+### GTAP 11
+
+1. `build.gms`
+2. `gdx2gdx.gms`
+3. `filter.gms`
+4. `aggregate.gms`
+5. `replicate.gms`
+
+### GTAP 9

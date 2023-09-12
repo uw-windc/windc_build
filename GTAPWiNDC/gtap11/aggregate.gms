@@ -7,11 +7,11 @@ $if not set ds     $set ds gtapingams_%reltol%
 $if not set output $set output %target%
 $if not set datadir $set datadir %system.fp%%yr%/
 
-$include "%system.fp%gtapdata"
+$include %system.fp%gtapdata
 
 *	Calling program points to the target mapping:
 
-$include defines\%target%
+$include %system.fp%defines/%target%
 
 parameter	mapbug(*)	Problems with mapping;
 mapbug(r) = 1 - sum(mapr(r,rr),1);
@@ -296,7 +296,7 @@ display demandelast;
 
 set	md	Additional metadata /
 	aggregate_date		"%system.date%",
-	aggregate_inputdata	"%system.fp%%yr%%system.dirsep%%ds%.gdx"
+	aggregate_inputdata	"%system.fp%%yr%/%ds%.gdx"
 	aggregate_filesys	"%system.filesys%",
 	aggregate_username	"%system.username%",
 	aggregate_computername	"%system.computername%",
@@ -309,10 +309,8 @@ set	md	Additional metadata /
 metadata(md) = md(md);
 
 
-$set fs %system.dirsep%
-
 putclose //"Unloading dataset."/;
-execute_unload '%yr%%fs%%output%.gdx', 
+execute_unload '%system.fp%/%yr%/%output%.gdx', 
 	gg=g, rr=r, ff=f, ii=i, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 

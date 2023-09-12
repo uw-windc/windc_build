@@ -7,11 +7,11 @@ $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%
 $if not set output $set output %target%
 
-$include "%system.fp%gtapdata"
+$include "%system.fp%/gtapdata"
 
 *	Calling program points to the target mapping:
 
-$include defines\%target%
+$include %system.fp%/defines/%target%
 
 parameter	mapbug(*)	Problems with mapping;
 
@@ -107,33 +107,33 @@ $offtext
 file kcon/''/; put kcon;
 
 putclose //"Aggregating vom."/;
-$batinclude "%system.fp%aggr" vom  g r   vom_
+$batinclude "%system.fp%/aggr" vom  g r   vom_
 putclose //"Aggregating vst."/;
-$batinclude "%system.fp%aggr" vst  i r   vst_
+$batinclude "%system.fp%/aggr" vst  i r   vst_
 putclose //"Aggregating vfm."/;
-$batinclude "%system.fp%aggr" vfm  f j r vfm_
+$batinclude "%system.fp%/aggr" vfm  f j r vfm_
 putclose //"Aggregating vdfm."/;
-$batinclude "%system.fp%aggr" vdfm i g r vdfm_
+$batinclude "%system.fp%/aggr" vdfm i g r vdfm_
 putclose //"Aggregating vifm."/;
-$batinclude "%system.fp%aggr" vifm i g r vifm_
+$batinclude "%system.fp%/aggr" vifm i g r vifm_
 putclose //"Aggregating vxmd."/;
-$batinclude "%system.fp%aggr" vxmd i r s vxmd_
+$batinclude "%system.fp%/aggr" vxmd i r s vxmd_
 putclose //"Aggregating vtwr."/;
-$batinclude "%system.fp%aggr"  vtwr i j r s vtwr_
+$batinclude "%system.fp%/aggr"  vtwr i j r s vtwr_
 putclose //"Aggregating pop."/;
-$batinclude "%system.fp%aggr" pop r pop_
+$batinclude "%system.fp%/aggr" pop r pop_
 
 putclose //"Aggregating eco2d."/;
-$batinclude "%system.fp%aggr" eco2d i g r eco2d_
+$batinclude "%system.fp%/aggr" eco2d i g r eco2d_
 putclose //"Aggregating eco2i."/;
-$batinclude "%system.fp%aggr" eco2i i g r eco2i_
+$batinclude "%system.fp%/aggr" eco2i i g r eco2i_
 
 putclose //"Aggregating evd."/;
-$batinclude "%system.fp%aggr" evd i g r evd_
+$batinclude "%system.fp%/aggr" evd i g r evd_
 putclose //"Aggregating evi."/;
-$batinclude "%system.fp%aggr" evi i g r evi_
+$batinclude "%system.fp%/aggr" evi i g r evi_
 *.putclose //"Aggregating evt."/;
-*.$batinclude "%system.fp%aggr" evt i r s evt_
+*.$batinclude "%system.fp%/aggr" evt i r s evt_
 
 *.putclose //"Aggregating nco2emit."/;
 *.nco2emit_(pol,ii(i_f),gg,rr) = sum((mapi(i,ii),mapg(g,gg),mapr(r,rr))$sameas(i_f,i),nco2emit(pol,i_f,g,r));
@@ -181,19 +181,19 @@ rtxs(i,r,s) = rtxs(i,r,s) * vxmd(i,r,s);
 *	Aggregate:
 
 putclose //"Aggregating rto."/;
-$batinclude "%system.fp%aggr" rto g r   rto_
+$batinclude "%system.fp%/aggr" rto g r   rto_
 putclose //"Aggregating rtf."/;
-$batinclude "%system.fp%aggr" rtf f j r rtf_
+$batinclude "%system.fp%/aggr" rtf f j r rtf_
 putclose //"Aggregating rtfd."/;
-$batinclude "%system.fp%aggr" rtfd i g r rtfd_
+$batinclude "%system.fp%/aggr" rtfd i g r rtfd_
 putclose //"Aggregating rtfi."/;
-$batinclude "%system.fp%aggr" rtfi i g r rtfi_
+$batinclude "%system.fp%/aggr" rtfi i g r rtfi_
 putclose //"Aggregating rtxs."/;
-$batinclude "%system.fp%aggr" rtxs i r s rtxs_
+$batinclude "%system.fp%/aggr" rtxs i r s rtxs_
 putclose //"Aggregating rtms."/;
-$batinclude "%system.fp%aggr" rtms i r s rtms_
+$batinclude "%system.fp%/aggr" rtms i r s rtms_
 putclose //"Aggregating vcm."/;
-$batinclude "%system.fp%aggr"  vcm i r vcm_
+$batinclude "%system.fp%/aggr"  vcm i r vcm_
 
 *	First aggregate commodities at the disaggregate regional level:
 
@@ -302,12 +302,12 @@ display demandelast;
 
 set	md	Additional metadata /
 	aggregate_date		"%system.date%",
-	aggregate_inputdata	"%system.fp%%yr%%system.dirsep%%ds%.gdx"
+	aggregate_inputdata	"%system.fp%/%yr%/%ds%.gdx"
 	aggregate_filesys	"%system.filesys%",
 	aggregate_username	"%system.username%",
 	aggregate_computername	"%system.computername%",
 	aggregate_gamsversion	"%system.gamsversion%",
-	aggregate_gamsprogram	"%system.fp%%system.fn%%system.fe%"/;
+	aggregate_gamsprogram	"%system.fp%/%system.fn%%system.fe%"/;
 
 *	Add the md elements to meta being sure to include the
 *	descriptive text:
@@ -315,10 +315,10 @@ set	md	Additional metadata /
 metadata(md) = md(md);
 
 
-$set fs %system.dirsep%
+
 
 putclose //"Unloading dataset."/;
-execute_unload '%yr%%fs%%output%.gdx', 
+execute_unload "%system.fp%/%yr%/%output%.gdx", 
 	gg=g, rr=r, ff=f, ii=i, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 

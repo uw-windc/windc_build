@@ -14,7 +14,7 @@ $if not set abstol $set abstol 7
 parameter	reltol	Relative filter tolerance /1e-%reltol%/,
 		abstol	Absolute filter tolerance /1e-%abstol%/;
 
-$include gtapdata
+$include %system.fp%gtapdata
 
 alias (r,rr), (g,gg);
 
@@ -104,7 +104,7 @@ trace("vdfm",r,"%pt%") = sum((i,g),vdfm(i,g,r));
 trace("vifm",r,"%pt%") = sum((i,g),vifm(i,g,r));
 trace("vfm",r,"%pt%") = sum((f,g),vfm(f,g,r));
 
-$include calibrate
+$include %system.fp%calibrate
 
 $set pt calibrated
 trace("vst",r,"%pt%") = sum((i),vst(i,r));
@@ -178,7 +178,7 @@ display eneadj;
 *	Drop bilateral energy trade which have no corresponding economic transaction
 *.evt(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 
-execute_unload '%yr%\gtapingams_%reltol%.gdx',f,g,i,r,pol,
+execute_unload '%system.fp%/%yr%/gtapingams_%reltol%.gdx',f,g,i,r,pol,
 	vfm,vdfm,vifm,vxmd,vst,vtwr,
 	rto,rtf,rtfd,rtfi,rtxs,rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, 
