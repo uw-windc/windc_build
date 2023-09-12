@@ -5,11 +5,11 @@
 *-----------------------
 
 
-$setglobal gtapingams  gtap11a/
+*$setglobal gtapingams  gtap11a/
 
 *	Other options:
 
-*$setglobal gtapingams  gtap11/
+$setglobal gtapingams  gtap11/
 *$setglobal gtapingams  gtap9/
 
 *	NB  We should specify the path to the data file here.

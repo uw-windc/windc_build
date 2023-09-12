@@ -38,7 +38,7 @@ $set debug yes
 
 *	Pause after each step?
 
-$set pause yes
+$set pause no
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 *   %system.dirsep% is necessary here because windows
