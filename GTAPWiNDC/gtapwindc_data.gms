@@ -20,17 +20,19 @@ $gdxin "%gtapwindc_datafile%"
 $load r g i f 
 
 set	trn	Transfer types /
-		hucval   unemployment compensation
-		hwcval   workers compensation
-		hssval   social security
-		hssival  supplemental security
-		hpawval  public assistance or welfare
-		hvetval  veterans benefits
-		hsurval  survivors income
-		hdisval  disability
-		hedval   educational assistance
-		hcspval  child support
-		hfinval  financial assistance /;
+		hucval		Unemployment compensation
+		hwcval		Workers compensation
+		hssval		Social security
+		hssival		Supplemental security
+		hpawval		Public assistance or welfare
+		hvetval		Veterans benefits
+		hsurval		Survivors income
+		hdisval		Disability
+		medicare	Medicare
+		medicaid	Medicaid
+		hedval		Educational assistance
+		hcspval		Child support
+		hfinval		Financial assistance /;
 
 
 *	These sets are defined prior to reading the dataset in the disaggregation routine:

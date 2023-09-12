@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-$set start write_stub
+$set start regiondisagg32
 
 *---------------------- 
 * run after the core and household builds are complete!! 
