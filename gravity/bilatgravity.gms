@@ -95,11 +95,11 @@ display mref, eref;
 
 *	Absorption -- net of tax:
 
-aref(i,s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
+aref(itrd(i),s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
 
-parameter	thetay(i,s)	Output share of absorption
+parameter	thetay(i,s)	Local output share of absorption
 		thetam(i,prt)	Import share of absorption
-		thetae(i,s)	Output share of exports;
+		thetae(i,s)	Regional share of production;
 
 *	Uniformly mixed demand shares:
 
@@ -349,7 +349,8 @@ gravity.optfile = 1;
 *.option sysout=on;
 
 
-parameter	shares(i,s,*)		Trade shares;
+parameter	shares(i,s,*)		Trade shares,
+		nchk			Cross check on national market;
 
 loop(itrd,
 
@@ -421,6 +422,10 @@ $include gravity.gen
 	yd_0(ib,s) = PY.L(ib,s)*PY_AD.L(ib,s,s);
 	md_0(ib,s) = sum(prt, PM.L(ib,prt)*PM_AD.L(ib,prt,s));
 
+	nchk(ib,"ns_0") = sum(s,ns_0(ib,s));
+	nchk(ib,"nd_0") = sum(s,nd_0(ib,s));
+	nchk(ib,"chk") = nchk(ib,"ns_0") - nchk(ib,"nd_0");
+
 	n_0(ib)    = sum(s, ns_0(ib,s));
 	x_0(ib)     = sum(s,xs_0(ib,s));
 
@@ -462,7 +467,7 @@ $include bilat.gen
 	put_utility 'title' /'Bilateral flow for ',itrd.tl,' precision = ',gravity.objval;
 
 
-*	Replicate the national market model:
+*	Then replicate the national market model:
 
 	national.iterlim = 0;
 $include national.gen
@@ -477,6 +482,8 @@ $include national.gen
 );
 option solvelog:3:2:1;
 display solvelog;
+
+display nchk;
 
 option shares:1:2:1;
 display shares;

@@ -8,9 +8,11 @@ $title	Build GTAP in GAMS from GTAP Datasets
 * $set task aggregate
 
 *	Indicate a single task. Options include: "gdx2gdx", "filter", "aggregate" and "replicate"
+
 *	No task indicates build all the datasets.
 *
 *	--start
+
 *	Begin the computations at a set starting point. Options are the same as above.
 *----------------------------------
 
@@ -42,7 +44,7 @@ set
 *	The code works with the following archive -- note that the
 *	file name for a GTAP user may be different.
 
-*	Archive:  GDX_AY1017.zip
+*	Archive:  gdx11aay333.zip
 
 *	  Length     Date   Time    Name
 *	 --------    ----   ----    ----
@@ -66,12 +68,6 @@ set	seq	Sequencing set for filter tolerance /1*10/;
 
 file kput; kput.lw=0; put kput;
 
-
-
-****************
-* Remove these *
-****************
-
 *	Run a single task:
 
 $if set task  $goto %task%
@@ -79,10 +75,6 @@ $if set task  $goto %task%
 *	Start at a specific task:
 
 $if set start $goto %start%
-
-****************
-****************
-****************
 
 $label gdx2gdx
 
