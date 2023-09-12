@@ -1322,10 +1322,10 @@ INV.LO(r,dg) = 0.5 * i0loop(r,dg);
 INV.UP(r,dg) = 1.5 * i0loop(r,dg);
 GD.LO(r,dg) = 0.1 * g0loop(r,dg);
 CD.LO(r,dg) = 0.1 * cd0loop(r,dg);
-CD_H.L(r,dg,h) = 0.1 * cd0_hloop(r,dg,h);
-WAGE.L(r,q,h) = 0.1 * le0loop(r,q,h);
-INT.L(r,h) = 0.1 * ke0loop(r,h);
-SAVE.L(r,h) = 0.1 * sav0loop(r,h);
+CD_H.LO(r,dg,h) = 0.1 * cd0_hloop(r,dg,h);
+WAGE.LO(r,q,h) = 0.1 * le0loop(r,q,h);
+INT.LO(r,h) = 0.1 * ke0loop(r,h);
+SAVE.LO(r,h) = 0.1 * sav0loop(r,h);
 
 * Impose some zero restrictions:
 
