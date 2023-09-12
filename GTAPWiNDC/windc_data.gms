@@ -120,6 +120,14 @@ govdef0 = sum((r,g), g0(r,g)) + sum((r,h), trn0(r,h))
 	- sum((r,s,g)$y_(r,s), ty0(r,s) * ys0(r,s,g)) 
 	- sum((r,g)$a_(r,g),   ta0(r,g)*a0(r,g) + tm0(r,g)*m0(r,g));
 
+parameter	
+	ty(r,s)		"Counterfactual production tax",
+	tm(r,g)		"Counterfactual import tariff",
+	ta(r,g)		"Counteractual tax on intermediate demand";
+
+ty(r,s) = ty0(r,s);
+tm(r,g) = tm0(r,g);
+ta(r,g) = ta0(r,g);
 
 * --------------------------------------------------------------------------
 * End

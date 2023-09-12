@@ -5,20 +5,10 @@ $title	Disaggregate Agricultural Sectors in a WiNDC Dataset
 
 $if not set year  $set year 2017
 
-$if not set datadir $set datadir ../household/datasets/
+$if not set datadir $set datadir ..\household\datasets\
 $if not set ds $set ds cps_static_gtap_32_state
 
-$if not set dsout $set dsout datasets/windc/43.gdx
-
-
-*-----------------------
-*   If the value of gtapingams is not set via command line,
-*   then set its value. If the data for gtap11 exists, then
-*   gtapingams will be set to gtap11, otherwise gtap9
-*-----------------------
-
-$include %system.fp%gtapingams
-
+$if not set dsout $set dsout datasets\windc\43.gdx
 
 set s	Sectors (to which we introduce agricultural products) /
 	fbp  "Food and beverage and tobacco products (311FT)",
@@ -84,7 +74,7 @@ parameter	vafm(i,*)	GTAP intermediate demand
 $onechov >%gams.scrdir%gtapagr.gms
 $title	Extract Agricultural Data from the GTAP Dataset
 
-*$include gtapingams
+$include gtapingams
 
 $set ds g20_43
 
@@ -112,7 +102,7 @@ v(i,"vom") = vom(i,"usa");
 v(i,"vim") = vim(i,"usa");
 v(i,"vxm") = sum(rm, vxmd(i,"usa",rm)) + vst(i,"usa");
 $offecho
-$call gams %gams.scrdir%gtapagr gdx=%gams.scrdir%gtapagr.gdx o=lst/gtapagr.lst
+$call gams %gams.scrdir%gtapagr gdx=%gams.scrdir%gtapagr.gdx o=lst\gtapagr.lst
 $gdxin '%gams.scrdir%gtapagr.gdx'
 $loaddc vafm v
 
@@ -524,7 +514,7 @@ s0(r,g) = sum(s,ys0(r,s,g)) + yh0(r,g);
 
 execute_unload '%dsout%',s_=s, r, m, gm_=gm, h, trn,
 		ys0,ld0,kd0,id0,ty0,
-		yh0,cd0,c0_h, cd0_h,c0,i0,g0,bopdef0,hhadj,
+		yh0,cd0,c0_h, cd0_h,c0,i0,g0,bopdef0,
 		s0,xd0,xn0,x0,rx0,a0,nd0,dd0,m0,ta0,tm0,
 		md0,nm0,dm0,
-		le0,ke0,tk0,tl0,sav0,hhtrn0,pop;
+		le0,ke0,tk0,tl0,sav0,hhtrn0,pop0;

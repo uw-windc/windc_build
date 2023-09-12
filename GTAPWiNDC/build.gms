@@ -1,5 +1,9 @@
 $title	GAMS Script to Create GTAP-WiNDC Datasets
 
+*	Choose a starting point if desired
+
+$set start write_stub
+
 *---------------------- 
 * run after the core and household builds are complete!! 
 * ---------------------
@@ -23,17 +27,14 @@ $if not set year $set year 2017
 
 * set aggregations g20_10,  g20_32,  g20_43, 
 *				      wb12_10, wb12_32, wb12_43
-$if not set aggeregation $set aggeregation g20_32
-
-
-
+$if not set aggregation $set aggregation g20_32
 
 
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug no
+$set debug yes
 
 *	Pause after each step?
 
@@ -50,19 +51,14 @@ $if not dexist lst		  $call mkdir lst
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
 
-
-$set start g20_43
-
 $if set start $goto %start%
 
 *----------------------------------------
-* Test if the target aggregation exists. If not, generate the aggeregation
+* Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
 $call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
 $endif
-
-
 
 
 * ------------------------------------------------------------------------
@@ -80,6 +76,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms"
 *	Translate the GTAP dataset into a GTAPWiNDC dataset
 *	with one subregion per country.
 * ------------------------------------------------------------------------
+$label write_stub
 $log	Ready to run WRITE_STUB (datasets/gtapwindc/32_stub.gdx)
 $if not %pause%==no $call pause
 $call gams write_stub --ds=g20_32 o=lst/write_stub_32.lst --gtapingams=%gtapingams% --dsout=datasets/gtapwindc/32_stub.gdx
@@ -124,7 +121,7 @@ $label regiondisagg32
 
 $log	"Ready to run regiondisagg (datasets/gtapwindc/32.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --windc_gdx=datasets/windc/32.gdx --gtapwindc_datafile=datasets/gtapwindc/32_stub --dsout=datasets/gtapwindc/32.gdx   o=lst/regiondisagg_32.lst 
+$call gams regiondisagg --ds=32 o=lst/regiondisagg_32.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 32.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
@@ -142,15 +139,9 @@ $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 
 
-
-
-
-$exit
-
 $label g20_43
-
 *----------------------------------------
-* Test if the target aggregation exists. If not, generate the aggeregation
+* Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_43.gdx"
 $call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_43 o=lst/gtap.lst 
@@ -219,8 +210,6 @@ $call gams agrdisagg --datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapi
 $if errorlevel 1 $log   "Non-zero return code from agrdisagg.gms"
 $if errorlevel 1 $abort "Non-zero return code from agrdisagg.gms"
 
-
-
 $label windc_model_43
 * ------------------------------------------------------------------------
 *	Verify consistency of the disaggregate dataset:
@@ -240,7 +229,7 @@ $label regiondisagg43
 
 $log	"Ready to run regiondisagg with 43 sector dataset  (datasets/gtapwindc/43.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --dropagr=yes --windc_gdx=datasets/windc/43.gdx --gtapwindc_datafile=datasets/gtapwindc/43_stub --dsout=datasets/gtapwindc/43.gdx   o=lst/regiondisagg_43.lst 
+$call gams regiondisagg  --ds=43 --dropagr=yes  o=lst/regiondisagg_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 43.gdx"
