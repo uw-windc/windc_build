@@ -9,7 +9,7 @@ $title State disaggregation of national accounts
 $if not set matbal $set matbal ls
 
 * check benchmark consistency in regional model for single year
-$if not set year $set year 2017
+$if not set year $setglobal year 2016
 
 * input data directory
 $set gdxdir gdx/

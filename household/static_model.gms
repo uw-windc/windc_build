@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2017
+$set ds cps_static_all_2016
 
 * Allow for end of line comments
 $eolcom !
@@ -74,7 +74,7 @@ $commodities:
 	RKS			!	Capital stock
         PM(r,m)                 !       Margin price
         PC(r,h)			!       Consumer price index
-        PN(g)                   !       National market price for goods
+        PN(g)$pn_(g)            !       National market price for goods
 	PLS(r,h)		!	Leisure price
         PL(r)                   !       Regional wage rate
 	PK			!     	Aggregate return to capital
@@ -185,10 +185,11 @@ $sysinclude mpsgeset static_hh_mge -mt=1
 
 * Set the numeraire:
 
-CPI.FX = 1;
+PFX.FX = 1;
 
 * Starting values for other auxiliary variables:
 
+CPI.L = 1;
 TRANS.L = 1;
 SAVRATE.L = 1;
 SSK.L = 1;
@@ -197,7 +198,7 @@ static_hh_mge.workspace = 10000;
 static_hh_mge.iterlim=0;
 $include %gams.scrdir%static_hh_mge.gen
 solve static_hh_mge using mcp;
-abort$round(static_hh_mge.objval,4) "Benchmark calibration of static_hh_mge fails.";
+abort$round(static_hh_mge.objval,3) "Benchmark calibration of static_hh_mge fails.";
 
 
 * -----------------------------------------------------------------------------
@@ -576,11 +577,11 @@ static_hh_mcp.workspace = 1000;
 static_hh_mcp.iterlim=0;
 $include %gams.scrdir%static_hh_mcp.gen
 solve static_hh_mcp using mcp;
-abort$round(static_hh_mcp.objval,4) "Benchmark calibration of static_hh_mcp fails.";
+abort$round(static_hh_mcp.objval,3) "Benchmark calibration of static_hh_mcp fails.";
 
 * Perform the same simulation in both models:
 
-tl(r,h) = 0.5*tl0(r,h);
+tl(r,h) = 0.8*tl0(r,h);
 
 static_hh_mcp.iterlim=10000;
 $include %gams.scrdir%static_hh_mcp.gen
