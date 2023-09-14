@@ -12,8 +12,8 @@ $title National accounting model to verify benchmark consistency of MGE and MCP 
 $if not set matbal $set matbal ls
 $if not set ds $set ds gdx/nationaldata_%matbal%.gdx
 
-* years verified for benchmark consistency
-$if not set run $set run 1997*2017
+* hotrun the model calibration check for a single year
+* $set run 2017
 
 
 * -------------------------------------------------------------------
@@ -32,7 +32,10 @@ $gdxin %ds%
 $loaddc yr i va fd ts m
 
 set
-    run(yr)	Sampled years for benchmark consistency /%run%/;
+    run(yr)	Sampled years for benchmark consistency;
+
+$if set run run('%run%') = yes;
+$if not set run run(yr) = yes;
 
 alias (i,j);
 

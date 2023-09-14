@@ -14,9 +14,6 @@ $title Balance the National Dataset
 * variable is the of the two methods.
 $if not set matbal $set matbal ls
 
-* set years of the dataset
-$if not set run $set run 1997*2017
-
 * options for directories
 $if not set gengdx $set gengdx "gdx"
 
@@ -774,10 +771,19 @@ option qcp=cplex;
 balance.holdfixed = 1;
 
 parameter
-    solveno(yr)	Solve number (for retrieving basis files);
+    solveno(yr)	Solve number (for retrieving basis files),
+    year_min, year_max;
+
+year_min = smin(yr, yr.val);
+year_max = smax(yr, yr.val);
+
+* $if not set run $set run 
 
 set
-    run(yr)	Which years to run /%run%/;
+    run(yr)	Which years to run;
+
+$if set run run('%run%') = yes;
+$if not set run run(yr) = yes;
 
 loop(yr$run(yr),
 
