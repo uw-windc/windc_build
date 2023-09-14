@@ -312,7 +312,7 @@ metadata(md) = md(md);
 $set fs %system.dirsep%
 
 putclose //"Unloading dataset."/;
-execute_unload '%yr%%fs%%output%.gdx', 
+execute_unload '%datadir%%fs%%output%.gdx', 
 	gg=g, rr=r, ff=f, ii=i, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 
