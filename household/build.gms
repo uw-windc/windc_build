@@ -28,7 +28,7 @@ $if not set capital_ownership $set capital_ownership "all,partial"
 $if not set rmap $set rmap "state"
 
 * set sectoral mapping (windc,gtap_32,sage,gtap_10,macro,bluenote)
-$if not set smap $set smap "windc"
+$if not set smap $set smap "windc,gtap_32"
 
 
 * ------------------------------------------------------------------------------
