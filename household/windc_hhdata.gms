@@ -92,18 +92,21 @@ $loaddc md0 nm0 dm0
 
 * household data:
 $loaddc le0 ke0 tk0 tl_avg0 tl0 tfica0 cd0_h c0_h sav0 trn0 hhtrn0 pop0 fsav0 fint0
+$gdxin
 
 * Specify sparsity tuples
 
 sets	y_(r,s) 	Sectors and regions with positive production,
 	x_(r,g) 	Disposition by region,
 	a_(r,g) 	Absorption by region,
-	pn_(g)  	National market;
+	pn_(g)  	National market,
+	pd_(r,g)  	Local markets;
 
 y_(r,s) = yes$(sum(g, ys0(r,s,g))>0);
 x_(r,g) = yes$round(s0(r,g),6);
 a_(r,g) = yes$(a0(r,g) + rx0(r,g));
-pn_(g) = yes$(sum(r, dd0(r,g) + nd0(r,g) + sum(m, dm0(r,g,m) + nm0(r,g,m))));
+pn_(g) = yes$(sum(r, xn0(r,g) + nd0(r,g) + sum(m, nm0(r,g,m))));
+pd_(r,g) = yes$(xd0(r,g) + dd0(r,g) + sum(m, dm0(r,g,m)));
 
 * calculate additional aggregate parameters
 totsav0 = sum((r,h),sav0(r,h));

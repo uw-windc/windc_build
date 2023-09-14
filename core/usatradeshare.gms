@@ -13,8 +13,6 @@ set
     n 		Dynamically created set from parameter usatrd (NAICS codes),
     s 		BEA Goods and sectors categories;
 
-* Note that exports are available from 2002-2016, while imports are available
-* from 2008-2012.
 parameter
     usatrd_units(sr,n,yr,t,*) 	Trade data with units as domain;
 
@@ -97,7 +95,8 @@ $offtext
 
 * assign trade for agriculture to be based on usda shares:
 
-usatrd_shr(ayr,r,'agr','exports') = usda(r,ayr) / sum(r.local, usda(r,ayr));
+usatrd_shr(ayr,r,'agr','exports')$(ayr.val <= smax(yr,yr.val)) =
+    usda(r,ayr) / sum(r.local, usda(r,ayr));
 
 
 * -------------------------------------------------------------------
