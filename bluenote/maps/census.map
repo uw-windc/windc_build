@@ -1,0 +1,22 @@
+* create regions in target dataset
+set     rr      Census divisions are regions in the target dataset /
+		NEG     "New England" 
+		MID     "Mid Atlantic" 
+		ENC     "East North Central" 
+		WNC     "West North Central" 
+		SAC     "South Atlantic" 
+		ESC     "East South Central" 
+		WSC     "West South Central" 
+		MTN     "Mountain" 
+		PAC     "Pacific" /;
+
+set     rmap(rr,r)      Mapping of target regions rr and source regions r /
+		   NEG.(ct,me,ma,nh,ri,vt)
+		   MID.(nj,ny,pa)
+		   ENC.(il,in,mi,oh,wi)
+		   WNC.(ia,ks,mn,mo,ne,nd,sd)
+		   SAC.(de,fl,ga,md,dc,nc,sc,va,wv)
+		   ESC.(al,ky,ms,tn)
+		   WSC.(ar,la,ok,tx)
+		   MTN.(az,co,id,mt,nv,nm,ut,wy)
+		   PAC.(ak,ca,hi,or,wa) /;
