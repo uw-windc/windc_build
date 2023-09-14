@@ -93,13 +93,16 @@ set
     map(sg,g)    Mapping between SCTG and WiNDC indicies /
 $include 'maps/mapfaf.map'
 /,
-    mapy(fyr,yr) Mapping between years /
+    mapy(fyr,*) Mapping between years /
     		 1997.(1997*1999),
 		 2002.(2000*2004),
 		 2007.(2005*2009),
 		 2012.(2010*2014),
-		 2017.(2015*2017) /;
-* 		 2018.2018, 2019.2019, 2020.2020, 2021.2021/;
+		 2017.(2015*2017),
+  		 2018.2018,
+		 2019.2019,
+		 2020.2020,
+		 2021.2021/;
 
 * Note that WiNDC uses the RPC in the Armington nest. Therefore, we need to
 * capture all goods coming IN from other states (net imports -- here we care
