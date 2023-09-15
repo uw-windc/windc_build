@@ -8,19 +8,43 @@ If you have a local version of GAMS and access to the relevant licenses, navigat
 
 The code creates the directory `datasets`, generates the household datasets and saves all household datasets in this directory. The code in the file `build.gms` runs the following routines for the years 2015, 2016 and 2017.
 
-1. `cps_data.gms`
+# File Listing
+
+1. `build.gms` - 
+
+    Inputs: `data/household`
+
+    Outputs: `datasets/WiNDC_%hhdata%_%invest%_%capital_ownership%_%year%_%smap%_%rmap%.gdx.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | year | cps: 2000-2021, soi: 2014-2017 | 2016, 2017, 2021 | Years to compute data |
+    | hhdata | cps, soi | cps | Household data|
+    | invest | static, dynamic| static| Investment calibration |
+    | captial_ownership| all, partial| all, partial | Assumption on capital ownership |
+    | rmap | state, census_divisions, census_regions, national | state | Regional mapping |
+    | smap | windc, gtap_32, sage, gtap_10, macro, bluenote | windc, gtap_32 | Sectoral mapping | 
+
+
+2. 
+
+
+
+
+2. `cps_data.gms`
 Reads [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html) data from the directory `data_sources`, subdirectory `cps`, processes it and saves the processed data in a GDX file in the directory `gdx`.
 
-2. `soi_data.gms`
+3. `soi_data.gms`
 Reads [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) data from the directory `data_sources`, subdirectory `soi`, processes it and saves the processed data in a GDX file in the directory `gdx`. The routine also computes and saves data on capital gains that will be used to construct the CPS dataset.
 
-3. `hhcalib.gms`
+4. `hhcalib.gms`
 Reads a household dataset (CPS or SOI) and recalibrates it to match the core WiNDC database. There are two calibration options: `static` and `dynamic`. The `dynamic` option forces investment to line up with reported capital demands for a balanced growth path. This impacts the calibration of the household accounts since total savings need to equal total investment. The calibration routine uses income elasticities (estimated on the national level) based on the [Consumer Expenditure Survey (CEX)](https://www.bls.gov/cex/) from the Bureau of Labor Statistic (BLS). The resulting parameters are saved in a GDX file in the directory `gdx`. The capital tax rate is saved in its own file and is used in the next routine.
 
-4. `dynamic_calib.gms`
+5. `dynamic_calib.gms`
 Reads the dynamic datasets and recalibrates the rest of the commodity accounts to satisfy balanced growth requirements; saves the recalibrated parameters in a GDX file in the directory `gdx`.
 
-5. `consolidate.gms`
+6. `consolidate.gms`
 Merges the household data of each type to one GDX file and saves the resulting files to the directory `datasets`. There are four files:
 
     <center>
@@ -33,7 +57,7 @@ Merges the household data of each type to one GDX file and saves the resulting f
     </center>
     Each dataset has household data for the years 2015 to 2017 on the US state level with WiNDC economic sectors.
 
-6. `aggr.gms`
+7. `aggr.gms`
 This aggregation routine is optional.
 Aggregates the four household datasets to given economic sectors and regions. The environment variable `smap` denotes the sectoral aggregation and `rmap` denotes the regional aggregation. The options for `smap` are `windc` (the 69 WiNDC sectors), `bluenote` (the sectors of the WiNDC energy-environment module), `gtap` ([GTAP](https://www.gtap.agecon.purdue.edu/) sectors) and `macro` (6 sectors). The options for `rmap` are `state` (US states) and `census` ( [9 Census regions](https://www2.census.gov/geo/docs/maps-data/maps/reg_div.txt)). The routine reads the relevant mapping from the subdirectory maps; users can easily create their own maps for customized sectoral and regional aggregations. The aggregated datasets are saved in the directory `datasets`.
 

@@ -55,7 +55,7 @@ If you have a local version of GAMS and have access to the relevant licenses, na
         gams build.gms
 
 Note that this build will work in both, Windows and UNIX/LINUX 
-environments. See [the core documentation](core/README.md) for a description of all the subroutines within the buildstream.
+environments. See [the core documentation](core/README.md) for a description of all the subroutines within the build stream. A description of the previous version of the WiNDC build stream is in the [WiNDC paper](https://windc.wisc.edu/windc.pdf) along with documentation of the models.
 
 By default, one version of the core WiNDC database will be generated and saved in the directory `core`: `WiNDCdatabase.gdx`. This is based on the least squares matrix balancing routine. An optional second dataset can be generated using the command line option `huber` to generate a version based on the Huber method. 
 
