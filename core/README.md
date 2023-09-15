@@ -14,7 +14,7 @@
 
 # File Listing
 
-1. `build.gms` - Entry point into the WiNDC core buildstream. Will run each of the files in order to build the WiNDC dataset. Standard usage is to run this file.
+1. `build.gms` - Entry point into the WiNDC core buildstream. This file will  run each of the listed files in the correct order to build the WiNDC database. Most users only need to run this file.
 
     Inputs: `data/core`
 
