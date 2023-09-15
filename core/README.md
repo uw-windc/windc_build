@@ -1,3 +1,130 @@
+<!-- TOC -->
+
+- [Table of Contents](#table-of-contents)
+- [File Listing](#file-listing)
+- [Sets](#sets)
+- [Parameters](#parameters)
+- [Set Listing](#set-listing)
+    - [Years in WiNDC Database](#years-in-windc-database)
+    - [Regions in WiNDC Database](#regions-in-windc-database)
+    - [BEA Goods and sectors categories & Commodities employed in margin supply](#bea-goods-and-sectors-categories--commodities-employed-in-margin-supply)
+    - [Margins trade or transport](#margins-trade-or-transport)
+
+<!-- /TOC -->
+
+# File Listing
+
+1. `build.gms` - Entry point into the WiNDC core buildstream. Will run each of the files in order to build the WiNDC dataset. Standard usage is to run this file.
+
+    Inputs: `data/core`
+
+    Outputs: `WiNDCdatabase.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | neos  | no, yes | no | Use neos for calibration rather than local solvers|
+    | huber | no, yes | no | Run huber calibration routine |
+2. `partitionbea.gms` - Load and partition BEA Use/Supply tables.
+
+    Inputs: `/data/core/windc_base.gdx`
+
+    Outputs: `gdx/national_cgeparm_raw.gdx`
+
+3. `calibrate.gms` - Calibrate BEA data.
+
+    Inputs: `/data/core/windc_base.gdx`
+
+    Outputs: `gdx/nationaldata_%matbal%.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | matbal | ls, huber | ls | Set optimization routine for matrix balancing: least squares (ls) or huber (huber)|
+    | neos | no, yes| no |Use neos for calibration rather than local solvers|
+
+
+4. `nationalmodel.gms` - Run a model calibartion check for a single year.
+
+    Inputs: `gdx/nationaldata_%matbal%.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | matbal | ls, huber | ls |Set optimization method used: least squares (ls) or huber (huber)|
+    | run | A single year | all years | Set a year to run|
+
+5. `gspshare.gms` - Create two parameters, `region_shr` and `labor_shr` from the BEA GDP by state data.
+
+    Inputs: `/data/core/windc_base.gdx`, `gdx/nationaldata_%matbal%.gdx`
+
+    Outputs: `gdx/shares_gsp.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | matbal | ls, huber | ls |Set optimization method used: least squares (ls) or huber (huber)|
+
+6. `pceshare.gms` - Create the parameter `pce_shr` from the BEA Personal Consumptions Expenditures data.
+
+    Inputs: `/data/core/windc_base.gdx`
+
+    Outputs: `gdx/shares_pce.gdx`
+
+7. `sgfshare.gms` - Create the parameter `sgf_shr` from the Census State Government Finances data
+
+    Inputs: `/data/core/windc_base.gdx`
+
+    Outputs: `gdx/shares_sgf.gdx`
+
+8. `fafshare.gms` - Create the parameter `rpc` from the Freight Analysis Framework data. This replaces the Commodity Flow Survey from previous releases.
+
+    Inputs - `/data/core/windc_base.gdx`, `/data/core/faf_data_1997_2021.csv`
+
+    Outputs - `gdx/faf_rpcs.gdx`
+    
+9. `usatradeshare.gms` - Create two parameters, `usatrd_shr` and `notinc` from the US Census Trade Shares data.
+
+    Inputs: `/data/core/windc_base.gdx'`
+
+    Outputs: `gdx/shares_usatrd.gdx`
+
+10. `statedisagg.gms` - Disaggregate national accounts to the state level 
+
+    Inputs: 
+    * `gdx/nationaldata_%matbal%.gdx`
+    * `gdx/shares_gsp.gdx`
+    * `gdx/shares_pce.gdx` 
+    * `gdx/shares_sgf.gdx` 
+    * `gdx/faf_rpcs.gdx`
+    * `gdx/shares_usatrd.gdx`
+
+    Outputs: `WiNDCdatabase.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | matbal | ls, huber | ls |Set optimization method used: least squares (ls) or huber (huber)|
+    | neos | no, yes| no |Use neos for calibration rather than local solvers|
+    | year | a single year | 2017 | Check benchmark consistency in regional model for single year |
+
+11. `windc_coredata.gms` - Loads a single year of data from the state-level dataset. A good example if you are loading the data for another purpose. 
+
+    Inputs: `WiNDCdatabase.gdx`
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | year | A single year | 2017 | Load a single year of the state-level dataset|
+
+11. `replicate.gms` - Run a model calibration check on the state-level data
+
+    Inputs: `WiNDCdatabase.gdx`
+
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+    | sequence | mgemcp, mcpmge | mgemcp | Set the solve sequence|
+
 # Sets
 
 <center>
