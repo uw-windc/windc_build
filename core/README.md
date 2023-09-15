@@ -1,6 +1,5 @@
 <!-- TOC -->
 
-- [Table of Contents](#table-of-contents)
 - [File Listing](#file-listing)
 - [Sets](#sets)
 - [Parameters](#parameters)
@@ -10,6 +9,7 @@
     - [BEA Goods and sectors categories & Commodities employed in margin supply](#bea-goods-and-sectors-categories--commodities-employed-in-margin-supply)
     - [Margins trade or transport](#margins-trade-or-transport)
 
+<!-- /TOC -->
 <!-- /TOC -->
 
 # File Listing
