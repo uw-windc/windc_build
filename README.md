@@ -1,16 +1,15 @@
+<!-- TOC -->
 
+- [Data](#data)
+- [Description of each method](#description-of-each-method)
+    - [Core](#core)
+    - [Household](#household)
+    - [Bluenote](#bluenote)
+    - [GTAPWiNDC](#gtapwindc)
+        - [GTAP 11](#gtap-11)
+        - [GTAP 9](#gtap-9)
 
-
-# WiNDC Build Stream
-
-Primary repository for the Wisconsin National Data Consortium (WiNDC) dataset generation environment.
-
-Before running any methods in this package, you first need to download the datasets and locate them in the correct directories. The [Data](#data) section details this process.
-
-This repository contains 4 primary methods
-
-1. [Core](#core)
-2. [Households](#households)
+<!-- /TOC -->
 3. [Bluenote](#bluenote)
 4. [GTAPWiNDC](#gtapwindc)
 
@@ -19,8 +18,7 @@ This repository contains 4 primary methods
 # Data
 
 The data required to build each of piece of the repository are located at the following link
-[WiNDC downloads page](https://windc.wisc.edu/downloads.html). Extract `windc_data.zip` into 
-the `data` directory.
+[WiNDC downloads page](https://windc.wisc.edu/downloads.html). Extract `windc_2021.zip` into the `windc_build` directory. This will create a file called `data`.
 
 Data is included to run `core`, `household`, `bluenote`, and `gtap9`. In order to run `gtap11` you
 need to obtain a license from GTAP. The data for GTAPWiNDC for the year 2017 is propriety to GTAP and requires a GTAP license. 
@@ -52,14 +50,18 @@ The zip file should have the correct directory structure, but the following is t
 
 ## Core
 
-If you have a local version of GAMS and have access to the relevant licenses, navigate in your command line or terminal to the directory `windc_build_3_0`, subdirectory `core` and run the GAMS file `build.gms` by simply typing the following command:
+If you have a local version of GAMS and have access to the relevant licenses, navigate in your command line or terminal to the directory `windc_build`, subdirectory `core` and run the GAMS file `build.gms` by simply typing the following command:
 
         gams build.gms
 
 Note that this build will work in both, Windows and UNIX/LINUX 
-environments. See the [WiNDC paper](https://windc.wisc.edu/windc.pdf) for a description of all subroutines within the buildstream.
+environments. See [the core documentation](core/README.md) for a description of all the subroutines within the buildstream.
 
-Two versions of the core WiNDC database will be generated and saved in the directory core: `WiNDCdatabase.gdx` and `WiNDCdatabase_huber.gdx`. The first version is based on the least squares matrix balancing routine and the second version is based on the Huber method. Both databases contain data for all US states and 69 (summary) sectors from 1997 to 2017.
+By default, one version of the core WiNDC database will be generated and saved in the directory `core`: `WiNDCdatabase.gdx`. This is based on the least squares matrix balancing routine. An optional second dataset can be generated using the command line option `huber` to generate a version based on the Huber method. 
+
+    gams build --huber=yes
+
+This file will be called `WiNDCdatabase_huber.gdx`. Both databases contain data for all US states and 69 (summary) sectors from 1997 to 2021.
 
 If you don't have access to a GAMS license including needed solver licenses, you can generate the databases locally using [NEOS](https://neos-server.org/neos/). To run the routines on NEOS, type the following command:
 
