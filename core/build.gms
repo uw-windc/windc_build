@@ -1,9 +1,7 @@
 $title Build routine for the windc core dataset
 
 * to run individual build scripts, set %runscript% environment variable:
-
 * $set runscript usatradeshare
-
 
 
 * ------------------------------------------------------------------------------

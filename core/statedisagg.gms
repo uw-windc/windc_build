@@ -9,7 +9,7 @@ $title State disaggregation of national accounts
 $if not set matbal $set matbal ls
 
 * check benchmark consistency in regional model for single year
-$if not set year $setglobal year 2016
+$if not set year $setglobal year 2017
 
 * input data directory
 $set gdxdir gdx/
@@ -111,13 +111,11 @@ $gdxin %gdxdir%shares_usatrd.gdx
 $load usatrd_shr
 $gdxin
 
-* For years not included in USA Trade Online shares, use most recent
-* shares. Earliest year for exports is: 2002. Earliest year for imports
-* is: 2008. For agricultural data, earliest year is 2000 for exports.
+* Relate years of data to available trade shares
 
 usatrd_shr(yr,r,g,'exports')$(yr.val<2002 and not sameas(g,'agr')) = usatrd_shr('2002',r,g,'exports');
 usatrd_shr(yr,r,g,'exports')$(yr.val<2000 and sameas(g,'agr')) = usatrd_shr('2000',r,g,'exports');
-usatrd_shr(yr,r,g,'imports')$(yr.val<2008) = usatrd_shr('2008',r,g,'imports');
+usatrd_shr(yr,r,g,'imports')$(yr.val<2002) = usatrd_shr('2002',r,g,'imports');
 
 * Verify all shares both sum to 1 and are in [0,1]:
 
@@ -147,7 +145,7 @@ shrverify(yr,g,'XPT','sum') = sum(r, usatrd_shr(yr,r,g,'exports'));
 shrverify(yr,g,'IMP','sum') = sum(r, usatrd_shr(yr,r,g,'imports'));
 display shrverify;
 
-
+    
 * ------------------------------------------------------------------------------
 * Regionalize production data using iomacro shares and GSP data:
 * ------------------------------------------------------------------------------
@@ -183,6 +181,7 @@ zprof(yr,r,s) = sum(g, ys0_(yr,r,s,g)) * (1-ty0_(yr,r,s)) -
     (ld0_(yr,r,s) + kd0_(yr,r,s) + sum(g, id0_(yr,r,g,s)));
 
 abort$(smax((yr,r,s), abs(zprof(yr,r,s))) > 1e-5) "Error in zero profit check in regionalization.";
+
 
 * ------------------------------------------------------------------------------
 * Final demand categories:

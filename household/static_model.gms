@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2016
+$set ds cps_static_all_2021
 
 * Allow for end of line comments
 $eolcom !
@@ -69,7 +69,7 @@ $sectors:
 $commodities:
         PA(r,g)$a0(r,g)         !       Regional market (input)
         PY(r,g)$s0(r,g)         !       Regional market (output)
-        PD(r,g)$xd0(r,g)        !       Local market price
+        PD(r,g)$pd_(r,g)        !       Local market price
         RK(r,s)$kd0(r,s)	!       Sectoral rental rate
 	RKS			!	Capital stock
         PM(r,m)                 !       Margin price
@@ -85,7 +85,7 @@ $consumer:
 	NYSE			!	Aggregate capital owner
 	INVEST			!	Aggregate investor
 	GOVT			!	Aggregate government
-	ROW			!	Aggregate rest of world
+	ROW$fint0		!	Aggregate rest of world
 
 $auxiliary:
 	SAVRATE			!	Domestic savings rate
@@ -164,7 +164,7 @@ $demand:GOVT
 	e:PFX           q:govdef0
 	e:PLS(r,h)	q:(-(tl(r,h) - tl_avg0(r,h))*sum(q,le0(r,q,h)))
 
-$demand:ROW
+$demand:ROW$fint0
     	d:PFX
 	e:PK		q:fint0
 	
@@ -482,13 +482,13 @@ bal_GOVT..	GOVT =e= PFX*E_GOVT_PFX + sum((r,h), PLS(r,h)*E_GOVT_PLS(r,h)) +
 
 
 *	-----------------------------------------------------------------------------------
-* $demand:ROW
+* $demand:ROW$fint0
 *     	d:PFX
 $macro	D_PFX_ROW	(ROW/PFX)
 * 	e:PK		q:fint0
 $macro	E_PK_ROW	(fint0)
 
-bal_ROW..	ROW =e= PK * fint0;
+bal_ROW$fint0..	ROW =e= PK * fint0;
 
 
 *	Auxiliary constraints: one for each auxiliary variable.
@@ -509,7 +509,7 @@ mkt_PA(r,g)$a0(r,g)..	sum(a_(r,g), A(r,g)*O_A_PA(r,g)) =g= sum(y_(r,s), Y(r,s)*I
 	
 mkt_PY(r,g)$s0(r,g)..	sum(y_(r,s), Y(r,s)*O_Y_PY(r,g,s)) + E_NYSE_PY(r,g) =e= sum(x_(r,g), X(r,g)*I_PY_X(r,g));
 	
-mkt_PD(r,g)..		sum(x_(r,g), X(r,g)*O_X_PD(r,g)) =e= sum(a_(r,g), A(r,g)*I_PD_A(r,g)) + sum((m,gm(g)), MS(r,m)*I_PD_MS(r,gm,m));
+mkt_PD(r,g)$pd_(r,g)..	sum(x_(r,g), X(r,g)*O_X_PD(r,g)) =e= sum(a_(r,g), A(r,g)*I_PD_A(r,g)) + sum((m,gm(g)), MS(r,m)*I_PD_MS(r,gm,m));
 	
 mkt_RK(r,s)$kd0(r,s)..	KS*O_KS_RK(r,s) =e= Y(r,s)*I_RK_Y(r,s);
 	
@@ -519,7 +519,7 @@ mkt_PM(r,m)..		MS(r,m)*O_MS_PM(r,m) =e= sum(a_(r,g),A(r,g)*I_PM_A(r,m,g));
 	
 mkt_PC(r,h)..		C(r,h)*O_C_PC(r,h) =e= D_PC_RA(r,h);
 	
-mkt_PN(g)..		sum(x_(r,g), X(r,g)*O_X_PN(g,r)) =e= sum(a_(r,g), A(r,g)*I_PN_A(g,r)) + sum((r,m,gm(g)), MS(r,m)*I_PN_MS(gm,r,m));
+mkt_PN(g)$pn_(g)..	sum(x_(r,g), X(r,g)*O_X_PN(g,r)) =e= sum(a_(r,g), A(r,g)*I_PN_A(g,r)) + sum((r,m,gm(g)), MS(r,m)*I_PN_MS(gm,r,m));
 	
 mkt_PLS(r,h)..		E_RA_PLS(r,h) + E_GOVT_PLS(r,h) =g= D_PLS_RA(r,h) + LS(r,h) * I_PLS_LS(r,h);
 	
@@ -572,8 +572,9 @@ model static_hh_mcp /
 	aux_CPI.CPI /;
 
 PA.FX(r,g)$(not a0(r,g)) = 1;
+ROW.FX$(not fint0) = 0;
 
-static_hh_mcp.workspace = 1000;
+static_hh_mcp.workspace = 10000;
 static_hh_mcp.iterlim=0;
 $include %gams.scrdir%static_hh_mcp.gen
 solve static_hh_mcp using mcp;
@@ -583,15 +584,15 @@ abort$round(static_hh_mcp.objval,3) "Benchmark calibration of static_hh_mcp fail
 
 tl(r,h) = 0.8*tl0(r,h);
 
-static_hh_mcp.iterlim=10000;
-$include %gams.scrdir%static_hh_mcp.gen
-solve static_hh_mcp using mcp;
-abort$round(static_hh_mcp.objval,4) "Counterfactual simulation with static_hh_mcp fails.";
-
-static_hh_mge.iterlim=0;
+static_hh_mge.iterlim=10000;
 $include %gams.scrdir%static_hh_mge.gen
 solve static_hh_mge using mcp;
 abort$round(static_hh_mge.objval,4) "Counterfactual consistency with static_hh_mge fails.";
+
+static_hh_mcp.iterlim=0;
+$include %gams.scrdir%static_hh_mcp.gen
+solve static_hh_mcp using mcp;
+abort$round(static_hh_mcp.objval,4) "Counterfactual simulation with static_hh_mcp fails.";
 
 
 * -----------------------------------------------------------------------------

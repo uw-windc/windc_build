@@ -406,7 +406,6 @@ maphy(hy,yr)$(hy.val = yr.val) = yes;
 maphy(hy,yr)$(ord(hy)=1 and yr.val < hy.val) = yes;
 maphy(hy,yr)$(ord(hy)=card(hy) and yr.val > hy.val) = yes;
 
-
 $if %hhdata%=="cps" trn("medicare") = yes;
 $if %hhdata%=="cps" trn("medicaid") = yes;
 $if %hhdata%=="cps" hhtrans0(r,h,'medicare') = sum((maphy(hy,'%year%'),maphh(hea_h,h)), health_care_transfers(r,hy,hea_h,'medicare'));
@@ -514,6 +513,7 @@ $if %capital_ownership%=="partial" economy_wide_sr0 = savings_rate_bea0;
 
 savings_rate0(r,h) = (economy_wide_sr0 / (sum((r.local,h.local), interest0(r,h)) / sum((r.local,h.local), (interest0(r,h) + cons0(r,h))))) * interest0(r,h) / (interest0(r,h) + cons0(r,h));
 $if %capital_ownership%=="partial" save_target=1;
+display savings_rate0;
 
 * Reference retirement distributions:
 
@@ -680,7 +680,7 @@ OTHINC.FX(r,h) = 0;
 * occurring
 
 CONS.L(r,h) = cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
-CONS.LO(r,h) = 0.2 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
+CONS.LO(r,h) = 0.1 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
 
 * Target income SHARES for wages and capital earnings (both categories having
 * missing information so we target the distribution based on WiNDC
@@ -691,7 +691,7 @@ CONS.LO(r,h) = 0.2 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
 * commute.
 
 WAGES.L(r,r,h) = household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-$if %hhdata% == "cps" WAGES.LO(r,r,h) = 0.75 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+$if %hhdata% == "cps" WAGES.LO(r,r,h) = 0.65 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
 $if %hhdata% == "cps" WAGES.UP(r,r,h) = 1.25 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
 $if %hhdata% == "soi" WAGES.LO(r,r,h) = 0.5 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
 $if %hhdata% == "soi" WAGES.UP(r,r,h) = 1.5 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));

@@ -1,5 +1,3 @@
-
-
 1. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
 
 2. `gtapingams.gms` - Defines whether we are using GTAP9 or GTAP11. If the data files for GTAP11 exist, this will default to GTAP11, 
