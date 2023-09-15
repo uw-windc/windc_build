@@ -93,7 +93,11 @@
 
 ## Goods and sectors from BEA -- Margin related sectors
 
+1. [WiNDC Aggregation](#windc-aggregationWiNDC-Aggregation)
+2. [GTAP 32 Aggregation](#gtap_32-aggregation)
 
+
+### WiNDC Aggregation
 
 | s     | gm   | Description                                                                           |
 |:------|:-----:|:--------------------------------------------------------------------------------------|
@@ -169,6 +173,44 @@
 | fen   | -    | Federal government enterprises (GFE)                                                  |
 | slg   | -    | State and local general government (GSLG)                                             |
 | sle   | -    | State and local government enterprises (GSLE)                                         |
+
+
+### GTAP_32 Aggregation
+
+| s   | gm   | Description                                       |
+|:----|:-----|:--------------------------------------------------|
+| agr | agr  | Farms and farm products (111CA)                   |
+| fof | fof  | Forestry and fishing                              |
+| oil | oil  | Petroleum, coal products                          |
+| uti | - | Utilities (electricity-gas-water)                 |
+| pmt | pmt  | Primary metals (331)                              |
+| fbp | fbp  | Food and beverage and tobacco products (311FT)    |
+| tex | tex  | Textiles                                          |
+| alt | alt  | Apparel and leather and allied products (315AL)   |
+| trd | trd  | Trade                                             |
+| oxt | oxt  | Coal, minining and supporting activities          |
+| ros | - | Recreational and other services                   |
+| dwe | - | Dwellings and real estate activities              |
+| LUM | LUM  | Lumber and wood products                          |
+| NMM | NMM  | Mineral products nec                              |
+| FMP | FMP  | Metal products                                    |
+| MVH | MVH  | Motor vehicles and parts                          |
+| OTN | OTN  | Transport equipment nec                           |
+| OME | OME  | Machinery and equipment nec                       |
+| CNS | - | Construction                                      |
+| WTP | WTP  | Water transport                                   |
+| ATP | ATP  | Air transport                                     |
+| ISR | - | Insurance                                         |
+| OGS | OGS  | Crude oil and natural gas                         |
+| PPP | PPP  | Paper products, publishing                        |
+| CRP | CRP  | Chemical, rubber, plastic products                |
+| EEQ | EEQ  | Electronic equipment                              |
+| OMF | OMF  | Manufactures nec                                  |
+| OTP | OTP  | Transport nec                                     |
+| CMN | CMN  | Communication                                     |
+| OFI | - | Financial services nec                            |
+| OBS | - | Business services nec                             |
+| OSG | - | Public Administration, Defense, Education, Health |
 
 ## Margins (trade or transport)
 
