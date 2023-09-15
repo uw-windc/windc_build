@@ -4,9 +4,8 @@
 
 | Set Name | Description                  |
 |:---------|:-----------------------------|
-| [r](#states)        | States                       |
-| [s](#goods-and-sectors-from-bea----margin-related-sectors)        | Goods and sectors from BEA   |
-| [gm](#goods-and-sectors-from-bea----margin-related-sectors)       | Margin related sectors       |
+| [r](#regions)        | Regions - Controlled by `rmap`                      |
+| [s, gm](#goods-and-sectors-from-bea----margin-related-sectors)        | Goods and sectors from BEA  and Margin related sectors. Controlled by `smap`|
 | [m](#margins-trade-or-transport)        | Margins (trade or transport) |
 | [h](#household-categories)        | household categories         |
 | [trn](#transfer-types)      | transfer types               |
@@ -60,8 +59,15 @@
 
 # Set Listing
 
-## States
+## Regions
 
+1. [state](#states)
+2. [census_divison](#census-divisions)
+3. [census_regions](#census-regions)
+4. [national](#national)
+
+
+### States
 |r|Description| |r|Description|
 |---|---|---|---|--|
 |AK|Alaska| |MT|Montana|
@@ -91,10 +97,45 @@
 |MO|Missouri| |WY|Wyoming|
 |MS|Mississippi||||
 
+
+### Census Divisions 
+
+| uni   | element_text       |
+|:------|:-------------------|
+| neg   | New England        |
+| mid   | Mid Atlantic       |
+| enc   | East North Central |
+| wnc   | West North Central |
+| sac   | South Atlantic     |
+| esc   | East South Central |
+| wsc   | West South Central |
+| mtn   | Mountain           |
+| pac   | Pacific            |
+
+
+### Census Regions
+
+| uni   | element_text   |
+|:------|:---------------|
+| nor   |                |
+| mid   |                |
+| sou   |                |
+| wes   |                |
+
+
+### National
+
+| uni   | element_text   |
+|:------|:---------------|
+| usa   |                |
+
+
 ## Goods and sectors from BEA -- Margin related sectors
 
-1. [WiNDC Aggregation](#windc-aggregationWiNDC-Aggregation)
-2. [GTAP 32 Aggregation](#gtap_32-aggregation)
+1. [windc](#windc-aggregationWiNDC-Aggregation)
+2. [gtap_32](#gtap_32-aggregation)
+3. [gtap_10](#gtap-10-aggregation)
+4. [macro](#macro)
 
 
 ### WiNDC Aggregation
@@ -211,6 +252,34 @@
 | OFI | - | Financial services nec                            |
 | OBS | - | Business services nec                             |
 | OSG | - | Public Administration, Defense, Education, Health |
+
+
+### GTAP 10 Aggregation
+
+| s   | gm   | Description                                                                   |
+|:----|:-----|:------------------------------------------------------------------------------|
+| agr | agr  | Agriculture forestry and fishing                                              |
+| man | man  | Other manufacturing sectors                                                   |
+| oil | oil  | Petroleum products                                                            |
+| trn | trn  | Transportation                                                                |
+| ele | nan  | Electric power generation, transmission, and distribution and other utilities |
+| ogs | ogs  | Crude oil and natural gas extraction                                          |
+| col | col  | All mining                                                                    |
+| eis | eis  | Energy/Emission intensive sectors (embodied carbon > .5 kg per $)             |
+| cns | nan  | Construction                                                                  |
+| ser | ser  | Other services         
+
+
+### Macro
+
+| s   | gm   | Description    |
+|:----|:-----|:---------------|
+| con | nan  | Construction   |
+| agr | agr  | Agriculture    |
+| trn | trn  | Transportation |
+| mfr | mfr  | Manufacturing  |
+| ser | ser  | Services       |                                                       |
+
 
 ## Margins (trade or transport)
 
