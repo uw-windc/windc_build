@@ -62,7 +62,7 @@ $if set start $goto %start%
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_32 o=lst/gtap.lst 
 $endif
 
 
@@ -149,7 +149,7 @@ $label g20_43
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_43.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_43 o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 o=lst/gtap.lst 
 $endif
 
 * ------------------------------------------------------------------------
