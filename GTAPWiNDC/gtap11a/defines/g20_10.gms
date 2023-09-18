@@ -2,8 +2,8 @@ $title	Define Region and Sector Mappings for g20_10
 
 parameter	mapbug(*)	Problems with mapping;
 
-$batinclude mappings g20
-$batinclude mappings windc_10
+$batinclude "%system.fp%../mappings" g20
+$batinclude "%system.fp%../mappings" windc_10
 
 *	Retain all the factors:
 
