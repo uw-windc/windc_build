@@ -54,7 +54,7 @@ $title Read the household data and recalibrate WiNDC household accounts
 * -----------------------------------------------------------------------------
 
 * set year of interest
-$if not set year $set year 2017
+$if not set year $set year 2021
 
 * set underlying dataset for recalibration
 $if not set hhdata $set hhdata "cps"
@@ -414,6 +414,7 @@ $if %hhdata%=="cps" hhtrans0(r,h,'medicaid') = sum((maphy(hy,'%year%'),maphh(hea
 $if %hhdata%=="soi" hhtrans0(r,h,'total') = hhtrans0(r,h,'total') + sum((maphy(hy,'%year%'),maphh(hea_h,h)), health_care_transfers(r,hy,hea_h,'medicare') + health_care_transfers(r,hy,hea_h,'medicaid'));
 
 
+
 * -----------------------------------------------------------------------------
 * Balancing routine step 0: partial dynamic calibration (change investment for
 * household recalibration if invest=dynamic switch activated)
@@ -485,8 +486,9 @@ $endif.dynamic
 parameter
     household_shares(r,h,*)	Household shares of income,
     ret_dist0(r,h)		Reference retirement distributions from hh data,
-    savings_rate_bea0		Reference economy-wide savings rate from bea /0.07/,
+    savings_rate_bea0		Reference economy-wide savings rate from bea /0.1/,
     savings_rate0(r,h)		Reference savings rate,
+    savings_markup0		Savings markups,
     economy_wide_sr0		Economy-wide savings rate,
     save_target			Flag for targetting bea savings rate (partially owned capital) /0/,
     fringe_markup		Fringe benefit markup,
@@ -496,6 +498,16 @@ parameter
     cap_own0			Portion of capital stock owned domestically,
     adj_trans0(r,h)		Total adjusted transfer income,
     othinc0			Other non-government transfer income;
+
+* Set assumption on capital ownership (partial ownership is based on NIPA totals)
+
+$call 'csv2gdx ../data/household/cps/windc_vs_nipa_domestic_capital.csv output=%gdxdir%windc_vs_nipa_domestic_capital.gdx id=cap_own0_ index=(1) useHeader=y value=4';
+$gdxin %gdxdir%windc_vs_nipa_domestic_capital.gdx
+$load cap_own0_
+$gdxin
+
+$if %capital_ownership%=="partial" cap_own0 = cap_own0_("%year%");
+$if %capital_ownership%=="all" cap_own0 = 1;
 
 * Labor income shares defined by region:
 
@@ -511,9 +523,10 @@ household_shares(r,h,'cap') = interest0(r,h) / sum((r.local, h.local), interest0
 $if %capital_ownership%=="all" economy_wide_sr0 = sum((r,g), i0(r,g)) / (sum((r,g), i0(r,g) + cd0(r,g)));
 $if %capital_ownership%=="partial" economy_wide_sr0 = savings_rate_bea0;
 
-savings_rate0(r,h) = (economy_wide_sr0 / (sum((r.local,h.local), interest0(r,h)) / sum((r.local,h.local), (interest0(r,h) + cons0(r,h))))) * interest0(r,h) / (interest0(r,h) + cons0(r,h));
+savings_markup0('save') = sum((r,s), cap_own0 * kd0(r,s)) / sum((r,h), interest0(r,h));
+savings_markup0('c') = sum((r,g), cd0(r,g)) / sum((r,h), cons0(r,h));
+savings_rate0(r,h) = (economy_wide_sr0 / (sum((r.local,h.local), savings_markup0('save')*interest0(r,h)) / sum((r.local,h.local), (savings_markup0('save')*interest0(r,h) + savings_markup0('c')*cons0(r,h))))) * (savings_markup0('save')*interest0(r,h)) / (savings_markup0('save')*interest0(r,h) + savings_markup0('c')*cons0(r,h));
 $if %capital_ownership%=="partial" save_target=1;
-display savings_rate0;
 
 * Reference retirement distributions:
 
@@ -547,16 +560,6 @@ commute0(r,rr)$(commute0(r,rr)<1) = 0;
 
 le0_multiplier(r)$(le0_multiplier(r)>1 and sum(rr,commute0(r,rr))=0) = 1;
 le0_multiplier(r)$(le0_multiplier(r)<1 and sum(rr,commute0(rr,r))=0) = 1;
-
-* Set assumption on capital ownership (partial ownership is based on NIPA totals)
-
-$call 'csv2gdx ../data/household/cps/windc_vs_nipa_domestic_capital.csv output=%gdxdir%windc_vs_nipa_domestic_capital.gdx id=cap_own0_ index=(1) useHeader=y value=4';
-$gdxin %gdxdir%windc_vs_nipa_domestic_capital.gdx
-$load cap_own0_
-$gdxin
-
-$if %capital_ownership%=="partial" cap_own0 = cap_own0_("%year%");
-$if %capital_ownership%=="all" cap_own0 = 1;
 
 * Report household budget balance in source data assumptions:
 
@@ -620,7 +623,7 @@ objdef..
 	abs(household_shares(r,h,'cap')*cap_own0*sum((s,rr),kd0(rr,s)))*
 	   sqr(INTEREST(r,h)/(household_shares(r,h,'cap')*cap_own0*sum((s,rr),kd0(rr,s))) - 1)) + 
     	sum((r,rr)$commute0(r,rr), abs(commute0(r,rr))*sqr(sum(h,WAGES(r,rr,h))/commute0(r,rr) - 1)) +
-        sum((r,h)$(ord(h) < 3), abs(othinc0(r,h)) * sqr(OTHINC(r,h)/othinc0(r,h) - 1));
+        sum((r,h), abs(othinc0(r,h)) * sqr(OTHINC(r,h)/othinc0(r,h) - 1));
 	
 * fix the income tax rate from the household data
 taxdef(r,h)..
@@ -652,16 +655,18 @@ targetsave$save_target..
 
 * let transfer payments and taxes adjust to satisfy budget balance assumptions
 incbal(r,h)..
-    TRANS(r,h) + OTHINC(r,h) + sum(rr, WAGES(r,rr,h)) + INTEREST(r,h) =e= CONS(r,h) + SAVE(r,h) + TAXES(r,h);
+    TRANS(r,h) + sum(rr, WAGES(r,rr,h)) + INTEREST(r,h) =e= CONS(r,h) + SAVE(r,h) + TAXES(r,h);
 
 * disaggregate transfer payments
 disagtrn(r,h)..
-    sum(trn, TRANSHH(r,h,trn)) =e= TRANS(r,h);
+    sum(trn, TRANSHH(r,h,trn)) + OTHINC(r,h) =e= TRANS(r,h);
 
 model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, interestdef,
 			     savedef, saveratedef, targetsave, incbal, disagtrn /;
 
 * Bounds on ABSOLUTE government transfers (we have good data on this). 
+
+TRANSHH.L(r,h,trn) = hhtrans0(r,h,trn);
 
 $if %hhdata% == "cps" TRANSHH.LO(r,h,trn) = 0.8 * hhtrans0(r,h,trn);
 $if %hhdata% == "cps" TRANSHH.UP(r,h,trn) = 1.2 * hhtrans0(r,h,trn);
@@ -672,9 +677,12 @@ $if %hhdata% == "soi" TRANSHH.UP(r,h,trn) = 1.5 * hhtrans0(r,h,trn);
 TRANS.L(r,h) = sum(trn, hhtrans0(r,h,trn));
 
 * Fix "other" transfer income not accounted for in the household data (can
-* be negative) to zero:
+* be negative) to zero in the static case. Allow adjustments in dynamic
+* calibration as an additional "transfer" category:
 
-OTHINC.FX(r,h) = 0;
+$if %invest% == "static" OTHINC.FX(r,h) = 0;
+$if %invest% == "dynamic" OTHINC.L(r,h) = 0;
+$if %invest% == "dynamic" OTHINC.LO(r,h)$(ord(h)<4) = 0;
 
 * Require a lower bound on aggregate consumption to prevent zero values from
 * occurring
@@ -691,6 +699,7 @@ CONS.LO(r,h) = 0.1 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
 * commute.
 
 WAGES.L(r,r,h) = household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
+
 $if %hhdata% == "cps" WAGES.LO(r,r,h) = 0.65 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
 $if %hhdata% == "cps" WAGES.UP(r,r,h) = 1.25 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
 $if %hhdata% == "soi" WAGES.LO(r,r,h) = 0.5 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
@@ -702,6 +711,7 @@ WAGES.UP(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 1.25 * commute0(r,rr)
 WAGES.FX(r,rr,h)$(commute0(r,rr)=0 and not sameas(r,rr)) = 0;
 
 INTEREST.L(r,h) = household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
+
 $if %hhdata% == "cps" INTEREST.LO(r,h) = 0.75 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
 $if %hhdata% == "cps" INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
 $if %hhdata% == "soi" INTEREST.LO(r,h) = 0.5 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
@@ -720,6 +730,7 @@ INTEREST.UP(r,h)$(ord(h)=card(h)) = inf;
 
 SAVE.L(r,h) = save0(r,h);
 $if %hhdata% == "cps" SAVE.LO(r,h) = 0.1 * save0(r,h);
+$if %hhdata% == "soi" SAVE.LO(r,h) = 0.1 * save0(r,h);
 
 * Constrain savings rate letting any additional savings needed to close the
 * budget constraint accrues to the upper income group
@@ -831,6 +842,7 @@ chkwages(r,'all','ld0') = sum(s, ld0(r,s));
 chkwages(r,'all','ld0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','ld0');
 chkwages(r,'all','le0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','le0');
 display cbochk, chkhhdata, hhshares, chktotals, increp, boundshr, chkwages, cons_save, WAGES.L;
+display fsav.l, fint.l, othinc.l;
 
 parameter
     avg_tax_h, avg_tax_r, avg_tax    Reports on average tax rates;
@@ -839,7 +851,6 @@ avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
 display avg_tax_h, avg_tax;
-display fsav.l, fint.l;
 
 
 * -----------------------------------------------------------------------------
@@ -992,8 +1003,12 @@ sav0(r,h) = SAVE.L(r,h);
 fsav0 = FSAV.L;
 fint0 = FINT.L;
 trn0(r,h) = TRANS.L(r,h);
+
 $if %hhdata%=="soi" hhtrn0(r,h,trn) = trn0(r,h);
 $if %hhdata%=="cps" hhtrn0(r,h,trn) = TRANSHH.L(r,h,trn);
+
+$if %invest%=="dynamic" trn('other') = yes;
+$if %invest%=="dynamic" hhtrn0(r,h,'other') = OTHINC.L(r,h);
 
 * Output resulting data parameters
 

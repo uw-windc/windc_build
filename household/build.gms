@@ -22,7 +22,7 @@ $if not set hhdata $set hhdata "cps"
 $if not set invest $set invest "static"
 
 * set assumption on capital ownership (all,partial)
-$if not set capital_ownership $set capital_ownership "all,partial"
+$if not set capital_ownership $set capital_ownership "all"
 
 * set regional mapping (state,census_divisions,census_regions,national)
 $if not set rmap $set rmap "state"
