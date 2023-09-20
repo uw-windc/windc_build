@@ -77,12 +77,22 @@ The code creates the directory `datasets`, generates the household datasets and 
 6. `consolidate.gms` - Merges the recalibrated household accounts (and adjusted dynamic parameters, if `dynamic` option is chosen) with the rest of the WiNDC accounts for a given year.
 
    Inputs:
+   - `core/WiNDCdatabase.gdx`
+   - `household/gdx`
    
-   Outputs:
+   Outputs: `datasets/WiNDC_%hhdata%_%invest%_%capital_ownership%_%year%.gdx`
 
-7. `aggr.gms` - This aggregation routine is optional. Aggregates the four household datasets to given economic sectors and regions. The environment variable `smap` denotes the sectoral aggregation and `rmap` denotes the regional aggregation. The options for `smap` are `windc` (the 69 WiNDC sectors), `bluenote` (the sectors of the WiNDC energy-environment module), `gtap` ([GTAP](https://www.gtap.agecon.purdue.edu/) sectors) and `macro` (6 sectors). The options for `rmap` are `state` (US states) and `census` ( [9 Census regions](https://www2.census.gov/geo/docs/maps-data/maps/reg_div.txt)). The routine reads the relevant mapping from the subdirectory maps; users can easily create their own maps for customized sectoral and regional aggregations. The aggregated datasets are saved in the directory `datasets`.
+7. `aggr.gms` - This aggregation routine is optional. The output of `consolidate.gms` is at the state-level with a summary-level sector scheme maintained in the core WiNDC database. Should a user like to aggregate the dataset to be at a different regional and/or sectoral aggregation, this program allows for users to create mapping files to aggregate the data. Several are already provided with the distribution. See options for `rmap` and `smap` in the above table. 
 
-## Canonical Household MGE Mode
+## Canonical Static Household Model
+
+The mutli-regional, multi-sectoral, multi-household CGE model accompanying this distribution can be found in `static_model.gms`.
+
+- The model reads in the chosen household dataset using `windc_hhdata.gms`.
+- We provide a method for calibrating a labor-leisure choice to exogenous labor supply income and substitution elasticities from [McClelland and Mok (2012)](https://www.cbo.gov/publication/43675) based on the calibration strategy found in the [SAGE documentation](https://www.epa.gov/environmental-economics/sage-model-documentation-version-210).
+- The model verifies both the calibration of both an MPSGE and MCP version of the model and replicates an equivalent shock to a reduction in the marginal labor income tax rate.
+
+A complete overview of the household model accompanying the disaggregated set of consumer accounts is forthcoming in a future publication.
 
 ## Optional R Routines
 
