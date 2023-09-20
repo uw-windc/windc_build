@@ -13,7 +13,7 @@ The routine is designed to be flexible. The default options produces a dataset w
 
 # Running the household subroutine
 
-Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the "core" subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the "data" directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2021 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
+Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2021 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
 
 If you have a local version of GAMS and access to the relevant licenses, navigate in your command line to the directory household and run the GAMS file `build.gms` by typing the following command:
 
@@ -23,7 +23,7 @@ The code creates the directory `datasets`, generates the household datasets and 
 
 # File Listing
 
-1. `build.gms` - 
+1. `build.gms` - launching program to generate WiNDC datasets with disaggregate household accounts. For many users, this is the only file that needs to be run in order to generate a dataset. All other files in household sub-directory are called from `build.gms`.
 
     Inputs: `data/household`
 
@@ -32,21 +32,19 @@ The code creates the directory `datasets`, generates the household datasets and 
     Command line options:
     |Command|Options| Default | Description |
     | ---   | ---   | --- | ---|
-    | year | cps: 2000-2021, soi: 2014-2017 | 2016, 2017, 2021 | Years to compute data |
+    | year | cps: 2000-2021, soi: 2014-2017 | 2017, 2021 | Years to compute data |
     | hhdata | cps, soi | cps | Household data|
     | invest | static, dynamic| static| Investment calibration |
-    | captial_ownership| all, partial| all, partial | Assumption on capital ownership |
+    | captial_ownership| all, partial| all | Assumption on capital ownership |
     | rmap | state, census_divisions, census_regions, national | state | Regional mapping |
     | smap | windc, gtap_32, sage, gtap_10, macro, bluenote | windc, gtap_32 | Sectoral mapping | 
 
 
-2. 
+2. `cps_data.gms` - Reads [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html) data from the directory `data/household/cps`, processes it and saves the processed data in a GDX file in the directory `household/gdx`. Processed data includes CPS income categories, number of households, and income tax rates. Notably, should a user like to change the income thresholds for households, see the R program that leverages the CPS API to grab and reconcile income data in `data/household/cps/read_cps.r`.
 
+    Inputs: `data/household/cps`
 
-
-
-2. `cps_data.gms`
-Reads [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html) data from the directory `data_sources`, subdirectory `cps`, processes it and saves the processed data in a GDX file in the directory `gdx`.
+    Outputs: `household/gdx/cpscsv.gdx', `household/gdx/cps_households.gdx', `household/gdx/labor_tax_rates_tl.gdx`, `household/gdx/labor_tax_rates_tfica.gdx`, `household/gdx/labor_tax_rates_tl_avg.gdx`, `household/gdx/capital_tax_rates.gdx`, `household/gdx/cps_data.gdx`
 
 3. `soi_data.gms`
 Reads [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) data from the directory `data_sources`, subdirectory `soi`, processes it and saves the processed data in a GDX file in the directory `gdx`. The routine also computes and saves data on capital gains that will be used to construct the CPS dataset.

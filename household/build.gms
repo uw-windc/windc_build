@@ -13,7 +13,7 @@ $title Build routine for the windc household dataset
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year "2016,2017,2021"
+$if not set year $set year "2017,2021"
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
