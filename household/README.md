@@ -66,27 +66,28 @@ The code creates the directory `datasets`, generates the household datasets and 
 
     Outputs: `gdx/calibrated_hhdata_%invest%_%hhdata%_%capital_ownership%_%year%.gdx`
 
-5. `dynamic_calib.gms` - Reads the dynamic datasets and recalibrates the rest of the commodity accounts to satisfy balanced growth requirements; saves the recalibrated parameters in a GDX file in the directory `gdx`.
+5. `dynamic_calib.gms` - Reads the dynamic datasets and recalibrates the rest of the commodity accounts to satisfy balanced growth requirements.
 
-6. `consolidate.gms` - Merges the household data of each type to one GDX file and saves the resulting files to the directory `datasets`. There are four files:
+   Inputs:
+   - `core/WiNDCdatabase.gdx`
+   - `household/gdx`
 
-    <center>
+   Outputs: `household/gdx/dynamic_parameters_%year%.gdx`
 
-    | |static|dynamic|
-    |---|---|---|
-    |CPS|`WiNDC_cps_static.gdx`|`WiNDC_cps_dynamic.gdx`|
-    |SOI|`WiNDC_soi_static.gdx`|`WiNDC_soi_dynamic.gdx`|
+6. `consolidate.gms` - Merges the recalibrated household accounts (and adjusted dynamic parameters, if `dynamic` option is chosen) with the rest of the WiNDC accounts for a given year.
 
-    </center>
-    Each dataset has household data for the years 2015 to 2017 on the US state level with WiNDC economic sectors.
+   Inputs:
+   
+   Outputs:
 
 7. `aggr.gms` - This aggregation routine is optional. Aggregates the four household datasets to given economic sectors and regions. The environment variable `smap` denotes the sectoral aggregation and `rmap` denotes the regional aggregation. The options for `smap` are `windc` (the 69 WiNDC sectors), `bluenote` (the sectors of the WiNDC energy-environment module), `gtap` ([GTAP](https://www.gtap.agecon.purdue.edu/) sectors) and `macro` (6 sectors). The options for `rmap` are `state` (US states) and `census` ( [9 Census regions](https://www2.census.gov/geo/docs/maps-data/maps/reg_div.txt)). The routine reads the relevant mapping from the subdirectory maps; users can easily create their own maps for customized sectoral and regional aggregations. The aggregated datasets are saved in the directory `datasets`.
 
+## Canonical Household MGE Mode
 
 ## Optional R Routines
 
-Source datasets are compiled using the R programming language. All R routines needed for generating CPS, NIPA, SOI, ACS, and CMS source datasets `CSV` files accompany the data source download. All programs are heavily documented and should be self explanatory.
+Source datasets are compiled using the R programming language. All R routines needed for generating CPS, NIPA, SOI, ACS, and CMS source dataset `CSV` files accompany the data source download. All programs are heavily documented and should be self explanatory.
 
 ## Default Dataset Dimensions
 
-SAVE FOR MITCH.
+See (sets.md)[sets.md].
