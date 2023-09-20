@@ -15,6 +15,8 @@ $if %gtap_version% == "gtap11" $set gtap_name GDX
 $if %gtap_version% == "gtap11a" $set gtap_name GDX11a
 
 
+
+
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 
 $if not set yr $set yr 2017

@@ -28,6 +28,7 @@ $if not set zipfile $abort "You have not set the location of the GTAP zipfile in
 $if not set gtap_version $abort "You have not set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
 
 
+
 set
 	yr		Base years / %year% /,
 	reltol		Filter tolance / %relative_tolerance%/
