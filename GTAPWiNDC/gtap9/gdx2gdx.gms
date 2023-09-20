@@ -223,7 +223,7 @@ set	ff(*)	Factors in GTAP 9 nomenclature /
 	capital		"Capital"
 	natlres		"Natural Resources" /;
 
-$call gmsunzip -j %system.fp%/%yr%/flexagg9a.zip -d %tmpdir%
+$call gmsunzip -j %system.fp%/gtap9/%yr%/flexagg9a.zip -d %tmpdir%
 
 *	Read these sets to verify that they are consistent:
 
@@ -699,7 +699,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%system.fp%/%yr%%system.dirsep%gtapingams.gdx',
+execute_unload '%system.fp%/gtap9/%yr%%system.dirsep%gtapingams.gdx',
 		r, f, g, i,  vfm, 
 		vdfm, vifm, vxmd, vst, vtwr, vtrev,
 		rto, rtf, rtfd, rtfi, rtxs, rtms, 
