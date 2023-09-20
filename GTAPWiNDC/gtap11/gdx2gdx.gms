@@ -29,8 +29,6 @@ $if "%yr%"=="2017" $set syr 17
 
 $if not set syr $abort "Year is not valid: %yr%"
 
-$if not dexist %system.fp%%yr% $call mkdir %system.fp%%yr%
-
 $ontext
 Archive:  GDX_AY1017.zip
   Length     Date   Time    Name
@@ -921,7 +919,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%system.fp%%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
+execute_unload '%system.fp%%gtap_version%/%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
 	vst, vtwr, vfm, vdfm, vifm, vxmd, rto, rtf, rtfd, rtfi, rtxs, rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, pop, 
 	eco2d, eco2i, 

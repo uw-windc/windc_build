@@ -27,6 +27,9 @@ $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 $if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
 $if not set gtap_version $abort "You have not set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
 
+$if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_version%'
+$call mkdir "%system.fp%%gtap_version%"
+
 
 
 set
@@ -73,14 +76,12 @@ $if set start $goto %start%
 
 $label gdx2gdx
 
-loop(yr,
-	put_utility 'shell' / 'if exist ',yr.tl,'\nul rmdir /q /s ',yr.tl;
-);
+$set fs %system.dirsep%
 
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
-	put_utility 'exec' / 'mkdir %system.fp%',yr.tl;
-	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% --gtap_version=%gtap_version% o=%system.fp%',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
+	put_utility 'exec' / 'mkdir %system.fp%%fs%%gtap_version%%fs%',yr.tl;
+	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
@@ -97,7 +98,7 @@ $label filter
 loop(yr,
  loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams %system.fp%filter --yr='yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'/calibrate_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams %system.fp%filter --yr='yr.tl,' --reltol=',reltol.tl,' --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/calibrate_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
@@ -112,7 +113,7 @@ $label aggregate
 
 loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;
-	put_utility 'exec' / 'gams %system.fp%aggregate --yr=',yr.tl,' --target=',target.tl,' o=%system.fp%',yr.tl,'/aggregate_',target.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%aggregate --yr=',yr.tl,' --target=',target.tl,' --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/aggregate_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms"; );
 );
@@ -128,7 +129,7 @@ $label replicate
 
 loop((yr,target),
 	put_utility 'title' /'replicate: ',yr.tl,' : ', target.tl;
-	put_utility 'exec' / 'gams %system.fp%replicate --yr=',yr.tl,' --ds=',target.tl,' o=%system.fp%',yr.tl,'/gmr_',target.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%replicate --yr=',yr.tl,' --ds=',target.tl,' --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/gmr_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from replicate.gms"; );
 );

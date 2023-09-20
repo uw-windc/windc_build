@@ -5,7 +5,10 @@ $if not set yr     $set yr 2017
 $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%
 $if not set output $set output %target%
-$if not set datadir $set datadir "%system.fp%%yr%/"
+
+$if not set gtap_version $abort "gtap_version not set"
+
+$if not set datadir $set datadir "%system.fp%%gtap_version%/%yr%/"
 
 $include "%system.fp%gtapdata"
 
