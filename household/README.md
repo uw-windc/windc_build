@@ -56,12 +56,13 @@ The code creates the directory `datasets`, generates the household datasets and 
 
 4. `hhcalib.gms` - Calibrates consumer accounts to several source datasets. The subroutine proceeds in three steps: (1) recalibrates investment demands to match steady state assumption if the user has selected the `dynamic` investment option [optional], (2) calibrates income and aggregate expenditures for each region and household type, (3) disaggregates total household expenditures by income group by defining an income expansion path for each commodity type.
 
-    Inputs: - `household/gdx`,
-            - `data/household/cps/cps_nipa_income_categories.csv`,
-	    - `data/health_care/public_health_benefits_2009_2019.csv`,
-	    - `data/household/cps/windc_vs_nipa_domestic_capital.csv`,
-	    - `data/household/acs/acs_commuting_data.csv`,
-	    - `data/household/cex/national_income_elasticities_CEX_2013_2017.csv`
+    Inputs:
+    - `household/gdx`,
+    - `data/household/cps/cps_nipa_income_categories.csv`,
+    - `data/health_care/public_health_benefits_2009_2019.csv`,
+    - `data/household/cps/windc_vs_nipa_domestic_capital.csv`,
+    - `data/household/acs/acs_commuting_data.csv`,
+    - `data/household/cex/national_income_elasticities_CEX_2013_2017.csv`
 
     Outputs: `gdx/calibrated_hhdata_%invest%_%hhdata%_%capital_ownership%_%year%.gdx`
 
