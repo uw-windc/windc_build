@@ -40,6 +40,12 @@
 
 1. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
 
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+	| year | gtap11a: 2017 gtap11: 2017 gtap9:2011 | 
+
 2. `gtapingams.gms` - Defines whether we are using GTAP9 or GTAP11. If the data files for GTAP11 exist, this will default to GTAP11, 
 otherwise GTAP9.
 
