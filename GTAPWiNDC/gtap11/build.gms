@@ -24,10 +24,8 @@ $if not set relative_tolerance $set relative_tolerance 4
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
 
-
-
-$set gtap_version "11a"
-
+$if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
+$if not set gtap_version $abort "You have not set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
 
 
 set
@@ -53,7 +51,8 @@ set
 *	 56162643  08-17-23 07:45   GDX11a17.zip
 *	 --------                   -------
 
-$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
+*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
+*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
 
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;

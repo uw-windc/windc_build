@@ -5,11 +5,14 @@ $call mkdir "%gams.scrdir%%system.dirsep%gtapingams"
 $set tmpdir "%gams.scrdir%gtapingams/"
 
 *$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
-$if not set zipfile $abort You haven't set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms
+$if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
+$if not set gtap_version $abort "You must set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
 
 
-$set gtap_version "11a"
+* Set a name for the GDX files in the extracted ZIP. GTAP11 and GTAP11a use different names
 
+$if %gtap_version% == "gtap11" $set gtap_name GDX
+$if %gtap_version% == "gtap11a" $set gtap_name GDX11a
 
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
@@ -553,8 +556,8 @@ $set etaf etrae
 
 
 
-$call gmsunzip -j %zipfile% GDX%gtap_version%%syr%.zip -d %tmpdir%
-$call gmsunzip -j %tmpdir%GDX%gtap_version%%syr%.zip   -d %tmpdir%
+$call gmsunzip -j %zipfile% %gtap_name%%syr%.zip -d %tmpdir%
+$call gmsunzip -j %tmpdir%%gtap_name%%syr%.zip   -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 
