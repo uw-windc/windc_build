@@ -11,7 +11,7 @@ $include "%system.fp%gtapdata"
 
 *	Calling program points to the target mapping:
 
-$include defines\%target%
+$include "%system.fp%defines\%target%"
 
 parameter	mapbug(*)	Problems with mapping;
 mapbug(r) = 1 - sum(mapr(r,rr),1);
@@ -309,10 +309,10 @@ set	md	Additional metadata /
 metadata(md) = md(md);
 
 
-$set fs %system.dirsep%
+
 
 putclose //"Unloading dataset."/;
-execute_unload '%datadir%%fs%%output%.gdx', 
+execute_unload '%datadir%%output%.gdx', 
 	gg=g, rr=r, ff=f, ii=i, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 

@@ -47,12 +47,6 @@ set
 $if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
 
 
-$set lstdir  %system.fp%lst/
-$set gdxdir  %system.fp%gdx/
-
-$if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
-$if not dexist "%lstdir%"	$CALL mkdir "%lstdir%"
-
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
 set	seq	Sequencing set for filter tolerance /1*10/;
