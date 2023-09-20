@@ -1,7 +1,7 @@
 $title Build routine for the windc household dataset
 
 *-----
-* run after the core build is complete!! 
+* run after the core build is complete!!
 *-----
 
 * to run individual build scripts, set %runscript% environment variable:
@@ -13,7 +13,7 @@ $title Build routine for the windc household dataset
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year "2017,2021"
+$if not set year $set year "2016,2021"
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
@@ -28,7 +28,7 @@ $if not set capital_ownership $set capital_ownership "all"
 $if not set rmap $set rmap "state"
 
 * set sectoral mapping (windc,gtap_32,sage,gtap_10,macro,bluenote)
-$if not set smap $set smap "windc,gtap_32"
+$if not set smap $set smap "windc"
 
 
 * ------------------------------------------------------------------------------

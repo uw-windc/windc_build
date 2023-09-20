@@ -21,7 +21,7 @@ SET mm "Margins in the target dataset" /
 
 SET smap(ss,s) "Mapping of target sectors ss and source sectors s" /
 		oil.ref_pet 	"Petroleum refineries",
-		cng.oil 	"Oil and natural gas extraction",
+		cng.oil 	"Crude oil and natural gas extraction",
 		ele.ele_uti 	"Electricity generation, transmission, and distribution",
 		col.col_min 	"Coal mining",
 		con.con 	"Construction",

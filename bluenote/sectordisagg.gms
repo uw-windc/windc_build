@@ -22,10 +22,19 @@ $title Routine for disaggregating sectoring definitions
 $if not set smap $set smap sage
 
 * Set year of data
-$set year 2016
+$set year 2021
+
+* set household data (cps, soi)
+$if not set hhdata $set hhdata "cps"
+
+* set investment calibration (static, dynamic)
+$if not set invest $set invest "static"
+
+* set assumption on capital ownership (all,partial)
+$if not set capital_ownership $set capital_ownership "all"
 
 * Set household datset option
-$set ds cps_static_all_%year%
+$set ds %hhdata%_%invest%_%capital_ownership%_%year%
 
 * Set location of windc_base to read in detailed bea tables
 $set windc_base ../data/core/windc_base.gdx
@@ -1126,6 +1135,7 @@ sector_shr(r,s)$(sum(ss_det, disagg(s,ss_det)) and sum(g, ys0(r,s,g))) =
     1 - sum(disagg(s,ss_det), sector_shr(r,ss_det));
 
 sector_shr(r,s)$(adjust(r,s)) = 1;
+display sector_shr;
 
 
 * ------------------------------------------------------------------------------
@@ -1175,6 +1185,12 @@ objdef..
     	    sum((r,ms)$(region_shr(r,ms)*kd0_control(ms)),
 		abs(region_shr(r,ms)*kd0_control(ms)) *
 	    	sqr(kd_v(r,ms)/(region_shr(r,ms)*kd0_control(ms)) - 1));
+
+* add additional (non-summary) uncontrolled parameters to objective function
+
+*             sum((r,ms,m)$(region_shr(r,ms)*md0_control(m,ms)),
+*  		abs(region_shr(r,ms)*md0_control(m,ms)) *
+* 	    	sqr(md_v(r,m,ms)/(region_shr(r,ms)*md0_control(m,ms)) - 1));
 
 zp_y(r,ms)..
     (1-ty0_disagg(r,ms))*sum(ns, ys_v(r,ms,ns)) =e=
@@ -1256,8 +1272,8 @@ g_sum(r,s)$afs(s)..
 cdh_sum(r,s,h)$afs(s)..
     sum(chkmap(ms,s), cdh_v(r,ms,h)) =e= cd0_h(r,s,h);
 
-md_split(r,m,ms)$afs(ms)..
-    md_v(r,m,ms) * sum(m.local,md0_control(m,ms)) =e= sum(m.local, md_v(r,m,ms)) * md0_control(m,ms);
+md_split(r,m,s)$afs(s)..
+    md_v(r,m,s) * sum(m.local,md0_control(m,s)) =e= sum(m.local, md_v(r,m,s)) * md0_control(m,s);
 
 rpc_bound(r,ms)$afs(ms)..
     dd_v(r,ms) * sum(chkmap(ms,s), dd0(r,s)+nd0(r,s)) =g= 0.25 * sum(chkmap(ms,s), dd0(r,s)) * (dd_v(r,ms) + nd_v(r,ms));
@@ -1267,7 +1283,7 @@ rpc_bound(r,ms)$afs(ms)..
 model sectordisagg /
       objdef, zp_y, zp_x, zp_a, zp_ms, mkt_pa, mkt_py, mkt_pn, mkt_pd,
       ld_sum, kd_sum, x_sum, m_sum, i_sum, g_sum, cdh_sum, rx_sum,
-      nm_sum, dm_sum, md_sum, xn_sum, xd_sum, nd_sum, dd_sum, 
+      nm_sum, dm_sum, xn_sum, md_sum, xd_sum, nd_sum, dd_sum, 
 *      a_sum, id_sum, ys_sum, 
       md_split, rpc_bound /;
 
@@ -1414,6 +1430,7 @@ display report_region;
 report_sum(r,s,'a0') = sum(chkmap(ms,s), a_v.l(r,ms)) - a0(r,s);
 report_sum(r,s,'id0') = smax(g, sum((chkmap(ms,s),cm(ns,g)), id_v.l(r,ns,ms)) - id0(r,g,s));
 report_sum(r,s,'ys0') = smax(g, sum((chkmap(ms,s),cm(ns,g)), ys_v.l(r,ms,ns)) - ys0(r,s,g));
+report_sum(r,s,m) = sum(chkmap(ms,s), md_v.l(r,m,ms)) - md0(r,m,s);
 display report_sum;
 
 * Report changes to regional purchase coefficients:
@@ -1426,8 +1443,8 @@ display report_rpc;
 
 * Output worksheet highlighting changes:
 
-execute_unload 'chk_prod_%smap%.gdx' report_prodstr, report_region, report_control, report_sum, report_rpc;
-execute 'gdxxrw chk_prod_%smap%.gdx par=report_prodstr rng=data!A2 cdim=0 par=report_region rng=region_report!A2 cdim=0';
+execute_unload 'chk_prod_%year%_%smap%.gdx' report_prodstr, report_region, report_control, report_sum, report_rpc;
+execute 'gdxxrw chk_prod_%year%_%smap%.gdx par=report_prodstr rng=data!A2 cdim=0 par=report_region rng=region_report!A2 cdim=0';
     
 
 * ------------------------------------------------------------------------------

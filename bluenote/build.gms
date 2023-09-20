@@ -1,34 +1,93 @@
-$title	Build for Bluenote Datasets based on Household Data (2015-2017)
+$title	Build for Bluenote Datasets based on Household Data (2000-2021)
 
-set	bnyear /2014*2017/
-	hhdata /cps,soi/
-	rmap /state,census/;
+*-----
+* run after the core and household builds are complete!!
+*-----
 
-file kutl; kutl.lw=0; put kutl;
+* ------------------------------------------------------------------------------
+* Set options
+* ------------------------------------------------------------------------------
+
+* set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
+$if not set year $set year "2016,2021"
+
+* set household data (cps, soi)
+$if not set hhdata $set hhdata "cps"
+
+* set investment calibration (static, dynamic)
+$if not set invest $set invest "static"
+
+* set assumption on capital ownership (all,partial)
+$if not set capital_ownership $set capital_ownership "all"
+
+* set regional mapping (state,census_divisions,census_regions,national)
+$if not set rmap $set rmap "census_regions"
+
+* set sectoral mapping (windc,gtap_32,sage,gtap_10,macro,bluenote)
+$if not set smap $set smap "sage"
 
 
-$set sep %system.dirsep%
+*------------------------------------------------------------------------------
+* Create directories if necessary
+*------------------------------------------------------------------------------
 
 $if not dexist lst	$call mkdir lst
-$set lstdir lst%sep%
+$set lstdir lst/
 $if not dexist datasets $call mkdir datasets
 $if not dexist gdx	$call mkdir gdx
 
 
-*	Disaggregate a few sectors based on the detailed BEA io tables 
-*	for 2007 and 2012:
+*------------------------------------------------------------------------------
+* Data dimensions
+*------------------------------------------------------------------------------
 
-$call 'gams sectordisagg.gms --hhdata=cps o=%lstdir%sectordisagg_cps.lst'
-$call 'gams sectordisagg.gms --hhdata=soi o=%lstdir%sectordisagg_soi.lst'
+set
+    year 		Years of data /%year%/,
+    hhdata 		Household data /%hhdata%/,
+    invest 		Investment calibration options /%invest%/,
+    capital_ownership	Assumption on capital ownership /%capital_ownership%/,
+    smap 		Sectoral mapping /%smap%/,
+    rmap 		Regional mapping /%rmap%/;
 
-*	Aggregate to bluenote sectors and either states or census regions:
+parameter myerrorlevel "For error checking when calling files.";
 
-$call 'gams aggregate.gms --hhdata=cps --rmap=state  o=%lstdir%aggregate_cps_state.lst'
-$call 'gams aggregate.gms --hhdata=soi --rmap=state  o=%lstdir%aggregate_soi_state.lst'
-$call 'gams aggregate.gms --hhdata=cps --rmap=census o=%lstdir%aggregate_cps_census.lst'
-$call 'gams aggregate.gms --hhdata=soi --rmap=census o=%lstdir%aggregate_soi_census.lst'
+*------------------------------------------------------------------------------
+* Bluenote build routine
+*------------------------------------------------------------------------------
 
-*	Read SEDS data and do geographic aggregation (states or census regions)
+file kutl; kutl.lw=0; put kutl;
+
+* Disaggregate a few sectors based on the detailed BEA io tables for 2007 and
+* 2012 and QCEW data on regional heterogeneity for detailed sectors:
+
+loop((year,hhdata,invest,capital_ownership,smap),
+    put_utility 'title' /'Disaggregating ',smap.tl,' sectors for ',year.tl,', ',hhdata.tl,', ',invest.tl,', ',capital_ownership.tl;
+    put_utility 'exec'/'gams sectordisagg.gms o=%lstdir%sectordisagg_',year.tl,'_',hhdata.tl,'_',invest.tl,'_',capital_ownership.tl,'_',smap.tl,'.lst',
+	' --year=',year.tl,' --hhdata=',hhdata.tl,' --invest=',invest.tl,
+	' --capital_ownership=',capital_ownership.tl,' --smap=',smap.tl,
+	' --puttitle=no',' lo=4 lf=%lstdir%sectordisagg_',year.tl,'_',hhdata.tl,'_',invest.tl,'_',capital_ownership.tl,'_',smap.tl,'.log';
+
+    myerrorlevel = errorlevel;
+    abort$(myerrorlevel>=2) "Error in sectordisagg.gms.";
+);
+
+* Aggregate to chosen sector and region aggregation:
+
+loop((year,hhdata,invest,capital_ownership,smap,rmap),
+    put_utility 'title' /'Aggregating ',smap.tl,' sectors and ',rmap.tl,' regions for ',year.tl,', ',hhdata.tl,', ',invest.tl,', ',capital_ownership.tl;
+    put_utility 'exec'/'gams aggr.gms o=%lstdir%aggr_',year.tl,'_',hhdata.tl,'_',invest.tl,'_',capital_ownership.tl,'_',smap.tl,'_',rmap.tl,'.lst',
+	' --year=',year.tl,' --hhdata=',hhdata.tl,' --invest=',invest.tl,
+	' --capital_ownership=',capital_ownership.tl,' --smap=',smap.tl,' --rmap=',rmap.tl,
+	' --puttitle=no',' lo=4 lf=%lstdir%aggr_',year.tl,'_',hhdata.tl,'_',invest.tl,'_',capital_ownership.tl,'_',smap.tl,'_',rmap.tl,'.log';
+
+    myerrorlevel = errorlevel;
+    abort$(myerrorlevel>=2) "Error in aggr.gms.";
+);
+
+
+$exit
+* BROKEN BELOW
+* Read SEDS data and do geographic aggregation (states or census regions)
 
 $call 'gams readseds.gms --rmap=state o=%lstdir%readsets_state.lst'
 $call 'gams readseds.gms --rmap=census o=%lstdir%readsets_census.lst'
