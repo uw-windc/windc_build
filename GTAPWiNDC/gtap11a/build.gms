@@ -4,38 +4,30 @@ $title	Build GTAP in GAMS from GTAP Datasets
 * Command line options:
 *
 *	--task
-
-* $set task aggregate
-
 *	Indicate a single task. Options include: "gdx2gdx", "filter", "aggregate" and "replicate"
-
 *	No task indicates build all the datasets.
 *
 *	--start
-
 *	Begin the computations at a set starting point. Options are the same as above.
 *----------------------------------
 
-*-------------------------------
-*	Change the following to modify which years are run, the relative
-*	tolerance and the aggregations.
-*
+* set year(s) to compute data (2017, 2014, 2011)
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
 *	from the code.
+$if not set year $set year 2017
 
-*	Here is the full set of data files which can be processed:
+* Set filter tolerances (3, 4, 5)
+$if not set relative_tolerance $set relative_tolerance 4
 
-*.	yr		Base years /2011,2014,2017/,
-*.	reltol		Filter tolance /3,4,5/
-*.	target		Aggregations /g20_10,  g20_32,  g20_43, 
-*.				      wb12_10, wb12_32, wb12_43/;
-*---------------------------------
+* Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
+$if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
+
 
 set
-	yr		Base years /2017/,
-	reltol		Filter tolance /4/
-	target		Aggregations /g20_10,  g20_32,  g20_43 /;
+	yr		Base years / %year% /,
+	reltol		Filter tolance / %relative_tolerance%/
+	target		Aggregations / %aggregation% /;
 
 
 *---------------------------
@@ -55,10 +47,7 @@ set
 *	 56162643  08-17-23 07:45   GDX11a17.zip
 *	 --------                   -------
 
-$if not set zipfile $set zipfile ../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
-
-$set gdxdir  gdx/
-$if not dexist "%gdxdir%"	$CALL mkdir "%gdxdir%"
+$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
 
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
@@ -84,8 +73,8 @@ loop(yr,
 
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
-	put_utility 'shell' / 'mkdir ',yr.tl;
-	put_utility 'shell' / 'gams gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
+	put_utility 'shell' / 'mkdir %system.fp%',yr.tl;
+	put_utility 'shell' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=%system.fp%',yr.tl,'\gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 *	if (errorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
@@ -102,7 +91,7 @@ $label filter
 loop(yr,
  loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams filter --yr='yr.tl,' --reltol=',reltol.tl,' o=',yr.tl,'\calibrate_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams %system.fp%filter --yr='yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'\calibrate_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
@@ -117,7 +106,7 @@ $label aggregate
 
 loop((yr,target),
 	put_utility 'title' /'aggregate: ',yr.tl,' : ', target.tl;
-	put_utility 'shell' / 'gams aggregate --yr=',yr.tl,' --target=',target.tl,' o=',yr.tl,'\aggregate_',target.tl,'.lst';
+	put_utility 'shell' / 'gams %system.fp%aggregate --yr=',yr.tl,' --target=',target.tl,' o=%system.fp%',yr.tl,'\aggregate_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from aggregate.gms"; );
 );
@@ -133,7 +122,7 @@ $label replicate
 
 loop((yr,target),
 	put_utility 'title' /'replicate: ',yr.tl,' : ', target.tl;
-	put_utility 'shell' / 'gams replicate --yr=',yr.tl,' --ds=',target.tl,' o=',yr.tl,'\gmr_',target.tl,'.lst';
+	put_utility 'shell' / 'gams %system.fp%replicate --yr=',yr.tl,' --ds=',target.tl,' o=%system.fp%',yr.tl,'\gmr_',target.tl,'.lst';
 	myerrorlevel = errorlevel;
 *	if (errorlevel>0, abort "Non-zero return code from replicate.gms"; );
 );

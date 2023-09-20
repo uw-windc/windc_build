@@ -33,20 +33,6 @@ $if not dexist "%lpdir%"	$CALL mkdir "%lpdir%"
 
 $if set runscript $goto %runscript%
 
-
-*------------------------------------------------------------------------------
-* Add descriptive text for sets in windc_base.gdx:
-*------------------------------------------------------------------------------
-
-*$label relabel
-*$set script relabel
-*$if %system.filesys% == MSNT $call 'title Inserting descriptive text in windc_base.gdx'
-
-*$call 'gams %script%.gms o="%lstdir%%script%.lst"'
-*$if errorlevel 1 $abort "ERROR: %script%.gms generated an error. See %lstdir%%script%.lst";
-*$if set runscript $exit
-
-
 *------------------------------------------------------------------------------
 * Form cge parameters using raw input data:
 *------------------------------------------------------------------------------

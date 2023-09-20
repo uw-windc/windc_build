@@ -21,8 +21,13 @@ $include gtapingams
 * ------------------------------------------------------------------------------
 
 * set year(s) to compute data 
-* -- gtap11: 2017, 2014, 2011, 2007, 2004
-* -- gtap9 : 2011, 2007, 2004
+* -- gtap11a: 2017, 2014, 2011
+* -- gtap11: 2017, 2014, 2011
+* -- gtap9 : 2011
+
+*	Data files exist for 2004 and 2007, but these do not have carbon
+*	and energy data.  They could be used if those inputs are dropped
+*	from the code.
 $if not set year $set year 2017
 
 * set aggregations g20_10,  g20_32,  g20_43, 
@@ -34,7 +39,7 @@ $if not set aggregation $set aggregation g20_32
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug yes
+$set debug no
 
 *	Pause after each step?
 
@@ -57,7 +62,7 @@ $if set start $goto %start%
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_32 o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_32 o=lst/gtap.lst 
 $endif
 
 
@@ -144,7 +149,7 @@ $label g20_43
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%year%/g20_43.gdx"
-$call gams %gtapingams%build.gms --yr=%year% --aggregation=g20_43 o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 o=lst/gtap.lst 
 $endif
 
 * ------------------------------------------------------------------------
