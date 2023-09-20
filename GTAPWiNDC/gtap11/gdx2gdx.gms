@@ -1,12 +1,20 @@
 $title	Read the GTAP 11 Data (GDX format) and Write in GTAPinGAMS Format
 
-$call mkdir %gams.scrdir%gtapingams
-$set tmpdir %gams.scrdir%gtapingams/
+$call mkdir "%gams.scrdir%%system.dirsep%gtapingams"
+*put_utility kutl, 'shell' / 'mkdir %gams.scrdir%%system.dirsep%gtapingams';
+$set tmpdir "%gams.scrdir%gtapingams/"
+
+*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
+$if not set zipfile $abort You haven't set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms
+
+
+$set gtap_version "11a"
+
 
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 
-$if not set yr $set yr 2004
+$if not set yr $set yr 2017
 
 $if "%yr%"=="2004" $set syr 04
 $if "%yr%"=="2007" $set syr 07
@@ -542,17 +550,11 @@ $set esubva ESUBVA
 $set esubdm ESUBD
 $set etaf etrae
 
-$if not set yr $set yr 2017
-$if "%yr%"=="2004" $set syr 04
-$if "%yr%"=="2007" $set syr 07
-$if "%yr%"=="2011" $set syr 11
-$if "%yr%"=="2014" $set syr 14
-$if "%yr%"=="2017" $set syr 17
 
-$if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
 
-$call gmsunzip -j %zipfile% GDX%syr%.zip -d %tmpdir%
-$call gmsunzip -j %tmpdir%GDX%syr%.zip   -d %tmpdir%
+
+$call gmsunzip -j %zipfile% GDX%gtap_version%%syr%.zip -d %tmpdir%
+$call gmsunzip -j %tmpdir%GDX%gtap_version%%syr%.zip   -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 

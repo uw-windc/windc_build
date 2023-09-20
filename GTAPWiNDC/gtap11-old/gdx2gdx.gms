@@ -549,11 +549,10 @@ $if "%yr%"=="2011" $set syr 11
 $if "%yr%"=="2014" $set syr 14
 $if "%yr%"=="2017" $set syr 17
 
-$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
 $if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
 
-$call gmsunzip -j %zipfile% GDX11a%syr%.zip  -d %tmpdir%
-$call gmsunzip -j %tmpdir%GDX11a%syr%.zip    -d %tmpdir%
+$call gmsunzip -j %zipfile% GDX%syr%.zip -d %tmpdir%
+$call gmsunzip -j %tmpdir%GDX%syr%.zip   -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 
@@ -663,7 +662,7 @@ $gdxin
 
 *	Remove the temporary directory:
 
-$call rmdir /q /s %tmpdir%
+$call rmdir /q /s "%gams.scrdir%gtapingams"
 
 
 *	Scale data from millions to billions of dollars:

@@ -23,13 +23,6 @@ $if not set relative_tolerance $set relative_tolerance 4
 * Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
-
-
-
-$set gtap_version "11a"
-
-
-
 set
 	yr		Base years / %year% /,
 	reltol		Filter tolance / %relative_tolerance%/
@@ -42,18 +35,17 @@ set
 *	The code works with the following archive -- note that the
 *	file name for a GTAP user may be different.
 
-*	Archive:  gdx11aay333.zip
+*	Archive:  GDX_AY1017.zip
 
 *	  Length     Date   Time    Name
 *	 --------    ----   ----    ----
-*	 52929463  08-17-23 07:44   GDX11a04.zip
-*	 54370286  08-17-23 07:44   GDX11a07.zip
-*	 56107467  08-17-23 07:44   GDX11a11.zip
-*	 56029849  08-17-23 07:45   GDX11a14.zip
-*	 56162643  08-17-23 07:45   GDX11a17.zip
-*	 --------                   -------
-
-$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
+*	 52930993  04-27-23 16:30   GDX04.zip
+*	 54369371  04-27-23 16:30   GDX07.zip
+*	 56027868  04-27-23 16:30   GDX11.zip
+*	 56111941  04-27-23 16:30   GDX14.zip
+*	 56161607  04-27-23 16:30   GDX17.zip
+*----------------------------------------
+$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
 
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
@@ -63,6 +55,11 @@ set	seq	Sequencing set for filter tolerance /1*10/;
 
 file kput; kput.lw=0; put kput;
 
+
+*--------------*
+* Remove these *
+*--------------*
+
 *	Run a single task:
 
 $if set task  $goto %task%
@@ -70,6 +67,9 @@ $if set task  $goto %task%
 *	Start at a specific task:
 
 $if set start $goto %start%
+
+*--------------*
+
 
 $label gdx2gdx
 
@@ -80,7 +80,7 @@ loop(yr,
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
 	put_utility 'exec' / 'mkdir %system.fp%',yr.tl;
-	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% --gtap_version=%gtap_version% o=%system.fp%',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% o=%system.fp%',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
