@@ -1,3 +1,5 @@
+## Overview
+
 The WiNDC household subroutine is an extension to the core WiNDC buildstream that disaggregates regional representative households in the core database on the basis of household income from 2000-2021. The subroutine leverages several additional source datasets to produce disaggregate consumer accounts, including: the [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html), state-level statistics from the [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) database, commuting flows from the [American Community Survey](https://www.census.gov/programs-surveys/acs), Medicare and Medicaid benefits from [Centers for Medicare and Medicaid Services (CMS)](https://www.cms.gov/), [National Income and Product Accounts (NIPA)](https://www.bea.gov/itable/national-gdp-and-personal-income), average and marginal income tax rates from [TAXSIM](https://taxsim.nber.org/taxsim27/), the [Consumer Expenditure Survey (CE)](https://www.bls.gov/cex/), and several academic publications on under-reporting bias in survey data on transfer incomes. The disaggregation routine relies on an income balance condition that allows us to fully denominate incomes and expenditures without defining any ad hoc adjustment parameters to close the income balance constraint in a CGE model. The income balance condition is specified as:
 
 $$
@@ -11,7 +13,7 @@ The routine is designed to be flexible. The default options produces a dataset w
  - Dynamic adjustments to investment/savings based on user choice of steady state parameters (depreciation, growth, and interest rates). The default option assumes a static investment closure, leaving the data to match BEA totals for investments.
  - Alternative assumptions of capital ownership. The subroutine employs a pooled national markets for savings and capital income by implicitly assume equalization of rates of return across all capital income and that the geography of savings is independent of the geography for investment demands. The default routine assumes all sectoral capital demands is owned domestically, and similarly, all investment demands are provided for by domestic savings. We have characterized an alternative option for capital income and savings where a portion of the capital stock and investment demands are owned or proved for internationally.
 
-# Running the household subroutine
+## Running the Household Subroutine
 
 Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2021 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
 
@@ -21,7 +23,7 @@ If you have a local version of GAMS and access to the relevant licenses, navigat
 
 The code creates the directory `datasets`, generates the household datasets and saves all household datasets in this directory. Should the user like to generate household datasets based on alternative assumptions than those in the default settings, see command line options in the next section.
 
-# File Listing
+## File Listing
 
 1. `build.gms` - launching program to generate WiNDC datasets with disaggregate household accounts. For many users, this is the only file that needs to be run in order to generate a dataset. All other files in household sub-directory are called from `build.gms`.
 
@@ -44,7 +46,7 @@ The code creates the directory `datasets`, generates the household datasets and 
 
     Inputs: `data/household/cps`
 
-    Outputs: `household/gdx/cpscsv.gdx', `household/gdx/cps_households.gdx', `household/gdx/labor_tax_rates_tl.gdx`, `household/gdx/labor_tax_rates_tfica.gdx`, `household/gdx/labor_tax_rates_tl_avg.gdx`, `household/gdx/capital_tax_rates.gdx`, `household/gdx/cps_data.gdx`
+    Outputs: `household/gdx`
 
 3. `soi_data.gms`
 Reads [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) data from the directory `data_sources`, subdirectory `soi`, processes it and saves the processed data in a GDX file in the directory `gdx`. The routine also computes and saves data on capital gains that will be used to construct the CPS dataset.
@@ -72,3 +74,4 @@ Merges the household data of each type to one GDX file and saves the resulting f
 This aggregation routine is optional.
 Aggregates the four household datasets to given economic sectors and regions. The environment variable `smap` denotes the sectoral aggregation and `rmap` denotes the regional aggregation. The options for `smap` are `windc` (the 69 WiNDC sectors), `bluenote` (the sectors of the WiNDC energy-environment module), `gtap` ([GTAP](https://www.gtap.agecon.purdue.edu/) sectors) and `macro` (6 sectors). The options for `rmap` are `state` (US states) and `census` ( [9 Census regions](https://www2.census.gov/geo/docs/maps-data/maps/reg_div.txt)). The routine reads the relevant mapping from the subdirectory maps; users can easily create their own maps for customized sectoral and regional aggregations. The aggregated datasets are saved in the directory `datasets`.
 
+## Default Dataset Dimensions
