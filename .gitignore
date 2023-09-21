@@ -9,7 +9,6 @@
 *.bas
 *.txt
 *.csv
-*.set
 *.Rhistory
 *.xlsx
 *.r

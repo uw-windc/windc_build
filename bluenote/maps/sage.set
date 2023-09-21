@@ -1,0 +1,7 @@
+uti.(ele_uti,gas_uti),
+min.(col_min),
+pet.(ref_pet),
+nmp.(cmt_nmp),
+smn.(drl_smn),
+fen.(pst_fen,ele_fen),
+sle.(ele_sle)
