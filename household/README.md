@@ -36,11 +36,15 @@ The code creates the directory `datasets`, generates the household datasets and 
     | ---   | ---   | --- | ---|
     | year | cps: 2000-2021, soi: 2014-2017 | 2017, 2021 | Years to compute data |
     | hhdata | cps, soi | cps | Primary household data source |
-    | invest | static, dynamic| static| Investment calibration |
+    | invest | static | static| Investment calibration |
     | captial_ownership| all, partial| all | Assumption on capital ownership |
     | rmap | state, census_divisions, census_regions, national | state | Regional mapping |
-    | smap | windc, gtap_32, sage, gtap_10, macro, bluenote | windc, gtap_32 | Sectoral mapping | 
+    | smap | windc, gtap_32, gtap_10, macro, bluenote | windc, gtap_32 | Sectoral mapping | 
 
+
+    Note: The option pair (`cps`, `all`) has a calibration error in years `2006` and `2007`. If you require these two years, with the given option pair, you can modify the bounds on the household variables. We opted to leave as-is to preserve variable preciseness in other years. 
+    
+     All other options and years run properly.
 
 2. `cps_data.gms` - Reads [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html) data from the directory `data/household/cps`, processes it and saves the processed data in a GDX file in the directory `household/gdx`. Processed data includes CPS income categories, number of households, and income tax rates. Notably, should a user like to change the income thresholds for households, see the R program that leverages the CPS API to grab and reconcile income data in `data/household/cps/read_cps.r`.
 
