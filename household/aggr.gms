@@ -5,7 +5,7 @@ $title Aggregation routine for windc-household datasets
 * --------------------------------------------------------------------------
 
 * set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2016
+$if not set year $set year 2021
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
@@ -20,8 +20,8 @@ $if not set capital_ownership $set capital_ownership "all"
 $if not set ds $set ds %hhdata%_%invest%_%capital_ownership%_%year%
 
 * Sectoral and regional aggregations:
-$if not set smap $set smap sage
-$if not set rmap $set rmap census_regions
+$if not set smap $set smap bluenote
+$if not set rmap $set rmap census_divisions
 $set aggr %smap%_%rmap%
 
 * Set directory with mapping
