@@ -5,6 +5,8 @@ $title	Filter to Create a GTAPinGAMS Dataset
 $if not set yr $set yr 2017
 $if not set ds $set ds gtapingams
 
+$if not set gtap_version $abort "gtap_version not set"
+
 
 *	RELTOL changes data footprint:
 
@@ -181,7 +183,7 @@ display eneadj;
 *	Drop bilateral energy trade which have no corresponding economic transaction
 evt(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 
-execute_unload '%system.fp%/%yr%/gtapingams_%reltol%.gdx',f,g,i,r,pol,
+execute_unload '%system.fp%%gtap_version%/%yr%/gtapingams_%reltol%.gdx',f,g,i,r,pol,
 	vfm,vdfm,vifm,vxmd,vst,vtwr,
 	rto,rtf,rtfd,rtfi,rtxs,rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, 

@@ -5,13 +5,16 @@ $if not set yr     $set yr 2017
 $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%
 $if not set output $set output %target%
-$if not set datadir $set datadir %system.fp%%yr%/
 
-$include %system.fp%gtapdata
+$if not set gtap_version $abort "gtap_version not set"
+
+$if not set datadir $set datadir "%system.fp%%gtap_version%/%yr%/"
+
+$include "%system.fp%gtapdata"
 
 *	Calling program points to the target mapping:
 
-$include %system.fp%defines/%target%
+$include "%system.fp%defines\%target%"
 
 parameter	mapbug(*)	Problems with mapping;
 mapbug(r) = 1 - sum(mapr(r,rr),1);
@@ -309,8 +312,10 @@ set	md	Additional metadata /
 metadata(md) = md(md);
 
 
+
+
 putclose //"Unloading dataset."/;
-execute_unload '%system.fp%/%yr%/%output%.gdx', 
+execute_unload '%datadir%%output%.gdx', 
 	gg=g, rr=r, ff=f, ii=i, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 

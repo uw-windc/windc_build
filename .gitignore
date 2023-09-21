@@ -23,20 +23,16 @@
 */loadpoint/
 
 
-
-GTAPWiNDC/gtap9/2004
-GTAPWiNDC/gtap9/2007
-GTAPWiNDC/gtap9/2011
-GTAPWiNDC/gtap9/tmp
+GTAPWiNDC/20*
 
 
-GTAPWiNDC/gtap11/2011
-GTAPWiNDC/gtap11/2014
-GTAPWiNDC/gtap11/2017
 
-GTAPWiNDC/gtap11a/2011
-GTAPWiNDC/gtap11a/2014
-GTAPWiNDC/gtap11a/2017
+GTAPWiNDC/gtap9/gtap9
+
+
+GTAPWiNDC/gtap11/gtap11/
+GTAPWiNDC/gtap11/gtap11a
+
 
 core/loadpoint
 
