@@ -15,6 +15,7 @@ $title	Build GTAP in GAMS from GTAP Datasets
 *	Data files exist for 2004 and 2007, but these do not have carbon
 *	and energy data.  They could be used if those inputs are dropped
 *	from the code.
+
 $if not set year $set year 2017
 
 * Set filter tolerances (3, 4, 5)
@@ -37,26 +38,6 @@ set
 	reltol		Filter tolance / %relative_tolerance%/
 	target		Aggregations / %aggregation% /;
 
-
-*---------------------------
-* 	Here we indicate the location of the GTAP data files.
-
-*	The code works with the following archive -- note that the
-*	file name for a GTAP user may be different.
-
-*	Archive:  gdx11aay333.zip
-
-*	  Length     Date   Time    Name
-*	 --------    ----   ----    ----
-*	 52929463  08-17-23 07:44   GDX11a04.zip
-*	 54370286  08-17-23 07:44   GDX11a07.zip
-*	 56107467  08-17-23 07:44   GDX11a11.zip
-*	 56029849  08-17-23 07:45   GDX11a14.zip
-*	 56162643  08-17-23 07:45   GDX11a17.zip
-*	 --------                   -------
-
-*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11/GDX_AY1017.zip
-*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
 
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
