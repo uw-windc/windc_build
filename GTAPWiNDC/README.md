@@ -38,10 +38,18 @@
 
 # File Listing
 
-1. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
+1. `gtapingams.gms` - This file needs to be user modified. This controls which version of GTAP to use and where the datafile is located. Explicit directions are located in this file. 
 
-2. `gtapingams.gms` - Defines whether we are using GTAP9 or GTAP11. If the data files for GTAP11 exist, this will default to GTAP11, 
-otherwise GTAP9.
+
+2. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
+
+
+    Command line options:
+    |Command|Options| Default | Description |
+    | ---   | ---   | --- | ---|
+	| year | gtap11/a: 2017, 2014, 2011 gtap9: 2011 | 2017 | The year to run |
+
+
 
 3. `gtap_model.gms` - Replicates the benchmark equilibrium for the input GTAP model.
 
