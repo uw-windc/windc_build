@@ -48,9 +48,11 @@ $set pause no
 *	Create all the directories for running the script
 *   %system.dirsep% is necessary here because windows
 
-$if not dexist datasets		  $call mkdir datasets
-$if not dexist datasets%system.dirsep%windc	  $call mkdir "datasets%system.dirsep%windc"
-$if not dexist datasets%system.dirsep%gtapwindc $call mkdir "datasets%system.dirsep%gtapwindc"
+$set datasets "%year%"
+
+$if not dexist %datasets%		  $call mkdir %datasets%
+$if not dexist %datasets%%system.dirsep%windc	  $call mkdir "%datasets%%system.dirsep%windc"
+$if not dexist %datasets%%system.dirsep%gtapwindc $call mkdir "%datasets%%system.dirsep%gtapwindc"
 $if not dexist lst		  $call mkdir lst
 
 * ------------------------------------------------------------------------
@@ -85,7 +87,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtap_model.gms"
 $label write_stub
 $log	Ready to run WRITE_STUB (datasets/gtapwindc/32_stub.gdx)
 $if not %pause%==no $call pause
-$call gams write_stub --ds=g20_32 o=lst/write_stub_32.lst --gtapingams=%gtapingams% --dsout=datasets/gtapwindc/32_stub.gdx
+$call gams write_stub --ds=g20_32 o=lst/write_stub_32.lst --gtapingams=%gtapingams% --dsout=%datasets%/gtapwindc/32_stub.gdx
 
 $if errorlevel 1 $log   "Non-zero return code from write_stub.gms"
 $if errorlevel 1 $abort "Non-zero return code from write_stub.gms"
@@ -96,7 +98,7 @@ $if errorlevel 1 $abort "Non-zero return code from write_stub.gms"
 $log	"Ready to check 32_stub with GTAPWINDC_MGE  (no output)"
 $if not %pause%==no $call pause
 $label chkstub32
-$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets/gtapwindc/32_stub.gdx o=lst/gtapwindc_mge_32_stub.lst
+$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/32_stub.gdx o=lst/gtapwindc_mge_32_stub.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
@@ -108,7 +110,7 @@ $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
 $label windc_model
 $log	"Ready to run WINDC_MODEL  (datasets/windc/32.gdx)"
 $if not %pause%==no $call pause
-$call gams windc_model --windc_datafile=../household/datasets/WINDC_cps_static_all_%year%_gtap_32_state.gdx gdx=datasets/windc/32.gdx o=lst/windc_model_32.lst
+$call gams windc_model --windc_datafile=../household/datasets/WINDC_cps_static_all_%year%_gtap_32_state.gdx gdx=%datasets%/windc/32.gdx o=lst/windc_model_32.lst
 
 
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms"
@@ -127,7 +129,7 @@ $label regiondisagg32
 
 $log	"Ready to run regiondisagg (datasets/gtapwindc/32.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg --ds=32 o=lst/regiondisagg_32.lst 
+$call gams regiondisagg --ds=32 --datasets=%datasets% o=lst/regiondisagg_32.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 32.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
@@ -139,7 +141,7 @@ $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 32.gdx"
 $label chk32
 $log	"Ready to verify consistency of 32 sector dataset (no output)"
 $if not %pause%==no $call pause
-$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets/gtapwindc/32.gdx o=lst/gtapwindc_mge_32.lst
+$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/32.gdx o=lst/gtapwindc_mge_32.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms"
@@ -149,7 +151,7 @@ $label g20_43
 *----------------------------------------
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
-$ifThen not exist "%gtapingams%/%year%/g20_43.gdx"
+$ifThen not exist "%gtapingams%/%gtap_version%/%year%/g20_43.gdx"
 $call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 --zipfile=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
 $endif
 
@@ -181,7 +183,7 @@ $label write_stub43
 $log	Ready to translate GTAP data for g20_43 (datasets/gtapwindc/43_stub.gdx)
 $if not %pause%==no $call pause
 
-$call gams write_stub --ds=g20_43 o=lst/write_stub_43.lst --ds=g20_43 --dsout=datasets/gtapwindc/43_stub.gdx
+$call gams write_stub --ds=g20_43 o=lst/write_stub_43.lst --dsout=%datasets%/gtapwindc/43_stub.gdx
 
 $if errorlevel 1 $log   "Non-zero return code from write_stub.gms with g20_43"
 $if errorlevel 1 $abort "Non-zero return code from write_stub.gms with g20_43"
@@ -194,7 +196,7 @@ $label chkstub43
 $log	Ready to check gtapg20_43_stub :
 $if not %pause%==no $call pause
 
-$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets/gtapwindc/43_stub.gdx o=lst/gtapwindc_mge_43_stub.lst
+$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/43_stub.gdx o=lst/gtapwindc_mge_43_stub.lst
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
@@ -207,11 +209,11 @@ $label agrdisagg
 *	dataset to produce a 43 sector WiNDC dataset (not GTAPWiNDC yet).
 * ------------------------------------------------------------------------
 
-$log	Ready to disaggreate agricultural sectors (datasets/windc/43.gdx)
+$log	Ready to disaggreate agricultural sectors (%datasets%/windc/43.gdx)
 $if not %pause%==no $call pause
 
 $set windc_datafile ../household/datasets/WINDC_cps_static_all_%year%_gtap_32_state.gdx
-$call gams agrdisagg --datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapingams=%gtapingams% --dsout=datasets/windc/43.gdx o=lst/agrdisagg.lst
+$call gams agrdisagg --datafile=%windc_datafile% --gtap_agr=gtap_agr.gdx --gtapingams=%gtapingams% --dsout=%datasets%/windc/43.gdx o=lst/agrdisagg.lst
 
 $if errorlevel 1 $log   "Non-zero return code from agrdisagg.gms"
 $if errorlevel 1 $abort "Non-zero return code from agrdisagg.gms"
@@ -222,7 +224,7 @@ $label windc_model_43
 * ------------------------------------------------------------------------
 $log	"Ready to check WiNDC model with datasets/windc/43.gdx (no output)"
 $if not %pause%==no $call pause
-$if not %debug%==no $call gams windc_model --windc_datafile=datasets/windc/43.gdx o=lst/windc_model_43.lst --oneyear=true
+$if not %debug%==no $call gams windc_model --windc_datafile=%datasets%/windc/43.gdx o=lst/windc_model_43.lst --oneyear=true
 
 $if errorlevel 1 $log   "Non-zero return code from windc_model.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from windc_model.gms for 43.gdx"
@@ -248,7 +250,7 @@ $label chk43
 $log	"Ready to verify consistency of datasets/gtapwindc/43.gdx "
 $if not %pause%==no $call pause
 
-$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=datasets/gtapwindc/43.gdx o=lst/gtapwindc_mge_43.lst 
+$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/43.gdx o=lst/gtapwindc_mge_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge for for 43.gdx"
