@@ -22,7 +22,7 @@ $title Routine for disaggregating sectoring definitions
 $if not set smap $set smap sage
 
 * Set year of data
-$set year 2021
+$if not set year $set year 2021
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
