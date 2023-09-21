@@ -2,9 +2,12 @@ $title Use Gravity to Calibrate Bilateral Interstate Trade Flows
 
 *	Read the data:
 
+$if not set year $set year 2017
+$set datasets %year%
+
 $if not set ds $set ds 43
 
-$set gtapwindc_datafile ..\GTAPWiNDC\datasets\gtapwindc\%ds%.gdx
+$set gtapwindc_datafile ..\GTAPWiNDC\%datasets%\gtapwindc\%ds%.gdx
 
 $include ..\GTAPWiNDC\gtapwindc_data
 

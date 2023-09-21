@@ -1,9 +1,12 @@
 $title	GAMS Code to Read a GTAPWINDC Dataset
 
+$if not set year $set year 2017
+$set datasets %year%
+
 $set fs %system.dirsep% 
 
 $if not set ds                 $set ds 32
-$if not set gtapwindc_datafile $set gtapwindc_datafile datasets%fs%gtapwindc%fs%%ds%.gdx
+$if not set gtapwindc_datafile $set gtapwindc_datafile %datasets%%fs%gtapwindc%fs%%ds%.gdx
 
 sets	
 	r(*)		Regions (countries)

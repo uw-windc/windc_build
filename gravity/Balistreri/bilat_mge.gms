@@ -2,9 +2,12 @@ $title	GTAP-WINDC Model with bilateral state trade
 
 *	Read the GTAP-WiNDC data:
 
+$if not set year $set year 2017
+$set datasets %year%
+
 $set fs %system.dirsep% 
 $if not set ds $set ds 43
-$if not set gtapwindc_datafile $set gtapwindc_datafile ..%fs%GTAPWiNDC%fs%datasets%fs%gtapwindc%fs%%ds%.gdx
+$if not set gtapwindc_datafile $set gtapwindc_datafile ..%fs%GTAPWiNDC%fs%%datasets%%fs%gtapwindc%fs%%ds%.gdx
 
 
 $include gtapwindc_data
