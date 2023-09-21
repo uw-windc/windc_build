@@ -24,20 +24,29 @@ $if not set relative_tolerance $set relative_tolerance 4
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
 
+$if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_version%'
+$call mkdir "%system.fp%%gtap_version%"
+
+
+
+
+
 set
 	yr		Base years / %year% /,
 	reltol		Filter tolance / %relative_tolerance%/
 	target		Aggregation / %aggregation% /;
 
+$set fs %system.dirsep%
 
+loop(yr,
+	put_utility 'exec' / 'mkdir %system.fp%%gtap_version%%fs%',yr.tl;
+);
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 
 set	seq	Sequencing set for filter tolerance /1*10/;
 
 file kput; kput.lw=0; put kput;
-
-*	Here we indicate the location of the GTAP data files.
 
 *	Run a single task:
 
@@ -51,10 +60,7 @@ $label flex2gdx
 
 put_utility 'title' /'Reading FLEXAGG data files';
 
-loop(yr,
-	put_utility 'shell' / 'if exist %system.fp%',yr.tl,'\nul rmdir /q /s %system.fp%',yr.tl;
-	put_utility 'shell' / 'mkdir %system.fp%',yr.tl;
-);
+
 
 *	Point to the directory with the flexlagg data files:
 
@@ -65,8 +71,10 @@ set		flexaggfile /
 		2007	"%flexagg%flexagg9aY07.zip"
 		2011	"%flexagg%flexagg9aY11.zip" /;
 
+
+
 loop(yr,
-	put_utility 'shell' / 'gams %system.fp%flex2gdx --yr=',yr.tl,' --flexaggfile=',flexaggfile.te(yr),' o=%system.fp%',yr.tl,'/flex2gdx.lst';
+	put_utility 'shell' / 'gams %system.fp%flex2gdx --yr=',yr.tl,' --flexaggfile=',flexaggfile.te(yr),' o=%system.fp%%gtap_version%/',yr.tl,'/flex2gdx.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from flex2gdx.gms"; );
 );
@@ -75,8 +83,7 @@ $if set task $exit
 $label gdx2gdx
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
-*	put_utility 'shell' / 'mkdir %system.fp%',yr.tl;
-	put_utility 'shell' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' o=%system.fp%',yr.tl,'/gdx2gdx.lst';
+	put_utility 'shell' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' o=%system.fp%%gtap_version%/',yr.tl,'/gdx2gdx.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
 );
@@ -86,7 +93,7 @@ $label filter
 loop(yr,
   loop(reltol,
 	put_utility 'title' /'filter: ',yr.tl,' : ', reltol.tl;
-	put_utility 'shell' /'gams %system.fp%filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=%system.fp%',yr.tl,'/filter_',reltol.tl,'.lst';
+	put_utility 'shell' /'gams %system.fp%filter --yr=',yr.tl,' --reltol=',reltol.tl,' o=%system.fp%gtap9/',yr.tl,'/filter_',reltol.tl,'.lst';
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from filter.gms"; );
 ));
@@ -99,7 +106,7 @@ $label aggregate
 loop((yr,target),
 
 	put_utility "title" / "Aggeragating: ",yr.tl," Target: ",target.tl;
-	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%",yr.tl,"/aggregate_",target.tl,".lst";
+	put_utility "shell" /"gams %system.fp%aggregate --yr=",yr.tl," --target=",target.tl," o=%system.fp%gtap9/",yr.tl,"/aggregate_",target.tl,".lst";
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from aggregate.gms");
 );
@@ -109,7 +116,7 @@ $label replicate
 loop((yr,target),
 
 	put_utility "title" / "Replicating: : ",yr.tl,"Target: ",target.tl;
-	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%",yr.tl,"/replicate_",target.tl,".lst";
+	put_utility "shell" /"gams %system.fp%replicate --yr=",yr.tl," --ds=",target.tl," o=%system.fp%gtap9/",yr.tl,"/replicate_",target.tl,".lst";
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>0, abort "Non-zero return code from replicatge.gms");
 );

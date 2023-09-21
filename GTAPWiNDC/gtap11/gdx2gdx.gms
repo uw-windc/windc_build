@@ -1,12 +1,25 @@
 $title	Read the GTAP 11 Data (GDX format) and Write in GTAPinGAMS Format
 
-$call mkdir %gams.scrdir%gtapingams
-$set tmpdir %gams.scrdir%gtapingams/
+$call mkdir "%gams.scrdir%%system.dirsep%gtapingams"
+*put_utility kutl, 'shell' / 'mkdir %gams.scrdir%%system.dirsep%gtapingams';
+$set tmpdir "%gams.scrdir%gtapingams/"
+
+*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
+$if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
+$if not set gtap_version $abort "You must set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
+
+
+* Set a name for the GDX files in the extracted ZIP. GTAP11 and GTAP11a use different names
+
+$if %gtap_version% == "gtap11" $set gtap_name GDX
+$if %gtap_version% == "gtap11a" $set gtap_name GDX11a
+
+
 
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 
-$if not set yr $set yr 2004
+$if not set yr $set yr 2017
 
 $if "%yr%"=="2004" $set syr 04
 $if "%yr%"=="2007" $set syr 07
@@ -15,8 +28,6 @@ $if "%yr%"=="2014" $set syr 14
 $if "%yr%"=="2017" $set syr 17
 
 $if not set syr $abort "Year is not valid: %yr%"
-
-$if not dexist %system.fp%%yr% $call mkdir %system.fp%%yr%
 
 $ontext
 Archive:  GDX_AY1017.zip
@@ -542,17 +553,11 @@ $set esubva ESUBVA
 $set esubdm ESUBD
 $set etaf etrae
 
-$if not set yr $set yr 2017
-$if "%yr%"=="2004" $set syr 04
-$if "%yr%"=="2007" $set syr 07
-$if "%yr%"=="2011" $set syr 11
-$if "%yr%"=="2014" $set syr 14
-$if "%yr%"=="2017" $set syr 17
 
-$if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
 
-$call gmsunzip -j %zipfile% GDX%syr%.zip -d %tmpdir%
-$call gmsunzip -j %tmpdir%GDX%syr%.zip   -d %tmpdir%
+
+$call gmsunzip -j %zipfile% %gtap_name%%syr%.zip -d %tmpdir%
+$call gmsunzip -j %tmpdir%%gtap_name%%syr%.zip   -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 
@@ -914,7 +919,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%system.fp%%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
+execute_unload '%system.fp%%gtap_version%/%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
 	vst, vtwr, vfm, vdfm, vifm, vxmd, rto, rtf, rtfd, rtfi, rtxs, rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, pop, 
 	eco2d, eco2i, 

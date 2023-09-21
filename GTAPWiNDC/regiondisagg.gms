@@ -1,12 +1,14 @@
 $title	Disaggregate Subregions in USA for 2014 based on WINDC Benchmark
 
 $if not set ds $set ds 43
+$if not set datasets $set datasets 2017
+
 
 *	Point to a WiNDC dataset:
 
-$set windc_datafile	datasets/windc/%ds%.gdx
-$set gtapwindc_datafile datasets/gtapwindc/%ds%_stub
-$set dsout              datasets/gtapwindc/%ds%.gdx
+$set windc_datafile	%datasets%/windc/%ds%.gdx
+$set gtapwindc_datafile %datasets%/gtapwindc/%ds%_stub
+$set dsout              %datasets%/gtapwindc/%ds%.gdx
 
 *	Define the region to be balanced:
 
