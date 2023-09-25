@@ -1,5 +1,7 @@
 $title  Quick and Dirty State-Port Geography Calculation
 
+$if not set trade_data $set trade_data %system.fp%../data/gravity/
+
 set	elast	Elasticities used for iceberg trade cost calculations /"3.0","4.0","5.0"/;
 
 parameter	epsilon		Elasticity of trade wrt trade cost /-1/;
@@ -78,10 +80,10 @@ parameter
 	hsimp(*,*)	HS level imports by district,
 	hsexp(*,*)	HS level exports by district;
 
-$gdxin trade_data\imp_hstrd.gdx
+$gdxin %trade_data%\imp_hstrd.gdx
 $load HSimp
 
-$gdxin trade_data\exp_hstrd.gdx
+$gdxin %trade_data%\exp_hstrd.gdx
 $load HSexp
 
 parameter	totchk	Cross check on total imports;

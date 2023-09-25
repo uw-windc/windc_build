@@ -15,7 +15,7 @@ parameter	dd0(i,r,ss,s)	Domestic trade by state
 set		itrd(i)		Sectors with trade data;
 
 
-$gdxin 'gravity.gdx'
+$gdxin 'bilatgravity.gdx'
 $load dd0 esub_ln esub_nn itrd
 
 *	Exports are recalibrated for the USA.  Reload the array in which
