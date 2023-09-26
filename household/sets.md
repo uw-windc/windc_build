@@ -1,6 +1,6 @@
 
 
-# Sets
+## Sets
 
 | Set Name | Description                  |
 |:---------|:-----------------------------|
@@ -11,7 +11,7 @@
 | [trn](#transfer-types)      | transfer types               |
 
 
-# Parameters
+## Parameters
 
 |Parameter Name | Domain | Description |
 |:---------|:--------|:-----------------------------------------------|
@@ -57,9 +57,9 @@
 | pop0     | r, h    | Population (households or returns in millions) |
 
 
-# Set Listing
+## Set Listing
 
-## Regions
+### Regions
 
 1. [state](#states)
 2. [census_divison](#census-divisions)
@@ -67,7 +67,7 @@
 4. [national](#national)
 
 
-### States
+#### States
 |r|Description| |r|Description|
 |---|---|---|---|--|
 |AK|Alaska| |MT|Montana|
@@ -98,7 +98,7 @@
 |MS|Mississippi||||
 
 
-### Census Divisions 
+#### Census Divisions 
 
 | uni   | element_text       |
 |:------|:-------------------|
@@ -113,7 +113,7 @@
 | pac   | Pacific            |
 
 
-### Census Regions
+#### Census Regions
 
 | uni   | element_text   |
 |:------|:---------------|
@@ -123,14 +123,14 @@
 | wes   |                |
 
 
-### National
+#### National
 
 | uni   | element_text   |
 |:------|:---------------|
 | usa   |                |
 
 
-## Goods and sectors from BEA -- Margin related sectors
+### Goods and sectors from BEA -- Margin related sectors
 
 1. [windc](#windc-aggregationWiNDC-Aggregation)
 2. [gtap_32](#gtap_32-aggregation)
@@ -138,7 +138,7 @@
 4. [macro](#macro)
 
 
-### WiNDC Aggregation
+#### WiNDC Aggregation
 
 | s     | gm   | Description                                                                           |
 |:------|:-----:|:--------------------------------------------------------------------------------------|
@@ -216,7 +216,7 @@
 | sle   | -    | State and local government enterprises (GSLE)                                         |
 
 
-### GTAP_32 Aggregation
+#### GTAP_32 Aggregation
 
 | s   | gm   | Description                                       |
 |:----|:-----|:--------------------------------------------------|
@@ -254,7 +254,7 @@
 | OSG | - | Public Administration, Defense, Education, Health |
 
 
-### GTAP 10 Aggregation
+#### GTAP 10 Aggregation
 
 | s   | gm   | Description                                                                   |
 |:----|:-----|:------------------------------------------------------------------------------|
@@ -270,7 +270,7 @@
 | ser | ser  | Other services         
 
 
-### Macro
+#### Macro
 
 | s   | gm   | Description    |
 |:----|:-----|:---------------|
@@ -281,14 +281,14 @@
 | ser | ser  | Services       |                                                       |
 
 
-## Margins (trade or transport)
+### Margins (trade or transport)
 
 | m   | Description   |
 |:----|:--------------|
 | trn | transport     |
 | trd | trade         |
 
-## household categories
+### household categories
 
 | h   | Description   |
 |:----|:--------------|
@@ -298,7 +298,7 @@
 | hh4 |               |
 | hh5 |               |
 
-## transfer types
+### transfer types
 
 | trn      | Description                  |
 |:---------|:-----------------------------|

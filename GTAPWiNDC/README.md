@@ -1,16 +1,4 @@
 - [File Listing](#file-listing)
-- [GTAPWiNDC Set Listing](#gtapwindc-set-listing)
-    - [Sets](#sets)
-    - [Parameters](#parameters)
-    - [Set Listing](#set-listing)
-        - [Regions countries](#regions-countries)
-        - [Sectors](#sectors)
-        - [Commodities](#commodities)
-        - [Factors of production](#factors-of-production)
-        - [Subregions in the model](#subregions-in-the-model)
-<!-- TOC -->
-
-- [File Listing](#file-listing)
 - [GTAPWiNDC Sets](#gtapwindc-sets)
     - [Sets - GTAPWiNDC](#sets---gtapwindc)
     - [Parameters - GTAPWiNDC](#parameters---gtapwindc)
@@ -33,7 +21,33 @@
         - [Household categories](#household-categories)
         - [Transfer types](#transfer-types)
 
-<!-- /TOC -->
+
+
+
+# Description
+
+
+The GTAPWiNDC buildstream incorporates data from either the publicly available GTAP 9 release or proprietary GTAP 11 release. To inquire about obtaining a license for the GTAP 11 database, visit the [GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). The GTAP version 9 database is included in our data distribution.
+
+First, you must build both `core` and `household` prior to building `GTAPWiNDC`. Navigate to the `GTAPWiNDC` directory and run
+
+    gams build.gms
+
+If you have placed the files for GTAP 11 in the correct location, this will automatically use these files. If not, it will default to GTAP9. 
+
+|Command| Options |
+|---|---|
+|year | 2017[^GTAP11], 2014[^GTAP11], 2011, 2007, 2004| 
+|aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
+
+[^GTAP11]:GTAP 11 only
+
+
+These options can either be set on the command line using the `--command=option` syntax, e.g.:
+
+    gams build.gms --year=2014
+
+Or directly in the GTAPWiNDC/build.gms file.
 
 
 # File Listing
