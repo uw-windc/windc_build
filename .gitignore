@@ -22,6 +22,7 @@
 */datasets/
 */loadpoint/
 
+*.ipynb
 
 GTAPWiNDC/20*
 
