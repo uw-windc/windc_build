@@ -14,7 +14,7 @@ $include "%system.fp%gtapdata"
 
 *	Calling program points to the target mapping:
 
-$include "%system.fp%defines\%target%"
+$include "%system.fp%defines/%target%"
 
 parameter	mapbug(*)	Problems with mapping;
 mapbug(r) = 1 - sum(mapr(r,rr),1);
