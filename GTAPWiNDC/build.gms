@@ -30,9 +30,6 @@ $include gtapingams
 *	from the code.
 $if not set year $set year 2017
 
-* set aggregations g20_10,  g20_32,  g20_43, 
-*				      wb12_10, wb12_32, wb12_43
-$if not set aggregation $set aggregation g20_32
 
 
 * ------------------------------------------------------------------------
