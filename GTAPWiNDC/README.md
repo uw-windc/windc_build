@@ -57,26 +57,42 @@ Or directly in the GTAPWiNDC/build.gms file.
 
 2. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
 
+    Inputs: `gtapingams.gms`, `gtap*/gtap*/g20_32.gdx`, `gtap*/gtap*/g20_43.gdx`, `household/datasets/cps_static_all_2017.gdx`
+
+    Outputs: `%year%/`
 
     Command line options:
     |Command|Options| Default | Description |
     | ---   | ---   | --- | ---|
-	| year | gtap11/a: 2017, 2014, 2011 gtap9: 2011 | 2017 | The year to run |
-
-
+	| year | gtap11/a: 2017, 2014, 2011 -- gtap9: 2011 | 2017 | The year to run |
+    
+	Data files exist for 2004 and 2007, but these do not have carbon
+	and energy data.  They could be used if those inputs are dropped
+	from the code.
 
 3. `gtap_model.gms` - Replicates the benchmark equilibrium for the input GTAP model.
 
-4. `write_stub.gms` - Read the GTAP dataset (20_43), add array dimensions for households (h) and subregions (s). The GTAP data is loaded for household and subregion "rest".
+    Inputs: `gtapingams.gms`, `gtap*/gtap*/g20_32.gdx`, `gtap*/gtap*/g20_43.gdx`
 
-5. `gtapwindc_data.gms`, `gtapwindc_mge.gms`, `gtapwindc_mcp.gms` - Scripts which replicate the benchmark equilibrium for the
-output GTAP_WiNDC model (GAMS/MCP and GAMS/MPSGE)
+4. `write_stub.gms` - Read the GTAP dataset (20_32/20_43), add array dimensions for households (h) and subregions (s). The GTAP data is loaded for household and subregion "rest".
 
-6. `windc_data.gms` - Loads the WiNDC household data
+    Inputs: `gtapingams.gms`, `gtap*/gtap*/g20_32.gdx`, `gtap*/gtap*/g20_43.gdx`
+
+    Outputs: `%year%/gtapwindc/32_stub.gdx`, `%year%/gtapwindc/32_stub.gdx`
+
+5. `gtapwindc_data.gms`, `gtapwindc_mge.gms`, `gtapwindc_mcp.gms` - Scripts which replicate the benchmark equilibrium for the output GTAP_WiNDC model (GAMS/MCP and GAMS/MPSGE). This runs several times during the build process, once for the stub dataset and once for the combined data.
+
+6. `windc_data.gms` - Loads the WiNDC household data.
+
+    Inputs: `household/datasets/cps_static_all_2017.gdx`
 
 7. `windc_model.gms` - Replicates the benchmark equilibrium for the WiNDC household model.
 
-8. `agrdisagg.gms` - We construct the disaggregate dataset in two steps. The first of these concerns only the 50 state / 250 household WiNDC model. We use state shares of agricultural receipts to disaggregate the AGR into 11 separate agricultural sectors
+    Inputs: `household/datasets/cps_static_all_2017.gdx` 
+
+8. `agrdisagg.gms` - This routine only runs on the g20_43 disaggregation. 
+
+We construct the disaggregated dataset in two steps. The first of these concerns only the 50 state / 250 household WiNDC model. We use state shares of agricultural receipts to disaggregate the AGR into 11 separate agricultural sectors
 
 	The original WiNDC dataset has but one agricultural sector:
 
@@ -100,9 +116,17 @@ output GTAP_WiNDC model (GAMS/MCP and GAMS/MPSGE)
 	|rmk|Raw milk|
 	|wol|Wool, silk-worm cocoons|
 
+    Inputs: `gtapingams.gms`, `household/datasets/cps_static_gtap_32_state.gdx`, `gtap*/gtap*/%year%/g20_43.gdx`
+
+    Outputs: `%year%/windc/43.gdx`
 
 
-9. `regiondisagg.gms` - Now that we have constructed a state-level national model for the US, we use these data to disaggregate states and households in the corresponding 43 sector GTAP model
+
+9. `regiondisagg.gms` - Disaggregate states and households in the corresponding 32/43 sector GTAP model.
+
+    Inputs: `%year%/windc/g20_*.gdx`, `%year%/gtapwindc/g20_*_stub.gdx`, 
+    
+    Outputs: `%year%/gtapwindc/g20_*.gdx`, `%year%/gtapwindc/g20_*_proportional.gdx`
 
 
 # GTAPWiNDC Sets
