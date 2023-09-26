@@ -102,7 +102,7 @@ v(i,"vom") = vom(i,"usa");
 v(i,"vim") = vim(i,"usa");
 v(i,"vxm") = sum(rm, vxmd(i,"usa",rm)) + vst(i,"usa");
 $offecho
-$call gams %gams.scrdir%gtapagr gdx=%gams.scrdir%gtapagr.gdx o=lst\gtapagr.lst
+$call gams %gams.scrdir%gtapagr gdx=%gams.scrdir%gtapagr.gdx o=lst/gtapagr.lst
 $gdxin '%gams.scrdir%gtapagr.gdx'
 $loaddc vafm v
 

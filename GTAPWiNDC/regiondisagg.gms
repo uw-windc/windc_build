@@ -8,7 +8,7 @@ $if not set datasets $set datasets 2017
 
 $set windc_datafile	%datasets%/windc/%ds%.gdx
 $set gtapwindc_datafile %datasets%/gtapwindc/%ds%_stub
-$set dsout              %datasets%/gtapwindc/%ds%.gdx
+$set dsout              %datasets%/gtapwindc/%ds%
 
 *	Define the region to be balanced:
 
