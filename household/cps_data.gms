@@ -25,22 +25,22 @@ $set gdxdir gdx/
 
 $set file "%cpsdir%cps_asec_income_totals_2000_2021.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
-$call 'csv2gdx "%file%" id=cpscsv useheader=yes index=(1,2,3,4) values=5 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3'
+$call 'csv2gdx "%file%" id=cpscsv useheader=yes index="(1,2,3,4)" values=5 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3'
 
 * Translate the CPS population CSV data to GDX:
 
 $set file "%cpsdir%cps_asec_numberhh_2000_2021.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
-$call 'csv2gdx %file% id=popcsv useheader=yes index=(1,2,3) values=4 output="%gdxdir%cps_households.gdx" CheckDate=yes trace=3'
+$call 'csv2gdx %file% id=popcsv useheader=yes index="(1,2,3)" values=4 output="%gdxdir%cps_households.gdx" CheckDate=yes trace=3'
 
 * Translate labor tax rate CSV data to GDX:
 
 $set file %cpsdir%labor_tax_rates.csv
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 * $call csv2gdx %file%  id=taxrate0 useheader=yes index=1,2 values=5 output="%gdxdir%labor_tax_rates.gdx" CheckDate=yes trace=3
-$call csv2gdx %file% id=tl0 useheader=yes index=(1,2) values=3 output="%gdxdir%labor_tax_rates_tl.gdx" CheckDate=yes trace=3
-$call csv2gdx %file% id=tfica0 useheader=yes index=(1,2) values=4 output="%gdxdir%labor_tax_rates_tfica.gdx" CheckDate=yes trace=3
-$call csv2gdx %file% id=tl_avg0 useheader=yes index=(1,2) values=5 output="%gdxdir%labor_tax_rates_tl_avg.gdx" CheckDate=yes trace=3
+$call csv2gdx %file% id=tl0 useheader=yes index="(1,2)" values=3 output="%gdxdir%labor_tax_rates_tl.gdx" CheckDate=yes trace=3
+$call csv2gdx %file% id=tfica0 useheader=yes index="(1,2)" values=4 output="%gdxdir%labor_tax_rates_tfica.gdx" CheckDate=yes trace=3
+$call csv2gdx %file% id=tl_avg0 useheader=yes index="(1,2)" values=5 output="%gdxdir%labor_tax_rates_tl_avg.gdx" CheckDate=yes trace=3
 
 * Translate capital tax rate CSV data to GDX:
 
