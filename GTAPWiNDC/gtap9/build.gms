@@ -72,6 +72,7 @@ set		flexaggfile /
 		2011	"%flexagg%flexagg9aY11.zip" /;
 
 
+file pututl; put pututl; pututl.pw=32766;pututl.lw=0;
 
 loop(yr,
 	put_utility 'shell' / 'gams %system.fp%flex2gdx --yr=',yr.tl,' --flexaggfile=',flexaggfile.te(yr),' o=%system.fp%%gtap_version%/',yr.tl,'/flex2gdx.lst';
