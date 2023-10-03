@@ -1,15 +1,14 @@
 - [Data](#data)
-- [Description of each method](#description-of-each-method)
-    - [Core](core/README.md)
-    - [Household](household/README.md)
-    - [GTAPWiNDC](GTAPWiNDC/README.md)
-        - [gtap11](GTAPWiNDC/gtap11/README.md)
-        - [gtap9](GTAPWiNDC/gtap9/README.md)
+- [Core](core/README.md)
+- [Household](household/README.md)
+- [GTAPWiNDC](GTAPWiNDC/README.md)
+    - [gtap11](GTAPWiNDC/gtap11/README.md)
+    - [gtap9](GTAPWiNDC/gtap9/README.md)
 
 
 # Data
 
-The data required to build each of piece of the repository are located at the following link
+The data required to build each of piece of the repository is located at the following link
 [WiNDC downloads page](https://windc.wisc.edu/downloads.html). Extract `windc_2021.zip` into the 
 `windc_build` directory. This will create a directory called `data`.
 
