@@ -59,14 +59,6 @@ $set fs %system.dirsep%
 
 file pututl; put pututl; pututl.pw=32766;pututl.lw=0;
 
-*file tmp / "%system.fp%" /;
-*put tmp; 
-*loop(yr,
-*put '%system.fp%%gtap_version%/',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
-*)
-*putclose tmp;
-
-
 
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
