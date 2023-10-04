@@ -25,34 +25,44 @@
 
 
 # Description
+The GTAP Consortium (http://www.gtap.org) provides a documented,
+publicly available, global, general equilibrium data base. It also
+conducts seminars on a regular basis to inform the research community
+about how to use the data in applied economic analysis.
 
+The GTAP version 11 database represents global production and trade for
+xx country/regions, xx commodities and xx primary factors. The data
+characterize intermediate demand and bilateral trade in xx, 2011, 2014
+and 2017, including tax rates on imports and exports and other indirect
+taxes.
 
-The GTAPWiNDC buildstream incorporates data from either the publicly available GTAP 9 release or proprietary GTAP 11 release. To inquire about obtaining a license for the GTAP 11 database, visit the [GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). The GTAP version 9 database is included in our data distribution.
+In collaboration with GTAP researchers, the US Department of Agriculture
+and other WiNDC consortium members we have produced a version of the
+WiNDC 50 state database and model which may be embedded within a
+multiregional (global) GTAP model. The single region in the GTAP dataset
+is replaced by 50 states in the GTAPWiNDC dataset. USA national totals
+from GTAP 11 are retained in the extended model.
 
-First, you must build both `core` and `household` prior to building `GTAPWiNDC`. Navigate to the `GTAPWiNDC` directory and run
+The principal programming language for GTAP data and modeling work is
+GEMPACK. In the GEMPACK framework the model is solved as a system of
+nonlinear equations. Our implementation of the GTAPWiNDC model is
+provided in GAMS. The build stream which reconciles
+the database and the illustrative models are provided here with tools
+which permit users to aggregate, filter and adjust benchmark datasets.
 
-    gams build.gms
+The GTAPWiNDC buildstream incorporates data from either the publicly 
+available GTAP 9 release or proprietary GTAP 11 release. To inquire 
+about obtaining a license for the GTAP 11 database, visit the 
+[GTAP website](https://www.gtap.agecon.purdue.edu/databases/v11/). 
+The GTAP version 9 database is included in our data distribution.
 
-If you have placed the files for GTAP 11 in the correct location, this will automatically use these files. If not, it will default to GTAP9. 
-
-|Command| Options |
-|---|---|
-|year | 2017[^GTAP11], 2014[^GTAP11], 2011, 2007, 2004| 
-|aggregation| g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43
-
-[^GTAP11]:GTAP 11 only
-
-
-These options can either be set on the command line using the `--command=option` syntax, e.g.:
-
-    gams build.gms --year=2014
-
-Or directly in the GTAPWiNDC/build.gms file.
+You must build both `core` and `household` prior to building 
+`GTAPWiNDC`. 
 
 
 # File Listing
 
-1. `gtapingams.gms` - This file needs to be user modified. This controls which version of GTAP to use and where the datafile is located. Explicit directions are located in this file. 
+1. `gtapingams.gms` - This file needs to be user modified. This controls which version of GTAP to use and where the datafile is located. Explicit directions are detailed in this file. 
 
 
 2. `build.gms` - Builds GTAP and GTAPWiNDC datasets.
