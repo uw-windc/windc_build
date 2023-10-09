@@ -1,3 +1,10 @@
+# WiNDC Build Stream
+
+The following links point to the documentation for each modules of
+the build stream. Be sure to read the [Data](#data) and 
+[Build Instructions](#build-instructions) sections to acquire
+and build the data.
+
 - [Data](#data)
 - [Build Instructions](#build-instructions)
 - [Core](core/README.md)
@@ -10,13 +17,15 @@
 # Data
 
 The data required to build each of piece of the repository is located at 
-the following link [WiNDC downloads page](https://windc.wisc.edu/downloads.html). 
-Extract `windc_2021.zip` into the `windc_build` directory. This will 
+the following link [windc_2021.zip (277 MB)](https://windc.wisc.edu/downloads/version_4_0/windc_2021.zip). 
+Download and extract `windc_2021.zip` into the `windc_build` directory. This will 
 create a directory called `data`.
 
 Data is included to run `core`, `household`, and `gtap9`. In order to run 
 `gtap11` or `gtap11a` you need to obtain a license from GTAP. The data for 
 GTAPWiNDC for the year 2017 is propriety to GTAP and requires a GTAP license. 
+In order to enable gtap11/a you **must modify the file `GTAPWiNDC/gtapingams.gms`**
+in the buildstream. Instructions are provided in that file.
 
 The zip file should have the correct directory structure, but the following 
 is the correct naming scheme:
