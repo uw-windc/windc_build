@@ -4,7 +4,7 @@ These routines are automatically called by `GTAPWiNDC/build.gms`. You
 shouldn't need to run these files unless you require different options
 than the default.
 
-1. `build.gms` - Imports the GTAP dataset into GAMS format.
+1. `build.gms` - Imports the GTAP dataset (in GDX format) into the [GTAPinGAMS data structure](https://jgea.org/ojs/index.php/jgea/article/view/38)
 
     Inputs: GTAP zipfile. Must be set at command line.
 
