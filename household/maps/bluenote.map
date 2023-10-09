@@ -1,11 +1,11 @@
-* Oil and natural gas are separated in bluenote.gms.
+* Oil and natural gas are separated in bluenote.gms, as is electricity.
 
 SET ss "Sectors in the target dataset" /
 		oil	"Petroleum products",
-*		cru	"Crude oil extraction",
+* 		cru	"Crude oil extraction",
 *		gas	"Natural gas extraction",
 		cng	"Crude oil and natural gas extraction",
-		col	"All mining",
+		col	"Coal mining",
 		uti	"Electric power generation, transmission, and distribution and other utilities",
 		trn	"Transportation",
 		con	"Construction",

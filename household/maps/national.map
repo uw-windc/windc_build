@@ -1,0 +1,61 @@
+$eolcom !
+
+set   rr           Aggregated regions /
+               usa    ! united states
+      /;
+
+set   rmap(rr,r)   Mapping between country and states /
+         usa.(        
+               ct     ! connecticut
+	       me     ! maine
+	       ma     ! massachusetts
+	       nh     ! new hampshire
+	       ri     ! rhode island
+	       vt     ! vermont
+	       nj     ! new jersey
+	       ny     ! new york
+	       pa     ! pennsylvania
+	       in     ! indiana
+	       il     ! illinois
+	       mi     ! michigan
+	       oh     ! ohio
+	       wi     ! wisconsin
+	       ia     ! iowa
+	       ks     ! kansas
+	       mn     ! minnesota
+	       mo     ! missouri
+	       ne     ! nebraska
+	       nd     ! north dakota
+	       sd     ! south dakota
+	       dc     ! district of columbia
+	       de     ! delaware
+	       fl     ! florida
+	       ga     ! georgia
+	       md     ! maryland
+	       nc     ! north carolina
+	       sc     ! south carolina
+	       va     ! virginia
+	       wv     ! west virginia
+	       al     ! alabama
+	       ky     ! kentucky
+	       ms     ! mississippi
+	       tn     ! tennessee
+	       ar     ! arkansas
+	       la     ! louisiana
+	       ok     ! oklahoma
+	       tx     ! texas
+               az     ! arizona
+	       co     ! colorado
+	       id     ! idaho
+	       nm     ! new mexico
+	       mt     ! montana
+	       ut     ! utah
+	       nv     ! nevada
+	       wy     ! wyoming
+	       ak     ! alaska
+	       ca     ! california
+	       hi     ! hawaii
+	       or     ! oregon
+	       wa     ! washington
+             )
+     /;
