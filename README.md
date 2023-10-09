@@ -1,3 +1,10 @@
+# WiNDC Build Stream
+
+The following links point to the documentation for each modules of
+the build stream. Be sure to read the [Data](#data) and 
+[Build Instructions](#build-instructions) sections to acquire
+and build the data.
+
 - [Data](#data)
 - [Build Instructions](#build-instructions)
 - [Core](core/README.md)
