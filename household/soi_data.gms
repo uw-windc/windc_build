@@ -23,7 +23,7 @@ $set gdxdir gdx/
 
 $set file "%soidir%soi_income_totals_2014_2017.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
-$call 'csv2gdx "%file%" id=soicsv useheader=yes index=(1,2,3,4) values=5 output="%gdxdir%soicsv.gdx" CheckDate=yes trace=3'
+$call 'csv2gdx "%file%" id=soicsv useheader=yes index="(1,2,3,4)" values=5 output="%gdxdir%soicsv.gdx" CheckDate=yes trace=3'
 
 * Define needed dimensions of dataset
 

@@ -66,7 +66,7 @@ $load yr sr r g=i
 $gdxin
 alias(r,rr),(*,u);
 
-$call 'csv2gdx ../data/core/faf_data_1997_2021.csv output=gdx/faf_data_1997_2021.gdx id=faf_units index=(1,2,3,4) colCount=5 value=lastCol useHeader=Y';
+$call 'csv2gdx ../data/core/faf_data_1997_2021.csv output=gdx/faf_data_1997_2021.gdx id=faf_units index="(1,2,3,4)" colCount=5 value=lastCol useHeader=Y';
 $gdxin 'gdx/faf_data_1997_2021.gdx'
 $load fyr=Dim4
 $load faf_units

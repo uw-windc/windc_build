@@ -1,5 +1,8 @@
+# Core
+
 <!-- TOC -->
 
+- [Description](#description)
 - [File Listing](#file-listing)
 - [Sets](#sets)
 - [Parameters](#parameters)
@@ -10,7 +13,28 @@
     - [Margins trade or transport](#margins-trade-or-transport)
 
 <!-- /TOC -->
-<!-- /TOC -->
+
+# Description
+
+If you have a local version of GAMS and have access to the relevant licenses, navigate in your command line or terminal to the directory `windc_build`, subdirectory `core` and run the GAMS file `build.gms` by simply typing the following command:
+
+        gams build.gms
+
+Note that this build will work in both, Windows and UNIX/LINUX 
+environments. See [the core documentation](core/README.md) for a description of all the subroutines within the build stream. A description of the previous version of the WiNDC build stream is in the [WiNDC paper](https://windc.wisc.edu/windc.pdf) along with documentation of the models.
+
+By default, one version of the core WiNDC database will be generated and saved in the directory `core`: `WiNDCdatabase.gdx`. This is based on the least squares matrix balancing routine. An optional second dataset can be generated using the command line option `huber` to generate a version based on the Huber method. 
+
+    gams build --huber=yes
+
+This file will be called `WiNDCdatabase_huber.gdx`. Both databases contain data for all US states and 69 (summary) sectors from 1997 to 2021.
+
+If you don't have access to a GAMS license including needed solver licenses, you can generate the databases locally using [NEOS](https://neos-server.org/neos/). To run the routines on NEOS, type the following command:
+
+    gams build.gms --neos=yes
+
+Once the core WiNDC database is generated, it can be loaded into a general equilibrium model in GAMS. The file `windc_coredata.gms` demonstrates how to read data from the database and extract data for a specific year. The file `replicate.gms` includes a simple general equilibrium model in MCP and MPSGE format, verifies benchmark consistency, solves a counterfactual (tariff shock) and verifies consistency at that point as well.
+
 
 # File Listing
 

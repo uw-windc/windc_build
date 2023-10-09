@@ -32,12 +32,10 @@ $if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_v
 $call mkdir "%system.fp%%gtap_version%"
 
 
-
 set
-	yr		Base years / %year% /,
+	yr		Base years /%year%/,
 	reltol		Filter tolance / %relative_tolerance%/
 	target		Aggregations / %aggregation% /;
-
 
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
@@ -58,6 +56,9 @@ $if set start $goto %start%
 $label gdx2gdx
 
 $set fs %system.dirsep%
+
+file pututl; put pututl; pututl.pw=32766;pututl.lw=0;
+
 
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
