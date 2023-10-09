@@ -6,7 +6,7 @@ $if not set ds $set ds 43
 
 $include %system.fp%gtapwindc_data
 
-$gdxin ..\gravity\bilatgravity.gdx
+$gdxin ../gravity/bilatgravity.gdx
 
 set	col /
 		"yd/y"		Local supply share of output

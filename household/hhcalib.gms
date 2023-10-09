@@ -304,7 +304,7 @@ parameter
 * that. the transfer "weight" will turn into a time series. otherwise use static
 * meyers/rothbaum estimates.
 
-$call 'csv2gdx ../data/household/cps/cps_vs_nipa_income_categories.csv output=%gdxdir%cps_vs_nipa_income_categories.gdx id=cps_nipa index=(1,5) useHeader=y value=4';
+$call 'csv2gdx ../data/household/cps/cps_vs_nipa_income_categories.csv output=%gdxdir%cps_vs_nipa_income_categories.gdx id=cps_nipa index="(1,5)" useHeader=y value=4';
 $gdxin %gdxdir%cps_vs_nipa_income_categories.gdx
 $load cps_nipa
 $gdxin
@@ -379,7 +379,7 @@ parameter
 
 $set health_data_dir ../data/household/health_care/
 $set file "%health_data_dir%public_health_benefits_2009_2019.csv"
-$call 'csv2gdx "%file%" id=health_care_transfers useheader=yes index=(1,2,3) values=(4,5) output="%gdxdir%public_health_benefits.gdx"'
+$call 'csv2gdx "%file%" id=health_care_transfers useheader=yes index="(1,2,3)" values="(4,5)" output="%gdxdir%public_health_benefits.gdx"'
 $gdxin '%gdxdir%public_health_benefits.gdx'
 $load health_care_transfers
 
@@ -501,7 +501,7 @@ parameter
 
 * Set assumption on capital ownership (partial ownership is based on NIPA totals)
 
-$call 'csv2gdx ../data/household/cps/windc_vs_nipa_domestic_capital.csv output=%gdxdir%windc_vs_nipa_domestic_capital.gdx id=cap_own0_ index=(1) useHeader=y value=4';
+$call 'csv2gdx ../data/household/cps/windc_vs_nipa_domestic_capital.csv output=%gdxdir%windc_vs_nipa_domestic_capital.gdx id=cap_own0_ index="(1)" useHeader=y value=4';
 $gdxin %gdxdir%windc_vs_nipa_domestic_capital.gdx
 $load cap_own0_
 $gdxin
@@ -544,7 +544,7 @@ le0_multiplier(r) = sum(hh, fringe_markup * wages0(r,hh))/sum(s,ld0(r,s));
 
 * Read in bilateral commuting data
 
-$call 'csv2gdx ../data/household/acs/acs_commuting_data.csv output=%gdxdir%acs_commuting_data.gdx id=commute0 index=(1,2) useHeader=y value=3';
+$call 'csv2gdx ../data/household/acs/acs_commuting_data.csv output=%gdxdir%acs_commuting_data.gdx id=commute0 index="(1,2)" useHeader=y value=3';
 $gdxin %gdxdir%acs_commuting_data.gdx
 $load commute0
 $gdxin
