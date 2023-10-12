@@ -36,7 +36,7 @@ $if not set year $set year 2017
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug no
+$set debug yes
 
 *	Pause after each step?
 
