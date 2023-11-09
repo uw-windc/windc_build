@@ -4,55 +4,68 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 $if not set ds $set ds 43
 
-$include ..\gtapwindc\gtapwindc_data
+$if not defined y_ $include %system.fp%gtapwindc_data
 
-display cd0;
+set rb(r) /usa/;
 
-alias (s,ss);
+etrae(sf) = 2;
 
-parameter	dd0(i,r,ss,s)	Domestic trade by state
-		esub_ln(i)	Elasticity of substitution (local versus intra-national)
-		esub_nn(i)	Elasticity of substitution (intra-national);
+parameter	yprofit;
+loop(rb(r),
+	yprofit(g,r,s) = vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) - sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r)));
+);
+display yprofit;
+loop(rb(r),
+	yprofit(g,r,s) = vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) 
+		- sum(sf,vfm(sf,g,r,s)*(1+rtf0(sf,g,r)))
+		- sum(mf,vfm(mf,g,r,s)*(1+rtf0(mf,g,r)))
+);
+display yprofit;
 
-set		itrd(i)		Sectors with trade data;
+set	pk_(f,r)	Capital market;
+option pk_<ft_;
 
-$gdxin 'bilatgravity.gdx'
-$load dd0 esub_ln esub_nn itrd
+parameter	lnd0(f,r)	Land earnings in the USA;
+lnd0("lnd","usa") = sum((s,h),evomh("lnd","usa",s,h));
 
-execute_load 'bilatgravity.gdx', md0, itrd, rtm, rtd, rtm0, rtd0;
 
 $ontext
 $model:gtapwindc
 
 $sectors:
-	Y(g,r,s)$y_(g,r,s)		! Production (includes I and G)
-	C(r,s,h)$c_(r,s,h)		! Consumption 
-	X(i,r)$x_(i,r)			! Disposition
-	Z(i,r,s)$z_(i,r,s)		! Armington demand
-	FT(f,r,s)$ft_(f,r,s)		! Specific factor transformation
-	M(i,r)$m_(i,r)			! Import
-	YT(j)$yt_(j)			! Transport
+	Y(g,r,s)$y_(g,r,s)		  ! Production (includes I and G)
+	X(i,r)$x_(i,r)			  ! Export demand
+	N(i,r)$n_(i,r)			  ! National market demand
+	Z(i,r,s)$z_(i,r,s)		  ! Armington demand
+	C(r,s,h)$c_(r,s,h)		  ! Consumption 
+	FT(sf,r)$pk_(sf,r)		  ! Specific factor transformation
+	M(i,r)$m_(i,r)			  ! Import
+	YT(j)$yt_(j)			  ! Transport
+	LND(r)$lnd0("lnd",r)		! Land allocation in the US
 
 $commodities:
-	P(i,r)$p_(i,r)			  ! Export goods price
 	PY(g,r,s)$py_(g,r,s)		  ! Output price
 	PZ(i,r,s)$pz_(i,r,s)		  ! Armington composite price
+	PN(i,r)$pn_(i,r)		  ! National market price
+	P(i,r)$p_(i,r)			  ! Export market price
 	PC(r,s,h)$pc_(r,s,h)		  ! Consumption price 
-	PF(f,r,s)$pf_(f,r,s)		  ! Primary factors rent
+	PL(mf,r,s)$pf_(mf,r,s)		  ! Wage income
+	PK(sf,r)$pk_(sf,r)		  ! Capital income
 	PS(f,g,r,s)$ps_(f,g,r,s)	  ! Sector-specific primary factors
 	PM(i,r)$pm_(i,r)		  ! Import price
 	PT(j)$pt_(j)			  ! Transportation services
+	PLND(r)$lnd0("lnd",r)
 
 $consumers:
 	RH(r,s,h)$rh_(r,s,h)		  ! Representative household
 	GOVT(r)				  ! Public expenditure
 	INV(r)				  ! Investment
 
-$prod:Y(g,r,s)$y_(g,r,s) s:0 va:esubva(g) 
+$prod:Y(g,r,s)$y_(g,r,s) s:0  va:esubva(g) 
 	o:PY(g,r,s)	q:vom(g,r,s)	a:GOVT(r) t:rto(g,r)
 	i:PZ(i,r,s)	q:vafm(i,g,r,s)	
 	i:PS(sf,g,r,s)	q:vfm(sf,g,r,s)  p:(1+rtf0(sf,g,r))  va: a:GOVT(r) t:rtf(sf,g,r)
-	i:PF(mf,r,s)	q:vfm(mf,g,r,s)  p:(1+rtf0(mf,g,r))  va: a:GOVT(r) t:rtf(mf,g,r)
+	i:PL(mf,r,s)	q:vfm(mf,g,r,s)  p:(1+rtf0(mf,g,r))  va: a:GOVT(r) t:rtf(mf,g,r)
 
 *	Export:
 
@@ -60,14 +73,21 @@ $prod:X(i,r)$x_(i,r)  s:esubx(i)
 	o:P(i,r)	q:vxm(i,r)
 	i:PY(i,r,s)	q:xs0(i,r,s)
 
-$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  L:esub_ln(i)  d(L):esub_nn(i)  
-	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,ss)	q:dd0(i,r,ss,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) L:$sameas(ss,s) d:$(not sameas(s,ss))
-	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
+*	Supply to the domestic market:
 
-$prod:FT(sf,r,s)$ft_(sf,r,s)  t:etrae(sf)
+$prod:N(i,r)$n_(i,r)  s:esubn(i)
+	o:PN(i,r)	q:vnm(i,r)
+	i:PY(i,r,s)	q:ns0(i,r,s)
+
+$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
+	o:PZ(i,r,s)	q:a0(i,r,s)
+	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
+	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
+	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
+
+$prod:FT(sf,r)$pk_(sf,r)  t:etrae(sf)
 	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)
-	i:PF(sf,r,s)	q:evom(sf,r,s)
+	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
 
 $prod:C(r,s,h)$c_(r,s,h)  s:1
 	o:PC(r,s,h)	q:c0(r,s,h)	
@@ -88,12 +108,19 @@ $prod:YT(j)$yt_(j)  s:1
 	o:PT(j)		q:vtw(j)
 	i:P(j,r)	q:vst(j,r)
 
+
 *	---------------------------------------------------------------------------
 *	Final demand -- these based on data coming from the WiNDC database:
 
+$prod:LND(r)$lnd0("lnd",r)	t:0
+	o:PL("lnd",r,s)	q:(sum(g,vfm("lnd",g,r,s)))
+	i:PLND(r)	q:lnd0("lnd",r)
+
 $demand:RH(r,s,h)$rh_(r,s,h)  
 	d:PC(r,s,h)			q:c0(r,s,h)
-	e:PF(f,r,s)			q:evomh(f,r,s,h)
+	e:PL(mf,r,s)$(not lnd0(mf,r))	q:evomh(mf,r,s,h)
+	e:PLND(r)$lnd0("lnd",r)		q:evomh("lnd",r,s,h)
+	e:PK(sf,r)			q:evomh(sf,r,s,h)
 	e:PC(rnum,"rest","rest")	q:(-sav0(r,s,h)+sum(trn,hhtrn0(r,s,h,trn)))
 
 $demand:GOVT(r)
@@ -110,20 +137,10 @@ $sysinclude mpsgeset gtapwindc
 gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
-xd0(i,r,s)$(not z_(i,r,s)) = 0;
-evom(sf,r,s)$(not sum(h,evomh(sf,r,s,h))) = 0;
-vfm(sf,g,r,s)$(not y_(g,r,s)) = 0;
-
-*	Replicate: %replicate%
-
-$if "%replicate%"=="no" $exit
-
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 
 $exit
-
-set	rb(r) /usa/;
 
 set	macct	Macro accounts /
 		C	Household consumption,
@@ -142,7 +159,7 @@ incomechk(r) = sum((s,h),c0(r,s,h)) + sum(s,vom("g",r,s) + vom("i",r,s))
 	- sum((f,s,h),evomh(f,r,s,h))
 	- vb(r) 
 	- (	  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
 		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 		+ sum(g, rto(g,r)*sum(s,vom(g,r,s))) );
 display incomechk;
@@ -158,7 +175,7 @@ loop(rb(r),
 	macroaccounts("K","$") = sum((kf(f),s,h),evomh(kf,r,s,h));
 	macroaccounts("F","$") = vb(r);
 	macroaccounts("T","$") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
 				+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 				+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 

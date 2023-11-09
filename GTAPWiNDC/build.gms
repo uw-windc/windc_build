@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-*. $set start regiondisagg32
+*.$set start chk32
 
 *---------------------- 
 * run after the core and household builds are complete!! 
@@ -36,7 +36,7 @@ $if not set year $set year 2017
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug no
+$set debug yes
 
 *	Pause after each step?
 

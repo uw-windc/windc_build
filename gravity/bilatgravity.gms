@@ -71,7 +71,6 @@ market(i,"mchk") =  market(i,"vim") - market(i,"m0");
 market(i,"chk") = market(i,"vom") + market(i,"vim") - market(i,"vxm") - market(i,"d0") - market(i,"m0");
 display market;
 
-
 esub_ln(i) = 3;
 esub_nn(i) = 5;
 esub_dm(i) = 4;
@@ -109,13 +108,10 @@ parameter	thetay(i,s)	Local output share of absorption
 thetay(i,ss)$yref(i,ss) = yref(i,ss)/sum(s.local,yref(i,s)) *
 		(sum(s,yref(i,s))-sum(prt,eref(i,prt)))/
 		(sum(s,yref(i,s))+sum(prt,mref(i,prt)-eref(i,prt)));
-
 thetae(i,s) = yref(i,s)/sum(ss,yref(i,ss));
-
 thetam(i,prt)$mref(i,prt) = mref(i,prt)/sum(prt.local,mref(i,prt)) *
 		sum(prt.local,mref(i,prt))/
 		(sum(s,yref(i,s))+sum(prt.local,mref(i,prt)-eref(i,prt))); 
-
 display thetay, thetam;
 
 set	ib(i)	Sector to balance;
@@ -157,9 +153,9 @@ $prod:AD(i,s)$(aref(i,s) and ib(i))  s:esub_dm(i)  L:esub_ln(i)  m:esub_mm(i)  d
 	i:PM(i,prt)	q:(tau_m(i,prt,s)*thetam(i,prt)*aref(i,s)) p:(1/tau_m(i,prt,s)) m:
 
 $report:
-	v:PY_AD(i,ss,s)$(aref(i,s) and ib(i) and thetay(i,ss))		i:PY(i,ss)	prod:AD(i,s)
-	v:PY_X(i,s,prt)$(eref(i,prt) and ib(i) and thetae(i,s))  d:PY(i,s)	demand:X(i,prt)
-	v:PM_AD(i,prt,s)$(aref(i,s) and ib(i) and thetam(i,prt))	i:PM(i,prt)	prod:AD(i,s)
+	v:PY_AD(i, ss, s)$(aref(i,s) and ib(i) and thetay(i,ss))  i:PY(i,ss)	prod:AD(i,s)
+	v:PY_X(i,  s,prt)$(eref(i,prt) and ib(i) and thetae(i,s)) d:PY(i,s)	demand:X(i,prt)
+	v:PM_AD(i, prt,s)$(aref(i,s) and ib(i) and thetam(i,prt)) i:PM(i,prt)	prod:AD(i,s)
 
 $demand:X(i,prt)$(eref(i,prt) and ib(i))   s:esub_x(i)
 	d:PY(i,s)	q:(tau_x(i,s,prt) * thetae(i,s) * eref(i,prt))	p:(1/tau_x(i,s,prt))
@@ -202,9 +198,10 @@ display totals;
 
 parameter	scale	Scale factor to improve numerics;
 
-*	Scale up the tiny values to improve numerical precision:
+*	Could try Scaling up the tiny values to improve 
+*	numerical precision:
 
-scale(itrd(i)) = max(1, 1/totals(i,"aref"));
+*.scale(itrd(i)) = max(1, 1/totals(i,"aref"));
 scale(itrd(i)) = 1;
 
 endow(itrd(i))    = endow(i) * scale(i);
@@ -246,9 +243,6 @@ $prod:AD(i,s)$(aref(i,s) and ib(i))  s:esub_dm(i)  L:esub_ln(i)  m:esub_mm(i)  d
 	o:P(i,s)	q:aref(i,s)
 	i:PD(i,ss)	q:vdfm(i,ss,s)	p:1  L:$sameas(ss,s)	d:$(not sameas(ss,s)) 
 	i:PFX		q:vifm(i,s)	p:1  m:
-
-
-
 
 $prod:Y(i,s)$(yref(i,s) and ib(i))   t:4
 	o:PFX		q:xref(i,s)
@@ -362,6 +356,8 @@ loop(itrd,
 	SY.FX(i,s) = 1;
 	SM.FX(i,prt) = 1;
 
+*	Benchmark replication:
+
 	gravity.workspace=64;
 	gravity.iterlim =0;
 $include gravity.gen
@@ -373,15 +369,21 @@ $include gravity.gen
 	solvelog("modelstat",itrd,"Benchmark") = gravity.modelstat;
 	solvelog("solvestat",itrd,"Benchmark") = gravity.solvestat;
 
+*	Introduce distances:
+
 	tau_d(ib(i),s,ss)  = dist(s, ss)**(epsilon/(1-esub_nn(i)));
 	tau_m(ib(i),prt,s) = dist(s,prt)**(epsilon/(1-esub_dm(i)));
 	tau_x(ib(i),s,prt) = dist(s,prt)**(epsilon/(1-esub_x(i)));
+
+*	Scale distances:
 
 	tau_min(ib(i),s)$aref(i,s) = min( smin(ss$thetay(i,ss),tau_d(i,ss,s)), smin(prt$thetam(i,prt),tau_m(i,prt,s)) ) + eps;
 	display tau_min, aref;
 
 	tau_d(ib(i),ss,s)$aref(i,s) = tau_d(i,ss,s)/tau_min(i,s);
 	tau_m(ib(i),prt,s)$aref(i,s) = tau_m(i,prt,s)/tau_min(i,s);
+
+*	Scale productivity:
 
 	lamda_a(ib(i),s)$aref(i,s) = sum(ss,tau_d(i,ss,s)*thetay(i,ss)) + sum(prt,tau_m(i,prt,s)*thetam(i,prt));
 
@@ -394,6 +396,8 @@ $include gravity.gen
 	solvelog("modelstat",itrd,"TradeCost") = gravity.modelstat;
 	solvelog("solvestat",itrd,"TradeCost") = gravity.solvestat;
 
+*	Incorporate targeting variable for output:
+
 	SY.LO(ib(i),s)$yref(i,s) = 0;	SY.UP(ib(i),s)$yref(i,s) = inf;
 
 	gravity.iterlim =10000;
@@ -405,6 +409,8 @@ $include gravity.gen
 	solvelog("modelstat",itrd,"Output") = gravity.modelstat;
 	solvelog("solvestat",itrd,"Output") = gravity.solvestat;
 
+*	Include targeting variable for imports to provide a gravity estimate:
+
 	SM.LO(ib(i),prt)$mref(i,prt) = 0;	SM.UP(ib(i),prt)$mref(i,prt) = inf;
 	gravity.iterlim =10000;
 $include gravity.gen
@@ -415,7 +421,7 @@ $include gravity.gen
 	solvelog("modelstat",itrd,"Gravity") = gravity.modelstat;
 	solvelog("solvestat",itrd,"Gravity") = gravity.solvestat;
 
-*	Calibrate the national market model:
+*	Calibrate the national market model based on the gravity model solution:
 
 	ns_0(ib,s) = PY.L(ib,s)*sum(ss$(not sameas(s,ss)),PY_AD.L(ib,s,ss));
 	xs_0(ib,s) = PY.L(ib,s)*sum(prt, PY_X.L(ib,s,prt));
@@ -462,6 +468,7 @@ $include gravity.gen
 	bilat.iterlim = 0;
 $include bilat.gen
 	solve bilat using mcp;
+	abort$round(bilat.objval,3) "Bilateral model does not calibrate.";
 
 	solvelog("objval",itrd,"Bilat") = bilat.objval;
 	solvelog("modelstat",itrd,"Bilat") = bilat.modelstat;
@@ -475,6 +482,7 @@ $include bilat.gen
 	national.iterlim = 0;
 $include national.gen
 	solve national using mcp;
+	abort$round(national.objval,3) "National model does not calibrate.";
 
 	solvelog("objval",itrd,"National") = national.objval;
 	solvelog("modelstat",itrd,"National") = national.modelstat;
@@ -539,6 +547,6 @@ dd0(i,r,s,s)$(not usa(r)) = yl0(i,r,s);
 dd0(i,usa(r),s,s)$(not itrd(i)) = yl0(i,r,s);
 nd0(itrd(i),usa,s) = 0;
 
-execute_unload 'bilatgravity.gdx', dd0, md0, nd0, xn0, yl0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm, shares;
+execute_unload 'bilatgravity.gdx', dd0, md0, nd0, yl0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm, shares;
 
 

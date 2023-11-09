@@ -8,6 +8,8 @@ $if not defined y_ $include %system.fp%gtapwindc_data
 
 set rb(r) /usa/;
 
+etrae(sf) = 2;
+
 parameter	yprofit;
 loop(rb(r),
 	yprofit(g,r,s) = vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) - sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r)));
@@ -19,8 +21,6 @@ loop(rb(r),
 		- sum(mf,vfm(mf,g,r,s)*(1+rtf0(mf,g,r)))
 );
 display yprofit;
-
-etrae(sf) = 2;
 
 set	pk_(f,r)	Capital market;
 option pk_<ft_;
@@ -79,8 +79,8 @@ $prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
 
-$prod:FT(sf,r)$pk_(sf,r)  t:etrae(sf)
-	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)
+$prod:FT(sf,r)$pk_(sf,r)  t:0  s.tl:etrae(sf)
+	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)   s.tl:
 	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
 
 $prod:C(r,s,h)$c_(r,s,h)  s:1
@@ -101,7 +101,6 @@ $prod:M(i,r)$m_(i,r)	s:esubm(i)  rr.tl:0
 $prod:YT(j)$yt_(j)  s:1
 	o:PT(j)		q:vtw(j)
 	i:P(j,r)	q:vst(j,r)
-
 
 *	---------------------------------------------------------------------------
 *	Final demand -- these based on data coming from the WiNDC database:
@@ -126,8 +125,14 @@ $sysinclude mpsgeset gtapwindc
 gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
+*	Assume that land can move freely across sectors within each state:
+
+etrae("lnd") = 8;
+
 $include gtapwindc.gen
 solve gtapwindc using mcp;
+
+$exit
 
 set	macct	Macro accounts /
 		C	Household consumption,

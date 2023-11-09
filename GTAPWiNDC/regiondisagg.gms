@@ -87,6 +87,7 @@ ls0(s,h) = sum(ss,le0(s,ss,h))*(1-tl0(s,h));
 $loaddc cd0_windc=cd0_h a0_windc=a0 md0_windc=md0 yl0_windc=xd0 nd0_windc=nd0 ns0_windc=xn0 
 $loaddc hhtrn0_windc=hhtrn0, m0_windc=m0 sav0_windc=sav0 xs0_windc=x0
 
+
 *	Provide a comparison of trade flows in the two datasets:
 
 parameter	trade	Trade comparison: %windc_data% vs %ds%;
@@ -282,6 +283,8 @@ variables
 	E(f,s,h)	Factor endowment,
 	T(s,h)		Transfers,
 	SAV(s,h)	Savings;
+
+nonnegative variable C;
 
 equations objdef, budget, savings, Lendowment, Kendowment, consumption, absorption, taxrevenue;
 

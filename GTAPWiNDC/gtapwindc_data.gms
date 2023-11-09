@@ -4,7 +4,7 @@ $title	GAMS Code to Read a GTAPWINDC Dataset
 
 $if not set datasets $set datasets 2017
 
-$if not set ds                 $set ds 43_stub
+$if not set ds                 $set ds 43
 $if not set gtapwindc_datafile $set gtapwindc_datafile "%system.fp%%datasets%/gtapwindc/%ds%.gdx"
 
 sets	
@@ -43,6 +43,12 @@ $if not defined s $load s
 $if not defined h $load h
 
 $loaddc sf mf
+
+*.set	sf(f) /res/,
+*.	mf(f) /lnd, mgr, tec, clk, srv, lab, cap/
+
+option sf:0:0:1, mf:0:0:1, f:0:0:1;
+display f, sf, mf;
 
 alias (i,j), (r,rr);
 
@@ -235,3 +241,15 @@ rnum(r) = yes$(gdp(r) = smax(r.local,gdp(r)));
 parameter	vbchk	Cross check on VB;
 vbchk = sum(r,vb(r));
 display vbchk;
+
+option evom:3:0:1;
+display evom;
+
+option evomh:3:0:1;
+display evomh;
+
+parameter	landdata(s,*)	Land earnings data;
+landdata(s,"vfm") = sum(g,vfm("lnd",g,"usa",s));
+landdata(s,"evomh") = sum(h,evomh("lnd","usa",s,h));
+landdata(s,"vfm-evomh") = landdata(s,"vfm") - landdata(s,"evomh");
+display landdata;
