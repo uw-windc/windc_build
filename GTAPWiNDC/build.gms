@@ -36,7 +36,7 @@ $if not set year $set year 2017
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
 
-$set debug no
+$set debug yes
 
 *	Pause after each step?
 
@@ -62,7 +62,7 @@ $if set start $goto %start%
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%gtap_version%/%year%/g20_32.gdx"
-$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_32 --zipfile=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_32 --gtap_zip_path=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
 $endif
 
 
@@ -149,7 +149,7 @@ $label g20_43
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
 $ifThen not exist "%gtapingams%/%gtap_version%/%year%/g20_43.gdx"
-$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 --zipfile=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
+$call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 --gtap_zip_path=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
 $endif
 
 * ------------------------------------------------------------------------

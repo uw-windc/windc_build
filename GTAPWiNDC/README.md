@@ -106,31 +106,31 @@ You must build both `core` and `household` prior to building
 
 We construct the disaggregated dataset in two steps. The first of these concerns only the 50 state / 250 household WiNDC model. We use state shares of agricultural receipts to disaggregate the AGR into 11 separate agricultural sectors
 
-	The original WiNDC dataset has but one agricultural sector:
+The original WiNDC dataset has but one agricultural sector:
 
-		agr  Farms and farm products (111CA)
+	agr  Farms and farm products (111CA)
 
-	In this step `agr` is disaggregated into 11
-	sectors corresponding to agricultural sectors in GTAP:
+In this step `agr` is disaggregated into 11
+sectors corresponding to agricultural sectors in GTAP:
 
-	|Key|Description|
-	|---|---|
-	|pdr|Paddy rice|
-	|wht|Wheat|
-	|gro|Cereal grains nec|
-	|v_f|Vegetables, fruit, nuts|
-	|osd|Oil seeds|
-	|c_b|Sugar cane, sugar beet|
-	|pfb|Plant-based fibers|
-	|ocr|Crops nec|
-	|ctl|Bovine cattle, sheep, goats and horses|
-	|oap|Animal products nec|
-	|rmk|Raw milk|
-	|wol|Wool, silk-worm cocoons|
+|Key|Description|
+|---|---|
+|pdr|Paddy rice|
+|wht|Wheat|
+|gro|Cereal grains nec|
+|v_f|Vegetables, fruit, nuts|
+|osd|Oil seeds|
+|c_b|Sugar cane, sugar beet|
+|pfb|Plant-based fibers|
+|ocr|Crops nec|
+|ctl|Bovine cattle, sheep, goats and horses|
+|oap|Animal products nec|
+|rmk|Raw milk|
+|wol|Wool, silk-worm cocoons|
 
-    Inputs: `gtapingams.gms`, `household/datasets/cps_static_gtap_32_state.gdx`, `gtap*/gtap*/%year%/g20_43.gdx`
+Inputs: `gtapingams.gms`, `household/datasets/cps_static_gtap_32_state.gdx`, `gtap*/gtap*/%year%/g20_43.gdx`
 
-    Outputs: `%year%/windc/43.gdx`
+Outputs: `%year%/windc/43.gdx`
 
 
 

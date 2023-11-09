@@ -24,6 +24,8 @@ variables
 
 PK.LO(r,s)$kd0(r,s) = 1e-5;
 
+RA.L(r) = c0(r);
+
 *	Fix to zero commodity prices and sectoral activity levels
 *	which do not enter the model:
 
