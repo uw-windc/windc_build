@@ -4,9 +4,11 @@ $title	 GTAPinGAMS -- GAMS/MPSGE and GAMS/MCP Formulations for the Global Multir
 *	for the domestic and export markets are perfect substitutes.
 
 $if not set yr    $set yr    2017
-$if not set ds    $set ds    msmr
+$if not set ds    $set ds    g20_32
 
-$if not set gtap_version $abort "gtap_version not set"
+$if not set gtap_version $include "gtapingams.gms"
+
+
 
 *	Read the data file:
 

@@ -4,9 +4,7 @@ $call mkdir "%gams.scrdir%%system.dirsep%gtapingams"
 *put_utility kutl, 'shell' / 'mkdir %gams.scrdir%%system.dirsep%gtapingams';
 $set tmpdir "%gams.scrdir%gtapingams/"
 
-*$if not set zipfile $set zipfile %system.fp%../../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
-$if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
-$if not set gtap_version $abort "You must set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
+$if not set gtap_version $include "gtapingams.gms"
 
 
 * Set a name for the GDX files in the extracted ZIP. GTAP11 and GTAP11a use different names

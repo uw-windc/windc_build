@@ -5,7 +5,8 @@ $title	Filter to Create a GTAPinGAMS Dataset
 $if not set yr $set yr 2017
 $if not set ds $set ds gtapingams
 
-$if not set gtap_version $abort "gtap_version not set"
+$if not set gtap_version $include "gtapingams.gms"
+
 
 
 *	RELTOL changes data footprint:

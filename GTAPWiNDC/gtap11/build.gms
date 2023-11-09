@@ -24,8 +24,8 @@ $if not set relative_tolerance $set relative_tolerance 4
 * Set aggregations (g20_10,  g20_32,  g20_43, wb12_10, wb12_32, wb12_43)
 $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 
-
-$if not set zipfile $abort "You have not set the location of the GTAP zipfile in GTAPWiNDC/gtapingams.gms"
+$if not set gtap_version $include "gtapingams.gms"
+$if not set gtap_zip_path $abort "You have not set the location of the GTAP gtap_zip_path in GTAPWiNDC/gtapingams.gms"
 $if not set gtap_version $abort "You have not set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
 
 $if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_version%'
@@ -63,7 +63,7 @@ file pututl; put pututl; pututl.pw=32766;pututl.lw=0;
 loop(yr,
 	put_utility 'title' /'Reading GDX data file (',yr.tl,')';
 	put_utility 'exec' / 'mkdir %system.fp%%fs%%gtap_version%%fs%',yr.tl;
-	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%zipfile% --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
+	put_utility 'exec' / 'gams %system.fp%gdx2gdx --yr=',yr.tl,' --zipfile=%gtap_zip_path% --gtap_version=%gtap_version% o=%system.fp%%gtap_version%/',yr.tl,'/gdx2gdx_',yr.tl,'.lst';
 
 	myerrorlevel = errorlevel;
 	if (myerrorlevel>1, abort "Non-zero return code from gdx2gdx.gms"; );
