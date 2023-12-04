@@ -67,10 +67,10 @@ vifmtot(".",g,r)  = sum(i ,vifm(i,g,r)   );
 
 *	Filter based on the relative tolerance:
 
-vxmd(  i,rr,r)$(vxmd(i,rr,r)  <reltol*min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
-vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)<reltol*vtwrtot(i,rr,r)) = 0;
-vdfm(i,g,   r)$(vdfm(i,g,r)   <reltol*min(vdfmtot(i,".",r),vdfmtot(".",g,r))) = 0;
-vifm(i,g,   r)$(vifm(i,g,r)   <reltol*min(vifmtot(i,".",r),vifmtot(".",g,r))) = 0;
+vxmd(  i,rr,r)$(vxmd(i,rr,r)  < reltol*min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
+vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)< reltol*vtwrtot(i,rr,r))                         = 0;
+vdfm(i,g,   r)$(vdfm(i,g,r)   < reltol*min(vdfmtot(i,".",r),vdfmtot(".",g,r)))  = 0;
+vifm(i,g,   r)$(vifm(i,g,r)   < reltol*min(vifmtot(i,".",r),vifmtot(".",g,r)))  = 0;
 
 *	Drop transport margins and tariffs on non-existent trade links:
 
@@ -83,19 +83,19 @@ vst(j,r) = vst(j,r)/sum(rr,vst(j,rr)) * sum((i,r1,r2),vtwr(j,i,r1,r2));
 rtxs(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 rtms(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 
-nz("vst","reltol")  = card(vst)  - nz("vst","gtap11")  - nz("vst","abstol");
+nz("vst" ,"reltol") = card(vst)  - nz("vst" ,"gtap11") - nz("vst","abstol");
 nz("vtwr","reltol") = card(vtwr) - nz("vtwr","gtap11") - nz("vtwr","abstol");
 nz("vxmd","reltol") = card(vxmd) - nz("vxmd","gtap11") - nz("vxmd","abstol");
 nz("vdfm","reltol") = card(vdfm) - nz("vdfm","gtap11") - nz("vdfm","abstol");
 nz("vifm","reltol") = card(vifm) - nz("vifm","gtap11") - nz("vifm","abstol");
-nz("vfm","reltol")  = card(vfm)  - nz("vfm","gtap11")  - nz("vfm","abstol");
+nz("vfm" ,"reltol") = card(vfm)  - nz("vfm" ,"gtap11") - nz("vfm","abstol");
 
-nz("vst","card")  = card(vst);
+nz("vst" ,"card") = card(vst );
 nz("vtwr","card") = card(vtwr);
 nz("vxmd","card") = card(vxmd);
 nz("vdfm","card") = card(vdfm);
 nz("vifm","card") = card(vifm);
-nz("vfm","card")  = card(vfm);
+nz("vfm" ,"card") = card(vfm );
 
 set param /vst,vtwr, vxmd, vdfm, vifm, vfm/;
 nz(param,"%")  = round(100 * nz(param,"card")/nz(param,"gtap11"));
