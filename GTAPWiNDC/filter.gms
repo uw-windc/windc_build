@@ -154,13 +154,13 @@ rh_(r,s,h)    = c0(r,s,h        );
 *	Cinch the zero profit conditions:
 
 vom(y_(g,r,s)) = (1/(1-rto(g,r))) * (sum(i,vafm(i,g,r,s)) + sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r))));
-vnm(i,r) = sum(s,ns0(i,r,s));
 a0(i,r,s) = yl0(i,r,s)*(1+rtd0(i,r,s)) + nd0(i,r,s)*(1+rtd0(i,r,s)) + md0(i,r,s)*(1+rtm0(i,r,s));
-evom(f,r,s) = sum(g,vfm(f,g,r,s));
-c0(r,s,h) = sum(i,cd0(i,r,s,h));
-vnm(i,r) = sum(s,ns0(i,r,s));
 vim(i,r) = sum(rr, vxmd(i,rr,r)*pvxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r)*pvtwr(i,rr,r)));
-vtw(j) = sum(r,vst(j,r));
+
+evom(f,r,s) = sum(g,vfm(f,g,r,s));
+c0(r,s,h)   = sum(i,cd0(i,r,s,h));
+vnm(i,r)    = sum(s,ns0(i,r,s)  );
+vtw(j)      = sum(r,vst(j,r)    );
 
 execute_unload '%dsout%',
 	r,g,i,f,s,h,sf,mf,
