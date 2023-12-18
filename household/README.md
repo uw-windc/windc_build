@@ -1,6 +1,5 @@
 # Household
 
-<!-- TOC -->
 
 - [Overview](#overview)
 - [Running the Household Subroutine](#running-the-household-subroutine)
@@ -24,8 +23,6 @@
         - [Margins trade or transport](#margins-trade-or-transport)
         - [Household Categories](#household-categories)
         - [Transfer Types](#transfer-types)
-
-<!-- /TOC -->
 
 
 # Overview
@@ -426,13 +423,15 @@ Source datasets are compiled using the R programming language. All R routines ne
 
 ### Household Categories
 
+Based on income thresholds. 
+
 | h   | Description   |
 |:----|:--------------|
-| hh1 |               |
-| hh2 |               |
-| hh3 |               |
-| hh4 |               |
-| hh5 |               |
+| hh1 |   <$25k            |
+| hh2 |   $25k - $50k            |
+| hh3 |   $50k - $75k            |
+| hh4 |   $75k - $150k            |
+| hh5 |   >$150k            |
 
 ### Transfer Types
 

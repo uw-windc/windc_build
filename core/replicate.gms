@@ -77,7 +77,7 @@ mcpmodel.iterlim = 100000;
 $include %gams.scrdir%MCPMODEL.GEN
 solve mcpmodel using mcp;
 
-abort$round(mgemodel.objval,3)	"Counterfactural calculation error with MCPMODEL.";
+abort$round(mcpmodel.objval,3)	"Counterfactural calculation error with MCPMODEL.";
 
 * Save the solution to speed up subsequent runs:
 

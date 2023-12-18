@@ -6,6 +6,8 @@ $setglobal ds %ds%
 
 *.$if not set gtap_version $abort "gtap_version not set"
 
+$if not set gtap_version $include "gtapingams.gms"
+
 $if not set datadir $set datadir "%system.fp%%gtap_version%/%yr%/"
 
 
