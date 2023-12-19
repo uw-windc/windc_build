@@ -35,6 +35,7 @@ $sectors:
 	Z(i,r,s)$z_(i,r,s)		  ! Armington demand
 	C(r,s,h)$c_(r,s,h)		  ! Consumption 
 	FT(sf,r)$pk_(sf,r)		  ! Specific factor transformation
+	FTS(sf,r,s)$evom(sf,r,s)		  ! Specific factor transformation -- state level
 	M(i,r)$m_(i,r)			  ! Import
 	YT(j)$yt_(j)			  ! Transport
 
@@ -45,6 +46,7 @@ $commodities:
 	P(i,r)$p_(i,r)			  ! Export market price
 	PC(r,s,h)$pc_(r,s,h)		  ! Consumption price 
 	PL(mf,r,s)$pf_(mf,r,s)		  ! Wage income
+	PKS(sf,r,s)$evom(sf,r,s)	  ! Capital price by state
 	PK(sf,r)$pk_(sf,r)		  ! Capital income
 	PS(f,g,r,s)$ps_(f,g,r,s)	  ! Sector-specific primary factors
 	PM(i,r)$pm_(i,r)		  ! Import price
@@ -79,9 +81,13 @@ $prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
 
-$prod:FT(sf,r)$pk_(sf,r)  t:0  s.tl:etrae(sf)
-	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)   s.tl:
+$prod:FT(sf,r)$pk_(sf,r)  t:0
+	o:PKS(sf,r,s)	q:evom(sf,r,s)
 	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
+
+$prod:FTS(sf,r,s)$evom(sf,r,s)  t:etrae(sf)
+	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)   
+	i:PKS(sf,r,s)	q:evom(sf,r,s)
 
 $prod:C(r,s,h)$c_(r,s,h)  s:1
 	o:PC(r,s,h)	q:c0(r,s,h)	

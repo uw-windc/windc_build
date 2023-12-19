@@ -1,15 +1,17 @@
 $stitle	Read the GTAPinGAMS Data
 
-$if not set yr $set yr 2017
+$if not set yr $set yr 2014
 $if not set ds $set ds gtapingams
 $setglobal ds %ds%
-$if not set gtap_version $include "gtapingams.gms"
-$if not set datadir $set datadir "%system.fp%%gtap_version%/%yr%/"
+$if not set fs $set fs %system.dirsep%
+$if not set datadir $setglobal datadir %system.fp%%yr%%fs%
 
 set	f	Factor labels for GTAPinGAMS,
 	g(*)	Goods and final demand,
 	i(g)	Commodities,
 	r(*)	Regions ;
+
+$set fs %system.dirsep%
 
 $gdxin %datadir%%ds%.gdx
 $loaddc f g r i
@@ -85,6 +87,7 @@ set ar	IPCC Assessment Reports /
 	AR4 'IPCC AR4', 
 	AR5 'IPCC AR5' /;
 
+
 parameters
 
 	vfm(f,g,r)	"Endowments - Firms' purchases at market prices",
@@ -118,17 +121,18 @@ parameters
 	evi(i,g,r)	"Imported energy use (mtoe)"
 	evt(i,r,r)	"Volume of energy trade (mtoe)"
 
-	nco2emit(pol,i_f,g,r)	'Industrial and household non-CO2 emissions, mmt',
-	nco2process(pol,i_o,j,r) 'IO-based process emissions, mmt',
-	landuse(pol,lu,r)	'Land-use emissions, mmt',
-	gwp(pol,r,ar)		'Global warming potential',
-	pop(r)			"Regional population";
+	nco2emit(pol,i_f,g,r)		'Industrial and household non-CO2 emissions, mmt',
+	nco2process(pol,i_o,j,r)	'IO-based process emissions, mmt',
+	landuse(pol,lu,r)		'Land-use emissions, mmt',
+	gwp(pol,r,ar)			'Global warming potential'
+	pop(r)				'Regional population';
 
 set	metadata(*)	"Information about GTAP version etc";
 
 $loaddc vfm vdfm vifm vxmd vst vtwr rto rtf rtfd rtfi rtxs rtms 
 $loaddc subp incp esubva esubdm etaf eta aues eco2d eco2i nco2emit nco2process landuse pop metadata
-$loaddc evd evi evt gwp
+$loaddc evd evi evt
+$loaddc gwp
 
 parameter
 	thetac(i,r)	Value share of commodity i in final demand,

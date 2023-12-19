@@ -137,12 +137,12 @@ eco2i(i,g,r)$(not vifm(i,g,r)) = 0;
 
 nco2emit(pol,i_f(i),g,r)$(not (vdfm(i,g,r)+vifm(i,g,r))) = 0;
 nco2emit(pol,i_f(f),j,r)$(not vfm(f,j,r)) = 0;
-nco2process(pol,i,j,r)$(not (vdfm(i,j,r)+vifm(i,j,r))) = 0;
+nco2process(pol,i_o(i),j,r)$(not (vdfm(i,j,r)+vifm(i,j,r))) = 0;
+nco2process(pol,"output",j,r)$(not vom(j,r)) = 0;
 
 vom(g,r) = (sum(i,vdfm(i,g,r)*(1+rtfd(i,g,r))+vifm(i,g,r)*(1+rtfi(i,g,r)))
 		+  sum(f,vfm(f,g,r)*(1+rtf(f,g,r))))/(1-rto(g,r));
 
-nco2emit(pol,"output",g,r)$(not vom(g,r)) = 0;
 
 ghgadj("eco2d","after") = sum((i,g,r),eco2d(i,g,r));
 ghgadj("eco2i","after") = sum((i,g,r),eco2i(i,g,r));
@@ -188,6 +188,6 @@ execute_unload '%system.fp%%gtap_version%/%yr%/gtapingams_%reltol%.gdx',f,g,i,r,
 	vfm,vdfm,vifm,vxmd,vst,vtwr,
 	rto,rtf,rtfd,rtfi,rtxs,rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, 
-	evd evi evt,
+	gwp, evd, evi, evt,
 	eco2d, eco2i, nco2emit, nco2process, landuse, pop, metadata;
 

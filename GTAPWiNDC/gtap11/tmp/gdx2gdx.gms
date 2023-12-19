@@ -1,15 +1,8 @@
 $title	Read the GTAP 11 Data (GDX format) and Write in GTAPinGAMS Format
 
-$call mkdir "%gams.scrdir%gtapingams"
-$set tmpdir "%gams.scrdir%gtapingams/"
-
-$if not set gtap_version $include "gtapingams.gms"
-
-* Set a name for the GDX files in the extracted ZIP. GTAP11 and GTAP11a use different names
-
-$if %gtap_version% == "gtap11" $set gtap_name GDX
-$if %gtap_version% == "gtap11a" $set gtap_name GDX11a
-$if %gtap_version% == "gtap11b" $set gtap_name GDX11b
+$set fs %system.dirsep%
+$call mkdir %gams.scrdir%%fs%gtapingams
+$set tmpdir %gams.scrdir%%fs%gtapingams%fs%
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 
@@ -22,6 +15,8 @@ $if "%yr%"=="2014" $set syr 14
 $if "%yr%"=="2017" $set syr 17
 
 $if not set syr $abort "Year is not valid: %yr%"
+
+$if not dexist %yr% $call mkdir %yr%
 
 $ontext
 Archive:  GDX_AY1017.zip
@@ -348,7 +343,7 @@ set	r	Regions /
    	BEN	Benin
    	BFA	Burkina Faso
    	CMR	Cameroon
-   	CIV	Cote d'Ivoire
+   	CIV	C�te d'Ivoire
    	GHA	Ghana
    	GIN	Guinea
    	MLI	Mali
@@ -547,8 +542,18 @@ $set esubva ESUBVA
 $set esubdm ESUBD
 $set etaf etrae
 
-$call gmsunzip -j %zipfile% %gtap_name%%syr%.zip -d %tmpdir%
-$call gmsunzip -j %tmpdir%%gtap_name%%syr%.zip   -d %tmpdir%
+$if not set yr $set yr 2017
+$if not set zipfile $set zipfile GDX_AY1017.zip
+$if "%yr%"=="2004" $set syr 04
+$if "%yr%"=="2007" $set syr 07
+$if "%yr%"=="2011" $set syr 11
+$if "%yr%"=="2014" $set syr 14
+$if "%yr%"=="2017" $set syr 17
+
+$if not set zipfile $abort zipfile must point to you GTAP distribution (e.g., --zipfile=c:\GDX_AY1017.zip)
+
+$call gmsunzip -j %zipfile% *GDX%syr%.zip   -d %tmpdir%
+$call gmsunzip -j %tmpdir%GDX%syr%.zip -d %tmpdir%
 
 *	This program can be included or it can run "stand-alone":
 
@@ -646,15 +651,29 @@ $gdxin %tmpdir%%nco2file%.gdx
 $loaddc emi_io emi_endw emi_qo emi_hh emi_iop emi_lu gwp
 $gdxin
 
-*	Read the energy data:
+*	If the energy data exists (not in 2004 and 2007!), read it:
 
+$ifthen.vole exist '%tmpdir%%volefile%.gdx'
 $gdxin '%tmpdir%%volefile%.gdx'
 $loaddc    edf emf edg emg edp emp edi emi exi 
 $gdxin
+$else.vole
+	edf(ii,jj,r) = 0;
+	emf(ii,jj,r) = 0;
+	edg(ii,r) = 0;
+	emg(ii,r) = 0;
+	edp(ii,r) = 0;
+	emp(ii,r) = 0;
+	edi(ii,r) = 0;
+	emi(ii,r) = 0;
+	exi(ii,r,rr) = 0;
+$endif.vole
+
 
 *	Remove the temporary directory:
 
-$call rmdir /q /s "%gams.scrdir%gtapingams"
+$call rmdir /q /s %tmpdir%
+
 
 *	Scale data from millions to billions of dollars:
 
@@ -878,17 +897,20 @@ set	lumap(lu_cat, lu_subcat, lu) /
 		BrnBiom.TropFrs.BurnTropFor
 		BrnBiom.OthrFrs.BurnOthrFor/
 
+*.set	i_f /set.i, set.f, output/;
 set	i_f /set.i, set.f/
-	i_o /set.i, output/;
+	i_o /set.i, "output"/;
 
 parameter
-	nco2emit(pol,i_f,g,r)	'Industrial and household non-CO2 emissions, mmt',
+	nco2emit(pol,i_f,g,r)	 'Industrial and household non-CO2 emissions, mmt',
 	nco2process(pol,i_o,j,r) 'IO-based process emissions, mmt',
-	landuse(pol,lu,r)	'Land-use emissions, mmt';
+	landuse(pol,lu,r)	 'Land-use emissions, mmt';
 
 nco2emit(pol,i_f(i),j,r)	= sum(mapij(ii,jj,i,j),emi_io(pol,ii,jj,r));
 nco2emit(pol,i_f(i),"c",r)	= sum(mapi(ii,i),emi_hh(pol,ii,r));
 nco2emit(pol,i_f(f),j,r)	= sum((mapf(ff,f),mapj(jj,j)),emi_endw(pol,ff,jj,r));
+*.tfr (before): nco2emit(pol,"output",j,r)	= sum(mapj(jj,j),emi_qo(pol,jj,r));
+*. Note by Maksym: emi_qo - these emissions primarily belong to process-based emissions
 nco2process(pol,i_o(i),j,r)	= sum(mapij(ii,jj,i,j),emi_iop(pol,ii,jj,r));
 nco2process(pol,"output",j,r)	= sum(mapj(jj,j),emi_qo(pol,jj,r));
 
@@ -907,7 +929,7 @@ set	metadata	Information about the dataset aggregation /
 option metadata:0:0:1;
 display metadata;
 
-execute_unload '%system.fp%%gtap_version%/%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
+execute_unload '%yr%/gtapingams.gdx',g_=g,i,f,r,pol,
 	vst, vtwr, vfm, vdfm, vifm, vxmd, rto, rtf, rtfd, rtfi, rtxs, rtms,
 	subp, incp, etaf, esubva, esubdm, eta, aues, pop, 
 	eco2d, eco2i, 

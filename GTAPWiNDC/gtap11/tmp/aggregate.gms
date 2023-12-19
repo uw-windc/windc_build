@@ -5,15 +5,13 @@ $if not set yr     $set yr 2017
 $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%
 $if not set output $set output %target%
-$if not set gtap_version $include "gtapingams.gms"
-
-$if not set datadir $set datadir "%system.fp%%gtap_version%/%yr%/"
+$if not set datadir $set datadir %system.fp%%yr%/
 
 $include "%system.fp%gtapdata"
 
 *	Calling program points to the target mapping:
 
-$include "%system.fp%defines/%target%"
+$include defines\%target%
 
 parameter	mapbug(*)	Problems with mapping;
 mapbug(r) = 1 - sum(mapr(r,rr),1);
@@ -92,9 +90,9 @@ $offtext
 	eco2d_(ii,*,rr)	"CO2 emissions from domestic product (Mt)",
 	eco2i_(ii,*,rr)	"CO2 Emissions from imported product (Mt)",
 
-	nco2emit_(pol,*,*,rr)	'Industrial and household non-CO2 emissions, mmt',
+	nco2emit_(pol,*,*,rr)		'Industrial and household non-CO2 emissions, mmt',
 	nco2process_(pol,*,*,rr)	'IO-based process emissions, mmt',
-	landuse_(pol,lu,rr)	'Land-use emissions, mmt'
+	landuse_(pol,lu,rr)		'Land-use emissions, mmt'
 
 	evd_(ii,*,rr)	Domestic energy use (mtoe),
 	evi_(ii,*,rr)	Imported energy use (mtoe),
@@ -134,13 +132,13 @@ $batinclude "%system.fp%aggr" evt i r s evt_
 putclose //"Aggregating nco2emit."/;
 nco2emit_(pol,ii,gg,rr) = sum((mapi(i,ii),i_f,mapg(g,gg),mapr(r,rr))$sameas(i_f,i),nco2emit(pol,i_f,g,r));
 nco2emit_(pol,ff,gg,rr) = sum((mapf(f,ff),i_f,mapg(g,gg),mapr(r,rr))$sameas(i_f,f),nco2emit(pol,i_f,g,r));
+*.nco2emit_(pol,"output",gg,rr) = sum((mapg(g,gg),mapr(r,rr)),nco2emit(pol,"output",g,r));
 
 putclose //"Aggregating nco2process."/;
 nco2process_(pol,ii,jj,rr)	= sum((mapi(i,ii),i_o,mapj(j,jj),mapr(r,rr))$sameas(i_o,i), nco2process(pol,i_o,j,r));
 nco2process_(pol,"output",jj,rr) = sum((mapj(j,jj),mapr(r,rr)), nco2process(pol,"output",j,r));
 
 landuse_(pol,lu,rr) = sum(mapr(r,rr),landuse(pol,lu,r));
-
 parameter	vcm(i,r)	Value of consumption expenditure;
 vcm(j,r) = vdfm(j,"c",r)*(1+rtfd(j,"c",r)) + 
 	   vifm(j,"c",r)*(1+rtfi(j,"c",r));
@@ -299,7 +297,7 @@ display demandelast;
 
 set	md	Additional metadata /
 	aggregate_date		"%system.date%",
-	aggregate_inputdata	"%system.fp%%yr%/%ds%.gdx"
+	aggregate_inputdata	"%system.fp%%yr%%system.dirsep%%ds%.gdx"
 	aggregate_filesys	"%system.filesys%",
 	aggregate_username	"%system.username%",
 	aggregate_computername	"%system.computername%",
@@ -311,25 +309,19 @@ set	md	Additional metadata /
 
 metadata(md) = md(md);
 
-parameter gwp_(pol,rr,ar)	GWP indices - weighted mean;
 
-gwp_(pol,rr,ar)$(sum(r$(mapr(r,rr)*gwp(pol,r,ar)),
-			 sum((i_f,g),nco2emit(pol,i_f,g,r))+ 
-			 sum((i_o,j), nco2process(pol,i_o,j,r)) +
-			 sum(lu, landuse(pol,lu,r)) ))
- = sum(r$mapr(r,rr), gwp(pol,r,ar) *
-	(sum((i_f,g), nco2emit(pol,i_f,g,r))+ 
-	 sum((i_o,j), nco2process(pol,i_o,j,r)) + 
-	 sum(lu, landuse(pol,lu,r))) )/
-	sum(r$(mapr(r,rr)*gwp(pol,r,ar)),
-		sum((i_f,g), nco2emit(pol,i_f,g,r))+ 
-		sum((i_o,j), nco2process(pol,i_o,j,r)) + 
-		sum(lu, landuse(pol,lu,r)));	
+*	GWP indices are aggregated as weighted mean
+parameter gwp_(pol,rr,ar);
+gwp_(pol,rr,ar)$(sum(r$(mapr(r,rr)*gwp(pol,r,ar)),(sum((i_f,g), nco2emit(pol,i_f,g,r))+ sum((i_o,j), nco2process(pol,i_o,j,r)) + sum(lu, landuse(pol,lu,r)))))
+ = sum(r$mapr(r,rr), gwp(pol,r,ar)*(sum((i_f,g), nco2emit(pol,i_f,g,r))+ sum((i_o,j), nco2process(pol,i_o,j,r)) + sum(lu, landuse(pol,lu,r))))/
+	sum(r$(mapr(r,rr)*gwp(pol,r,ar)),(sum((i_f,g), nco2emit(pol,i_f,g,r))+ sum((i_o,j), nco2process(pol,i_o,j,r)) + sum(lu, landuse(pol,lu,r))));	
 
+$set fs %system.dirsep%
 
 putclose //"Unloading dataset."/;
-execute_unload '%datadir%%output%.gdx', 
-	gg=g, rr=r, ff=f, ii=i, pol,
+*.execute_unload '%yr%%fs%%output%.gdx', 
+execute_unload '%yr%%fs%%output%_%yr%.gdx', 
+	gg=g, rr=r, ff=f, ii=i, pol, 
 	vfm_=vfm, vdfm_=vdfm, vifm_=vifm,vxmd_=vxmd, vst_=vst, vtwr_=vtwr, 
 	rto_=rto, rtf_=rtf, rtfd_=rtfd, rtfi_=rtfi, rtxs_=rtxs, rtms_=rtms, 
 	pop_=pop, metadata,
@@ -340,4 +332,3 @@ execute_unload '%datadir%%output%.gdx',
 	eta_=eta, aues_=aues, incp_=incp, subp_=subp, metadata, gwp_=gwp;
 
 putclose //"All done with aggregation"/;
-

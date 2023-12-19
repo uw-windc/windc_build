@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-*.$set start chk32
+$set start chk32
 
 *---------------------- 
 * run after the core and household builds are complete!! 
@@ -30,8 +30,6 @@ $include gtapingams
 *	from the code.
 $if not set year $set year 2017
 
-
-
 * ------------------------------------------------------------------------
 *	Use GE model replications to verify consistency of
 *	dataset adjustments:
@@ -40,7 +38,7 @@ $set debug yes
 
 *	Pause after each step?
 
-$set pause no
+$set pause yes
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
 *   %system.dirsep% is necessary here because windows

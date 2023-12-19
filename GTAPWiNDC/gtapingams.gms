@@ -1,10 +1,11 @@
 * -----------------------------------------------------------------*
 * Step 1: Select the version of GTAP to use.                       *
 *                                                                  *
-* If you choose either gtap11a or gtap11, proceed to the next step *
+* If you choose either gtap11b, gtap11a or gtap11                  *
 * -----------------------------------------------------------------*
 
-$setglobal gtap_version gtap11a
+$setglobal gtap_version gtap11b
+*$setglobal gtap_version gtap11a
 *$setglobal gtap_version gtap11
 *$setglobal gtap_version gtap9
 
@@ -25,7 +26,7 @@ $setglobal gtap_version gtap11a
 * windc_build/data/GTAPWiNDC/gtap11a/GDX11aAY333.zip"              *
 * -----------------------------------------------------------------*
 
-*$setglobal gtap_zip_path /path/to/gtap11/file
+*.$setglobal gtap_zip_path /path/to/gtap11/file
 
 
 * ---------------------------------------------------------------- *
@@ -36,6 +37,7 @@ $setglobal gtap_version gtap11a
 
 
 $ifthen not set gtap_zip_path
+$if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY333.zip"
 $if %gtap_version% == "gtap11a" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip"
 $if %gtap_version% == "gtap11" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11/GDX_AY1017.zip"
 $endif
@@ -49,3 +51,4 @@ $endif
 $if %gtap_version% == "gtap9" $setglobal gtapingams gtap9/
 $if %gtap_version% == "gtap11" $setglobal gtapingams gtap11/
 $if %gtap_version% == "gtap11a" $setglobal gtapingams gtap11/
+$if %gtap_version% == "gtap11b" $setglobal gtapingams gtap11/

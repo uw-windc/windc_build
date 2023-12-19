@@ -548,5 +548,3 @@ dd0(i,usa(r),s,s)$(not itrd(i)) = yl0(i,r,s);
 nd0(itrd(i),usa,s) = 0;
 
 execute_unload 'bilatgravity.gdx', dd0, md0, nd0, yl0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm, shares;
-
-
