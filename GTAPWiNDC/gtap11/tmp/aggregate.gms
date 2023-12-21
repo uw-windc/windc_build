@@ -309,8 +309,8 @@ set	md	Additional metadata /
 
 metadata(md) = md(md);
 
-
 *	GWP indices are aggregated as weighted mean
+
 parameter gwp_(pol,rr,ar);
 gwp_(pol,rr,ar)$(sum(r$(mapr(r,rr)*gwp(pol,r,ar)),(sum((i_f,g), nco2emit(pol,i_f,g,r))+ sum((i_o,j), nco2process(pol,i_o,j,r)) + sum(lu, landuse(pol,lu,r)))))
  = sum(r$mapr(r,rr), gwp(pol,r,ar)*(sum((i_f,g), nco2emit(pol,i_f,g,r))+ sum((i_o,j), nco2process(pol,i_o,j,r)) + sum(lu, landuse(pol,lu,r))))/

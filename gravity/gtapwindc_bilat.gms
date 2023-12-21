@@ -11,29 +11,98 @@ option pk_<ft_;
 
 alias (s,ss);
 
-parameter	dd0(i,r,ss,s)	Domestic trade by state
-		esub_ln(i)	Elasticity of substitution (local versus intra-national)
-		esub_nn(i)	Elasticity of substitution (intra-national);
+parameter
 
-set		itrd(i)		Sectors with trade data;
+*	Note: In the bilatgravity calculation we omit the
+*	region index because our calculations only involve
+*	the USA:
+
+	yref(i,s)	State output (domestic + export),
+	xref(i,s)	Exports,
+	dref(i,s)	Supply to the domestic market,
+
+	vdfm_(i,s,ss)	Intra-national trade,
+	vifm_(i,s)	Imports,
+
+*	Data structures for the model need to include the 
+*	regional index:
+	vdfm(i,r,s,ss)	Intra-national trade
+
+	vifm(i,r,s)	Imports (gravity estimate)
+
+*	Read revised tax rates which are used in the
+*	gravity calculation to clean up profit conditions:
+
+	rtd0_(i,r,s)	Benchmark tax rate on domestic demand
+	rtm0_(i,r,s)	Benchmark tax rate on import demand
+
+set	itrd(i)		Sectors with bilateral trade data;
+
+*	Read these data from the PE calculation -- the GDX file contains
+*	all parameters so we can retrieve additional symbols if needed.
 
 $gdxin 'bilatgravity.gdx'
-$load dd0 esub_ln esub_nn itrd
+$load itrd yref xref dref 
 
-parameter	dd0chk;
-dd0chk(itrd(i),s,"demand") = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s) - sum(ss,dd0(i,"usa",ss,s));
-dd0chk(itrd(i),s,"supply") = vom(i,"usa",s) - sum(ss,dd0(i,"usa",s,ss));
-option dd0chk:3:2:1;
-display dd0chk;
+*	Rename these parameters so that we can add the region index and/or avoid
+*	overwriting values already in the database:
+ 
+$load vdfm_=vdfm vifm_=vifm rtd0_=rtd0 rtm0_=rtm0
 
-$exit
+*	These symbols only enter the regions with bilateral national
+*	markets:
 
-parameter	dd0chk;
-dd0chk(itrd(i),s,"Local") = dd0(i,"usa",s,s) - yl0(i,"usa",s);
-dd0chk(itrd(i),s,"national") = sum(ss$(not sameas(ss,s)),dd0(i,"usa",ss,s)) - nd0(i,"usa",s);
-option dd0chk:3:2:1;
-display dd0chk;
-$exit
+vdfm(i,r,s,ss)	= 0;
+vifm(i,r,s)	= 0;
+
+parameter	chk		Cross check on PE calculations;
+
+*	Aggregate supply equals exports plus domestic supply:
+
+chk(s,itrd(i)) = round(yref(i,s) - xref(i,s) - dref(i,s),3);
+abort$card(chk) "Error: yref deviation:", chk;
+
+*	Domestic supply in state s equals bilateral sales from
+*	state s to all other states ss:
+
+chk(s,itrd(i)) = round(dref(i,s) - sum(ss,vdfm_(i,s,ss)),3);
+abort$card(chk) "Error: dref deviation:", chk;
+
+*	Gross output in the PE calculation equals gross output in the 
+*	GE database:
+
+chk(s,itrd(i)) = round(yref(i,s) - vom(i,"usa",s),3);
+abort$card(chk) "Error: yref deviation:",chk;
+	
+*	Aggregate absorpotion of commodity i in state s in the GE database (a0)
+*	equals aggregate imports from other states and from abroad (vdfm_, vifm_,
+*	rtd0_, and rtm0_ from the PE calculation):
+
+chk(s,itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
+abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
+
+
+
+
+parameter trdchk	Cross check on imports;
+
+*	GE database balance of imports gross of tax equals the demand for 
+*	imports across all sectors:
+
+trdchk(itrd(i),"vim<>md0")  = round(vim(i,"usa") - sum(s,md0(i,"usa",s)),3);
+
+*	Consistency of gross imports in the GE and PE data:
+
+trdchk(itrd(i),"vim<>vifm") = round(vim(i,"usa") - sum(s,vifm_(i,s)),3);
+
+*	Aggregate exports in the GE dataset (vxm) equals the sum of imputed exports
+*	at the state level in the PE model (xref):
+
+trdchk(itrd(i),"vxm<>xref") = round(vxm(i,"usa") - sum(s,xref(i,s)),3);
+abort$card(trdchk) "Imbalance in trade accounts:", trdchk;
+
+set	pnm(i,r)	Pooled national market,
+	bnm(i,r)	Bilateral national market;
 
 $ontext
 $model:gtapwindc
@@ -41,18 +110,18 @@ $model:gtapwindc
 $sectors:
 	Y(g,r,s)$y_(g,r,s)		  ! Production (includes I and G)
 	X(i,r)$x_(i,r)			  ! Export demand
-	N(i,r)$n_(i,r)			  ! National market demand
+	N(i,r)$(pnm(i,r) and n_(i,r))	  ! National market demand (omitted in the bilateral model)
 	Z(i,r,s)$z_(i,r,s)		  ! Armington demand
 	C(r,s,h)$c_(r,s,h)		  ! Consumption 
 	FT(sf,r)$pk_(sf,r)		  ! Specific factor transformation
-	FTS(sf,r,s)$evom(sf,r,s)		  ! Specific factor transformation -- state level
+	FTS(sf,r,s)$evom(sf,r,s)	  ! Specific factor transformation -- state level
 	M(i,r)$m_(i,r)			  ! Import
 	YT(j)$yt_(j)			  ! Transport
 
 $commodities:
 	PY(g,r,s)$py_(g,r,s)		  ! Output price
 	PZ(i,r,s)$pz_(i,r,s)		  ! Armington composite price
-	PN(i,r)$pn_(i,r)		  ! National market price
+	PN(i,r)$(pnm(i,r) and pn_(i,r))	  ! National market price (omitted in the bilateral model)
 	P(i,r)$p_(i,r)			  ! Export market price
 	PC(r,s,h)$pc_(r,s,h)		  ! Consumption price 
 	PL(mf,r,s)$pf_(mf,r,s)		  ! Wage income
@@ -76,20 +145,30 @@ $prod:Y(g,r,s)$y_(g,r,s) s:0  va:esubva(g)
 *	Export:
 
 $prod:X(i,r)$x_(i,r)  s:esubx(i)
-	o:P(i,r)	q:vxm(i,r)
-	i:PY(i,r,s)	q:xs0(i,r,s)
+	o:P(i,r)		q:vxm(i,r)
+	i:PY(i,r,s)$pnm(i,r)	q:xs0(i,r,s)
+	i:PY(i,r,s)$bnm(i,r)	q:xref(i,s)
 
 *	Supply to the domestic market:
 
-$prod:N(i,r)$n_(i,r)  s:esubn(i)
+$prod:N(i,r)$(pnm(i,r) and n_(i,r))  s:esubn(i)
 	o:PN(i,r)	q:vnm(i,r)
 	i:PY(i,r,s)	q:ns0(i,r,s)
 
-$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
+*	Pooled national market:
+
+$prod:Z(i,r,s)$(pnm(i,r) and z_(i,r,s))  s:esubdm(i)  nm:(2*esubdm(i))
 	o:PZ(i,r,s)	q:a0(i,r,s)
 	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
+
+*	Bilateral national model:
+
+$prod:Z(i,r,s)$(bnm(i,r) and z_(i,r,s))  s:esubdm(i)  nm:(2*esubdm(i))  mm(nm):(4*esubdm(i))
+	o:PZ(i,r,s)	q:a0(i,r,s)
+	i:PY(i,r,ss)	q:vdfm(i,r,ss,s) a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))  nm:$sameas(s,ss) mm:$(not sameas(s,ss))
+	i:PM(i,r)	q:vifm(i,r,s)	 a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s))
 
 $prod:FT(sf,r)$pk_(sf,r)  t:0
 	o:PKS(sf,r,s)	q:evom(sf,r,s)
@@ -124,7 +203,8 @@ $prod:YT(j)$yt_(j)  s:1
 $demand:RH(r,s,h)$rh_(r,s,h)  
 	d:PC(r,s,h)			q:c0(r,s,h)
 	e:PL(mf,r,s)			q:evomh(mf,r,s,h)
-	e:PK(sf,r)			q:evomh(sf,r,s,h)
+	e:PK(sf,r)$pk_(sf,r)		q:evomh(sf,r,s,h)
+	e:PKS(sf,r,s)$(not pk_(sf,r))	q:evomh(sf,r,s,h)
 	e:PC(rnum,"rest","rest")	q:(-sav0(r,s,h)+sum(trn,hhtrn0(r,s,h,trn)))
 
 $demand:GOVT(r)
@@ -141,24 +221,52 @@ $sysinclude mpsgeset gtapwindc
 gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
+*	All markets are pooled in the original GTAPWiNDC dataset:
+pnm(i,r) = yes;
+bnm(i,r) = no;
+
 *	Replicate: %replicate%
 
 $if "%replicate%"=="no" $exit
 
-*	Verbatim model -- no bilateral trade:
+*	Replication for the national market model:
 
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 
-$exit
+set	iag(i)			Agricultural sectors/ 
+		pdr 	Paddy rice
+		wht 	Wheat
+		gro 	Cereal grains nec
+		v_f 	"Vegetables, fruit, nuts"
+		osd 	Oil seeds
+		c_b 	"Sugar cane, sugar beet"
+		pfb 	Plant-based fibers
+		ocr 	Crops nec
+		ctl 	"Bovine cattle, sheep, goats and horses"
+		oap 	Animal products nec
+		rmk 	Raw milk
+		wol 	"Wool, silk-worm cocoons" /;
 
+*	Populate parameters for the bilateral national model:
 
+vdfm(itrd(i),"usa",s,ss) = vdfm_(i,s,ss);
+vifm(itrd(i),"usa",s) = vifm_(i,s);
 
-xd0(i,r,s)$(not z_(i,r,s)) = 0;
-evom(sf,r,s)$(not sum(h,evomh(sf,r,s,h))) = 0;
-vfm(sf,g,r,s)$(not y_(g,r,s)) = 0;
+rtd(itrd(i),"usa",s) = rtd0_(i,"usa",s);
+rtm(itrd(i),"usa",s) = rtm0_(i,"usa",s);
 
-execute_load 'bilatgravity.gdx', md0, itrd, rtm, rtd, rtm0, rtd0;
+rtd0(itrd(i),"usa",s) = rtd0_(i,"usa",s);
+rtm0(itrd(i),"usa",s) = rtm0_(i,"usa",s);
+
+*	Benchmark replication with the bilateral trade model:
+
+bnm(itrd(i),"usa") = yes;
+pnm(itrd(i),"usa") = no;
+
+$include gtapwindc.gen
+solve gtapwindc using mcp;
+
 
 $exit
 
@@ -214,5 +322,3 @@ macroaccounts("F","%GDP") = 100 * macroaccounts("F","$") / macroaccounts("GDP","
 option macct:0:0:1;
 option macroaccounts:3;
 display macroaccounts macct;
-
-

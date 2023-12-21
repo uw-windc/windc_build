@@ -1,6 +1,6 @@
 $title	Build GTAP in GAMS from GTAP Datasets
 
-$set task aggregate
+*.$set task aggregate
 *--------------------------------
 * Command line options:
 *

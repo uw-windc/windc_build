@@ -94,7 +94,6 @@ loop(itrd(i),
 
 display mref, eref;
 
-
 *	Absorption -- net of tax:
 
 aref(itrd(i),s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
@@ -184,8 +183,6 @@ $sysinclude mpsgeset gravity
 SY.FX(i,s) = 1;
 SM.FX(i,prt) = 1;
 
-*	Scale the data:
-
 option aref:3:0:1, yref:3:0:1, mref:3:0:1, eref:3:0:1;
 display aref, yref, mref, eref;
 
@@ -196,19 +193,12 @@ totals(itrd(i),"mref") = sum(prt,mref(i,prt));
 totals(itrd(i),"eref") = sum(prt,eref(i,prt));
 display totals;
 
-parameter	scale	Scale factor to improve numerics;
 
-*	Could try Scaling up the tiny values to improve 
-*	numerical precision:
-
-*.scale(itrd(i)) = max(1, 1/totals(i,"aref"));
-scale(itrd(i)) = 1;
-
-endow(itrd(i))    = endow(i) * scale(i);
-aref(itrd(i),s)   = aref(i,s) * scale(i);
-mref(itrd(i),prt) = mref(i,prt) * scale(i);
-eref(itrd(i),prt) = eref(i,prt) * scale(i);
-yref(itrd(i),s)   = yref(i,s) * scale(i);
+endow(itrd(i))    = endow(i);
+aref(itrd(i),s)   = aref(i,s);
+mref(itrd(i),prt) = mref(i,prt);
+eref(itrd(i),prt) = eref(i,prt);
+yref(itrd(i),s)   = yref(i,s);
 
 tau_d(i,s,ss) = 1;
 tau_x(i,s,prt) = 1;
@@ -447,14 +437,9 @@ $include gravity.gen
 
 *	Calibrate the bilateral model:
 
-	endow(ib(i)) = endow(i)/scale(i);
-	aref(ib(i),s) = aref(i,s)/scale(i);
-	mref(ib(i),prt) = mref(i,prt)/scale(i);
-	eref(ib(i),prt) = eref(i,prt)/scale(i);
-	yref(ib(i),s) = yref(i,s)/scale(i);
-	vdfm(ib(i),ss,s) = PY_AD.L(i,ss,s)*PY.L(i,ss)/scale(i);
-	vifm(ib(i),s) = sum(prt, PM_AD.L(i,prt,s)*PM.L(i,prt))/scale(i);
-	xref(ib(i),s) = sum(prt, PY_X.L(i,s,prt) * PY.L(i,s))/scale(i);
+	vdfm(ib(i),ss,s) = PY_AD.L(i,ss,s)*PY.L(i,ss);
+	vifm(ib(i),s) = sum(prt, PM_AD.L(i,prt,s)*PM.L(i,prt));
+	xref(ib(i),s) = sum(prt, PY_X.L(i,s,prt) * PY.L(i,s));
 	dref(ib(i),s) = sum(ss,vdfm(i,s,ss));
 
 *	Recalibrate prices to unity and replicate the bilateral model:
@@ -470,12 +455,11 @@ $include bilat.gen
 	solve bilat using mcp;
 	abort$round(bilat.objval,3) "Bilateral model does not calibrate.";
 
-	solvelog("objval",itrd,"Bilat") = bilat.objval;
+	solvelog("objval",itrd,"Bilat")    = bilat.objval;
 	solvelog("modelstat",itrd,"Bilat") = bilat.modelstat;
 	solvelog("solvestat",itrd,"Bilat") = bilat.solvestat;
 
 	put_utility 'title' /'Bilateral flow for ',itrd.tl,' precision = ',gravity.objval;
-
 
 *	Then replicate the national market model:
 
@@ -491,13 +475,8 @@ $include national.gen
 	put_utility 'title' /'National model for ',itrd.tl,' precision = ',gravity.objval;
 
 );
-option solvelog:3:2:1;
-display solvelog;
-
-display nchk;
-
-option shares:1:2:1;
-display shares;
+option solvelog:3:2:1, shares:1:2:1;
+display solvelog, nchk, shares;
 
 set usa(r) /usa/;
 
@@ -539,6 +518,7 @@ loop(itrd(i),
 	rtm(i,"usa",s) = rtm0(i,"usa",s);
 );
 
+
 parameter	dd0(i,r,s,s)	Intra-national trade;
 dd0(itrd(i),usa,ss,s) = vdfm(i,ss,s);
 md0(itrd(i),usa,s) = vifm(i,s);
@@ -546,5 +526,3 @@ yl0(itrd(i),usa,s) = dref(i,s);
 dd0(i,r,s,s)$(not usa(r)) = yl0(i,r,s);
 dd0(i,usa(r),s,s)$(not itrd(i)) = yl0(i,r,s);
 nd0(itrd(i),usa,s) = 0;
-
-execute_unload 'bilatgravity.gdx', dd0, md0, nd0, yl0, esub_ln, esub_nn, itrd, rtd0, rtm0, rtd, rtm, shares;
