@@ -184,7 +184,7 @@ SY.FX(i,s) = 1;
 SM.FX(i,prt) = 1;
 
 option aref:3:0:1, yref:3:0:1, mref:3:0:1, eref:3:0:1;
-display aref, yref, mref, eref;
+*.display aref, yref, mref, eref;
 
 parameter	totals	Total values;
 totals(itrd(i),"aref") = sum(s,aref(i,s));
