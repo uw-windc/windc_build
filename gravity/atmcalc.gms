@@ -25,7 +25,7 @@ $if not set metric $set metric output
 
 *	Alternative: bilateral
 
-$if not set model $set model pooled
+$if not set model $set model recalib
 
 
 set	pk_(f,r)	Capital market;
@@ -112,6 +112,49 @@ file	kcon /"con:"/; kcon.lw=0; put kcon;
 
 $goto %model%
 
+
+$label recalib
+
+loop(re(r),
+
+*	Recalibrate the pooled model dataset based on the bilateral model flows:
+
+	yl0(itrd(i),r,s) = vdfm(i,r,s,s);
+	ns0(itrd(i),r,s) = sum(ss,vdfm(i,r,s,ss))-vdfm(i,r,s,s);
+	nd0(itrd(i),r,s) = sum(ss,vdfm(i,r,ss,s)) - vdfm(i,r,s,s);
+	md0(itrd(i),r,s) = vifm(i,"usa",s);
+	xs0(itrd(i),r,s) = xref(i,s);
+	vnm(itrd(i),r) = sum(s,ns0(i,r,s));
+
+*	Track content of all sectors which have nonzero production:
+
+	is(i,s) = yes$content(i,re,s);
+	samesector(is,is) = yes;
+
+*	Initial assigment -- direct content:
+
+	v_PY(i,s,is)$y_(i,r,s) = content(i,r,s)$samesector(i,s,is)/vom(i,r,s);
+
+	dev = 1;
+	loop(iter$round(dev,2),
+		v_P(i,is)$x_(i,r)  = sum(s,xs0(i,r,s)*v_PY(i,s,is))/vxm(i,r);
+		v_PN(i,is)$n_(i,r) = sum(s,ns0(i,r,s)*v_PY(i,s,is))/vnm(i,r);
+		v_PZ(i,s,is)$z_(i,r,s) = (yl0(i,r,s)*v_PY(i,s,is) + nd0(i,r,s)*v_PN(i,is))/a0(i,r,s);
+		v_PYn(i,s,is)$y_(i,r,s) = (sum(j, vafm(j,i,r,s)*v_PZ(j,s,is)) + 
+					           content(i,r,s)$samesector(i,s,is) )/vom(i,r,s);
+		dev = sum((i,s,is)$y_(i,r,s), abs(v_PYn(i,s,is)-v_PY(i,s,is)));
+		v_PY(i,s,is)$y_(i,r,s) = v_PYn(i,s,is);
+		iterlog(iter,"dev") = dev;
+		putclose iter.tl,dev/;
+	);
+
+        atm(is(i,s),iag) = v_P(iag,is);
+);
+display iterlog;
+
+$exit
+
+);
 
 $label pooled
 

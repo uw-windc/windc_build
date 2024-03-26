@@ -9822,7 +9822,7 @@ table portloc(port,latlon)
 	DC_Wash	38.9072 -77.0369
 	NC_Wilm	34.2233	-77.9122;
 
-set	i	Goods from GTAP /
+set	igtap	Goods from GTAP /
 	pdr  "Paddy rice",
 	wht  "Wheat",
 	gro  "Cereal grains nec",
@@ -9895,7 +9895,7 @@ $eolcom !
 
 set	hs6(*) HS6 goods excluding aggregates (less than 6 digits);
 
-set map(hs6<,i) Mapping from hs6 to gtap sectors /
+set maphs6(hs6<,igtap) Mapping from hs6 to gtap sectors /
 010110.ctl	!"Purebred Breeding Animal",
 010210.ctl	!"Bovine Animals, Live, Purebred Breeding",
 010121.CTL	! Live horses, asses, mules and hinnies : Horses : Pure-bred breeding animals	0101	CTL

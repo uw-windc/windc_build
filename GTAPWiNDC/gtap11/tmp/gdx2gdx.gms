@@ -669,6 +669,7 @@ $else.vole
 	exi(ii,r,rr) = 0;
 $endif.vole
 
+
 *	Remove the temporary directory:
 
 $call rmdir /q /s %tmpdir%

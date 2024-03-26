@@ -1,6 +1,6 @@
 $title	Build GTAP in GAMS from GTAP Datasets
 
-*.$set task aggregate
+*$set task gdx2gdx
 *--------------------------------
 * Command line options:
 *
@@ -28,6 +28,7 @@ $if not set aggregation $set aggregation "g20_10, g20_32, g20_43"
 $if not set gtap_version $include "gtapingams.gms"
 $if not set gtap_zip_path $abort "You have not set the location of the GTAP gtap_zip_path in GTAPWiNDC/gtapingams.gms"
 $if not set gtap_version $abort "You have not set the gtap_version variable in GTAPWiNDC/gtapingams.gms"
+display '%gtap_zip_path%';
 
 $if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_version%'
 $call mkdir "%system.fp%%gtap_version%"

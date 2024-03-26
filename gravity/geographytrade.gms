@@ -1,12 +1,31 @@
 $title  Quick and Dirty State-Port Geography Calculation
 
+$if not set ds $set ds windc_32
+
 $if not set trade_data $set trade_data %system.fp%../data/gravity/
 
 set	elast	Elasticities used for iceberg trade cost calculations /"3.0","4.0","5.0"/;
 
 parameter	epsilon		Elasticity of trade wrt trade cost /-1/;
 
+*	Retrieve mapping:
+
+$call gams getmapping gdx=mapping.gdx --ds=%ds%
+
+set	i(*)	Commodities in the tareget directory;
+$gdxin mapping.gdx
+$load i
+
+set	mapgtap(*,i)	Mapping from GTAP to the target mapping
+$load mapgtap=mapi
+
 $include sets
+
+set	map(hs6,i)	Mapping from HS6 to the target sectors;
+
+map(hs6,i) = yes$sum((mapgtap(igtap,i),maphs6(hs6,igtap)),1);
+option map:0:0:1;
+display map;
 
 set	c(fips)		Counties for which we have both coordinate and GDP;
 c(fips) = yes$min(round(gdp(fips)),round(loc(fips,"lon")),round(loc(fips,"lat")));

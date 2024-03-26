@@ -26,8 +26,8 @@ parameter
 
 *	Data structures for the model need to include the 
 *	regional index:
-
 	vdfm(i,r,s,ss)	Intra-national trade
+
 	vifm(i,r,s)	Imports (gravity estimate)
 
 *	Read revised tax rates which are used in the
@@ -227,11 +227,8 @@ bnm(i,r) = no;
 
 $if "%replicate%"=="no" $exit
 
-gtapwindc.iterlim = 100000;
-$include gtapwindc.gen
-solve gtapwindc using mcp;
-
-$exit
+*.$include gtapwindc.gen
+*.solve gtapwindc using mcp;
 
 *	Replication for the national market model:
 
@@ -284,6 +281,7 @@ rtm0(itrd(i),"usa",s) = rtm0_(i,"usa",s);
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 
+display vdfm_,vifm_;
 
 $exit
 
