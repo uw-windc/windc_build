@@ -1,4 +1,4 @@
-$title	Canonical Template GTAP-WINDC Model (MGE format)
+$title	Calculate the ATM In a GE Framework.
 
 *	Read the data:
 
@@ -26,8 +26,8 @@ parameter
 
 *	Data structures for the model need to include the 
 *	regional index:
-
 	vdfm(i,r,s,ss)	Intra-national trade
+
 	vifm(i,r,s)	Imports (gravity estimate)
 
 *	Read revised tax rates which are used in the
@@ -81,7 +81,6 @@ abort$card(chk) "Error: yref deviation:",chk;
 chk(s,itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
 abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
 
-
 parameter trdchk	Cross check on imports;
 
 *	GE database balance of imports gross of tax equals the demand for 
@@ -102,6 +101,8 @@ abort$card(trdchk) "Imbalance in trade accounts:", trdchk;
 set	pnm(i,r)	Pooled national market,
 	bnm(i,r)	Bilateral national market;
 
+parameter	deltax(i,r)	Perturbation in export demand in region r;
+deltax(i,r) = 0;
 $ontext
 $model:gtapwindc
 
@@ -207,6 +208,7 @@ $demand:RH(r,s,h)$rh_(r,s,h)
 
 $demand:GOVT(r)
 	d:PY("g",r,s)			q:vom("g",r,s)
+	e:P(i,rr)			q:(-deltax(i,r)$sameas(rr,"usa"))
 	e:PC(rnum,"rest","rest")	q:(-sum((rh_(r,s,h),trn),hhtrn0(r,s,h,trn)))
 
 $demand:INV(r)
@@ -220,6 +222,7 @@ gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
 *	All markets are pooled in the original GTAPWiNDC dataset:
+
 pnm(i,r) = yes;
 bnm(i,r) = no;
 
@@ -227,13 +230,8 @@ bnm(i,r) = no;
 
 $if "%replicate%"=="no" $exit
 
-gtapwindc.iterlim = 100000;
 $include gtapwindc.gen
 solve gtapwindc using mcp;
-
-$exit
-
-*	Replication for the national market model:
 
 set	iag(i)			Agricultural sectors/ 
 		pdr 	Paddy rice
@@ -252,120 +250,29 @@ set	iag(i)			Agricultural sectors/
 
 		wol 	"Wool, silk-worm cocoons" /;
 
-set	notrd(i);
-notrd(iag(i)) = not itrd(i);
-display notrd;
+set	usa(r) /usa/;
 
-*	Populate parameters for the bilateral national model:
+set	nusa(r)	Regions other than the usa;
+nusa(r) = not usa(r);
 
-vdfm(itrd(i),"usa",s,ss) = vdfm_(i,s,ss);
-vifm(itrd(i),"usa",s) = vifm_(i,s);
+parameter	deltay(i,s)	Change in output (at benchmark prices);
 
-parameter	vomchk;
-loop(r$sameas(r,"usa"),
-	yl0(itrd(i),r,s) = vdfm(i,r,s,s);
-	ns0(itrd(i),r,s) = sum(ss,vdfm(i,r,s,ss))-vdfm(i,r,s,s);
-	nd0(itrd(i),r,s) = sum(ss,vdfm(i,r,ss,s)) - vdfm(i,r,s,s);
-	md0(itrd(i),r,s) = vifm(i,"usa",s);
-	xs0(itrd(i),r,s) = xref(i,s);
-	vnm(itrd(i),r) = sum(s,ns0(i,r,s));
-	vomchk(s,itrd(i))$y_(i,r,s) = round(vom(i,r,s) - xs0(i,r,s) - yl0(i,r,s) - ns0(i,r,s),3);
-);
-display vomchk;
+loop(iag$sameas(iag,"wht"),
 
-*	Benchmark replication with the bilateral trade model:
+	deltax(i,r)$nusa(r) = 0.01*vxmd(i,"usa",r)$sameas(i,iag);
 
-rtd(itrd(i),"usa",s) = rtd0_(i,"usa",s);
-rtm(itrd(i),"usa",s) = rtm0_(i,"usa",s);
-
-rtd0(itrd(i),"usa",s) = rtd0_(i,"usa",s);
-rtm0(itrd(i),"usa",s) = rtm0_(i,"usa",s);
-
+	gtapwindc.iterlim = 100000;
 $include gtapwindc.gen
-solve gtapwindc using mcp;
+	solve gtapwindc using mcp;
 
+	deltay(i,s) = (Y.L(i,"usa",s)-1) * vom(i,"usa",s);
 
-$exit
-
-chk(s,itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
-abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
-
-chk(s,itrd(i)) = round(a0(i,"usa",s) - (yl0(i,"usa",s)+nd0(i,"usa",s))*(1+rtd(i,"usa",s)) - md0
-abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
-
-$exit
-
-
-
-
-*	Benchmark replication with the bilateral trade model:
-
-rtd(itrd(i),"usa",s) = rtd0_(i,"usa",s);
-rtm(itrd(i),"usa",s) = rtm0_(i,"usa",s);
-
-rtd0(itrd(i),"usa",s) = rtd0_(i,"usa",s);
-rtm0(itrd(i),"usa",s) = rtm0_(i,"usa",s);
-
-
-
-bnm(itrd(i),"usa") = yes;
-pnm(itrd(i),"usa") = no;
-
-$include gtapwindc.gen
-solve gtapwindc using mcp;
-
-
-$exit
-
-set	rb(r) /usa/;
-
-set	macct	Macro accounts /
-		C	Household consumption,
-		G	Public expenditure
-		T	Tax revenue
-		I	Investment
-		L	Labor income
-		K	Capital income
-		F	Foreign savings
-		GDP	"Gross domestic product (C+I+G-B)"
-		"GDP*"	"Gross domestic product (K+L+T)"/;
-		
-
-parameter	incomechk;
-incomechk(r) = sum((s,h),c0(r,s,h)) + sum(s,vom("g",r,s) + vom("i",r,s)) 
-	- sum((f,s,h),evomh(f,r,s,h))
-	- vb(r) 
-	- (	  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
-		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
-		+ sum(g, rto(g,r)*sum(s,vom(g,r,s))) );
-display incomechk;
-
-set lf(f) /mgr,tec,clk,srv,lab/, kf(f)/cap,lnd,res/;
-
-parameter	macroaccounts(macct,*)	Macro economic accounts;
-loop(rb(r),
-	macroaccounts("C","$") = sum((s,h),c0(r,s,h));
-	macroaccounts("G","$") = sum(s,vom("g",r,s));
-	macroaccounts("I","$") = sum(s,vom("i",r,s));
-	macroaccounts("L","$") = sum((lf(f),s,h),evomh(lf,r,s,h));
-	macroaccounts("K","$") = sum((kf(f),s,h),evomh(kf,r,s,h));
-	macroaccounts("F","$") = vb(r);
-	macroaccounts("T","$") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(xd0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
-				+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
-				+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
-
-	macroaccounts("GDP","$") = macroaccounts("C","$") + macroaccounts("G","$") + macroaccounts("I","$") - macroaccounts("F","$");
-	macroaccounts("GDP*","$") = macroaccounts("L","$") + macroaccounts("K","$") + macroaccounts("T","$");
 );
-macroaccounts("C","%GDP") = 100 * macroaccounts("C","$") / macroaccounts("GDP","$");
-macroaccounts("G","%GDP") = 100 * macroaccounts("G","$") / macroaccounts("GDP","$");
-macroaccounts("I","%GDP") = 100 * macroaccounts("I","$") / macroaccounts("GDP","$");
-macroaccounts("L","%GDP") = 100 * macroaccounts("L","$") / macroaccounts("GDP","$");
-macroaccounts("K","%GDP") = 100 * macroaccounts("K","$") / macroaccounts("GDP","$");
-macroaccounts("F","%GDP") = 100 * macroaccounts("F","$") / macroaccounts("GDP","$");
 
-option macct:0:0:1;
-option macroaccounts:3;
-display macroaccounts macct;
+parameter	multipliers	ATM multiplier;
+multipliers(iag,i,s) = deltay(i,s) / (0.01*sum(nusa(r),vxmd(i,"usa",r)));
+multipliers(iag,"total",s) = sum(i,multipliers(iag,i,s));
+multipliers(iag,i,"total") = sum(s,multipliers(iag,i,s));
+multipliers(iag,"total","total") = sum((i,s),multipliers(iag,i,s));
+option multipliers:3:1:1;
+display multipliers;

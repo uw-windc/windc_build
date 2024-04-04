@@ -35,9 +35,11 @@ $setglobal gtap_version gtap11b
 * Unless you want to update the default paths with new zip names   *
 * ---------------------------------------------------------------- *
 
+*NB_ejb: the string "333" must indicate the GTAP licensee. I need "1017"
 
 $ifthen not set gtap_zip_path
-$if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY333.zip"
+$if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY1017.zip"
+*$if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY333.zip"
 $if %gtap_version% == "gtap11a" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip"
 $if %gtap_version% == "gtap11" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11/GDX_AY1017.zip"
 $endif
