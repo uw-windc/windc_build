@@ -5,20 +5,23 @@ $stitle	Code to Calibrate a GTAP Dataset
 $macro	target(a,b,d,ds)  sum((&&ds), ( abs(a(&&d))*sqr(b(&&d)/a(&&d)-1) )$a(&&d) \
                                        + (penalty * b(&&d))$(not a(&&d)))
 
-*	Macro for unfixing a variable and assigning the target level value:
+*	Macro for assigning the initial level for a variable to the target value, 
+*	unfixing the variable and counting the number of nonzeors in the target parameter:
 
 $macro	setlevel(a,b,d,ds)  a.L(&&d) = b(&&d); \
 		a.LO(&&d) = 0; \
 		a.UP(&&d) = +inf; \
 		nzc(rb,"&&b") = sum((&&ds)$b(&&d),1);
 
-*	Filter numbers which are 1e-6 or smaller when the values are extracted.  
+*	Readsolution:
 
-*	Count the number of nonzeros in the resulting parameter, and fix to 
-*	zero any variables which have been dropped.
+*	a.L(d)	is the calibration variable.
+*	b(d)	is the corresponding parameter
 
-*	a(d)	is the parameter.
-*	a_.L(d)	is the corresponding calibration variable.
+*	Filter numbers which are 1e-%abstol% or smaller when the values are extracted.  
+
+*	Count the number of nonzeros in the resulting parameter.
+
 
 $macro	readsolution(a,b,d,ds)  b(&&d) = a.L(&&d)$round(a.L(&&d),%abstol%); itlog(rb,iter,"&&b") = sum((&&ds)$b(&&d),1);
 
@@ -54,20 +57,27 @@ objdef..		OBJ =e= target(vom,  VOM_,  "g,r",   "g,rb(r)") +
 				sum((i,g,rb(r)), (VIFM_P(i,g,r)+VIFM_N(i,g,r))$eco2i(i,g,r) ) );
 				
 
-dmarket(g(i),rb(r))..	VOM_(g,r) =e= sum(rx,vxmd(i,r,rx)) + vst(i,r) + sum(gg,VDFM_(i,gg,r));
+dmarket(g(i),rb(r),s)$y_(g,r,s)..	VOM_(g,r,s) =e= XREF_(i,s)$bfm(i,r) + XS0_(i,r,s)$pnm(i,r) + 
+							NS0_(i,r,s)$(pnm(i,r) and x_(i,r)) + 
+							YL0_(i,r,s)$(pnm(i,r) and z_(i,r,s)) + 
+							sum(ss,VDFM_(i,r,s,ss))$(bfm(i,r) and z_(i,r,ss));
 
-mmarket(i,rb(r))..	vim(i,r) =e= sum(g, VIFM_(i,g,r));
+mmarket(i,rb(r))..	vim(i,r) =e=	sum((i,r,s)$(pnm(i,r) and z_(i,r,s)), MD0_(i,r,s)) +
+					sum((i,r,s)$(bnm(i,r) and z_(i,r,s)), VIFM_(i,r,s));
 
-profit(g,rb(r))..	VOM_(g,r)*(1-rto(g,r)) =e= 
-				sum(i,VDFM_(i,g,r)*(1+rtfd(i,g,r))+VIFM_(i,g,r)*(1+rtfi(i,g,r)))
-			     +	sum(f,VFM_(f,g,r)*(1+rtf(f,g,r)));
+zmarket(i,rb(r),s)$z_(i,r,s)..
 
-vdfm_target(i,g,rb(r))$eco2d(i,g,r)..	VDFM_(i,g,r)-vdfm(i,g,r) =e= VDFM_P(i,g,r)-VDFM_N(i,g,r);
+			A0_(i,r,s) =e=	sum(c_(r,s,h),CD0_(i,r,s,h)) + sum(y_(g,r,s),VAFM_(i,g,r,s))
 
-vifm_target(i,g,rb(r))$eco2i(i,g,r)..	VIFM_(i,g,r)-vifm(i,g,r) =e= VIFM_P(i,g,r)-VIFM_N(i,g,r);
+zprofit(i,rb(r),s)$z_(i,r,s)..	A0_(i,r,s) =e=	( YL0_(i,r,s) + ND0_(i,r,s) + MD0_(i,r,s) )$pnm(i,r) +
+						( sum(ss, VDFM_(i,r,ss,s)) + VIFM_(i,r,s) )$bnm(i,r);
+
+yprofit(g,rb(r),s)$y_(g,r,s)..	VOM_(g,r,s)*(1-rto(g,r)) =e= 
+				sum(i,VAFM_(i,g,r,s))
+			     +  sum(f,VFM_(f,g,r,s)*(1+rtf(f,g,r)));
 
 
-model gtapbal /all/;
+model gtapwindcbal /all/;
 
 
 set	iter /iter0*iter10/;

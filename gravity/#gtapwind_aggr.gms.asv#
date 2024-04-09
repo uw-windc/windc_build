@@ -1,0 +1,13 @@
+$title	Aggregate a GTAP-WINDC Datas
+
+$if not set target $set target msmr
+
+*	Read the data:
+
+$if not set ds $set ds 43
+
+$include ..\gtapwindc\gtapwindc_data
+
+*	Calling program points to the target mapping:
+
+$include "%system.fp%defines/%target%"

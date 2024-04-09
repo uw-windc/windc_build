@@ -9,5 +9,6 @@ $call gams ..\gtapwindc\gtapwindc_mge.gms --ds=43
 
 *	Estimate the bilateral flows
 $call gams bilatgravity gdx=bilatgravity
+
 *.$call pause
 $call gams gtapwindc_bilat.gms

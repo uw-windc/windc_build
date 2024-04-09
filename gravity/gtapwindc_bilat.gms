@@ -223,6 +223,8 @@ gtapwindc.iterlim = 0;
 pnm(i,r) = yes;
 bnm(i,r) = no;
 
+$exit
+
 *	Replicate: %replicate%
 
 $if "%replicate%"=="no" $exit
@@ -305,6 +307,7 @@ rtm(itrd(i),"usa",s) = rtm0_(i,"usa",s);
 
 rtd0(itrd(i),"usa",s) = rtd0_(i,"usa",s);
 rtm0(itrd(i),"usa",s) = rtm0_(i,"usa",s);
+
 
 
 
