@@ -220,10 +220,9 @@ gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
 *	All markets are pooled in the original GTAPWiNDC dataset:
+
 pnm(i,r) = yes;
 bnm(i,r) = no;
-
-$exit
 
 *	Replicate: %replicate%
 

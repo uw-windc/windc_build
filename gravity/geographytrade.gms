@@ -1,6 +1,6 @@
 $title  Quick and Dirty State-Port Geography Calculation
 
-$if not set ds $set ds windc_32
+$if not set ds $set ds windc_43
 
 $if not set trade_data $set trade_data %system.fp%../data/gravity/
 
