@@ -11,6 +11,9 @@ option pk_<ft_;
 
 alias (s,ss);
 
+set	state(s)	Subregions which are states;
+state(s) = yes$(not sameas(s,"rest"));
+
 parameter
 
 *	Note: In the bilatgravity calculation we omit the
@@ -23,6 +26,7 @@ parameter
 
 	vdfm_(i,s,ss)	Intra-national trade,
 	vifm_(i,s)	Imports,
+	a0_(i,s)	Absorption,
 
 *	Data structures for the model need to include the 
 *	regional index:
@@ -41,13 +45,13 @@ set	itrd(i)		Sectors with bilateral trade data;
 *	Read these data from the PE calculation -- the GDX file contains
 *	all parameters so we can retrieve additional symbols if needed.
 
-$gdxin 'bilatgravity.gdx'
+$gdxin 'filter.gdx'
 $load itrd yref xref dref 
 
 *	Rename these parameters so that we can add the region index and/or avoid
 *	overwriting values already in the database:
  
-$load vdfm_=vdfm vifm_=vifm rtd0_=rtd0 rtm0_=rtm0
+$load vdfm_ vifm_ a0_ rtd0_=rtd0 rtm0_=rtm0 
 
 *	These symbols only enter the regions with bilateral national
 *	markets:
@@ -65,7 +69,7 @@ abort$card(chk) "Error: yref deviation:", chk;
 *	Domestic supply in state s equals bilateral sales from
 *	state s to all other states ss:
 
-chk(s,itrd(i)) = round(dref(i,s) - sum(ss,vdfm_(i,s,ss)),3);
+chk(state(s),itrd(i)) = round(dref(i,s) - sum(ss,vdfm_(i,s,ss)),3);
 abort$card(chk) "Error: dref deviation:", chk;
 
 *	Gross output in the PE calculation equals gross output in the 
@@ -78,7 +82,8 @@ abort$card(chk) "Error: yref deviation:",chk;
 *	equals aggregate imports from other states and from abroad (vdfm_, vifm_,
 *	rtd0_, and rtm0_ from the PE calculation):
 
-chk(s,itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
+a0(i,"usa",s)$(not sameas(s,"rest")) = a0_(i,s);
+chk(state(s),itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
 abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
 
 
@@ -101,6 +106,7 @@ abort$card(trdchk) "Imbalance in trade accounts:", trdchk;
 
 set	pnm(i,r)	Pooled national market,
 	bnm(i,r)	Bilateral national market;
+
 
 $ontext
 $model:gtapwindc
@@ -224,11 +230,12 @@ gtapwindc.iterlim = 0;
 pnm(i,r) = yes;
 bnm(i,r) = no;
 
+
 *	Replicate: %replicate%
 
 $if "%replicate%"=="no" $exit
 
-gtapwindc.iterlim = 100000;
+gtapwindc.iterlim = 0;
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 

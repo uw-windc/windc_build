@@ -53,11 +53,14 @@ $load itrd yref xref dref
  
 $load vdfm_=vdfm vifm_=vifm rtd0_=rtd0 rtm0_=rtm0
 
-*	These symbols only enter the regions with bilateral national
-*	markets:
+rtd0(i,r,s) = rtd0_(i,r,s);
+rtm0(i,r,s) = rtm0_(i,r,s);
 
-vdfm(i,r,s,ss)	= 0;
-vifm(i,r,s)	= 0;
+
+vdfm_(i,s,ss)$(sameas(s,"rest") or sameas(ss,"rest")) = 0;
+vifm_(i,s)$sameas(s,"rest") = 0;
+xref(i,s)$sameas(s,"rest") = 0;
+a0_(i,s)$sameas(s,"rest") = 0;
 
 parameter	chk		Cross check on PE calculations;
 
@@ -80,9 +83,9 @@ abort$card(chk) "Error: yref deviation:",chk;
 	
 *	Aggregate absorpotion of commodity i in state s in the GE database (a0)
 *	equals aggregate imports from other states and from abroad (vdfm_, vifm_,
-*	rtd0_, and rtm0_ from the PE calculation):
+*	rtd0, and rtm0 from the PE calculation):
 
-chk(s,itrd(i)) = round(a0_(i,s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
+chk(s,itrd(i)) = round(a0_(i,s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0(i,"usa",s)) - vifm_(i,s)*(1+rtm0(i,"usa",s)),3);
 abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
 
 
@@ -102,10 +105,6 @@ trdchk(itrd(i),"vim<>vifm") = round(vim(i,"usa") - sum(s,vifm_(i,s)),3);
 
 trdchk(itrd(i),"vxm<>xref") = round(vxm(i,"usa") - sum(s,xref(i,s)),3);
 abort$card(trdchk) "Imbalance in trade accounts:", trdchk;
-
-set	pnm(i,r)	Pooled national market,
-	bnm(i,r)	Bilateral national market;
-
 
 nonnegative
 variables	S_VDFM(i,s,ss)	Sparse interstate trade flows
@@ -129,7 +128,7 @@ exports(ib(i))..	vxm(i,"usa") =e= sum(sb(s), S_XREF(i,s));
 
 imports(ib(i))..	vim(i,"usa") =e= sum(sb(s), S_VIFM(i,s));
 
-absorption(ib(i),sb(s))..	S_A0(i,s) =e= sum(ssb(ss), S_VDFM(i,ss,s)*(1+rtd0_(i,"usa",s))) + S_VIFM(i,s)*(1+rtm0_(i,"usa",s));
+absorption(ib(i),sb(s))..	S_A0(i,s) =e= sum(ssb(ss), S_VDFM(i,ss,s)*(1+rtd0(i,"usa",s))) + S_VIFM(i,s)*(1+rtm0(i,"usa",s));
 
 output(ib(i),sb(s))..	vom(i,"usa",s) =e= S_XREF(i,s) + sum(ss, S_VDFM(i,s,ss));
 
@@ -155,14 +154,22 @@ aggbal(itrd(i),"vom") = sum(s,vom(i,"usa",s));
 aggbal(itrd(i),"vxm") = vxm(i,"usa");
 aggbal(itrd(i),"vim") = vim(i,"usa");
 aggbal(itrd(i),"a0") =  sum(sb(s),a0_(i,s));
-aggbal(itrd(i),"vdm+vim+rtd+rtm") = sum(sb(s), sum(ssb(ss), vdfm_(i,ss,s)*(1+rtd0_(i,"usa",s))) + vifm_(i,s)*(1+rtm0_(i,"usa",s)));
+aggbal(itrd(i),"vdm+vim+rtd+rtm") = sum(sb(s), sum(ssb(ss), vdfm_(i,ss,s)*(1+rtd0(i,"usa",s))) + vifm_(i,s)*(1+rtm0(i,"usa",s)));
 display aggbal;
 
 
 S_VDFM.L(i,s,ss) = vdfm_(i,s,ss);
 S_VIFM.L(i,s)	 = vifm_(i,s);
 S_XREF.L(i,s)	 = xref(i,s);
-S_A0.L(i,s) = a0_(i,s);
+S_A0.L(i,s)      = a0_(i,s);
+
+parameter	density		Parameter density;
+
+$set stage input
+density("vdfm","%stage%") = sum((i,s,ss)$vdfm_(i,s,ss),1)/(card(i)*sqr(card(s)-1));
+density("vifm","%stage%") = sum((i,s)$vifm_(i,s),1)/(card(i)*(card(s)-1));
+density("xref","%stage%") = sum((i,s)$xref(i,s),1)/(card(i)*(card(s)-1));
+density("a0","%stage%") = sum((i,s)$a0_(i,s),1)/(card(i)*(card(s)-1));
 
 parameter	itrlog		Iteration log;
 
@@ -177,9 +184,26 @@ loop(itrd,
 );
 display itrlog;
 
+$set stage Replicate
+density("vdfm","%stage%") = sum((i,s,ss)$S_VDFM.L(i,s,ss),1)/(card(i)*sqr(card(s)-1));
+density("vifm","%stage%") = sum((i,s)$S_VIFM.L(i,s),1)/(card(i)*(card(s)-1));
+density("xref","%stage%") = sum((i,s)$S_XREF.L(i,s),1)/(card(i)*(card(s)-1));
+density("a0","%stage%") = sum((i,s)$S_A0.L(i,s),1)/(card(i)*(card(s)-1));
+
+
+$if not set abstol $set abstol 6
+$if not set reltol $set reltol 3
+
 *	Apply an absolute filter tolerance of 1e-5:
 
-vdfm_(i,s,ss)$(not round(vdfm_(i,s,ss),5)) = 0;
+vdfm_(i,s,ss)$(not round(vdfm_(i,s,ss),%abstol%)) = 0;
+vdfm_(i,s,ss)$(vdfm_(i,s,ss)<1e-%reltol%*vom(i,"usa",s)) = 0;
+
+vifm_(i,s)$(not round(vifm_(i,s),%abstol%)) = 0;
+vifm_(i,s)$(vifm_(i,s)<1e-%reltol%*a0_(i,s)) = 0;
+
+xref(i,s)$(not round(xref(i,s),%abstol%)) = 0;
+xref(i,s)$(xref(i,s)<1e-%reltol%*vom(i,"usa",s)) = 0;
 
 loop(itrd,
 	ib(i) = sameas(i,itrd);
@@ -191,3 +215,18 @@ loop(itrd,
 	itrlog(itrd,"ModelStat") = calibrate.modelstat;
 );
 display itrlog;
+
+$set stage Filtered
+density("vdfm","%stage%") = sum((i,s,ss)$S_VDFM.L(i,s,ss),1)/(card(i)*sqr(card(s)-1));
+density("vifm","%stage%") = sum((i,s)$S_VIFM.L(i,s),1)/(card(i)*(card(s)-1));
+density("xref","%stage%") = sum((i,s)$S_XREF.L(i,s),1)/(card(i)*(card(s)-1));
+density("a0","%stage%") = sum((i,s)$S_A0.L(i,s),1)/(card(i)*(card(s)-1));
+
+display density;
+
+vdfm_(i,sb(s),ssb(ss)) = S_VDFM.L(i,s,ss);
+vifm_(i,sb(s)) = S_VIFM.L(i,s);
+a0_(i,sb(s)) = S_A0.L(i,s);
+xref(i,sb(s)) = S_XREF.L(i,s);
+dref(i,sb(s)) = sum(ss,vdfm_(i,s,ss));
+

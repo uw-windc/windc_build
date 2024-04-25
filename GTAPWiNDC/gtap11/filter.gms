@@ -67,10 +67,10 @@ vifmtot(".",g,r) = sum(i,vifm(i,g,r));
 
 *	Filter based on the relative tolerance:
 
-vxmd(  i,rr,r)$(vxmd(i,rr,r)<reltol*min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
-vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)<reltol*vtwrtot(i,rr,r)) = 0;
-vdfm(i,g,   r)$(vdfm(i,g,r)<reltol*min(vdfmtot(i,".",r),vdfmtot(".",g,r))) = 0;
-vifm(i,g,   r)$(vifm(i,g,r)<reltol*min(vifmtot(i,".",r),vifmtot(".",g,r))) = 0;
+vxmd(  i,rr,r)$(  vxmd(i,rr,r)<reltol * min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
+vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)<reltol * vtwrtot(i,rr,r)) = 0;
+vdfm(i,g,   r)$(   vdfm(i,g,r)<reltol * min(vdfmtot(i,".",r),vdfmtot(".",g,r))) = 0;
+vifm(i,g,   r)$(   vifm(i,g,r)<reltol * min(vifmtot(i,".",r),vifmtot(".",g,r))) = 0;
 
 *	Drop transport margins and tariffs on non-existent trade links:
 
