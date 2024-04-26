@@ -148,7 +148,16 @@ vimchk(i,r) = vim(i,r) - sum(s,md0(i,r,s));
 option vomchk:3:0:1, vimchk:3:0:1;
 display vomchk, vimchk;
 
-profit(y_(g,r,s)
+$include gtapwind_calib.gms
+
+$include %gams.scrdir%chkmodel
+
+display chk_market_py, chk_market_pn, chk_market_pz, chk_market_pm, chk_market_pl, chk_market_ps,
+	chk_profit_y, chk_profit_z, chk_govtincome;
+*.solve calib using qcp minimizing obj;
+
+
+
 
 $exit
 
@@ -173,7 +182,6 @@ pachk(i,s,"vafm") = sum(g,vafm(i,g,"usa",s));
 pachk(i,s,"cd0") = sum(h,cd0(i,"usa",s,h));
 option pachk:3:2:1;
 display pachk;
-
 
 *	Identify the nonzero structure:
 
