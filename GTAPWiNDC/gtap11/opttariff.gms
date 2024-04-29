@@ -1,19 +1,25 @@
 $title	 GTAPinGAMS -- GAMS/MPSGE and GAMS/MCP Formulations for the Global Multiregional Model
 
+*	Specify the functional form for Armington trade flows:
+
+$if not set CESModel $set CESModel yes
+
+parameter	CESModel /%CESModel%/, LogitModel;
+
+LogitModel = not CESModel;
+
 *	This version of the model assumes that goods produced
 *	for the domestic and export markets are perfect substitutes.
 
 $if not set yr    $set yr    2017
-$if not set ds    $set ds    g20_10
+$if not set ds    $set ds    russia_all
 
-$if not set gtap_version $include "gtapingams.gms"
+$setglobal gtap_version gtap11b
 
-
-*.$if not set gtap_version $abort "gtap_version not set"
 
 *	Read the data file:
 
-$include %system.fp%gtapdata
+$include d:\GitHub\windc_build\GTAPWiNDC\gtap11\gtapdata
 
 *	Subsistence demand for the LES model:
 
@@ -118,6 +124,10 @@ $if not set mgeonly $set mgeonly no
 $if %mgeonly%==yes $exit
 
 
+variable	RTMS_(i,rr,rr)		Import tariff rate;
+RTMS_.FX(i,r,rr) = rtms(i,r,rr);
+$ondotl
+
 *       -------------------------------------------------------------------------------
 *       Macros to diagnose the functional form:
 
@@ -179,6 +189,23 @@ $macro C_A(i,g,r) ( \
         ( (theta_vdfm(i,g,r) *P_D(i,g,r)**(1-esubdm(i)) + \
         (1-theta_vdfm(i,g,r))*P_I(i,g,r)**(1-esubdm(i)))**(1/(1-esubdm(i))))$CES(esubdm(i)))
 
+variables		V_A(i,g,r)		Logit cost function,
+			PHI_A(i,g,r)		Intermediate temr for logic demand;
+
+V_A.L(i,g,r)$(vdfm(i,g,r)+vifm(i,g,r)) = 1;
+PHI_A.L(i,g,r)$(vdfm(i,g,r)+vifm(i,g,r)) = 1;
+
+equations  vadef, phiadef;
+
+vadef(i,g,r)$theta_cm0(i,g,r)..
+		1 =e=    theta_vdfm(i,g,r) *exp((1-P_D(i,g,r)/V_A(i,g,r))*esubdm(i)) +
+		      (1-theta_vdfm(i,g,r))*exp((1-P_I(i,g,r)/V_A(i,g,r))*esubdm(i));
+
+phiadef(i,g,r)$theta_cm0(i,g,r)..
+	PHI_A(i,g,r) =e= ( theta_vdfm(i,g,r) *exp((1-P_D(i,g,r)/V_A(i,g,r))*esubdm(i)) * P_D(i,g,r) +
+		        (1-theta_vdfm(i,g,r))*exp((1-P_I(i,g,r)/V_A(i,g,r))*esubdm(i)) * P_I(i,g,r) )/V_A(i,g,r);
+
+
 $macro C_M(g,r) ( \
  ( (sum(i.local$theta_cm0(i,g,r),  theta_cm0(i,g,r) * C_A(i,g,r)**(1-esub(g)))**(1/(1-esub(g))))$CES(esub(g)) + \
     prod(i.local$theta_cm0(i,g,r), C_A(i,g,r)**theta_cm0(i,g,r))$CobbDouglas(esub(g)) + \
@@ -190,9 +217,14 @@ $macro C_Y(g,r) (theta_cf0(g,r)*C_F(g,r) + (1-theta_cf0(g,r))*C_M(g,r))
 
 *       Intermediate input demand functions for domestic and imported commodities:
 
-$macro DDFM(i,g,r)	((vdfm(i,g,r) * (C_A(i,g,r)/P_D(i,g,r))**esubdm(i) * (C_M(g,r)/C_A(i,g,r))**esub(g))$vdfm(i,g,r))
+$macro DDFM_CES(i,g,r)	((vdfm(i,g,r) * (C_A(i,g,r)/P_D(i,g,r))**esubdm(i) * (C_M(g,r)/C_A(i,g,r))**esub(g))$vdfm(i,g,r))
+$macro DIFM_CES(i,g,r)	((vifm(i,g,r) * (C_A(i,g,r)/P_I(i,g,r))**esubdm(i) * (C_M(g,r)/C_A(i,g,r))**esub(g))$vifm(i,g,r))
 
-$macro DIFM(i,g,r)	((vifm(i,g,r) * (C_A(i,g,r) /P_I(i,g,r)  )**esubdm(i) * (C_M(g,r)/C_A(i,g,r))**esub(g))$vifm(i,g,r))
+$macro DDFM_Logit(i,g,r) ((vdfm(i,g,r) * exp((1-P_D(i,g,r)/V_A(i,g,r))*esubdm(i))/PHI_A(i,g,r) * (C_M(g,r)/V_A(i,g,r))**esub(g))$vdfm(i,g,r))
+$macro DIFM_Logit(i,g,r) ((vifm(i,g,r) * exp((1-P_I(i,g,r)/V_A(i,g,r))*esubdm(i))/PHI_A(i,g,r) * (C_M(g,r)/V_A(i,g,r))**esub(g))$vifm(i,g,r))
+
+$macro DDFM(i,g,r)	(DDFM_CES(i,g,r)$CESModel + DDFM_Logit(i,g,r)$LogitModel)
+$macro DIFM(i,g,r)	(DIFM_CES(i,g,r)$CESModel + DIFM_Logit(i,g,r)$LogitModel)
 
 *	Primary factor demands:
 
@@ -214,7 +246,7 @@ $macro REV_TF(f,g,r) 	(Y(g,r)*(rtf(f,g,r)  * DFM(f,g,r) * ((PS(f,g,r))$sf(f)+(PF
 
 *	Demand Function:
 
-$macro DST(j,r)    ((vst(j,r)*PT(j)/P(j,r))$vst(j,r))
+$macro DST(j,r)    ((vst(j,r)*prod(r.local,P(j,r)**theta_vst(j,r))/P(j,r))$vst(j,r))
 
 *	-----------------------------------------------------------------------------
 *	Bilateral trade -- import demand:
@@ -227,8 +259,8 @@ $macro DST(j,r)    ((vst(j,r)*PT(j)/P(j,r))$vst(j,r))
 
 *	User cost indices:
 
-$macro P_M(i,rr,r)   ((P(i,rr) * (1-rtxs(i,rr,r))*(1+rtms(i,rr,r))/pvxmd(i,rr,r))$vxmd(i,rr,r) + 1$(vxmd(i,rr,r)=0))
-$macro P_T(j,i,rr,r) ((PT(j)*(1+rtms(i,rr,r))/pvtwr(i,rr,r))$vtwr(j,i,rr,r)+1$(vtwr(j,i,rr,r)=0))
+$macro P_M(i,rr,r)   ((P(i,rr) * (1-rtxs(i,rr,r))*(1+rtms_(i,rr,r))/pvxmd(i,rr,r))$vxmd(i,rr,r) + 1$(vxmd(i,rr,r)=0))
+$macro P_T(j,i,rr,r) ((PT(j)*(1+rtms_(i,rr,r))/pvtwr(i,rr,r))$vtwr(j,i,rr,r)+1$(vtwr(j,i,rr,r)=0))
 
 *	Price index of bilateral imports (Leontief cost function):
 
@@ -241,15 +273,31 @@ $macro CIM(i,r) ( \
    prod(rr.local, PT_M(i,rr,r)**theta_vim(i,rr,r) )$CobbDouglas(2*esubdm(i)) + \
   (sum(rr.local, theta_vim(i,rr,r) * PT_M(i,rr,r)**(1-2*esubdm(i)))**(1/(1-2*esubdm(i))))$CES(2*esubdm(i)) )
 
+variables		V(i,r)			Logic cost function,
+			PHI(i,r)		Intermediate temr for logic demand;
+
+equations  vdef, phidef;
+
+vdef(i,r)$vim(i,r)..		1 =e= sum(rr,        theta_vim(i,rr,r)*exp((1-PT_M(i,rr,r)/V(i,r))*2*esubdm(i)));
+phidef(i,r)$vim(i,r)..		PHI(i,r) =e= sum(rr, theta_vim(i,rr,r)*exp((1-PT_M(i,rr,r)/V(i,r))*2*esubdm(i))*PT_M(i,rr,r)/V(i,r));
+
+$macro MD_Logit(i,rr,r) ( ( exp((1-PT_M(i,rr,r)/V(i,r))*2*esubdm(i))/PHI(i,r) )$theta_vim(i,rr,r))
+$macro MD_CES(i,rr,r)   (((CIM(i,r)/PT_M(i,rr,r))**(2*esubdm(i)))$theta_vim(i,rr,r))
+
+V.L(i,r)$vim(i,r) = 1;
+PHI.L(i,r)$vim(i,r) = 1;
+
 *	Compensated demand function:
 
-$macro DXMD(i,rr,r)   ((vxmd(i,rr,r)   * (PM(i,r)/PT_M(i,rr,r))**(2*esubdm(i)))$vxmd(i,rr,r))
-$macro DTWR(j,i,rr,r) ((vtwr(j,i,rr,r) * (PM(i,r)/PT_M(i,rr,r))**(2*esubdm(i)))$vtwr(j,i,rr,r))
+*.$macro DXMD(i,rr,r)   ((vxmd(i,rr,r)   * (CIM(i,r)/PT_M(i,rr,r))**(2*esubdm(i)))$vxmd(i,rr,r))
+*.$macro DTWR(j,i,rr,r) ((vtwr(j,i,rr,r) * (CIM(i,r)/PT_M(i,rr,r))**(2*esubdm(i)))$vtwr(j,i,rr,r))
+$macro DXMD(i,rr,r)   ((vxmd(i,rr,r)   * (MD_LOGIT(i,rr,r)$LogitModel + MD_CES(i,rr,r)$CESModel))$vxmd(i,rr,r))
+$macro DTWR(j,i,rr,r) ((vtwr(j,i,rr,r) * (MD_LOGIT(i,rr,r)$LogitModel + MD_CES(i,rr,r)$CESModel))$vtwr(j,i,rr,r))
 
 *	Tax revenue:
 
 $macro REV_TXS(i,s,r)	(M(i,r)*DXMD(i,s,r)*PX(i,s)*rtxs(i,s,r))$vxmd(i,s,r)
-$macro REV_TMS(i,rr,r)	(M(i,r)*rtms(i,rr,r)*DXMD(i,rr,r)*((1-rtxs(i,rr,r))*P(i,rr) + \
+$macro REV_TMS(i,rr,r)	(M(i,r)*rtms_(i,rr,r)*DXMD(i,rr,r)*((1-rtxs(i,rr,r))*P(i,rr) + \
 		 sum(j$vtwr(j,i,rr,r), PT(j)*vtwr(j,i,rr,r)/vxmd(i,rr,r)))$(vxmd(i,rr,r)*rtms(i,rr,r)))
 
 *	-----------------------------------------------------------------------------
@@ -406,6 +454,17 @@ hi_RA_PF(h_RA(r),i_PF(f,r)) = yes$evom(f,r);
 
 *	Set up arrays for retrieving tuples:
 
+option clear=indices_Y;
+option clear=indices_M;
+option clear=indices_FT;
+option clear=indices_YT;
+option clear=indices_P;
+option clear=indices_PM;
+option clear=indices_PT;
+option clear=indices_PF;
+option clear=indices_PS;
+option clear=indices_RA;
+
 indices_Y(j_Y,j_Y) = yes;
 indices_M(j_M,j_M) = yes;
 indices_FT(j_FT,j_FT) = yes;
@@ -416,6 +475,7 @@ indices_PT(i_PT,i_PT) = yes;
 indices_PF(i_PF,i_PF) = yes;
 indices_PS(i_PS,i_PS) = yes;
 indices_RA(h_RA,h_RA) = yes;
+
 $offecho
 
 *	Load macros to return netput values:
@@ -426,7 +486,7 @@ $macro  a_P_Y(i_P,j_Y) ( sum(indices_Y(j_Y,g,r), \
 $macro  a_PM_Y(i_PM,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PM(i_PM,i,r), -DIFM(i,g,r))) )
 $macro	a_PS_Y(i_PS,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PS(i_PS,sf,g,r), -DFM(sf,g,r))) )
 $macro  a_PF_Y(i_PF,j_Y)( sum(indices_Y(j_Y,g,r), sum(indices_PF(i_PF,mf,r), -DFM(mf,g,r))) )
-$macro tau_Y_RA(j_Y,h_RA) (sum((indices_Y(j_Y,g,r),indices_RA(h_RA,r)), \
+$macro  tau_Y_RA(j_Y,h_RA) (sum((indices_Y(j_Y,g,r),indices_RA(h_RA,r)), \
 	                                 rto(g,r)*vom(g,r)*P(g,r) + \ 
 	sum(ij_P_Y( i_P(i,r), j_Y),    rtfd(i,g,r)*DDFM(i,g,r)*P(i,r)) + \ 
 	sum(ij_PM_Y(i_PM(i,r),j_Y),    rtfi(i,g,r)*DIFM(i,g,r)*PM(i,r)) + \ 
@@ -440,11 +500,13 @@ $macro  a_PT_M(i_PT,j_M) ( sum((indices_M(j_M,i,r), indices_PT(i_PT,j), ij_P_M(i
 
 $macro  tau_M_RA(j_M,h_RA)	( sum((indices_M(j_M,i,r),indices_RA(h_RA,rt)), \
 	sum(ij_P_M(i_P(i,rr),j_M), ( -rtxs(i,rr,r)*DXMD(i,rr,r)*P(i,rr) )$sameas(rt,rr) + \
-		  (  rtms(i,rr,r)*( (1-rtxs(i,rr,r))*DXMD(i,rr,r)*P(i,rr)))$sameas(rt,r) + \
-	 sum(ij_PT_M(i_PT(j),j_M), rtms(i,rr,r)*DTWR(j,i,rr,r)*PT(j))$sameas(rt,r)) ) )
+		  (  rtms_(i,rr,r)*( (1-rtxs(i,rr,r))*DXMD(i,rr,r)*P(i,rr)))$sameas(rt,r) + \
+	 sum(ij_PT_M(i_PT(j),j_M), rtms_(i,rr,r)*DTWR(j,i,rr,r)*PT(j))$sameas(rt,r)) ) )
 
 $macro a_PT_YT(i_PT,j_YT) (sum((indices_YT(j_YT,j),indices_PT(i_PT,j)), vtw(j)))
+
 $macro a_P_YT(i_P,j_YT) (sum((indices_YT(j_YT,j),indices_P(i_P,j,r)), -DST(j,r)))
+
 $macro a_PS_FT(i_PS,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PS(i_PS,sf,j,r)), SFM(sf,j,r)))
 $macro a_PF_FT(i_PF,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PF(i_PF,sf,r)),  -evom(sf,r)))
 $macro e_RA_P(h_RA,i_P) ( sum(indices_RA(h_RA,r), \
@@ -535,10 +597,10 @@ market_PS(i_PS)..
 
 market_PT(i_PT)..
 	+ sum(j_YT, a(PT,YT) * YT(j_YT))	! $prod:YT(j) -- o:PT(j)
-	+ sum(j_M,  a(PT,M) * M(j_M))		! $prod:M(i,r) -- i:PT(j)
+	+ sum(j_M,  a(PT,M)  * M(j_M))		! $prod:M(i,r) -- i:PT(j)
 	=e= 0;
 
-income_RA(h_RA)..	!  $demand:RA(r)
+income_RA(h_RA)$round(RA.UP(h_RA)-RA.LO(h_RA),5)..	!  $demand:RA(r)
 
 	RA(h_RA) =e= 
 		+ sum(i_P, P(i_P) * e(RA,P))		! e:P(i,r),P("g",r),P("i",r),P("i",rnum)
@@ -560,7 +622,13 @@ model gmr_mcp /
 	market_PF.PF,
 	market_PS.PS,
 
-	income_RA.RA /;
+	income_RA.RA
+
+	vdef.V
+	phidef.PHI
+
+	vadef.V_A
+	phiadef.PHI_A /;
 
 *	Insert income levels:
 
@@ -571,31 +639,51 @@ $include %system.fp%gmr_mcp.gen
 
 *	Benchmark replication of the MCP model:
 
+RA.FX("usa") = RA.L("usa");
+gmr_mcp.holdfixed = yes;
 gmr_mcp.iterlim = 0;
 solve gmr_mcp using mcp;
 abort$round(gmr_mcp.objval,3) "Benchmark replication problem with the MCP model.";
 
-*	Counterfactual in the MGE model:
+variable	OBJ	Objective function;
 
-rtms(i,r,rr) = 0;
-gmr_mge.iterlim = 10000;
-$include gmr_mge.gen
-solve gmr_mge using mcp;
-abort$round(gmr_mge.objval,3) "Counterfactual solution fails with the MGE model.";
+equation	objdef;
+
+set	ropt(r) /usa/;	
+
+objdef..	OBJ =e= sum(ropt(r),Y("c",r));
+
+model gmr_nlp /
+	profit_Y,
+	profit_M,
+	profit_FT,
+	profit_YT,
+
+	market_P,
+	market_PM,
+	market_PT,
+	market_PF,
+	market_PS,
+
+	income_RA,
+
+	vdef,
+	phidef,
+	vadef,
+	phiadef, 
+	objdef/;
 
 
-*	Replication of the counterfactual in the MCP model:
+*	Compute optimal tariffs for the USA:
 
-RA.FX("USA") = RA.L("USA");
-gmr_mcp.iterlim = 0;
-$include %system.fp%gmr_mcp.gen
-solve gmr_mcp using mcp;
-abort$round(gmr_mcp.objval,3) "Counterfactual replication fails with the MCP model.";
+set	rn(r)	Other regions in the dataset; 
+rn(r) = yes$(not ropt(r));
 
-*	Cleanup to check that we are not too far off:
+RTMS_.up(i,rn(r),"usa")$rtms(i,r,"usa") = 2;
+RTMS_.lo(i,rn(r),"usa")$rtms(i,r,"usa") = 0;
 
-gmr_mcp.iterlim = 10000;
-$include %system.fp%gmr_mcp.gen
-solve gmr_mcp using mcp;
-abort$round(gmr_mcp.objval,3) "Cleanup solution fails with the MCP model.";
+PT.LO(j)$vtw(j) = 0.01;
 
+gmr_nlp.holdfixed = yes;
+gmr_nlp.workspace = 256;
+solve gmr_nlp using nlp maximizing OBJ;

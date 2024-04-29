@@ -1,6 +1,6 @@
 $title	Aggregation Program for the GTAP11 Database
 
-$if not set target $set target msmr
+$if not set target $set target russia_all
 $if not set yr     $set yr 2017
 $if not set reltol $set reltol 4
 $if not set ds     $set ds gtapingams_%reltol%

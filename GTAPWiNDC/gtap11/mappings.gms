@@ -4,6 +4,7 @@ $eolcom !
 
 $if "%1"=="msmr_regions" $goto msmr_regions	! MSMR regions
 
+$if "%1"=="russia"	$goto russia		! Large countries plus Russia
 $if "%1"=="g20"		$goto g20		! G20 regions (plus OEC, LIC and MIC)
 $if "%1"=="ukrregions"	$goto ukrregions	! Regions in a model with Ukraine
 
@@ -19,6 +20,219 @@ $if "%1"=="windc_32"	$goto windc_32		! 32 sector aggregation compatible with WiN
 $if "%1"=="windc_43"	$goto windc_43		! 43 sector aggregation compatible with WiNDC
 
 $abort "Mapping is not defined: %1";
+
+$label russia
+
+set rr  Regions in the aggregation /
+	RUS	Russia
+	EUR	EU-27
+	MEX	Mexico
+	USA	United States of America
+	CAN	Canada
+	CHN	China 
+	IND	India
+	OEC	Other OECD countries
+	OEX	Oil exporting countries
+	ROW	Rest of world
+	/;
+
+$if "%2"=="loadset" $exit
+
+SET mapr(r,rr) Mapping of GTAP Regions (from-to) /
+
+	RUS.RUS	Russia
+	USA.USA	United States
+	MEX.MEX	Mexico
+	CAN.CAN	Canada
+	IND.IND	India
+
+	( 	! China including Hong Kong
+		CHN	!	China
+		HKG	!	Hong Kong
+	).CHN	
+
+	(	! EU-27
+		DEU	!	Germany
+		AUT	!	Austria
+		BEL	!	Belgium
+		BGR	!	Bulgaria
+		CYP	!	Cyprus
+		HRV	!	Croatia
+		CZE	!	Czech Republic
+		DNK	!	Denmark
+		ESP	!	Spain
+		EST	!	Estonia
+		FIN	!	Finland
+		FRA	!	France
+		GRC	!	Greece
+		HUN	!	Hungary
+		IRL	!	Ireland
+		ITA	!	Italy
+		LTU	!	Lithuania
+		LUX	!	Luxembourg
+		LVA	!	Latvia
+		MLT	!	Malta
+		NLD	!	Netherlands
+		POL	!	Poland
+		PRT	!	Portugal
+		ROU	!	Romania
+		SVK	!	Slovakia
+		SVN	!	Slovenia
+		SWE	!	Sweden
+	).EUR
+
+	(	! RGT  - Remaining G20 countries
+		BRA	!	Brazil
+		IDN	!	Indonesia
+		ARG	!	Argentina
+		ZAF	!	South Africa
+	).ROW	! RGT
+
+	(	! OEC  - Other OECD countries
+		GBR	!	United Kingdom
+		JPN	!	Japan
+		NOR	!	Norway 	
+		CHE	!	Switzerland 	
+		AUS	!	Australia 
+		NZL	!	New Zealand
+		KOR	!	Korea
+		TUR	!	Turkey
+		ISR	!	Israel
+		CHL	!	Chile 	
+		COL	!	Colombia 	
+		CRI	!	Costa Rica 	
+	).OEC
+
+	(	! Oil exporting countires
+		SAU	!	Saudi Arabia
+		VEN	!	Venezuela
+		KWT	!	Kuwait
+		QAT	!	Qatar
+		ARE	!	United Arab Emirates
+		IRN	!	Iran- Islamic Republic of
+		NGA	!	Nigeria
+		DZA	!	Algeria
+		COG	!	Congo
+		IRQ	!	Iraq
+		GAB	!	Gabon
+		GNQ	!	Equitorial Guinea
+		XNF	!	Libya (Rest of North Africa: Libya -- Western Sahara)
+
+*	+8 associated countries
+		SDN	!	Sudan			
+		BHR	!	Bahrain			   
+		OMN	!	Oman			   
+		KAZ	!	Kazakhstan		   
+		AZE	!	Azerbaijan		   
+		MYS	!	Malaysia		   
+		BRN	!	Brunei Darussalam	   
+	).OEX
+	( 	! WB Remaining low-income economies ($1,085 OR LESS)
+			AFG	!	Afghanistan
+			BFA	!	Burkina Faso
+			CAF	!	Central African Republic
+			TCD	!	Chad
+			COD	!	Democratic Republic of the Congo
+			ETH	!	Ethiopia
+			GIN	!	Guinea
+			MDG	!	Madagascar
+			MWI	!	Malawi
+			MLI	!	Mali
+			MOZ	!	Mozambique
+			NER	!	Niger
+			RWA	!	Rwanda
+			SYR	!	Syrian Arab Republic
+			TGO	!	Togo
+			UGA	!	Uganda
+			ZMB	!	Zambia
+			XWS	!	Rest of Western Asia (Yemen)
+			XEC	!	Rest of Eastern Africa (Burundi, Eritrea, Somalia, South Sudan) % (Dijbouti, Mayotte, Seychelles)
+			XWF	!	Rest of Western Africa (Gambia,Guinea-Bissau, Liberia, Sierra Leone) % (Cabo Verde, Mauritania,Saint Helena)
+	).ROW	! LOI
+
+	( 	! WB Remaining lower-middle income economies ($1,086 TO $4,255)
+		      	BGD	!	Bangladesh
+		      	BEN	!	Benin
+		      	BOL	!	Bolivia
+		      	KHM	!	Cambodia
+		      	CMR	!	Cameroon
+		      	COM	!	Comoros
+		      	CIV	!	Côte d'Ivoire
+		      	EGY	!	Egypt, Arab Rep.
+		      	SLV	!	El Salvador
+		      	GHA	!	Ghana
+		      	HTI	!	Haiti
+		      	HND	!	Honduras
+		      	KEN	!	Kenya
+		      	KGZ	!	Kyrgyz Republic
+		      	LAO	!	Lao PDR
+		      	LBN	!	Lebanon
+		      	MNG	!	Mongolia
+		      	MAR	!	Morocco
+		      	NPL	!	Nepal
+		      	PAK	!	Pakistan
+		      	PHL	!	Philippines
+		      	SEN	!	Senegal
+		      	LKA	!	Sri Lanka
+		      	TZA	!	Tanzania
+		      	TJK	!	Tajikistan
+		      	TUN	!	Tunisia
+		      	UKR	!	Ukraine
+		      	UZB	!	Uzbekistan
+		      	VNM	!	Vietnam
+		      	ZWE	!	Zimbabwe
+		      	SWZ	!	Eswatini
+		      	XSC	!	Lesotho (Rest of South African Customs Union)
+		      	NIC	!	Nicaragua
+			XAC	!	Rest of South and Central Africa (Angola, Sao Tome and Principe)
+			XSA	!	Rest of South Asia (Bhutan) % (Maldives)
+			XSE	!	Rest of Southeast Asia (Myanmar and Timor-Leste)
+			XOC	!	Rest of Oceania
+	).ROW	! LMI
+
+	(	! WB Remaining upper-middle-income economies ($4,256 TO $13,205)
+		ALB	!	Albania
+		ARM	!	Armenia
+		BLR	!	Belarus
+		BWA	!	Botswana
+		DOM	!	Dominican Republic  
+		ECU	!	Ecuador
+		GEO	!	Georgia
+		JAM	!	Jamaica
+		JOR	!	Jordan
+		MUS	!	Mauritius
+		NAM	!	Namibia
+		PRY	!	Paraguay
+		PER	!	Peru  
+		SRB	!	Serbia
+		THA	!	Thailand
+		GTM	!	Guatemala
+		XEE	!	Moldova (Rest of Eastern Europe)
+		XER	!	Rest of Europe
+		XCB	!	Rest of Caribbean
+		XSM	!	Rest of South America
+	).ROW,	! UMI,
+	(	TWN	!	Taiwan
+		XEA	!	Rest of East Asia
+		SGP	!	Singapore
+		XNA	!	Rest of North America
+		URY	!	Uruguay
+		PAN	!	Panama
+		XCA	!	Rest of Central America
+		PRI	!	Puerto Rico
+		TTO	!	Trinidad and Tobago
+		XEF	!	Rest of European Free Trade Association
+		XSU	!	Rest of Former Soviet Union
+		PSE	!	Occupied Palestineian Territory, 
+		XTW	!	Rest of the World 
+
+	).ROW	! HII
+/;
+
+option mapr:0:0:1;
+abort$(card(mapr)<>card(r))	"Error: card(mapr)<>card(r).", mapr;
+$exit
+
 
 $label msmr_regions
 
