@@ -4,7 +4,7 @@ $title	 GTAPinGAMS -- GAMS/MPSGE and GAMS/MCP Formulations for the Global Multir
 *	for the domestic and export markets are perfect substitutes.
 
 $if not set yr    $set yr    2017
-$if not set ds    $set ds    g20_10
+$if not set ds    $set ds    g20_32
 
 $if not set gtap_version $include "gtapingams.gms"
 
@@ -108,7 +108,7 @@ $demand:RA(r)  s:0
 
 $offtext
 $sysinclude mpsgeset gmr_mge
-gmr_mge.workspace = 1024;
+gmr_mge.workspace = 2048;
 gmr_mge.iterlim = 0;
 $include gmr_mge.gen
 solve gmr_mge using mcp;
@@ -214,7 +214,7 @@ $macro REV_TF(f,g,r) 	(Y(g,r)*(rtf(f,g,r)  * DFM(f,g,r) * ((PS(f,g,r))$sf(f)+(PF
 
 *	Demand Function:
 
-$macro DST(j,r)    ((vst(j,r)*PT(j)/P(j,r))$vst(j,r))
+$macro DST(j,r)    ((vst(j,r)*prod(r.local,P(j,r)**theta_vst(j,r))/P(j,r))$vst(j,r))
 
 *	-----------------------------------------------------------------------------
 *	Bilateral trade -- import demand:
@@ -406,6 +406,17 @@ hi_RA_PF(h_RA(r),i_PF(f,r)) = yes$evom(f,r);
 
 *	Set up arrays for retrieving tuples:
 
+option clear=indices_Y;
+option clear=indices_M;
+option clear=indices_FT;
+option clear=indices_YT;
+option clear=indices_P;
+option clear=indices_PM;
+option clear=indices_PT;
+option clear=indices_PF;
+option clear=indices_PS;
+option clear=indices_RA;
+
 indices_Y(j_Y,j_Y) = yes;
 indices_M(j_M,j_M) = yes;
 indices_FT(j_FT,j_FT) = yes;
@@ -447,7 +458,7 @@ $macro a_PT_YT(i_PT,j_YT) (sum((indices_YT(j_YT,j),indices_PT(i_PT,j)), vtw(j)))
 $macro a_P_YT(i_P,j_YT) (sum((indices_YT(j_YT,j),indices_P(i_P,j,r)), -DST(j,r)))
 $macro a_PS_FT(i_PS,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PS(i_PS,sf,j,r)), SFM(sf,j,r)))
 $macro a_PF_FT(i_PF,j_FT) (sum((indices_FT(j_FT,sf,r),indices_PF(i_PF,sf,r)),  -evom(sf,r)))
-$macro e_RA_P(h_RA,i_P) ( sum(indices_RA(h_RA,r), \
+$macro	e_RA_P(h_RA,i_P) ( sum(indices_RA(h_RA,r), \
 				sum(indices_P(i_P,i,r), -sdd(i,r)) \
 				+ sum(indices_P(i_P,"g",r), -vom("g",r)) \
 				+ sum(indices_P(i_P,"i",r), -vom("i",r)) \
@@ -538,7 +549,7 @@ market_PT(i_PT)..
 	+ sum(j_M,  a(PT,M) * M(j_M))		! $prod:M(i,r) -- i:PT(j)
 	=e= 0;
 
-income_RA(h_RA)..	!  $demand:RA(r)
+income_RA(h_RA)$round(RA.UP(h_RA)-RA.LO(h_RA),5)..	!  $demand:RA(r)
 
 	RA(h_RA) =e= 
 		+ sum(i_P, P(i_P) * e(RA,P))		! e:P(i,r),P("g",r),P("i",r),P("i",rnum)
