@@ -92,6 +92,7 @@ $if errorlevel 1 $abort "Non-zero return code from write_stub.gms"
 * ------------------------------------------------------------------------
 $log	"Ready to check 32_stub with GTAPWINDC_MGE  (no output)"
 $if not %pause%==no $call pause
+
 $label chkstub32
 $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/32_stub.gdx o=lst/gtapwindc_mge_32_stub.lst
 
@@ -146,7 +147,7 @@ $label g20_43
 *----------------------------------------
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
-$ifThen not exist "%gtapingams%/%gtap_version%/%year%/g20_43.gdx"
+$ifthen not exist "%gtapingams%/%gtap_version%/%year%/g20_43.gdx"
 $call gams %gtapingams%build.gms --year=%year% --aggregation=g20_43 --gtap_zip_path=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
 $endif
 

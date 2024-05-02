@@ -8,7 +8,7 @@ $if not set gtap_version $include "gtapingams.gms"
 
 $if not set datasets $set datasets 2017
 
-$set dsout              %datasets%/gtapwindc/%ds%_filtered
+$set dsout  %datasets%/gtapwindc/%ds%_filtered
 
 $if not defined y_ $include %system.fp%gtapwindc_data
 
@@ -33,8 +33,51 @@ set	md(m,d<) /
 		cd0."i,r,s,h" 
 		/;
 
-parameter	nz(m,*)	Number of nonzeros;
+parameter	pychk	Cross check on PY market;
 
+set	rb(r) /usa/;
+set	state(s); state(s) = yes$(not sameas(s,"rest"));
+
+pychk(y_(g,rb(r),state(s))) = round(
+	vom(g,r,s) - ( sum(i(g),
+			sum(x_(i,r),	xs0(i,r,s)) + 
+			sum(n_(i,r),	ns0(i,r,s)) + 
+			sum(z_(i,r,s),	yl0(i,r,s))) 
+		+ (vb(r)+sum(rh_(r,s,h),sav0(r,s,h)))$sameas(g,"i") ),3);
+
+pychk("g",rb(r),state(s)) = round( sum(s.local,vom("g",r,s)) - (
+		( - sum((i,rr),rtxs(i,r,rr)*vxmd(i,r,rr))
+		+ sum(m_(i,rr),rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+		+ sum(z_(i,r,s.local), md0(i,r,s)*rtm(i,r,s) + (nd0(i,r,s)+yl0(i,r,s))*rtd(i,r,s)) 
+		+ sum((f,y_(g,r,s.local)),vfm(f,g,r,s)*rtf(f,g,r)) )
+		-sum((rh_(r,s.local,h),trn),hhtrn0(r,s,h,trn))), 3);
+display pychk;
+
+parameter	govtchk;
+loop(rb(r),
+	govtchk(s,"vom") = vom("g","usa",s);
+	govtchk(r,"vom") = sum(s,vom("g","usa",s));
+	govtchk(r,"rtms") = sum(m_(i,rr),rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)));
+	govtchk(r,"rtxs") = sum((i,rr),rtxs(i,r,rr)*vxmd(i,r,rr));
+	govtchk(s,"rtfm") = sum((f,y_(g,r,s.local)),vfm(f,g,r,s)*rtf(f,g,r));
+	govtchk(s,"rtm") = sum(z_(i,r,s.local), md0(i,r,s)*rtm(i,r,s));
+	govtchk(s,"rtd") = sum(z_(i,r,s.local), (nd0(i,r,s)+yl0(i,r,s))*rtd(i,r,s));
+	govtchk(r,"rtfm") = sum(s,govtchk(s,"rtfm"));
+	govtchk(r,"rtm") = sum(s,govtchk(s,"rtm"));
+	govtchk(r,"rtd") = sum(s,govtchk(s,"rtd"));
+	govtchk(r,"chk") = govtchk(r,"vom")
+			- govtchk(r,"rtms")
+			- govtchk(r,"rtxs")
+			- govtchk(r,"rtfm")
+			- govtchk(r,"rtm")
+			- govtchk(r,"rtd");
+);
+display govtchk;
+
+$exit
+
+
+parameter	nz(m,*)	Number of nonzeros;
 
 nz("vfm" ,"card") = card(vfm) ;
 nz("vafm","card") = card(vafm);
@@ -151,12 +194,6 @@ display vomchk, vimchk;
 $include gtapwind_calib.gms
 
 $include %gams.scrdir%chkmodel
-
-display chk_market_py, chk_market_pn, chk_market_pz, chk_market_pm, chk_market_pl, chk_market_ps,
-	chk_profit_y, chk_profit_z, chk_govtincome;
-*.solve calib using qcp minimizing obj;
-
-
 
 
 $exit

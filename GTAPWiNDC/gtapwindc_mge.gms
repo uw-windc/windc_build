@@ -2,7 +2,7 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 *	Read the data:
 
-$if not set ds $set ds 43_filtered
+$if not set ds $set ds 43
 
 $if not defined y_ $include %system.fp%gtapwindc_data
 
