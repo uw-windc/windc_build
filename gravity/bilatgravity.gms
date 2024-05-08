@@ -83,8 +83,12 @@ parameter	theta_e(i,prt)	Export value share,
 		theta_m(i,prt)	Import value share;
 
 loop(itrd(i),
-	theta_e(i,prt)$sum(prt.local,trade(prt,i,"export")) = round(trade(prt,i,"export") / sum(prt.local,trade(prt,i,"export")),2);
-	theta_m(i,prt)$sum(prt.local,trade(prt,i,"import")) = round(trade(prt,i,"import") / sum(prt.local,trade(prt,i,"import")),2);
+	theta_e(i,prt)$sum(prt.local,trade(prt,i,"export")) = trade(prt,i,"export") / sum(prt.local,trade(prt,i,"export"));
+	theta_m(i,prt)$sum(prt.local,trade(prt,i,"import")) = trade(prt,i,"import") / sum(prt.local,trade(prt,i,"import"));
+
+	theta_e(i,prt)$(theta_e(i,prt)<.01) = 0;
+	theta_m(i,prt)$(theta_m(i,prt)<.01) = 0;
+
 	theta_e(i,prt) = theta_e(i,prt) / sum(prt.local, theta_e(i,prt));
 	theta_m(i,prt) = theta_m(i,prt) / sum(prt.local, theta_m(i,prt));
 
@@ -94,6 +98,7 @@ loop(itrd(i),
 
 display mref, eref;
 
+ 
 *	Absorption -- net of tax:
 
 aref(itrd(i),s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
