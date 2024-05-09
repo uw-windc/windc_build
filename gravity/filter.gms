@@ -1,13 +1,10 @@
-$title	Canonical Template GTAP-WINDC Model (MGE format)
+$title	Filter the GTAP-WINDC Model
 
 *	Read the data:
 
 $if not set ds $set ds 43
 
 $include ..\gtapwindc\gtapwindc_data
-
-set	pk_(f,r)	Capital market;
-option pk_<ft_;
 
 alias (s,ss);
 

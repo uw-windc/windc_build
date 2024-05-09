@@ -163,7 +163,6 @@ $prod:N(i,r)$(pnm(i,r) and n_(i,r))  s:esubn(i)
 
 $prod:Z(i,r,s)$(pnm(i,r) and z_(i,r,s))  s:esubdm(i)  nm:(2*esubdm(i))
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
 
@@ -271,13 +270,12 @@ vifm(itrd(i),"usa",s) = vifm_(i,s);
 
 parameter	vomchk;
 loop(r$sameas(r,"usa"),
-	yl0(itrd(i),r,s) = vdfm(i,r,s,s);
 	ns0(itrd(i),r,s) = sum(ss,vdfm(i,r,s,ss))-vdfm(i,r,s,s);
 	nd0(itrd(i),r,s) = sum(ss,vdfm(i,r,ss,s)) - vdfm(i,r,s,s);
 	md0(itrd(i),r,s) = vifm(i,"usa",s);
 	xs0(itrd(i),r,s) = xref(i,s);
 	vnm(itrd(i),r) = sum(s,ns0(i,r,s));
-	vomchk(s,itrd(i))$y_(i,r,s) = round(vom(i,r,s) - xs0(i,r,s) - yl0(i,r,s) - ns0(i,r,s),3);
+	vomchk(s,itrd(i))$y_(i,r,s) = round(vom(i,r,s) - xs0(i,r,s) - ns0(i,r,s),3);
 );
 display vomchk;
 
@@ -298,7 +296,7 @@ $exit
 chk(s,itrd(i)) = round(a0(i,"usa",s) - sum(ss,vdfm_(i,ss,s))*(1+rtd0_(i,"usa",s)) - vifm_(i,s)*(1+rtm0_(i,"usa",s)),3);
 abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
 
-chk(s,itrd(i)) = round(a0(i,"usa",s) - (yl0(i,"usa",s)+nd0(i,"usa",s))*(1+rtd(i,"usa",s)) - md0
+chk(s,itrd(i)) = round(a0(i,"usa",s) - nd0(i,"usa",s)*(1+rtd(i,"usa",s)) - md0
 abort$card(chk) "Error: a0<>vdfm+vifm:", chk;
 
 $exit

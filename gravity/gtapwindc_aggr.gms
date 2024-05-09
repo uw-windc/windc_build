@@ -18,7 +18,6 @@ parameters
 	vfm_(f,g_,r_,s)		Factor demand at market prices,
 	xd0_(i_,r_,s)		Local domestic absorption
 	a0_(i_,r_,s)		Absorption
-	yl0_(i_,r_,s)		Local supply
 	nd0_(i_,r_,s)		National market domestic absorption
 	md0_(i_,r_,s)		Import absorption
 	c0_(r_,s,h)		Total household consumption
@@ -40,7 +39,6 @@ vom_(g_,r_,s)		= sum((mapg(g,g_),mapr(r,r_)),vom(g,r,s));
 vafm_(i_,g_,r_,s)	= sum((mapi(i,i_),mapg(g,g_),mapr(r,r_)),vafm(i,g,r,s));
 vfm_(f,g_,r_,s)		= sum((mapg(g,g_),mapr(r,r_)),vfm(f,g,r,s));
 a0_(i_,r_,s)		= sum((mapi(i,i_),mapr(r,r_)),a0(i,r,s));
-yl0_(i_,r_,s)		= sum((mapi(i,i_),mapr(r,r_)),yl0(i,r,s));
 nd0_(i_,r_,s)		= sum((mapi(i,i_),mapr(r,r_)),nd0(i,r,s));
 md0_(i_,r_,s)		= sum((mapi(i,i_),mapr(r,r_)),md0(i,r,s));
 ns0_(i_,r_,s)		= sum((mapi(i,i_),mapr(r,r_)),ns0(i,r,s));
@@ -73,7 +71,7 @@ parameter
 
 rto(g,r) = vom(g,r,s) * rto(g,r);
 rtf(f,g,r) = vfm(f,g,r,s) * rtf(f,g,r);
-rtd(i,r,s) = (yl0(i,r,s)$pnm(i,r) + vdfm(i,r,s,s)$bnm(i,r)) * rtd(i,r,s);
+rtd(i,r,s) = (vdfm(i,r,s,s)$bnm(i,r)) * rtd(i,r,s);
 rtm(i,r,s) = (md0(i,r,s)$pnm(i,r) + vifm(i,r,s)$bnm(i,r)) * rtm(i,r,s);
 rtms(i,rr,r) = vxmd(i,rr,r)*(1-rtxs(i,rr,r))*rtms(i,rr,r);
 rtxs(i,rr,r) = vxmd(i,rr,r)*rtxs(i,rr,r);
@@ -88,7 +86,7 @@ rtms_(i_,rr_,r_) = sum((mapi(i,i_),maprr(rr,rr_),mapr(r,r_)),rtms(i,rr,r));
 
 rto_(g_,r_) = vom(g,r,s) * rto(g,r);
 rtf_(f,g_,r_) = vfm(f,g,r,s) * rtf(f,g,r);
-rtd_(i_,r_,s) = (yl0(i,r,s)$pnm(i,r) + vdfm(i,r,s,s)$bnm(i,r)) * rtd(i,r,s);
+rtd_(i_,r_,s) = (vdfm(i,r,s,s)$bnm(i,r)) * rtd(i,r,s);
 rtm_(i_,r_,s) = (md0(i,r,s)$pnm(i,r) + vifm(i,r,s)$bnm(i,r)) * rtm(i,r,s);
 rtxs_(i_,rr_,r_) = rtxs_(i_,rr_,r_)/(vxmd_(i_,rr_,r_)+rtms_(i_,rr_,r_))
 rtms_(i_,rr_,r_) = rtms(i,rr,r) / (vxmd(i,rr,r)*(1-rtxs_(i_,rr_,r_)));

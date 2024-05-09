@@ -69,7 +69,6 @@ parameters
     cd0_windc(s,i,h)		Household level expenditures,
     hhtrn0_windc(s,h,trn)	Household transfers
     xs0_windc(s,i)		Regional supply to export markets,
-    yl0_windc(s,i)		Regional supply to local market,
     ns0_windc(s,i)		Regional supply to national market,
     m0_windc(s,i)		Import demand
     nd0_windc(s,i)		Regional demand from national market
@@ -84,7 +83,7 @@ ls0(s,h) = sum(ss,le0(s,ss,h))*(1-tl0(s,h));
 
 *	Read and rename these parameters:
 
-$loaddc cd0_windc=cd0_h a0_windc=a0 md0_windc=md0 yl0_windc=xd0 nd0_windc=nd0 ns0_windc=xn0 
+$loaddc cd0_windc=cd0_h a0_windc=a0 md0_windc=md0 nd0_windc=nd0 ns0_windc=xn0 
 $loaddc hhtrn0_windc=hhtrn0, m0_windc=m0 sav0_windc=sav0 xs0_windc=x0
 
 
@@ -157,7 +156,7 @@ loop(rb(r),
 	macroaccounts("$","K","GTAP") = sum((kf(f),s,h),evomh(kf,r,s,h));
 	macroaccounts("$","F","GTAP") = vb(r);
 	macroaccounts("$","T","GTAP") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+				+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
 				+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 				+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 
@@ -192,7 +191,7 @@ macroaccounts("%GDP",gdpitem,src)$macroaccounts("$","Expend_GDP",src)
 PARAMETER	trev		Tax revenue (total);
 loop(rb(r),
   trev = 	sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
 		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 		+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 );
@@ -229,7 +228,6 @@ cd0(i,rb,sb(s),hb(h)) = theta_c(s,h) * theta_c(s,"c") * cd0(i,rb,"rest","rest");
 c0(rb,sb(s),hb(h)) = sum(i,cd0(i,rb,s,h));
 
 vom(g,rb,sb(s)) = theta_va(g,s)*vom(g,rb,"rest");
-yl0(i,rb,sb(s)) = theta_va(i,s)*yl0(i,rb,"rest");
 xs0(i,rb,sb(s)) = theta_va(i,s)*xs0(i,rb,"rest");
 
 a0(i,rb,sb(s)) = sum(g,vafm(i,g,rb,s)) + sum(h,cd0(i,rb,s,h));
@@ -243,7 +241,7 @@ nd0(i,rb,sb(s))$a0(i,rb,"rest") = nd0(i,rb,"rest") * a0(i,rb,s)/a0(i,rb,"rest");
 
 *	Exports to the national are calibrated:
 
-ns0(i,rb,sb(s)) = vom(i,rb,s) - yl0(i,rb,s) - xs0(i,rb,s);
+ns0(i,rb,sb(s)) = vom(i,rb,s) - xs0(i,rb,s);
 abort$(smin((i,rb,sb),ns0(i,rb,sb))<0) "Error: local demand exceeds supply.",ns0;
 
 *	Factor supply:
@@ -334,7 +332,6 @@ vafm(i,g,rb,"rest") = 0;
 cd0(i,rb,"rest","rest") = 0;
 c0(rb,"rest","rest") = 0;
 vom(g,rb,"rest") = 0;
-yl0(i,rb,"rest") = 0;
 ns0(i,rb,"rest") = 0;
 a0(i,rb,"rest") = 0;
 md0(i,rb,"rest") = 0;
@@ -359,7 +356,7 @@ rtm0(i,rb,"rest") = 0;
 
 execute_unload '%dsout%_proportional',
 	r,g,i,f,s,h,sf,mf,
-	vom, vafm, vfm, ns0, yl0, xs0, a0,
+	vom, vafm, vfm, ns0, xs0, a0,
 	md0, nd0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,
 	etrndn, hhtrn0, sav0,
@@ -387,7 +384,7 @@ $if set dropagr i_("agr") = no; g_("agr") = no; cd0("agr",rb,sb,hb)=0;
 
 execute_unload '%dsout%',
 	r,g_=g,i_=i,f,s,h,sf,mf,
-	vom, vafm, vfm, yl0, a0,
+	vom, vafm, vfm, a0,
 	md0, xs0, nd0, ns0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,
 	etrndn, hhtrn0, sav0,
@@ -405,7 +402,7 @@ loop(rb(r),
 	macroaccounts("$","F","GTAPWiNDC") = vb(r);
 	macroaccounts("$","T","GTAPWiNDC") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - 
 						rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+				+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
 				+ sum((f,g), rtf(f,g,r)*sum(sb(s),vfm(f,g,r,s)))
 				+ sum(g, rto(g,r)*sum(sb(s),vom(g,r,s)));
 

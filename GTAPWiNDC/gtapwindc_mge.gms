@@ -6,24 +6,8 @@ $if not set ds $set ds 43
 
 $if not defined y_ $include %system.fp%gtapwindc_data
 
-set rb(r) /usa/;
-
-etrae(sf) = 2;
-
-parameter	yprofit;
-loop(rb(r),
-	yprofit(g,r,s) = vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) - sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r)));
-);
-display yprofit;
-loop(rb(r),
-	yprofit(g,r,s) = vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) 
-		- sum(sf,vfm(sf,g,r,s)*(1+rtf0(sf,g,r)))
-		- sum(mf,vfm(mf,g,r,s)*(1+rtf0(mf,g,r)))
-);
-display yprofit;
-
 set	pk_(f,r)	Capital market;
-option pk_<ft_;
+pk_(sf,r) = sum(s,evom(sf,r,s));
 
 $ontext
 $model:gtapwindc
@@ -75,17 +59,16 @@ $prod:N(i,r)$n_(i,r)  s:esubn(i)
 	o:PN(i,r)	q:vnm(i,r)
 	i:PY(i,r,s)	q:ns0(i,r,s)
 
-$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
+$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
-	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
-	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
+	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) 
+	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
 
 $prod:FT(sf,r)$pk_(sf,r)  t:0
 	o:PKS(sf,r,s)	q:evom(sf,r,s)
 	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
 
-$prod:FTS(sf,r,s)$evom(sf,r,s)  t:etrae(sf)
+$prod:FTS(sf,r,s)$evom(sf,r,s)
 	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)   
 	i:PKS(sf,r,s)	q:evom(sf,r,s)
 
@@ -138,8 +121,6 @@ etrae("lnd") = 8;
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 
-$exit
-
 set	macct	Macro accounts /
 		C	Household consumption,
 		G	Public expenditure
@@ -157,38 +138,40 @@ incomechk(r) = sum((s,h),c0(r,s,h)) + sum(s,vom("g",r,s) + vom("i",r,s))
 	- sum((f,s,h),evomh(f,r,s,h))
 	- vb(r) 
 	- (	  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
 		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 		+ sum(g, rto(g,r)*sum(s,vom(g,r,s))) );
 display incomechk;
 
 set lf(f) /mgr,tec,clk,srv,lab/, kf(f)/cap,lnd,res/;
 
-parameter	macroaccounts(macct,*)	Macro economic accounts;
-loop(rb(r),
-	macroaccounts("C","$") = sum((s,h),c0(r,s,h));
-	macroaccounts("G","$") = sum(s,vom("g",r,s));
-	macroaccounts("I","$") = sum(s,vom("i",r,s));
-	macroaccounts("L","$") = sum((lf(f),s,h),evomh(lf,r,s,h));
-	macroaccounts("K","$") = sum((kf(f),s,h),evomh(kf,r,s,h));
-	macroaccounts("F","$") = vb(r);
-	macroaccounts("T","$") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-				+ sum((i,s), rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s)) + rtm(i,r,s)*md0(i,r,s))
-				+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
-				+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
+parameter	macroaccounts(*,r,macct)	Macro economic accounts;
 
-	macroaccounts("GDP","$") = macroaccounts("C","$") + macroaccounts("G","$") + macroaccounts("I","$") - macroaccounts("F","$");
-	macroaccounts("GDP*","$") = macroaccounts("L","$") + macroaccounts("K","$") + macroaccounts("T","$");
-);
-macroaccounts("C","%GDP") = 100 * macroaccounts("C","$") / macroaccounts("GDP","$");
-macroaccounts("G","%GDP") = 100 * macroaccounts("G","$") / macroaccounts("GDP","$");
-macroaccounts("I","%GDP") = 100 * macroaccounts("I","$") / macroaccounts("GDP","$");
-macroaccounts("L","%GDP") = 100 * macroaccounts("L","$") / macroaccounts("GDP","$");
-macroaccounts("K","%GDP") = 100 * macroaccounts("K","$") / macroaccounts("GDP","$");
-macroaccounts("F","%GDP") = 100 * macroaccounts("F","$") / macroaccounts("GDP","$");
+macroaccounts("$",r,"C") = sum((s,h),c0(r,s,h));
+macroaccounts("$",r,"G") = sum(s,vom("g",r,s));
+macroaccounts("$",r,"I") = sum(s,vom("i",r,s));
+macroaccounts("$",r,"L") = sum((lf(f),s,h),evomh(lf,r,s,h));
+macroaccounts("$",r,"K") = sum((kf(f),s,h),evomh(kf,r,s,h));
+macroaccounts("$",r,"F") = vb(r);
+macroaccounts("$",r,"T") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
+			+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
+			+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
+
+macroaccounts("$",r,"GDP")  = macroaccounts("$",r,"C") + macroaccounts("$",r,"G") + macroaccounts("$",r,"I") - macroaccounts("$",r,"F");
+macroaccounts("$",r,"GDP*") = macroaccounts("$",r,"L") + macroaccounts("$",r,"K") + macroaccounts("$",r,"T");
+
+
+macroaccounts("%GDP",r,"C") = 100 * macroaccounts("$",r,"C") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"G") = 100 * macroaccounts("$",r,"G") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"I") = 100 * macroaccounts("$",r,"I") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"L") = 100 * macroaccounts("$",r,"L") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"K") = 100 * macroaccounts("$",r,"K") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"F") = 100 * macroaccounts("$",r,"F") / macroaccounts("$",r,"GDP");
+macroaccounts("%GDP",r,"T") = 100 * macroaccounts("$",r,"T") / macroaccounts("$",r,"GDP");
 
 option macct:0:0:1;
-option macroaccounts:3;
-display macroaccounts macct;
+option macroaccounts:3:1:1;
+display macroaccounts;
 
 

@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-$set start chkstub32
+$set start regiondisagg32
 
 *---------------------- 
 * run after the core and household builds are complete!! 
@@ -198,7 +198,6 @@ $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms with g20_43
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 
 
-
 $label agrdisagg
 * ------------------------------------------------------------------------
 *	Disaggregate the agricultural sectors in the 32 sector WiNDC
@@ -251,3 +250,30 @@ $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gta
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge for for 43.gdx"
 
+
+$label filter
+* ------------------------------------------------------------------------
+*	Filter the dataset.
+* ------------------------------------------------------------------------
+
+$log	"Ready to filter the dataset "
+$if not %pause%==no $call pause
+
+$if not %debug%==no $call gams filter --ds=43 o=lst/filter_43.lst --dsout=43_filtered
+
+$if errorlevel 1 $log   "Non-zero return code from filter for 43.gdx"
+$if errorlevel 1 $abort "Non-zero return code from filter for for 43.gdx"
+
+* ------------------------------------------------------------------------
+*	Perform a benchmark replication with the filtered dataset.
+* ------------------------------------------------------------------------
+
+$label chk43_filtered
+
+$log	"Ready to verify consistency of datasets/gtapwindc/43_filtered.gdx "
+$if not %pause%==no $call pause
+
+$if not %debug%==no $call gamskeep gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/43_filtered.gdx o=lst/gtapwindc_mge_43_filtered.lst 
+
+$if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge for 43_filtered.gdx"
+$if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge for for 43_filtered.gdx"

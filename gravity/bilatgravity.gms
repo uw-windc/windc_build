@@ -64,7 +64,7 @@ parameter	market		Market balance conditions;
 market(i,"vom") = sum(s,vom(i,"usa",s));
 market(i,"vim") = vim(i,"usa");
 market(i,"vxm") = sum(r,vxmd(i,"usa",r)) + vst(i,"usa");
-market(i,"d0") = sum((s),yl0(i,"usa",s)+nd0(i,"usa",s));
+market(i,"d0") = sum((s),nd0(i,"usa",s));
 market(i,"m0") = sum((s),md0(i,"usa",s));
 market(i,"dchk") = market(i,"vom") - market(i,"vxm") - market(i,"d0");
 market(i,"mchk") =  market(i,"vim") - market(i,"m0");
@@ -101,7 +101,7 @@ display mref, eref;
  
 *	Absorption -- net of tax:
 
-aref(itrd(i),s) = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
+aref(itrd(i),s) = nd0(i,"usa",s) + md0(i,"usa",s);
 
 parameter	thetay(i,s)	Local output share of absorption
 		thetam(i,prt)	Import share of absorption
@@ -485,7 +485,7 @@ display solvelog, nchk, shares;
 
 set usa(r) /usa/;
 
-rtd(itrd(i),usa(r),s) = rtd(i,r,s)*(yl0(i,r,s)+nd0(i,r,s));
+rtd(itrd(i),usa(r),s) = rtd(i,r,s)*nd0(i,r,s);
 rtm(itrd(i),usa(r),s) = rtm(i,r,s)*md0(i,r,s);
 
 parameter	rates;
@@ -508,7 +508,7 @@ parameter	compare		Comparison of tax rates ;
 loop(itrd(i),
 	compare(i,s,"rtd0") = rtd0(i,"usa",s);
 	compare(i,s,"rtm0") = rtm0(i,"usa",s);
-	compare(i,s,"value0") = yl0(i,"usa",s) + nd0(i,"usa",s) + md0(i,"usa",s);
+	compare(i,s,"value0") = nd0(i,"usa",s) + md0(i,"usa",s);
 	compare(i,s,"value") = sum(ss,vdfm(i,ss,s))+vifm(i,s);
 	compare(i,s,"rt*")$(rtd(i,"usa",s)+rtm(i,"usa",s)) = 
 		(rtd(i,"usa",s)+rtm(i,"usa",s))/(sum(ss,vdfm(i,ss,s))+vifm(i,s));
@@ -527,7 +527,4 @@ loop(itrd(i),
 parameter	dd0(i,r,s,s)	Intra-national trade;
 dd0(itrd(i),usa,ss,s) = vdfm(i,ss,s);
 md0(itrd(i),usa,s) = vifm(i,s);
-yl0(itrd(i),usa,s) = dref(i,s);
-dd0(i,r,s,s)$(not usa(r)) = yl0(i,r,s);
-dd0(i,usa(r),s,s)$(not itrd(i)) = yl0(i,r,s);
 nd0(itrd(i),usa,s) = 0;

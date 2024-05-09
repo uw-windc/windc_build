@@ -1,0 +1,11 @@
+readsolution(NS0_, ns0, "i,r,s", "i,rb(r),s");
+readsolution(ND0_, nd0, "i,r,s", "i,rb(r),s");
+readsolution(XS0_, xs0, "i,r,s", "i,rb(r),s");
+readsolution(MD0_, md0, "i,r,s", "i,rb(r),s");
+readsolution(VOM_, vom, "g,r,s", "g,rb(r),s");
+readsolution(YL0_, yl0, "i,r,s", "i,rb(r),s");
+readsolution(VFM_, vfm, "f,g,r,s", "f,g,rb(r),s");
+readsolution(VAFM_, vafm, "i,g,r,s", "i,g,rb(r),s");
+readsolution(A0_,  a0,  "i,r,s",  "i,rb(r),s");
+
+$include %gams.scrdir%chkmodel

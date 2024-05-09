@@ -59,7 +59,6 @@ objdef..		OBJ =e= target(vom,  VOM_,  "g,r",   "g,rb(r)") +
 
 dmarket(g(i),rb(r),s)$y_(g,r,s)..	VOM_(g,r,s) =e= XREF_(i,s)$bfm(i,r) + XS0_(i,r,s)$pnm(i,r) + 
 							NS0_(i,r,s)$(pnm(i,r) and x_(i,r)) + 
-							YL0_(i,r,s)$(pnm(i,r) and z_(i,r,s)) + 
 							sum(ss,VDFM_(i,r,s,ss))$(bfm(i,r) and z_(i,r,ss));
 
 mmarket(i,rb(r))..	vim(i,r) =e=	sum((i,r,s)$(pnm(i,r) and z_(i,r,s)), MD0_(i,r,s)) +
@@ -69,7 +68,7 @@ zmarket(i,rb(r),s)$z_(i,r,s)..
 
 			A0_(i,r,s) =e=	sum(c_(r,s,h),CD0_(i,r,s,h)) + sum(y_(g,r,s),VAFM_(i,g,r,s))
 
-zprofit(i,rb(r),s)$z_(i,r,s)..	A0_(i,r,s) =e=	( YL0_(i,r,s) + ND0_(i,r,s) + MD0_(i,r,s) )$pnm(i,r) +
+zprofit(i,rb(r),s)$z_(i,r,s)..	A0_(i,r,s) =e=	( ND0_(i,r,s) + MD0_(i,r,s) )$pnm(i,r) +
 						( sum(ss, VDFM_(i,r,ss,s)) + VIFM_(i,r,s) )$bnm(i,r);
 
 yprofit(g,rb(r),s)$y_(g,r,s)..	VOM_(g,r,s)*(1-rto(g,r)) =e= 

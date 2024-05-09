@@ -1,4 +1,5 @@
-$title	Filter the GTAP-WINDC Database
+$title	Filter one Region in the Gravity-based GTAP-WINDC Database
+
 
 *	Read the data:
 
@@ -12,12 +13,57 @@ $set dsout  %datasets%/gtapwindc/%ds%_filtered
 
 $if not defined y_ $include %system.fp%gtapwindc_data
 
+set	rb(r)	Region to balance /usa/;
+
+set	state(s); state(s) = yes$(not sameas(s,"rest"));
+
+parameter	yprofit	Cross check on Y profit
+		pychk	Cross check on PY market
+		pzchk	Cross check on PZ market
+		pnchk	Cross check on PN market
+		plchk	Cross check on factor markets
+		pkschk	Cross check on capital markets;
+
+$onechov >%gams.scrdir%chkmodel.gms
+
+a0(i,rb(r),s) = nd0(i,r,s)*(1+rtd0(i,r,s)) + md0(i,r,s)*(1+rtm0(i,r,s));
+vnm(i,rb(r)) = sum(s,ns0(i,r,s));
+vxm(i,rb(r)) = sum(s,xs0(i,r,s));
+c0(rb(r),s,h) = sum(i,cd0(i,r,s,h));
+
+
+yprofit(y_(g,rb(r),s)) = round(vom(g,r,s)*(1-rto(g,r)) - sum(i,vafm(i,g,r,s)) - sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r))),3);
+
+pzchk(pz_(i,rb(r),s)) = round(sum(z_(i,r,s),a0(i,r,s)) - sum(y_(g,r,s),vafm(i,g,r,s)) - sum(c_(r,s,h),cd0(i,r,s,h)), 3);
+
+pnchk(pn_(i,rb(r))) = round(vnm(i,r) - sum(s,nd0(i,r,s)),3);
+
+plchk(pf_(mf,rb(r),s)) = round(sum(g,vfm(mf,g,r,s)) - sum(h,evomh(mf,r,s,h)),3);
+
+pkschk(sf,rb(r),s) = round(evom(sf,r,s) - sum(g,vfm(sf,g,r,s)),3);
+
+pychk(y_(i,rb(r),state(s))) = round( vom(i,r,s) - ( sum(x_(i,r), xs0(i,r,s)) + sum(n_(i,r), ns0(i,r,s)) ) ,3);
+
+pychk("i",rb(r),"all") = round(sum(s,vom("i",r,s)) - (vb(r)+sum(rh_(r,s,h),sav0(r,s,h))),3);
+
+pychk("g",rb(r),"all") = round( sum(s,vom("g",r,s)) - 
+		( - sum((i,rr),		rtxs(i,r,rr)*vxmd(i,r,rr))
+		+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+		+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((g,s),		rto(g,r)   * vom(g,r,s))
+		+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s)) 
+		-sum((rh_(r,s.local,h),trn),hhtrn0(r,s,h,trn))), 3);
+
+display yprofit, pzchk, pnchk, plchk, pkschk, pychk;
+$offecho
+$include %gams.scrdir%chkmodel
+
 set	prec	Alternative precisions (decimals) /4*8/;
 
 $macro	nzcount(item,domain,prec)  sum((&&domain&),1$round(&&item&(&&domain&),prec.val))
 
 set	m	Matricies for filtering /
-		vfm, vafm, vom, vxmd, ns0, yl0, nd0, md0, cd0 /
+		vfm, vafm, vom, ns0, nd0, md0, cd0 /
 
 set	d(*)	Domains;
 
@@ -25,80 +71,26 @@ set	md(m,d<) /
 		vfm."f,g,r,s"
 		vafm."i,g,r,s"
 		vom."g,r,s"
-		vxmd."i,r,rr"
 		ns0."i,r,s"
-		yl0."i,r,s"
 		nd0."i,r,s"
 		md0."i,r,s" 
 		cd0."i,r,s,h" 
 		/;
 
-parameter	pychk	Cross check on PY market;
-
-set	rb(r) /usa/;
-set	state(s); state(s) = yes$(not sameas(s,"rest"));
-
-pychk(y_(g,rb(r),state(s))) = round(
-	vom(g,r,s) - ( sum(i(g),
-			sum(x_(i,r),	xs0(i,r,s)) + 
-			sum(n_(i,r),	ns0(i,r,s)) + 
-			sum(z_(i,r,s),	yl0(i,r,s))) 
-		+ (vb(r)+sum(rh_(r,s,h),sav0(r,s,h)))$sameas(g,"i") ),3);
-
-pychk("g",rb(r),state(s)) = round( sum(s.local,vom("g",r,s)) - (
-		( - sum((i,rr),rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum(m_(i,rr),rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-		+ sum(z_(i,r,s.local), md0(i,r,s)*rtm(i,r,s) + (nd0(i,r,s)+yl0(i,r,s))*rtd(i,r,s)) 
-		+ sum((f,y_(g,r,s.local)),vfm(f,g,r,s)*rtf(f,g,r)) )
-		-sum((rh_(r,s.local,h),trn),hhtrn0(r,s,h,trn))), 3);
-display pychk;
-
-parameter	govtchk;
-loop(rb(r),
-	govtchk(s,"vom") = vom("g","usa",s);
-	govtchk(r,"vom") = sum(s,vom("g","usa",s));
-	govtchk(r,"rtms") = sum(m_(i,rr),rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)));
-	govtchk(r,"rtxs") = sum((i,rr),rtxs(i,r,rr)*vxmd(i,r,rr));
-	govtchk(s,"rtfm") = sum((f,y_(g,r,s.local)),vfm(f,g,r,s)*rtf(f,g,r));
-	govtchk(s,"rtm") = sum(z_(i,r,s.local), md0(i,r,s)*rtm(i,r,s));
-	govtchk(s,"rtd") = sum(z_(i,r,s.local), (nd0(i,r,s)+yl0(i,r,s))*rtd(i,r,s));
-	govtchk(r,"rtfm") = sum(s,govtchk(s,"rtfm"));
-	govtchk(r,"rtm") = sum(s,govtchk(s,"rtm"));
-	govtchk(r,"rtd") = sum(s,govtchk(s,"rtd"));
-	govtchk(r,"chk") = govtchk(r,"vom")
-			- govtchk(r,"rtms")
-			- govtchk(r,"rtxs")
-			- govtchk(r,"rtfm")
-			- govtchk(r,"rtm")
-			- govtchk(r,"rtd");
-);
-display govtchk;
-
-$exit
-
-
 parameter	nz(m,*)	Number of nonzeros;
-
 nz("vfm" ,"card") = card(vfm) ;
 nz("vafm","card") = card(vafm);
-nz("vxmd","card") = card(vxmd);
 nz("ns0" ,"card") = card(ns0) ;
-nz("yl0" ,"card") = card(yl0) ;
 nz("nd0" ,"card") = card(nd0) ;
 nz("md0" ,"card") = card(md0) ;
 nz("cd0" ,"card") = card(cd0) ;
 
-
-
 nz("vfm" ,prec) = card(vfm)  - nzcount(vfm ,"f,g,r,s",prec);
 nz("vafm",prec) = card(vafm) - nzcount(vafm,"i,g,r,s",prec);
-nz("vxmd",prec) = card(vxmd) - nzcount(vxmd,"i,r,rr",prec );
-nz("ns0" ,prec) = card(ns0)  - nzcount(ns0 ,"i,r,s",prec  );
-nz("yl0" ,prec) = card(yl0)  - nzcount(yl0 ,"i,r,s",prec  );
-nz("nd0" ,prec) = card(nd0)  - nzcount(nd0 ,"i,r,s",prec  );
-nz("md0" ,prec) = card(md0)  - nzcount(md0 ,"i,r,s",prec  );
+nz("ns0" ,prec) = card(ns0)  - nzcount(ns0 ,"i,r,s",  prec);
+nz("nd0" ,prec) = card(nd0)  - nzcount(nd0 ,"i,r,s",  prec);
+nz("md0" ,prec) = card(md0)  - nzcount(md0 ,"i,r,s",  prec);
 nz("cd0" ,prec) = card(cd0)  - nzcount(cd0 ,"i,r,s,h",prec);
-
 
 *	RELTOL changes data footprint:
 
@@ -111,132 +103,89 @@ $if not set abstol $set abstol 6
 parameter	reltol	Relative filter tolerance /1e-%reltol%/,
 		abstol	Absolute filter tolerance /1e-%abstol%/;
 
-vfm(f,g,r,s) $(vfm(f,g,r,s) < abstol) = 0;
-vafm(i,g,r,s)$(vafm(i,g,r,s)< abstol) = 0;
-vxmd(i,r,rr) $(vxmd(i,r,rr) < abstol) = 0;
-ns0(i,r,s)   $(ns0(i,r,s)   < abstol) = 0;
-yl0(i,r,s)   $(yl0(i,r,s)   < abstol) = 0;
-nd0(i,r,s)   $(nd0(i,r,s)   < abstol) = 0;
-md0(i,r,s)   $(md0(i,r,s)   < abstol) = 0;
-cd0(i,r,s,h) $(cd0(i,r,s,h) < abstol) = 0;
-vst(j,r)     $(vst(j,r)     < abstol) = 0;
+vfm(f,g,rb(r),s) $(vfm(f,g,r,s) < abstol) = 0;
+vafm(i,g,rb(r),s)$(vafm(i,g,r,s)< abstol) = 0;
+ns0(i,rb(r),s)   $(ns0(i,r,s)   < abstol) = 0;
+
+nd0(i,rb(r),s)   $(nd0(i,r,s)   < abstol) = 0;
+md0(i,rb(r),s)   $(md0(i,r,s)   < abstol) = 0;
+cd0(i,rb(r),s,h) $(cd0(i,r,s,h) < abstol) = 0;
+vst(j,rb(r))     $(vst(j,r)     < abstol) = 0;
 
 nz("vfm" ,"abstol") = card(vfm)  - nz("vfm" ,"card");
 nz("vafm","abstol") = card(vafm) - nz("vafm","card");
-nz("vxmd","abstol") = card(vxmd) - nz("vxmd","card");
 nz("ns0" ,"abstol") = card(ns0)  - nz("ns0" ,"card");
-nz("yl0" ,"abstol") = card(yl0)  - nz("yl0" ,"card");
 nz("nd0" ,"abstol") = card(nd0)  - nz("nd0" ,"card");
 nz("md0" ,"abstol") = card(md0)  - nz("md0" ,"card");
 nz("cd0" ,"abstol") = card(cd0)  - nz("cd0" ,"card");
 
 
-parameter	vfmtot, vafmtot, vxmdtot, ns0tot, yl0tot, nd0tot, md0tot, cd0tot;
-vfmtot(".",g,r,s)  = sum(f ,vfm(f,g,r,s) );
-vfmtot(f,".",r,s)  = sum(g ,vfm(f,g,r,s) );
-vafmtot(".",g,r,s) = sum(i ,vafm(i,g,r,s));
-vafmtot(i,".",r,s) = sum(g ,vafm(i,g,r,s));
-vxmdtot(i,r,".")   = sum(rr,vxmd(i,r,rr) );
-vxmdtot(i,".",rr)  = sum(r ,vxmd(i,r,rr) );
-ns0tot(".",r,s)    = sum(i ,ns0(i,r,s)   );
-ns0tot(i,r,".")    = sum(s ,ns0(i,r,s)   );
-yl0tot(".",r,s)    = sum(i ,yl0(i,r,s)   );
-yl0tot(i,r,".")    = sum(s ,yl0(i,r,s)   );
-nd0tot(".",r,s)    = sum(i ,nd0(i,r,s)   );
-nd0tot(i,r,".")    = sum(s ,nd0(i,r,s)   );
-md0tot(".",r,s)    = sum(i ,md0(i,r,s)   );
-md0tot(i,r,".")    = sum(s ,md0(i,r,s)   );
-cd0tot(".",r,s,h)  = sum(i ,cd0(i,r,s,h) );
+parameter	vfmtot, vafmtot, ns0tot, nd0tot, md0tot, cd0tot;
+vfmtot(".",g,rb(r),s)  = sum(f ,vfm(f,g,r,s) );
+vfmtot(f,".",rb(r),s)  = sum(g ,vfm(f,g,r,s) );
+vafmtot(".",g,rb(r),s) = sum(i ,vafm(i,g,r,s));
+vafmtot(i,".",rb(r),s) = sum(g ,vafm(i,g,r,s));
+ns0tot(".",rb(r),s)    = sum(i ,ns0(i,r,s)   );
+ns0tot(i,rb(r),".")    = sum(s ,ns0(i,r,s)   );
+nd0tot(".",rb(r),s)    = sum(i ,nd0(i,r,s)   );
+nd0tot(i,rb(r),".")    = sum(s ,nd0(i,r,s)   );
+md0tot(".",rb(r),s)    = sum(i ,md0(i,r,s)   );
+md0tot(i,rb(r),".")    = sum(s ,md0(i,r,s)   );
+cd0tot(".",rb(r),s,h)  = sum(i ,cd0(i,r,s,h) );
 
-option vafmtot:3:0:1;
-*.display vafmtot;
+vfm(f,g,rb(r),s) $(vfm(f,g,r,s)	< reltol*min(vfmtot(".",g,r,s) ,vfmtot(f,".",r,s)))  = 0;
+vafm(i,g,rb(r),s)$(vafm(i,g,r,s)< reltol*min(vafmtot(".",g,r,s),vafmtot(i,".",r,s))) = 0;
+ns0(i,rb(r),s)   $(ns0(i,r,s)	< reltol*min(ns0tot(".",r,s)   ,ns0tot(i,r,".")))    = 0;
+cd0(i,rb(r),s,h) $(cd0(i,r,s,h)	< reltol*min(cd0tot(".",r,s,h) ,a0(i,r,s)))          = 0;
 
-
-vfm(f,g,r,s) $(vfm(f,g,r,s)	< reltol*min(vfmtot(".",g,r,s) ,vfmtot(f,".",r,s)))  = 0;
-vafm(i,g,r,s)$(vafm(i,g,r,s)	< reltol*min(vafmtot(".",g,r,s),vafmtot(i,".",r,s))) = 0;
-vxmd(i,r,rr) $(vxmd(i,r,rr)	< reltol*min(vxmdtot(i,".",r)  ,vxmdtot(i,r,".")))   = 0;
-ns0(i,r,s)   $(ns0(i,r,s)	< reltol*min(ns0tot(".",r,s)   ,ns0tot(i,r,".")))    = 0;
-cd0(i,r,s,h) $(cd0(i,r,s,h)	< reltol*min(cd0tot(".",r,s,h) ,a0(i,r,s)))          = 0;
-
-yl0(i,r,s)   $(yl0(i,r,s)	< reltol*min(yl0tot(".",r,s)   ,yl0tot(i,r,".")))    = 0;
-nd0(i,r,s)   $(nd0(i,r,s)	< reltol*min(nd0tot(".",r,s)   ,nd0tot(i,r,".")))    = 0;
-md0(i,r,s)   $(md0(i,r,s)	< reltol*min(md0tot(".",r,s)   ,md0tot(i,r,".")))    = 0;
+nd0(i,rb(r),s)   $(nd0(i,r,s)	< reltol*min(nd0tot(".",r,s)   ,nd0tot(i,r,".")))    = 0;
+md0(i,rb(r),s)   $(md0(i,r,s)	< reltol*min(md0tot(".",r,s)   ,md0tot(i,r,".")))    = 0;
 
 nz("vfm" ,"reltol") = card(vfm)  - nz("vfm" ,"card");
 nz("vafm","reltol") = card(vafm) - nz("vafm","card");
-nz("vxmd","reltol") = card(vxmd) - nz("vxmd","card");
 nz("ns0" ,"reltol") = card(ns0)  - nz("ns0" ,"card");
-nz("yl0" ,"reltol") = card(yl0)  - nz("yl0" ,"card");
 nz("nd0" ,"reltol") = card(nd0)  - nz("nd0" ,"card");
 nz("md0" ,"reltol") = card(md0)  - nz("md0" ,"card");
 nz("cd0" ,"reltol") = card(cd0)  - nz("cd0" ,"card");
+
 option nz:0;
 display nz;
 
-*	Cinch the zero profit conditions:
+$include %gams.scrdir%chkmodel
 
-a0(i,r,s)      = yl0(i,r,s)*(1+rtd0(i,r,s)) + nd0(i,r,s)*(1+rtd0(i,r,s)) + md0(i,r,s)*(1+rtm0(i,r,s));
-vafm(i,g,r,s)$(not a0(i,r,s)) = 0;
-cd0(i,r,s,h)$(not a0(i,r,s)) = 0;
-c0(r,s,h) = sum(i,cd0(i,r,s,h));
-
-vom(y_(g,r,s)) = (1/(1-rto(g,r))) * (sum(i,vafm(i,g,r,s)) + sum(f,vfm(f,g,r,s)*(1+rtf0(f,g,r))));
-vim(i,r)       = sum(rr, vxmd(i,rr,r)*pvxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r)*pvtwr(i,rr,r)));
-
-parameter	vomchk(i,r,s)	Market clearance for py
-		vimchk(i,r)	Market clearance for pm;
-
-vomchk(i,r,s) = vom(i,r,s) - ( xs0(i,r,s) + ns0(i,r,s) + yl0(i,r,s) );
-vimchk(i,r) = vim(i,r) - sum(s,md0(i,r,s));
-option vomchk:3:0:1, vimchk:3:0:1;
-display vomchk, vimchk;
-
-$include gtapwind_calib.gms
+$include gtapwindc_calib.gms
 
 $include %gams.scrdir%chkmodel
 
+y_(g,r,s)$(not vom(g,r,s)) = 0;
+vafm(i,g,r,s)$(not y_(g,r,s)) = 0;
+vfm(f,g,r,s)$(not y_(g,r,s)) = 0;
 
-$exit
+parameter	plratio(r,s,f)	Ratio of labor demand to labor supply,
+		pkratio(r,f)	Ratio of capital demand to capital supply;
 
-evom(f,r,s) = sum(g,vfm(f,g,r,s));
-vnm(i,r)    = sum(s,ns0(i,r,s)  );
-vtw(j)      = sum(r,vst(j,r)    );
+plratio(rb(r),s,mf)$sum(h,evomh(mf,r,s,h)) = sum(g,vfm(mf,g,r,s)) / sum(h,evomh(mf,r,s,h));
+pkratio(rb(r),sf)$sum((s,h),evomh(sf,r,s,h)) = sum(s,evom(sf,r,s))/sum((s,h),evomh(sf,r,s,h));
+option plratio:3:2:1, pkratio:3;
+display plratio, pkratio;
+
+evomh(mf,rb(r),s,h) = evomh(mf,r,s,h) * plratio(r,s,mf);
+evomh(sf,rb(r),s,h) = evomh(sf,r,s,h) * pkratio(r,sf);
+
+parameter	incomeadjust(r,s,h)	Household income adjustment (% consumption);
+incomeadjust(rb(r),s,h)$c0(r,s,h) = 100 * (c0(r,s,h) + sav0(r,s,h) - sum(f,evomh(f,r,s,h)) - sum(trn,hhtrn0(r,s,h,trn)))/c0(r,s,h);
+option incomeadjust:1:2:1;
+display incomeadjust;
+
+*	Balance household budgets with "financial assistance":
+
+hhtrn0(rb(r),s,h,"hfinval") = hhtrn0(r,s,h,"hfinval") + incomeadjust(r,s,h)/100 * c0(r,s,h);
 
 execute_unload '%dsout%',
 	r,g,i,f,s,h,sf,mf,
-	vom, vafm, vfm, yl0, a0,
+	vom, vafm, vfm, a0,
 	md0, xs0, nd0, ns0, c0, cd0, evom, evomh, 
 	rtd, rtd0, rtm, rtm0, esube,
 	etrndn, hhtrn0, sav0,
 	rto, rtf, rtf0, vim, vxmd, pvxmd, pvtwr, rtxs, rtms, vtw, vtwr, vst, vb,
 	esubva,  etrae, esubdm, esubm;
-
-$exit
-
-parameter	pachk;
-pachk(i,s,"a0") = a0(i,"usa",s);
-pachk(i,s,"vafm") = sum(g,vafm(i,g,"usa",s));
-pachk(i,s,"cd0") = sum(h,cd0(i,"usa",s,h));
-option pachk:3:2:1;
-display pachk;
-
-*	Identify the nonzero structure:
-
-y_(g,r,s)     = vom(g,r,s       );
-x_(i,r)       = vxm(i,r         );
-n_(i,r)       = vnm(i,r         );
-pn_(i,r)      = n_(i,r          );
-z_(i,r,s)     = a0(i,r,s        );
-c_(r,s,h)     = c0(r,s,h        );
-ft_(sf,r,s)   = evom(sf,r,s     );
-m_(i,r)       = vim(i,r         );
-yt_(j)        = vtw(j           );
-py_(g,r,s)    = vom(g,r,s       );
-pz_(i,r,s)    = a0(i,r,s        );
-p_(i,r)       = sum(s,xs0(i,r,s));
-pc_(r,s,h)    = c0(r,s,h        );
-pf_(f,r,s)    = evom(f,r,s      );
-ps_(sf,g,r,s) = vfm(sf,g,r,s    );
-pm_(i,r)      = vim(i,r         );
-pt_(j)        = vtw(j           );
-rh_(r,s,h)    = c0(r,s,h        );

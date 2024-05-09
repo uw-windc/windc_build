@@ -158,7 +158,6 @@ $prod:N(i,r)$(pnm(i,r) and n_(i,r))  s:esubn(i)
 
 $prod:Z(i,r,s)$(pnm(i,r) and z_(i,r,s))  s:esubdm(i)  nm:(2*esubdm(i))
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
 
