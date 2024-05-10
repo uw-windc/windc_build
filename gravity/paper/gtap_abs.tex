@@ -1,0 +1,204 @@
+\RequirePackage{setspace}
+\documentclass{ejb}
+\setcounter{page}{1} % Please input the first page number in place of "1". This will change the starting page number of the paper.
+
+%       -------------------------------------------------------------------
+
+\usepackage{comment}
+\usepackage{rotating}
+\usepackage{xspace}
+\usepackage{tikzscale}
+\usepackage{filecontents}
+\usepackage{tikz}
+\usepackage{fancyvrb}
+%\usepackage{subcaption}
+\usepackage{pgfplotstable}
+\usepackage{longtable}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\usepackage{helvet}
+\usepackage[eulergreek]{sansmath}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{pdflscape}
+\usepackage{multirow}
+\usepackage{fancyhdr}
+\usepackage{pdflscape}
+%\pagestyle{fancy}
+%\chead{\textit{December 2023\\Draft: Do not cite or quote without permission.}}
+%\cfoot{\textit{Draft: Do not cite or quote without permission.}}
+%\renewcommand{\headrulewidth}{0.4pt}
+
+\pgfplotsset{compat=1.3}
+
+\fvset{formatcom=\color{black},fontsize=\scriptsize,frame=single,rulecolor=\color{black},baselinestretch=1,framesep=5mm}
+\renewcommand{\FancyVerbFormatLine}[1]{\textcolor{blue}{#1}}
+\DefineVerbatimEnvironment {GAMSCode*}{Verbatim}
+{framesep=5mm,frame=none,fontsize=\scriptsize, baselinestretch=1}
+
+\newcommand{\cv}{\mbox{\boldmath$c$}}
+\newcommand{\GAMS}{\textsc{gams}\xspace}
+%       -------------------------------------------------------------------
+
+\graphicspath{{.}}
+
+\begin{document}
+
+\title{International trade in agricultural products at the
+{U.S.} state level
+%\footnote{
+%		The findings and conclusions in this paper are
+%	those of the authors and should not be construed to represent any
+%	official USDA or U.S. Government determination or policy. This
+%	research was supported in part by a cooperative agreement
+%	(58-3000-0-0035) between the U.S. Department of Agriculture,
+%	Economic Research Service, and the University of Nebraska at
+%	Lincoln.}
+	}            
+%\author{\small
+%Edward J. Balistreri\footnote{
+%University of Nebraska-Lincoln. (email:
+%{\texttt edward.balistreri@unl.edu}).}\\
+%Thomas F. Rutherford\footnote{
+%University of Wisconsin.  (email:
+%rutherford@aae.wisc.edu).} and\\
+%Steven S. Zahniser\footnote{
+%Economic Research Service, USDA.  (email:
+%steven.zahniser@usda.gov).}
+%}
+
+
+%
+\maketitle
+
+\vspace{-30pt}
+\begin{jelcodes}
+F10, C81
+\end{jelcodes}
+\vspace{-10pt}
+\begin{keywords}
+State Trade; Agriculture Exports; Agriculture Imports; State-level
+Supply Chains
+\end{keywords}
+\vspace{-10pt}
+\section*{Extended Abstract:}
+\vspace{-5pt}
+In this paper we develop and apply a new method for estimating
+state-level international trade in agricultural products.  The method
+is based on a fundamental proposition from trade theory, which posits
+equal absorption shares of regionally differentiated goods in the
+absence of trade frictions.  Adopting this as an assumption allows us
+to calibrate a commodity-specific Armington demand system to
+input-output accounts that establish supply and demand vectors for
+each state and each port. We then utilize the structure with trade
+frictions included to establish the benchmark flows of goods from the
+point of production to domestic uses and port-level exports.
+Similarly, we distribute port-level imports to their use in specific
+states.  While our primary focus is on international trade the method
+yields a bilateral interstate trade matrix for each commodity.
+
+Our work complements recent advancements in open-source calculations
+of state input-output accounts by the Wisconsin National Data
+Consortium (WiNDC).\footnote{See \url{https://windc.wisc.edu/}.}
+The WiNDC project focuses on publicly available data sources and a
+series of routines that generate micro-consistent subnational
+accounts.  Previously available subnational accounts where both
+expensive and proprietary, which made them less ideal for
+research.\footnote{The IMPLAN (\url{https://implan.com/}) state
+	accounts are an example of a closed-source commercial
+	alternative.}
+The academic based WiNDC project has many advantages including its
+accessibility, transparency, and extensibility to particular research
+questions.  
+
+Representing bilateral interstate and state-level international trade
+in the WiNDC accounts remains as a challenge. A lack of reliable data 
+on interstate trade favors a \emph{pooled} national market
+formulation, which ultimately limits the structural options for
+researchers.  At first the U.S. Department of Commerce's Bureau of
+Census (Census) reports in the Commodity Flow Survey (CFS) might be
+considered the best source for bilateral state trade, but these data
+suffer from a fundamental problem.  The CFS tracks shipments of goods not
+the goods themselves.  For example, a rail shipment of a bushel of
+corn from Eastern Nebraska to Kansas City plus the barge shipment of the
+same bushel from Kansas City to New Orleans escalates the quantity
+(and value) of the actual corn shipped.  This problem, of double
+counting in the CFS data, is noted by \citet{AvW} who
+correct the CFS interstate trade flows assuming they are exaggerated
+by a factor of 2.08.  Our proposed method for generating bilateral
+interstate trade imposes consistency between state-level production
+and aggregate absorption. 
+
+The state-level \emph{international} trade in the core WiNDC accounts is also
+a known weakness.  The WiNDC trade data is from Census
+reports of imports and exports by state, but these are actually
+measured by Port of Entry.\footnote{The Census Bureau 
+	disseminates export and import statistics by Port of Entry at
+	the HS-6 level \citep{Census}.}  
+The port from which agricultural exports exit the United States,
+however, are not necessarily or even likely located in the States where
+those products are produced.  For instance, corn exports departing the
+ports located in the New Orleans Port District were not necessarily
+grown in the State of Louisiana.  In fact, the large volume of
+Louisiana exports of grains (as reported by Census and thus inferred
+in the WiNDC accounts) is only explained by Louisiana's purchase of
+grains through the pooled national market.  On the supply side, the
+excess supply of corn in a state like Nebraska does not leave its Port
+of Entry in Omaha, but rather is absorbed by the pooled national
+market.  Looking at the Census data Louisiana exports a significant
+quantity of corn but Nebraska, a key corn producer, does not.  A
+better representation would attribute international exports (and
+imports) of agricultural products to the state of production (and
+absorption).  
+ 
+Faced with the problematic Census state-trade data, the U.S.
+Department of Agriculture's Economic Research Service (ERS) generates
+an alternative measure of state agricultural exports based on cash
+receipts.  For these estimates, the products that make up U.S.
+agricultural exports are grouped to match the 24 product groups in
+U.S. farm sales estimates. For each of these 24 
+product groups, U.S. agricultural exports are allocated by State in
+approximate proportion to the State's share of national cash receipts
+for that product group. Thus, Nebraska, with 12.4 percent (\$8.9
+billion) of U.S. cash receipts for corn in 2021, is estimated to have
+accounted for 12.6 percent (\$2.3 billion) of U.S. corn exports that
+year \citep{USDA_a, USDA_b}. In contrast, the Census Bureau's State Trade Data
+indicate Nebraska's corn exports (HS-6 100590) totaled about \$609
+million in 2021 \citep{Census}.
+
+Neither of these two estimates are based on a comprehensive
+assessment of the use of Nebraska's corn production, along the lines
+of USDA's PSD (Production, Supply, and Distribution) Online Database
+(U.S. Department of Agriculture, Foreign Agricultural Service, 2023).
+Some rough estimates are commonly circulated in the industry,
+however. For instance, \citet{Groskopf_Silva} estimate that about
+40 percent of Nebraska's 2018 corn crop was used as feedstock for
+ethanol production within the State. The \citet{NCBa}
+indicates that ``about 16 percent of Nebraska's corn crop is fed to
+livestock within Nebraska'' and that ``about 40 percent of the corn
+grown in Nebraska is fed to livestock somewhere in the United States
+or around the world.'' With respect to exports, the \citet{NCBb}
+estimates that international exports account for about 
+6 percent of the use of Nebraska's corn production.
+          
+Our purpose is to inform the key question of how much of a states
+production of specific agricultural goods are exported and how much is
+disbursed to each of the fifty states (plus D.C.).  We use a
+structural gravity model following the theory of \citet{AvW}.  A
+presentation of the full theory and its development is given by
+\citet{Yotov_etal}.  There are two specific features of this theory
+that we leverage in developing our estimates of interstate
+agricultural trade and the flows of agricultural products between
+ports and states. First is the assumption of identical and homothetic
+preferences.  This provides an anchor point for calibration, where in
+the absence of trade frictions expenditure shares on regionally
+differentiated goods are the same across regions. The second
+assumption is that trade cost are of the iceberg type.  That is, they
+are paid in units of the good being shipped.  This allows us to
+establish trade at normalized prices at both the frictionless anchor
+and the benchmark equilibrium. 
+
+\vspace{-8pt}
+\bibliographystyle{jgea}
+\bibliography{USDA_bib.bib}
+\end{document}

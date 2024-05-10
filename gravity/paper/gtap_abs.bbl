@@ -1,0 +1,58 @@
+\begin{thebibliography}{8}
+\newcommand{\bibenquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Anderson and van Wincoop(2003)}]{AvW}
+Anderson, J.E., and E.~van Wincoop. 2003. \bibenquote{Gravity with Gravitas: A
+  Solution to the Border Puzzle.} {\em American Economic Review\/},  93(1):
+  170--192.
+\newblock \doi{10.1257/000282803321455214}.
+
+\bibitem[{Board(2023{\natexlab{a}})}]{NCBa}
+Board, N.C. 2023{\natexlab{a}}. \bibenquote{Corn 101: Corn Uses: Feeding
+  Livestock with Nebraska Corn.}
+\newblock \url{https://nebraskacorn.gov/corn-101/corn-uses/livestock/}.
+
+\bibitem[{Board(2023{\natexlab{b}})}]{NCBb}
+Board, N.C. 2023{\natexlab{b}}. \bibenquote{You Asked, We Answered: Where All
+  the Corn in Nebraska Goes.}
+\newblock
+  \url{https://nebraskacorn.gov/cornstalk/sustainability/answered-where-does-all-the-corn-in-nebraska-go/}.
+
+\bibitem[{Groskopf and Silva(2018)}]{Groskopf_Silva}
+Groskopf, J., and A.~Silva. 2018. \bibenquote{The Evolution of Nebraska Corn
+  Basis.}
+\newblock \url{https://cropwatch.unl.edu/2018/evolution-nebraska-corn-basis},
+  {\it Crop Watch}, Sept 6, University of Nebraska--Lincoln, Institute of
+  Agriculture and Natural Resources.
+
+\bibitem[{{U.S. Department of Agriculture}(2023{\natexlab{a}})}]{USDA_a}
+{U.S. Department of Agriculture}. 2023{\natexlab{a}}. \bibenquote{Annual Cash
+  Receipts by Commodity.}
+\newblock \url{https://data.ers.usda.gov/reports.aspx?ID=17832}, Economic
+  Research Service, {\it Farm Income and Wealth Statistics}, February 7.
+
+\bibitem[{{U.S. Department of Agriculture}(2023{\natexlab{b}})}]{USDA_b}
+{U.S. Department of Agriculture}. 2023{\natexlab{b}}. \bibenquote{State
+  Agricultural Trade Data.}
+\newblock
+  \url{https://www.ers.usda.gov/data-products/state-agricultural-trade-data/state-agricultural-trade-data/},
+  Economic Research Service.
+
+\bibitem[{{U.S. Department of Commerce}(2023)}]{Census}
+{U.S. Department of Commerce}. 2023. \bibenquote{USA Trade Online.}
+\newblock \url{https://usatrade.census.gov/}, Bureau of the Census.
+
+\bibitem[{Yotov et~al.(2016)Yotov, Piermartini, Monteiro, and
+  Larch}]{Yotov_etal}
+Yotov, Y.V., R.~Piermartini, J.A. Monteiro, and M.~Larch. 2016. {\em An
+  Advanced Guide to Trade Policy Analysis: The Structural Gravity Model\/}.
+  Geneva: {UNCTAD}.
+\newblock
+  \url{https://unctad.org/system/files/official-document/gds2016d3_en.pdf}.
+
+\end{thebibliography}
