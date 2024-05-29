@@ -38,3 +38,9 @@ GTAPWiNDC/gtap11/gtap11a
 core/loadpoint
 
 data/*
+
+# LaTeX files
+*.aux
+*.blg
+*.out
+*.pdf
