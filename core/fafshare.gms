@@ -51,26 +51,26 @@ set
 		43	"Mixed�freight" /,
 
     yr 		Years in WiNDC Database,
-    fyr		Years in FAF data (1997-2021),
+*    fyr(yr)		Years in FAF data (1997-2022),
     g 		BEA Goods and sectors categories,
     sr 		Super Regions in WiNDC Database,
     r(sr) 	Regions in WiNDC Database;
 
 * First two indices in FAF parameter correspond to regions
 
+alias(yr,fyr);
+
 parameter
     faf_units(sr,sr,sg,fyr) FAF data;
 
 $gdxin '../data/core/windc_base.gdx'
 $load yr sr r g=i
+$load faf_units
 $gdxin
 alias(r,rr),(*,u);
 
-$call 'csv2gdx ../data/core/faf_data_1997_2021.csv output=gdx/faf_data_1997_2021.gdx id=faf_units index="(1,2,3,4)" colCount=5 value=lastCol useHeader=Y';
-$gdxin 'gdx/faf_data_1997_2021.gdx'
-$load fyr=Dim4
-$load faf_units
-$gdxin
+display faf_units;
+
 
 
 * -------------------------------------------------------------------
