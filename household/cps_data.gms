@@ -23,13 +23,13 @@ $set gdxdir gdx/
 
 * Translate the CPS income CSV data to GDX:
 
-$set file "%cpsdir%cps_asec_income_totals_2000_2021.csv"
+$set file "%cpsdir%cps_asec_income_totals_2000_2022.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 $call 'csv2gdx "%file%" id=cpscsv useheader=yes index="(1,2,3,4)" values=5 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3'
 
 * Translate the CPS population CSV data to GDX:
 
-$set file "%cpsdir%cps_asec_numberhh_2000_2021.csv"
+$set file "%cpsdir%cps_asec_numberhh_2000_2022.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 $call 'csv2gdx %file% id=popcsv useheader=yes index="(1,2,3)" values=4 output="%gdxdir%cps_households.gdx" CheckDate=yes trace=3'
 

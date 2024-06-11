@@ -5,7 +5,7 @@ $title Read a WiNDC Household Dataset
 * --------------------------------------------------------------------------
 
 * Default dataset to read:
-$if not set ds $set ds cps_static_all_2017
+$if not set ds $set ds cps_static_all_2022
 
 * The data directory is defined relative to the location of this file:
 $set datadir %system.fp%datasets/

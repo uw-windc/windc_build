@@ -9,7 +9,7 @@ $title Read the WiNDC Dataset
 $if not set ds $set ds %system.fp%WiNDCdatabase.gdx
 
 * Pick year to model
-$if not set year $set year 2017
+$if not set year $set year 2022
 
 
 * ------------------------------------------------------------------------------

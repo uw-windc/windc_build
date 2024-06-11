@@ -4,8 +4,8 @@ $title Aggregation routine for windc-household datasets
 * Set options
 * --------------------------------------------------------------------------
 
-* set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2021
+* set year(s) to compute data (cps: 2000-2022, soi: 2014-2017)
+$if not set year $set year 2022
 
 * set household data (cps, soi)
 $if not set hhdata $set hhdata "cps"
@@ -37,14 +37,20 @@ $batinclude windc_hhdata %datadir%WiNDC_%ds%
 
 * Read steady state parameters if aggregating dynamic dataset
 
-$ifthen.dynamic %invest%=="dynamic" 
+$ifthen.dynamic %invest%=="dynamic"
+
+$set datafile %datadir%WiNDC_%ds%.gdx
+$gdxin '%datafile%'
+
 parameter
     ir		Steady-state interest rate,
     gr		Steady-state growth rate,
     delta	Steady-state depreciation rate;
 
 $loaddc ir gr delta
+$gdxin
 $endif.dynamic
+
 
 
 * --------------------------------------------------------------------------

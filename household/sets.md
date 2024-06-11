@@ -283,35 +283,36 @@
 
 ### Margins (trade or transport)
 
-| m   | Description   |
-|:----|:--------------|
-| trn | transport     |
-| trd | trade         |
+| m   | Description          |
+|:----|:---------------------|
+| trn | Transport (shipping) |
+| trd | Trade (retail)       |
 
 ### household categories
 
 | h   | Description   |
 |:----|:--------------|
-| hh1 |               |
-| hh2 |               |
-| hh3 |               |
-| hh4 |               |
-| hh5 |               |
+| hh1 | Quitile 1     |
+| hh2 | Quitile 2     |
+| hh3 | Quitile 3     |
+| hh4 | Quitile 4     |
+| hh5 | Quitile 5     |
 
 ### transfer types
 
 | trn      | Description                  |
 |:---------|:-----------------------------|
-| hucval   | unemployment compensation    |
-| hwcval   | workers compensation         |
-| hssval   | social security              |
-| hssival  | supplemental security        |
-| hpawval  | public assistance or welfare |
-| hvetval  | veterans benefits            |
-| hsurval  | survivors income             |
-| hdisval  | disability                   |
-| hedval   | educational assistance       |
-| hcspval  | child support                |
-| hfinval  | financial assistance         |
-| medicare |                              |
-| medicaid |                              |
+| hucval   | Unemployment compensation    |
+| hwcval   | Workers compensation         |
+| hssval   | Social security              |
+| hssival  | Supplemental security        |
+| hpawval  | Public assistance or welfare |
+| hvetval  | Veterans benefits            |
+| hsurval  | Survivors income             |
+| hdisval  | Disability                   |
+| hedval   | Educational assistance       |
+| hcspval  | Child support                |
+| hfinval  | Financial assistance         |
+| medicare | Medicare benefits            |
+| medicaid | Medicaid benefits            |
+| other    | Other benefits               |

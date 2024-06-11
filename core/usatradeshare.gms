@@ -70,14 +70,8 @@ abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'imports')), 4)) <> 1) "Impor
 * add export shares from usda for the agricultural sector
 * -------------------------------------------------------------------
 
-
-
 set
     ayr		Years in usda export data;
-
-
-
-
 
 parameter
     usda(r,ayr)	State level exports from usda of total agricultural output;
