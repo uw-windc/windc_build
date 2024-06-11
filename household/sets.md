@@ -100,7 +100,7 @@
 
 #### Census Divisions 
 
-| uni   | element_text       |
+| r     | Description        |
 |:------|:-------------------|
 | neg   | New England        |
 | mid   | Mid Atlantic       |
@@ -115,19 +115,19 @@
 
 #### Census Regions
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| nor   |                |
-| mid   |                |
-| sou   |                |
-| wes   |                |
+| nor   | Northeast      |
+| mid   | Midwest        |
+| sou   | South          |
+| wes   | West           |
 
 
 #### National
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| usa   |                |
+| usa   | United States  |
 
 
 ### Goods and sectors from BEA -- Margin related sectors
@@ -292,11 +292,11 @@
 
 | h   | Description   |
 |:----|:--------------|
-| hh1 | Quitile 1     |
-| hh2 | Quitile 2     |
-| hh3 | Quitile 3     |
-| hh4 | Quitile 4     |
-| hh5 | Quitile 5     |
+| hh1 |   <$25k            |
+| hh2 |   $25k - $50k            |
+| hh3 |   $50k - $75k            |
+| hh4 |   $75k - $150k            |
+| hh5 |   >$150k            |
 
 ### transfer types
 

@@ -233,7 +233,7 @@ Source datasets are compiled using the R programming language. All R routines ne
 
 #### Census Divisions 
 
-| uni   | element_text       |
+| r     | Description        |
 |:------|:-------------------|
 | neg   | New England        |
 | mid   | Mid Atlantic       |
@@ -248,19 +248,19 @@ Source datasets are compiled using the R programming language. All R routines ne
 
 #### Census Regions
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| nor   |                |
-| mid   |                |
-| sou   |                |
-| wes   |                |
+| nor   | Northeast      |
+| mid   | Midwest        |
+| sou   | South          |
+| wes   | West           |
 
 
 #### National
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| usa   |                |
+| usa   | United States  |
 
 
 ### Goods and sectors from BEA -- Margin related sectors
@@ -416,10 +416,10 @@ Source datasets are compiled using the R programming language. All R routines ne
 
 ### Margins (trade or transport)
 
-| m   | Description   |
-|:----|:--------------|
-| trn | transport     |
-| trd | trade         |
+| m   | Description          |
+|:----|:---------------------|
+| trn | Transport (shipping) |
+| trd | Trade (retail)       |
 
 ### Household Categories
 
@@ -437,16 +437,17 @@ Based on income thresholds.
 
 | trn      | Description                  |
 |:---------|:-----------------------------|
-| hucval   | unemployment compensation    |
-| hwcval   | workers compensation         |
-| hssval   | social security              |
-| hssival  | supplemental security        |
-| hpawval  | public assistance or welfare |
-| hvetval  | veterans benefits            |
-| hsurval  | survivors income             |
-| hdisval  | disability                   |
-| hedval   | educational assistance       |
-| hcspval  | child support                |
-| hfinval  | financial assistance         |
-| medicare |                              |
-| medicaid |                              |
+| hucval   | Unemployment compensation    |
+| hwcval   | Workers compensation         |
+| hssval   | Social security              |
+| hssival  | Supplemental security        |
+| hpawval  | Public assistance or welfare |
+| hvetval  | Veterans benefits            |
+| hsurval  | Survivors income             |
+| hdisval  | Disability                   |
+| hedval   | Educational assistance       |
+| hcspval  | Child support                |
+| hfinval  | Financial assistance         |
+| medicare | Medicare benefits            |
+| medicaid | Medicaid benefits            |
+| other    | Other benefits               |
