@@ -27,7 +27,7 @@
 
 # Overview
 
-The WiNDC household subroutine is an extension to the core WiNDC buildstream that disaggregates regional representative households in the core database on the basis of household income from 2000-2021. The subroutine leverages several additional source datasets to produce disaggregate consumer accounts, including: the [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html), state-level statistics from the [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) database, commuting flows from the [American Community Survey](https://www.census.gov/programs-surveys/acs), Medicare and Medicaid benefits from [Centers for Medicare and Medicaid Services (CMS)](https://www.cms.gov/), [National Income and Product Accounts (NIPA)](https://www.bea.gov/itable/national-gdp-and-personal-income), average and marginal income tax rates from [TAXSIM](https://taxsim.nber.org/taxsim27/), the [Consumer Expenditure Survey (CE)](https://www.bls.gov/cex/), and several academic publications on under-reporting bias in survey data on transfer incomes. The disaggregation routine relies on an income balance condition that allows us to fully denominate incomes and expenditures without defining any ad hoc adjustment parameters to close the income balance constraint in a CGE model. The income balance condition is specified as:
+The WiNDC household subroutine is an extension to the core WiNDC buildstream that disaggregates regional representative households in the core database on the basis of household income from 2000-2022. The subroutine leverages several additional source datasets to produce disaggregate consumer accounts, including: the [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html), state-level statistics from the [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) database, commuting flows from the [American Community Survey](https://www.census.gov/programs-surveys/acs), Medicare and Medicaid benefits from [Centers for Medicare and Medicaid Services (CMS)](https://www.cms.gov/), [National Income and Product Accounts (NIPA)](https://www.bea.gov/itable/national-gdp-and-personal-income), average and marginal income tax rates from [TAXSIM](https://taxsim.nber.org/taxsim27/), the [Consumer Expenditure Survey (CE)](https://www.bls.gov/cex/), and several academic publications on under-reporting bias in survey data on transfer incomes. The disaggregation routine relies on an income balance condition that allows us to fully denominate incomes and expenditures without defining any ad hoc adjustment parameters to close the income balance constraint in a CGE model. The income balance condition is specified as:
 
 $$
 \sum_q WAGES_{rqh} + INTEREST_{rh} + \sum_{t}TRANS_{rht} = CONS_{rh} + TAXES_{rh} + SAVINGS_{rh}
@@ -42,7 +42,7 @@ The routine is designed to be flexible. The default options produce a dataset wi
 
 # Running the Household Subroutine
 
-Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2021 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
+Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2022 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
 
 If you have a local version of GAMS and access to the relevant licenses, navigate in your command line to the directory household and run the GAMS file `build.gms` by typing the following command:
 
@@ -61,7 +61,7 @@ The code creates the directory `datasets`, generates the household datasets and 
     Command line options:
     |Command|Options| Default | Description |
     | ---   | ---   | --- | ---|
-    | year | cps: 2000-2021, soi: 2014-2017 | 2017, 2021 | Years to compute data |
+    | year | cps: 2000-2022, soi: 2014-2017 | 2017, 2022 | Years to compute data |
     | hhdata | cps, soi | cps | Primary household data source |
     | invest | static | static| Investment calibration |
     | captial_ownership| all, partial| all | Assumption on capital ownership |
