@@ -99,9 +99,9 @@ parameter	theta_X_PD(r,g)		Value share (output to PD market),
 		theta_X_PN(r,g)		Value share (output to PN market),
 		theta_X_PFX(r,g)	Value share (output to PFX market);
 
-$echo	theta_X_PD(r,g) = xd0(r,g)/s0(r,g);		>>%gams.scrdir%MCPMODEL.GEN	
-$echo	theta_X_PN(r,g) = xn0(r,g)/s0(r,g);		>>%gams.scrdir%MCPMODEL.GEN	
-$echo	theta_X_PFX(r,g) = (x0(r,g)-rx0(r,g))/s0(r,g);	>>%gams.scrdir%MCPMODEL.GEN	
+$echo	theta_X_PD(r,g)$s0(r,g) = xd0(r,g)/s0(r,g);		>>%gams.scrdir%MCPMODEL.GEN	
+$echo	theta_X_PN(r,g)$s0(r,g) = xn0(r,g)/s0(r,g);		>>%gams.scrdir%MCPMODEL.GEN	
+$echo	theta_X_PFX(r,g)$s0(r,g) = (x0(r,g)-rx0(r,g))/s0(r,g);	>>%gams.scrdir%MCPMODEL.GEN	
 
 $macro	PI_X(r,g)	(( theta_X_PD(r,g) * PD(r,g)**(1+4) + theta_X_PN(r,g) * PN(g)**(1+4) + theta_X_PFX(r,g) * PFX**(1+4) )**(1/(1+4)))
 $macro	O_X_PFX(r,g)	((x0(r,g)-rx0(r,g))*((PFX/PI_X(r,g))**4)$(x0(r,g)-rx0(r,g)))
