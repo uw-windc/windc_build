@@ -111,6 +111,8 @@ set	pnm(i,r)	Pooled national market,
 $ontext
 $model:gtapwindc
 
+$funlog:.true.
+
 $sectors:
 	Y(g,r,s)$y_(g,r,s)		  ! Production (includes I and G)
 	X(i,r)$x_(i,r)			  ! Export demand
@@ -177,7 +179,7 @@ $prod:FT(sf,r)$pk_(sf,r)  t:0
 	o:PKS(sf,r,s)	q:evom(sf,r,s)
 	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
 
-$prod:FTS(sf,r,s)$evom(sf,r,s)  t:etrae(sf)
+$prod:FTS(sf,r,s)$evom(sf,r,s)  t:0
 	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)   
 	i:PKS(sf,r,s)	q:evom(sf,r,s)
 

@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-$set start regiondisagg32
+$set start replicate
 
 *---------------------- 
 * run after the core and household builds are complete!! 
@@ -268,8 +268,7 @@ $if errorlevel 1 $abort "Non-zero return code from filter for for 43.gdx"
 *	Perform a benchmark replication with the filtered dataset.
 * ------------------------------------------------------------------------
 
-$label chk43_filtered
-
+$label replicate
 $log	"Ready to verify consistency of datasets/gtapwindc/43_filtered.gdx "
 $if not %pause%==no $call pause
 

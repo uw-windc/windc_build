@@ -114,6 +114,33 @@ $sysinclude mpsgeset gtapwindc
 gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
+parameter	chk_PG;
+chk_PG("vom") = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s)));
+chk_PG("rtxs") = sum(r$sameas(r,"usa"),
+			-sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr)));
+chk_PG("rtms") = sum(r$sameas(r,"usa"),
+			sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r))));
+chk_PG("rtd") = sum(r$sameas(r,"usa"),
+			sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s)));
+chk_PG("rto") = sum(r$sameas(r,"usa"),
+			sum((g,s),		rto(g,r)   * vom(g,r,s)));
+chk_PG("rtf") = sum(r$sameas(r,"usa"),
+			sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s)));
+chk_PG("hhtrn0") = sum(r$sameas(r,"usa"),
+			sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn)));
+
+chk_PG("chk") = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s))
+			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
+			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
+			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
+			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
+option chk_PG:3:0:1;
+display chk_PG;
+
 *	Assume that land can move freely across sectors within each state:
 
 etrae("lnd") = 8;

@@ -61,7 +61,7 @@ market_pg(rb(r))..		sum(s,VOM_("g",r,s)) =e=
 				+ sum(z_(i,r,s),	rtd(i,r,s) * ND0_(i,r,s) + rtm(i,r,s)*MD0_(i,r,s))
 				+ sum((g,s),		rto(g,r)   * VOM_(g,r,s))
 				+ sum((f,y_(g,r,s)),	rtf(f,g,r) * VFM_(f,g,r,s))
-				- sum((rh_(r,s.local,h),trn),hhtrn0(r,s,h,trn));
+				- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn));
 
 market_py(y_(i,rb(r),s))..	VOM_(i,r,s) =e= sum(x_(i,r), XS0_(i,r,s)) + sum(n_(i,r), NS0_(i,r,s));
 
@@ -158,15 +158,63 @@ loop(iter$dev,
 	ps_(sf,g,r,s) = vfm(sf,g,r,s);
 	pm_(i,r) = vim(i,r);
 	pt_(j) = vtw(j);
-	rh_(r,s,h) = c0(r,s,h);
+	rh_(r,s,h) = sum(trn,hhtrn0(r,s,h,trn));
 
+	pgchk(iter) = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s))
+			- (-sum((i,rr),		rtxs(i,r,rr)*vxmd(i,r,rr))
+			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
+			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
+			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
+	display pgchk;
 
-
-	dev =	sum(param, abs(itlog(iter,param)-nzc(param)));
-	itlog(iter,"dev")   = dev;
+	dev$(ord(iter)>2) = sum(param, abs(itlog(iter,param)-nzc(param)));
+	itlog(iter,"dev") = dev;
 
 );
 
 display itlog;
 
 
+parameter	chk_PG;
+chk_PG("vom") = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s)));
+chk_PG("rtxs") = sum(r$sameas(r,"usa"),
+			-sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr)));
+chk_PG("rtms") = sum(r$sameas(r,"usa"),
+			sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r))));
+chk_PG("rtd") = sum(r$sameas(r,"usa"),
+			sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s)));
+chk_PG("rto") = sum(r$sameas(r,"usa"),
+			sum((g,s),		rto(g,r)   * vom(g,r,s)));
+chk_PG("rtf") = sum(r$sameas(r,"usa"),
+			sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s)));
+chk_PG("hhtrn0") = sum(r$sameas(r,"usa"),
+			sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn)));
+
+chk_PG("chk") = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s))
+			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
+			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
+			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
+			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
+option chk_PG:3:0:1;
+display chk_PG;
+
+$exit
+
+
+parameter	chk_PG;
+chk_PG = sum(r$sameas(r,"usa"),
+			sum(s$(not sameas(s,"rest")), vom("g",r,s))
+			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
+			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
+			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
+			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
+display chk_PG;

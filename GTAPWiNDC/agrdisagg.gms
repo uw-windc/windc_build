@@ -369,7 +369,10 @@ thetax(agr) = v(agr,"vxm") / sum(agr.local,v(agr,"vxm"));
 *	Production of agricultural goods:
 
 ys0(r,agr,agr) = theta_agr(r,agr) * v(agr,"vom");
-ys0(r,agr,g)$(not agr(g)) = theta_agrtot(r)*ys0(r,"agr",g);
+
+*!!!! Need to look at this.  This adds lots of crazy small numbers.
+*.ys0(r,agr,g)$(not agr(g)) = theta_agrtot(r)*ys0(r,"agr",g);
+
 ty0(r,agr) = ty0(r,"agr");
 ys0(r,"agr",g) = 0;
 ys0(r,s,"agr") = 0;

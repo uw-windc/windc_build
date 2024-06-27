@@ -4,7 +4,8 @@
 * If you choose either gtap11b, gtap11a or gtap11                  *
 * -----------------------------------------------------------------*
 
-$setglobal gtap_version gtap11b
+$setglobal gtap_version gtap11c
+*$setglobal gtap_version gtap11b
 *$setglobal gtap_version gtap11a
 *$setglobal gtap_version gtap11
 *$setglobal gtap_version gtap9
@@ -38,7 +39,7 @@ $setglobal gtap_version gtap11b
 *NB_ejb: the string "333" must indicate the GTAP licensee. I need "1017"
 
 $ifthen not set gtap_zip_path
-*.$if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY1017.zip"
+$if %gtap_version% == "gtap11c" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11c/GDX11cAY333.zip"
 $if %gtap_version% == "gtap11b" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11b/GDX11bAY333.zip"
 $if %gtap_version% == "gtap11a" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11a/GDX11aAY333.zip"
 $if %gtap_version% == "gtap11" $setglobal gtap_zip_path "%system.fp%../data/GTAPWiNDC/gtap11/GDX_AY1017.zip"
@@ -54,3 +55,4 @@ $if %gtap_version% == "gtap9" $setglobal gtapingams gtap9/
 $if %gtap_version% == "gtap11" $setglobal gtapingams gtap11/
 $if %gtap_version% == "gtap11a" $setglobal gtapingams gtap11/
 $if %gtap_version% == "gtap11b" $setglobal gtapingams gtap11/
+$if %gtap_version% == "gtap11c" $setglobal gtapingams gtap11/

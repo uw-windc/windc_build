@@ -10,6 +10,7 @@ $if not set gtap_version $include "gtapingams.gms"
 $if %gtap_version% == "gtap11" $set gtap_name GDX
 $if %gtap_version% == "gtap11a" $set gtap_name GDX11a
 $if %gtap_version% == "gtap11b" $set gtap_name GDX11b
+$if %gtap_version% == "gtap11c" $set gtap_name GDX11c
 
 *	Which year? (NB! GTAP uses two digit years in Zip file names)
 

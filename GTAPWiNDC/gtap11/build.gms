@@ -34,11 +34,9 @@ $if not dexist "%system.fp%%gtap_version%" $call rmdir /q /s '%system.fp%%gtap_v
 $call mkdir "%system.fp%%gtap_version%"
 
 
-set
-	yr		Base years /%year%/,
-	reltol		Filter tolance / %relative_tolerance%/
-	target		Aggregations / %aggregation% /;
-
+set	yr		Base years /%year%/,
+	reltol		Filter tolance /%relative_tolerance%/
+	target		Aggregations /%aggregation%/;
 
 parameter	myerrorlevel	Assigned to error level of the latest executation statement;
 

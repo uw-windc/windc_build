@@ -121,13 +121,13 @@ sb(s) = yes$(not sameas(s,"rest"));
 
 alias (sb,ssb);
 
-exports(ib(i))..	vxm(i,"usa") =e= sum(sb(s), S_XREF(i,s));
+exports(ib(i))..		vxm(i,"usa") =e= sum(sb(s), S_XREF(i,s));
 
-imports(ib(i))..	vim(i,"usa") =e= sum(sb(s), S_VIFM(i,s));
+imports(ib(i))..		vim(i,"usa") =e= sum(sb(s), S_VIFM(i,s));
 
 absorption(ib(i),sb(s))..	S_A0(i,s) =e= sum(ssb(ss), S_VDFM(i,ss,s)*(1+rtd0(i,"usa",s))) + S_VIFM(i,s)*(1+rtm0(i,"usa",s));
 
-output(ib(i),sb(s))..	vom(i,"usa",s) =e= S_XREF(i,s) + sum(ss, S_VDFM(i,s,ss));
+output(ib(i),sb(s))..		vom(i,"usa",s) =e= S_XREF(i,s) + sum(ssb(ss), S_VDFM(i,s,ss));
 
 *	a	Target value
 *	b	Estimated value
@@ -227,3 +227,5 @@ a0_(i,sb(s)) = S_A0.L(i,s);
 xref(i,sb(s)) = S_XREF.L(i,s);
 dref(i,sb(s)) = sum(ss,vdfm_(i,s,ss));
 
+chk(s,itrd(i)) = round(yref(i,s) - xref(i,s) - dref(i,s),3);
+display chk;
