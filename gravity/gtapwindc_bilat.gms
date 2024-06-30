@@ -109,7 +109,7 @@ set	pnm(i,r)	Pooled national market,
 
 
 $ontext
-$model:gtapwindc
+$model:gtapwindc_b
 
 $funlog:.true.
 
@@ -221,24 +221,29 @@ $demand:INV(r)
 	e:PC(rnum,"rest","rest")	q:(vb(r)+sum(rh_(r,s,h),sav0(r,s,h)))
 
 $offtext
-$sysinclude mpsgeset gtapwindc
+$sysinclude mpsgeset gtapwindc_b
 
-gtapwindc.workspace = 1024;
-gtapwindc.iterlim = 0;
+gtapwindc_b.workspace = 1024;
+gtapwindc_b.iterlim = 0;
 
 *	All markets are pooled in the original GTAPWiNDC dataset:
 
 pnm(i,r) = yes;
 bnm(i,r) = no;
 
-
 *	Replicate: %replicate%
 
 $if "%replicate%"=="no" $exit
 
 gtapwindc.iterlim = 0;
-$include gtapwindc.gen
-solve gtapwindc using mcp;
+$include gtapwindc_b.gen
+solve gtapwindc_b using mcp;
+
+parameter	debug;
+debug("bilat", z_(bnm(i,r),s)) = Z.M(i,r,s);
+debug("pooled",z_(pnm(i,r),s)) = Z.M(i,r,s);
+option debug:3:0:1;
+display debug;
 
 $exit
 

@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-$set start replicate
+*.$set start replicate
 
 *---------------------- 
 * run after the core and household builds are complete!! 
@@ -41,14 +41,14 @@ $set debug yes
 $set pause yes
 * ------------------------------------------------------------------------
 *	Create all the directories for running the script
-*   %system.dirsep% is necessary here because windows
+*	%system.dirsep% is necessary here because Unix uses "/" rather than "\"
 
 $set datasets "%year%"
 
-$if not dexist %datasets%		  $call mkdir %datasets%
+$if not dexist %datasets%			  $call mkdir %datasets%
 $if not dexist %datasets%%system.dirsep%windc	  $call mkdir "%datasets%%system.dirsep%windc"
 $if not dexist %datasets%%system.dirsep%gtapwindc $call mkdir "%datasets%%system.dirsep%gtapwindc"
-$if not dexist lst		  $call mkdir lst
+$if not dexist lst				  $call mkdir lst
 
 * ------------------------------------------------------------------------
 *	Jump to a starting point:
@@ -59,9 +59,9 @@ $if set start $goto %start%
 *----------------------------------------
 * Test if the target aggregation exists. If not, generate the aggregation
 *----------------------------------------
-$ifThen not exist "%gtapingams%/%gtap_version%/%year%/g20_32.gdx"
+$ifthen.g20_32 not exist "%gtapingams%/%gtap_version%/%year%/g20_32.gdx"
 $call gams %gtapingams%build.gms --year=%year% --aggregation=g20_32 --gtap_zip_path=%gtap_zip_path% --gtap_version=%gtap_version% o=lst/gtap.lst 
-$endif
+$endif.g20_32
 
 
 * ------------------------------------------------------------------------
@@ -197,7 +197,6 @@ $if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gta
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge.gms with g20_43_stub"
 
-
 $label agrdisagg
 * ------------------------------------------------------------------------
 *	Disaggregate the agricultural sectors in the 32 sector WiNDC
@@ -272,7 +271,7 @@ $label replicate
 $log	"Ready to verify consistency of datasets/gtapwindc/43_filtered.gdx "
 $if not %pause%==no $call pause
 
-$if not %debug%==no $call gamskeep gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/43_filtered.gdx o=lst/gtapwindc_mge_43_filtered.lst 
+$if not %debug%==no $call gams gtapwindc_mge --gtapwindc_datafile=%datasets%/gtapwindc/43_filtered.gdx o=lst/gtapwindc_mge_43_filtered.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from gtapwindc_mge for 43_filtered.gdx"
 $if errorlevel 1 $abort "Non-zero return code from gtapwindc_mge for for 43_filtered.gdx"

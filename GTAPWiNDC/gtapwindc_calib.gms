@@ -3,8 +3,8 @@ $title	Code for Model Calibration
 variable	OBJ		Objective function;
 
 nonnegative
-variables	NS0_(i,r,s)	Region supply to the national market 
-		ND0_(i,r,s)	Regional demand from national market,
+variables	NS0_(i,mkt,r,s)	Region supply to the national market 
+		ND0_(i,mkt,r,s)	Regional demand from national market,
 
 		XS0_(i,r,s)	Export supply
 		MD0_(i,r,s)	Import demand
@@ -46,8 +46,8 @@ equations	objdef,
 		market_pg, market_py, market_pn, market_pz, market_pm, market_pl, market_ps, 
 		profit_y, profit_z, profit_x;
 
-objdef..	OBJ =e= target(ns0, NS0_,	"i,r,s",   "i,rb(r),s") +
-			target(nd0, ND0_,	"i,r,s",   "i,rb(r),s") +
+objdef..	OBJ =e= target(ns0, NS0_,	"i,mkt,r,s",   "i,mkt,rb(r),s") +
+			target(nd0, ND0_,	"i,mkt,r,s",   "i,mkt,rb(r),s") +
 			target(xs0, XS0_,	"i,r,s",   "i,rb(r),s") +
 			target(md0, MD0_,	"i,r,s",   "i,rb(r),s") +
 			target(vom, VOM_,	"g,r,s",   "g,rb(r),s") +
@@ -58,14 +58,14 @@ objdef..	OBJ =e= target(ns0, NS0_,	"i,r,s",   "i,rb(r),s") +
 market_pg(rb(r))..		sum(s,VOM_("g",r,s)) =e=
 				- sum((i,rr),		rtxs(i,r,rr)*vxmd(i,r,rr))
 				+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-				+ sum(z_(i,r,s),	rtd(i,r,s) * ND0_(i,r,s) + rtm(i,r,s)*MD0_(i,r,s))
+				+ sum(z_(i,r,s),	rtd(i,r,s) * sum(mkt,ND0_(i,mkt,r,s)) + rtm(i,r,s)*MD0_(i,r,s))
 				+ sum((g,s),		rto(g,r)   * VOM_(g,r,s))
 				+ sum((f,y_(g,r,s)),	rtf(f,g,r) * VFM_(f,g,r,s))
 				- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn));
 
-market_py(y_(i,rb(r),s))..	VOM_(i,r,s) =e= sum(x_(i,r), XS0_(i,r,s)) + sum(n_(i,r), NS0_(i,r,s));
+market_py(y_(i,rb(r),s))..	VOM_(i,r,s) =e= sum(x_(i,r), XS0_(i,r,s)) + sum(n_(i,mkt,r), NS0_(i,mkt,r,s));
 
-market_pn(pn_(i,rb(r)))..	sum((n_(i,r),s),NS0_(i,r,s)) =e= sum(z_(i,r,s),ND0_(i,r,s));
+market_pn(pn_(i,mkt,rb(r)))..	sum((n_(i,mkt,r),s),NS0_(i,mkt,r,s)) =e= sum(z_(i,r,s),ND0_(i,mkt,r,s));
 
 market_pz(pz_(i,rb(r),s))..	A0_(i,r,s) =e= sum(y_(g,r,s),VAFM_(i,g,r,s)) + sum(c_(r,s,h),cd0(i,r,s,h));
 
@@ -75,9 +75,9 @@ market_pl(pf_(mf,rb(r),s))..	sum(h,evomh(mf,r,s,h)) =e= sum(g,VFM_(mf,g,r,s));
 
 market_ps(sf,rb(r))..		sum((h,s),evomh(sf,r,s,h)) =e= sum((g,s),VFM_(sf,g,r,s));
 
-profit_y(y_(y_(g,rb(r),s)))..	VOM_(g,r,s)*(1-rto(g,r)) =e= sum(i,VAFM_(i,g,r,s)) + sum(f,VFM_(f,g,r,s)*(1+rtf(f,g,r)));
+profit_y(y_(g,rb(r),s))..	VOM_(g,r,s)*(1-rto(g,r)) =e= sum(i,VAFM_(i,g,r,s)) + sum(f,VFM_(f,g,r,s)*(1+rtf(f,g,r)));
 
-profit_z(z_(i,rb(r),s))..	A0_(i,r,s) =e= (1+rtd(i,r,s))*ND0_(i,r,s) + (1+rtm(i,r,s))*MD0_(i,r,s);
+profit_z(z_(i,rb(r),s))..	A0_(i,r,s) =e= (1+rtd(i,r,s))*sum(mkt,ND0_(i,mkt,r,s)) + (1+rtm(i,r,s))*MD0_(i,r,s);
 
 profit_x(x_(i,rb(r)))..		sum(s, XS0_(i,r,s)) =e= vxm(i,r);
 
@@ -93,8 +93,6 @@ calib.holdfixed = yes;
 
 parameter	dev	Deviation (change in nonzero count);
 
-*	
-
 vxm(i,rb(r)) = vst(i,r) + sum(rr,vxmd(i,r,rr));
 vim(i,rb(r)) = sum(rr, vxmd(i,rr,r)*pvxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r)*pvtwr(i,rr,r)));
 
@@ -102,8 +100,8 @@ parameter	pgchk(iter)	Cross check on PG market;
 
 dev = 1;
 loop(iter$dev,
-	setlevel(NS0_, ns0, "i,r,s", "i,rb(r),s") 
-	setlevel(ND0_, nd0, "i,r,s", "i,rb(r),s") 
+	setlevel(NS0_, ns0, "i,mkt,r,s", "i,mkt,rb(r),s") 
+	setlevel(ND0_, nd0, "i,mkt,r,s", "i,mkt,rb(r),s") 
 	setlevel(XS0_, xs0, "i,r,s", "i,rb(r),s") 
 	setlevel(MD0_, md0, "i,r,s", "i,rb(r),s") 
 	setlevel(VOM_, vom, "g,r,s", "g,rb(r),s") 
@@ -114,8 +112,8 @@ loop(iter$dev,
 	vfm(f,g,r,s)$(not vom(g,r,s)) = 0;
 	evom(sf,r,s) = sum(g,vfm(sf,g,r,s));
 
-	NS0_.FX(i,rb(r),"rest") = 0;
-	ND0_.FX(i,rb(r),"rest") = 0;
+	NS0_.FX(i,mkt,rb(r),"rest") = 0;
+	ND0_.FX(i,mkt,rb(r),"rest") = 0;
 	XS0_.FX(i,rb(r),"rest") = 0;
 	MD0_.FX(i,rb(r),"rest") = 0;
 	VOM_.FX(g,rb(r),"rest") = 0;
@@ -125,15 +123,17 @@ loop(iter$dev,
 
 	VOM_.FX("i",rb(r),s) = vom("i",r,s);
 	XS0_.FX(i,rb(r),s)$(not y_(i,r,s)) = 0;
-	NS0_.FX(i,rb(r),s)$(not y_(i,r,s)) = 0;
+	NS0_.FX(i,mkt,rb(r),s)$(not y_(i,r,s)) = 0;
+	VFM_.FX(f,g,rb(r),s)$(not y_(g,r,s)) = 0;
+	VAFM_.FX(i,g,rb(r),s)$(not y_(g,r,s)) = 0;
 
 	option qcp = cplex;
 	solve calib using qcp minimizing obj;
 
 	abort$(calib.modelstat>2) "Calibration fails -- you will need to check this dataset more carefully";
 
-	readsolution(NS0_, ns0, "i,r,s", "i,rb(r),s")
-	readsolution(ND0_, nd0, "i,r,s", "i,rb(r),s")
+	readsolution(NS0_, ns0, "i,mkt,r,s", "i,mkt,rb(r),s")
+	readsolution(ND0_, nd0, "i,mkt,r,s", "i,mkt,rb(r),s")
 	readsolution(XS0_, xs0, "i,r,s", "i,rb(r),s")
 	readsolution(MD0_, md0, "i,r,s", "i,rb(r),s")
 	readsolution(VOM_, vom, "g,r,s", "g,rb(r),s")
@@ -141,11 +141,10 @@ loop(iter$dev,
 	readsolution(VAFM_, vafm, "i,g,r,s", "i,g,rb(r),s")
 	readsolution(A0_,  a0,  "i,r,s",  "i,rb(r),s")
 
-
 	y_(g,r,s) = vom(g,r,s);
 	x_(i,r) = vxm(i,r);
-	n_(i,r) = vnm(i,r);
-	pn_(i,r) = n_(i,r);
+	n_(i,mkt,r) = vnm(i,mkt,r);
+	pn_(i,mkt,r) = n_(i,mkt,r);
 	z_(i,r,s) = a0(i,r,s);
 	c_(r,s,h) = c0(r,s,h);
 	ft_(sf,r,s) = evom(sf,r,s);
@@ -164,7 +163,7 @@ loop(iter$dev,
 			sum(s$(not sameas(s,"rest")), vom("g",r,s))
 			- (-sum((i,rr),		rtxs(i,r,rr)*vxmd(i,r,rr))
 			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * sum(mkt,nd0(i,mkt,r,s)) + rtm(i,r,s)*md0(i,r,s))
 			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
 			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
 			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
@@ -186,7 +185,7 @@ chk_PG("rtxs") = sum(r$sameas(r,"usa"),
 chk_PG("rtms") = sum(r$sameas(r,"usa"),
 			sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r))));
 chk_PG("rtd") = sum(r$sameas(r,"usa"),
-			sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s)));
+			sum(z_(i,r,s),	rtd(i,r,s) * sum(mkt,nd0(i,mkt,r,s)) + rtm(i,r,s)*md0(i,r,s)));
 chk_PG("rto") = sum(r$sameas(r,"usa"),
 			sum((g,s),		rto(g,r)   * vom(g,r,s)));
 chk_PG("rtf") = sum(r$sameas(r,"usa"),
@@ -198,7 +197,7 @@ chk_PG("chk") = sum(r$sameas(r,"usa"),
 			sum(s$(not sameas(s,"rest")), vom("g",r,s))
 			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
 			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * sum(mkt,nd0(i,mkt,r,s)) + rtm(i,r,s)*md0(i,r,s))
 			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
 			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
 			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
@@ -213,7 +212,7 @@ chk_PG = sum(r$sameas(r,"usa"),
 			sum(s$(not sameas(s,"rest")), vom("g",r,s))
 			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
 			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum(z_(i,r,s),	rtd(i,r,s) * sum(mkt,nd0(i,mkt,r,s)) + rtm(i,r,s)*md0(i,r,s))
 			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
 			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
 			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));

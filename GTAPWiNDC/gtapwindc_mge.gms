@@ -2,12 +2,10 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 *	Read the data:
 
-$if not set ds $set ds 43
+*.$if not set ds $set ds 43_filtered
+$if not set ds $set ds 43_stub
 
 $if not defined y_ $include %system.fp%gtapwindc_data
-
-set	pk_(f,r)	Capital market;
-pk_(sf,r) = sum(s,evom(sf,r,s));
 
 $ontext
 $model:gtapwindc
@@ -15,18 +13,18 @@ $model:gtapwindc
 $sectors:
 	Y(g,r,s)$y_(g,r,s)		  ! Production (includes I and G)
 	X(i,r)$x_(i,r)			  ! Export demand
-	N(i,r)$n_(i,r)			  ! National market demand
+	N(i,mkt,r)$n_(i,mkt,r)		  ! National market supply
 	Z(i,r,s)$z_(i,r,s)		  ! Armington demand
 	C(r,s,h)$c_(r,s,h)		  ! Consumption 
 	FT(sf,r)$pk_(sf,r)		  ! Specific factor transformation
-	FTS(sf,r,s)$evom(sf,r,s)		  ! Specific factor transformation -- state level
+	FTS(sf,r,s)$evom(sf,r,s)	  ! Specific factor transformation -- state level
 	M(i,r)$m_(i,r)			  ! Import
 	YT(j)$yt_(j)			  ! Transport
 
 $commodities:
 	PY(g,r,s)$py_(g,r,s)		  ! Output price
 	PZ(i,r,s)$pz_(i,r,s)		  ! Armington composite price
-	PN(i,r)$pn_(i,r)		  ! National market price
+	PN(i,mkt,r)$pn_(i,mkt,r)	  ! National market price
 	P(i,r)$p_(i,r)			  ! Export market price
 	PC(r,s,h)$pc_(r,s,h)		  ! Consumption price 
 	PL(mf,r,s)$pf_(mf,r,s)		  ! Wage income
@@ -53,16 +51,15 @@ $prod:X(i,r)$x_(i,r)  s:esubx(i)
 	o:P(i,r)	q:vxm(i,r)
 	i:PY(i,r,s)	q:xs0(i,r,s)
 
-*	Supply to the domestic market:
-
-$prod:N(i,r)$n_(i,r)  s:esubn(i)
-	o:PN(i,r)	q:vnm(i,r)
-	i:PY(i,r,s)	q:ns0(i,r,s)
-
-$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)
+$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn:esubn(i)
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) 
+	i:PY(i,r,s)	q:yd0(i,r,s)    dn:
+	i:PN(i,mkt,r)	q:nd0(i,mkt,r,s) a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
+
+$prod:N(i,mkt,r)$n_(i,mkt,r)  s:esubn(i)
+	o:PN(i,mkt,r)	q:vnm(i,mkt,r)
+	i:PY(i,r,s)	q:ns0(i,mkt,r,s)
 
 $prod:FT(sf,r)$pk_(sf,r)  t:0
 	o:PKS(sf,r,s)	q:evom(sf,r,s)
@@ -114,33 +111,6 @@ $sysinclude mpsgeset gtapwindc
 gtapwindc.workspace = 1024;
 gtapwindc.iterlim = 0;
 
-parameter	chk_PG;
-chk_PG("vom") = sum(r$sameas(r,"usa"),
-			sum(s$(not sameas(s,"rest")), vom("g",r,s)));
-chk_PG("rtxs") = sum(r$sameas(r,"usa"),
-			-sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr)));
-chk_PG("rtms") = sum(r$sameas(r,"usa"),
-			sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r))));
-chk_PG("rtd") = sum(r$sameas(r,"usa"),
-			sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s)));
-chk_PG("rto") = sum(r$sameas(r,"usa"),
-			sum((g,s),		rto(g,r)   * vom(g,r,s)));
-chk_PG("rtf") = sum(r$sameas(r,"usa"),
-			sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s)));
-chk_PG("hhtrn0") = sum(r$sameas(r,"usa"),
-			sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn)));
-
-chk_PG("chk") = sum(r$sameas(r,"usa"),
-			sum(s$(not sameas(s,"rest")), vom("g",r,s))
-			- ( -sum((i,rr),	rtxs(i,r,rr)*vxmd(i,r,rr))
-			+ sum(m_(i,rr),		rtms(i,rr,r)*(sum(j,vtwr(j,i,rr,r))+(1-rtxs(i,rr,r))*vxmd(i,rr,r)))
-			+ sum(z_(i,r,s),	rtd(i,r,s) * nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
-			+ sum((g,s),		rto(g,r)   * vom(g,r,s))
-			+ sum((f,y_(g,r,s)),	rtf(f,g,r) * vfm(f,g,r,s))
-			- sum((rh_(r,s,h),trn), hhtrn0(r,s,h,trn))));
-option chk_PG:3:0:1;
-display chk_PG;
-
 *	Assume that land can move freely across sectors within each state:
 
 etrae("lnd") = 8;
@@ -165,7 +135,7 @@ incomechk(r) = sum((s,h),c0(r,s,h)) + sum(s,vom("g",r,s) + vom("i",r,s))
 	- sum((f,s,h),evomh(f,r,s,h))
 	- vb(r) 
 	- (	  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-		+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+		+ sum((i,mkt,s), rtd(i,r,s)*nd0(i,mkt,r,s) + rtm(i,r,s)*md0(i,r,s))
 		+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 		+ sum(g, rto(g,r)*sum(s,vom(g,r,s))) );
 display incomechk;
@@ -181,7 +151,7 @@ macroaccounts("$",r,"L") = sum((lf(f),s,h),evomh(lf,r,s,h));
 macroaccounts("$",r,"K") = sum((kf(f),s,h),evomh(kf,r,s,h));
 macroaccounts("$",r,"F") = vb(r);
 macroaccounts("$",r,"T") =  sum((i,rr), rtms(i,rr,r)*((1-rtxs(i,rr,r))*vxmd(i,rr,r)+sum(j,vtwr(j,i,rr,r))) - rtxs(i,r,rr)*vxmd(i,r,rr))
-			+ sum((i,s), rtd(i,r,s)*nd0(i,r,s) + rtm(i,r,s)*md0(i,r,s))
+			+ sum((i,mkt,s), rtd(i,r,s)*nd0(i,mkt,r,s) + rtm(i,r,s)*md0(i,r,s))
 			+ sum((f,g), rtf(f,g,r)*sum(s,vfm(f,g,r,s)))
 			+ sum(g, rto(g,r)*sum(s,vom(g,r,s)));
 

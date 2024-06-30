@@ -6,7 +6,7 @@ $title	Disaggregate Agricultural Sectors in a WiNDC Dataset
 $if not set year  $set year 2017
 
 $if not set datadir $set datadir ../household/datasets/
-$if not set ds $set ds cps_static_gtap_32_state
+$if not set ds $set ds cps_static_all_2017_gtap_32_state
 
 $if not set dsout $set dsout %year%/windc/43.gdx
 

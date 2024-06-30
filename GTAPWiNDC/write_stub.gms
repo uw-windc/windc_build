@@ -2,7 +2,7 @@ $title	GTAPinGAMS Model in Canonical Form -- Produce a Stub Dataset
 
 *.$set fs %system.dirsep%
 
-$if not set dsout $set dsout datasets/gtapwindc/32_stub
+$if not set dsout $set dsout 2017/gtapwindc/43_stub
 
 
 *-----------------------
@@ -14,7 +14,7 @@ $if not set dsout $set dsout datasets/gtapwindc/32_stub
 
 $include %system.fp%gtapingams
 
-$if not set ds $set ds g20_32
+$if not set ds $set ds g20_43
 
 
 $include %gtapingams%gtapdata
@@ -25,7 +25,14 @@ alias (s,r);
 sets	s_		Subregions /rest/
 	h(*)		Households /rest/
 
-	trn	Transfer types /
+*	At this point we have a singleton.  After gravity estimation we
+*	can have national, census or state-level markets:
+
+set		mkts		Markets /pooled/;
+
+singleton set	mkt(mkts)	Markets /pooled/;
+
+set	trn	Transfer types /
 		hucval   unemployment compensation
 		hwcval   workers compensation
 		hssval   social security
@@ -46,18 +53,19 @@ parameters
 
 *	Parameters which are added to create the subnational model:
 
-	s0_(i,r,s_)	Aggregate commodity supply,
+	s0_(i,r,s_)		Aggregate commodity supply,
 
-	ns0_(i,r,s_)	National market supply
-	xs0_(i,r,s_)	Export supply
+	ns0_(i,mkts,r,s_)	National market supply
+	xs0_(i,r,s_)		Export supply
 
-	vxm_(i,r)	Aggregate exports at market prices
-	vnm_(i,r)	Aggregate national market supply,
+	vxm_(i,r)		Aggregate exports at market prices
+	vnm_(i,mkts,r)		Aggregate national market supply,
 
-	a0_(i,r,s_)	Absorption,
-	yl0_(i,r,s_)	Local domestic absorption,
-	nd0_(i,r,s_)	National market domestic absorption,
-	md0_(i,r,s_)	Import absorption,
+	a0_(i,r,s_)		Absorption,
+	yl0_(i,r,s_)		Local domestic absorption,
+	yd0_(i,r,s_)		Local absorption
+	nd0_(i,mkts,r,s_)	National market domestic absorption,
+	md0_(i,r,s_)		Import absorption,
 
 	c0_(r,s_,h)	    Total household consumption,
 	cd0_(i,r,s_,h)	Household consumption at market prices,
@@ -98,15 +106,16 @@ a0_(i,r,s_) = sum(g,vafm_(i,g,r,s_)) + sum(h,cd0_(i,r,s_,h));
 
 yl0_(i,r,s_) = 0;
 md0_(i,r,s_) = sum(g,vifm(i,g,r));
-nd0_(i,r,s_) = sum(g,vdfm(i,g,r));
+nd0_(i,mkt,r,s_) = sum(g,vdfm(i,g,r));
+yd0_(i,r,s_) = 0;
 
 xs0_(i,r,s_) = sum(s,vxmd(i,r,s)) + vst(i,r);
-ns0_(i,r,s_) = vom(i,r) - xs0_(i,r,s_);
+ns0_(i,mkt,r,s_) = vom(i,r) - xs0_(i,r,s_);
 vxm_(i,r) = sum(s_,xs0_(i,r,s_));
-vnm_(i,r) = sum(s_,ns0_(i,r,s_));
+vnm_(i,mkt,r) = sum(s_,ns0_(i,mkt,r,s_));
 
 
-rtd_(i,r,s_)$nd0_(i,r,s_) = sum(g,rtfd(i,g,r)*vdfm(i,g,r))/nd0_(i,r,s_);
+rtd_(i,r,s_)$nd0_(i,mkt,r,s_) = sum(g,rtfd(i,g,r)*vdfm(i,g,r))/nd0_(i,mkt,r,s_);
 rtm_(i,r,s_)$md0_(i,r,s_) = sum(g,rtfi(i,g,r)*vifm(i,g,r))/md0_(i,r,s_);
 
 rtd0_(i,r,s_) = rtd_(i,r,s_);
@@ -148,7 +157,7 @@ esubm(i) = 2 * esubdm(i);
 execute_unload '%dsout%',
 	r,s_=s,g_=g,i_=i,g_=a,h,f,sf,mf,trn,
 	vom_=vom, vafm_=vafm, vfm_=vfm, 
-	a0_=a0, yl0_=yl0, md0_=md0, nd0_=nd0, c0_=c0, cd0_=cd0, ns0_=ns0, xs0_=xs0,
+	a0_=a0, yl0_=yl0, md0_=md0, yd0_=yd0, nd0_=nd0, c0_=c0, cd0_=cd0, ns0_=ns0, xs0_=xs0,
 	evom_=evom, evomh_=evomh, 
 	rtd0_=rtd0, rtm0_=rtm0, esube_=esube,
 	etrndn_=etrndn, hhtrn0, sav0,
