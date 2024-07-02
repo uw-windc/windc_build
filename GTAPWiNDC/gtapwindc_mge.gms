@@ -51,11 +51,12 @@ $prod:X(i,r)$x_(i,r)  s:esubx(i)
 	o:P(i,r)	q:vxm(i,r)
 	i:PY(i,r,s)	q:xs0(i,r,s)
 
-$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn:esubn(i)
+$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn(dn):esubn(i)
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,s)	q:yd0(i,r,s)    dn:
+	i:PY(i,r,s)	q:yd0(i,r,s)	 a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) dn:
 	i:PN(i,mkt,r)	q:nd0(i,mkt,r,s) a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
-	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
+	i:PY(i,r,ss)	q:bd0(i,r,ss,s)  a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
+	i:PM(i,r)	q:md0(i,r,s)	 a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
 
 $prod:N(i,mkt,r)$n_(i,mkt,r)  s:esubn(i)
 	o:PN(i,mkt,r)	q:vnm(i,mkt,r)

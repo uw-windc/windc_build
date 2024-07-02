@@ -1,0 +1,110 @@
+Version information:
+GDXXRW           46.4.1 485757e2 Apr 16, 2024          WEI x86 64bit/MS Window
+
+Example call:
+   GDXXRW data.xls Par=X Rng=sheet2!b2 Dim=2
+Reading or Writing a spreadsheet:
+   GAMS type
+      Par=<id>                 : parameter
+      Set=<id>                 : set
+      Set=<id> Values=<VType>  : set with data option
+                                 reading from Excel    writing to Excel
+                                 <VType> = NoData      = NoData
+                                         = YN          = YN
+                                         = Sparse      = String
+                                         = Dense                                          
+      DSet=<id>                : domain-set, dim=1, duplicates allowed
+      Var=<id>                 : variable
+      Equ=<id>                 : equation
+   Dimensions:
+      Dim=<integer>            : dimension
+      CDim=<integer>           : number of rows for the column
+      RDim=<integer>           : number of columns for the row
+   Range:
+      Rng=<excel-range>        : Sheet is optional
+                               : Top left corner or a block
+      IgnoreRows=n,m:n         : One or more rows to be ignored when reading the symbol
+      IgnoreColumns=A,A:B      : One or more columns to be ignored when reading the symbol
+   Implied merged cells:
+      ColMerge=<integer>       : Number of columns that propagate cells in a row header
+   Directives:
+      @<filename>              : read parameters from file
+      Index=<excel-range>      : read parameters from spreadsheet
+   Empty Rows or Columns:
+      SkipEmpty=<integer>      : Also SE=<integer>
+                                 0 Empty row/column is end of data
+                                 n N empty rows/columns will be ignored
+   Use merged cell values:
+      CMerge=<integer>         : 0 Do not use merged cell value
+                                 1 In row and column headers only
+                                 2 All cells
+   Process acronyms:
+      Acronyms=<integer>       : 0 Do not process acronyms
+                                 1 Process acronyms
+   Create Excel filter(s):
+      Filter=<integer>         : 0 Do not create filter (default)
+                                 >0 Create filter for symbols that follow
+
+Immediate Options:
+   Files:
+      Input=<filename>         : input file
+      Output=<filename>        : output file
+      Log=<filename>           : log file
+      LogAppend=<filename>     : Append to log file
+      PassWord=<password>      : Specify password for Excel file
+   Debugging:
+      Trace=<integer>
+   Excel:
+      UpdLinks=<integer>       : 0 Do not update any references
+                                 1 External references=Y, remote references=N
+                                 2 External references=N, remote references=Y
+                                 3 Updates both remote and external references
+      RunMacros=<integer>      : 0 Do not execute any macros
+                                 1 Executes Auto_open macro
+                                 2 Executes Auto_close macro
+                                 3 Executes Auto_open and Auto_close macro
+      RWait=<integer>          : Introduce a delay (in ms) after opening file
+      CheckDate                : Write result file only if the input file is
+                                 more recent than the output file
+      UseRC                    : Use R1C1 notation for cells and ranges
+Reading from a spreadsheet:
+      Squeeze=flag             : Also SQ; default=Y
+                                 N Store default values
+                                 Y Default values are not stored
+      TrimLeft=flag            : default=Y
+                                 N Trailing blanks only are trimmed when reading labels and text from Excel
+                                 Y Leading and trailing blanks are trimmed when reading labels and text from Excel
+      AllUELs=flag             : default=Y
+                                 N UELS not used for data are not stored
+                                 Y All UELs of the range are stored
+      MaxDupeErrors=<integer>  : Number of allowed duplicate data entries
+      NaIn=<string>            : Specify additional string to recognize NA
+      DSetText=flag            : default=N
+                                 N Do not try to read explanatory text
+                                 Y Read explanatory text right next/below to UEL
+Writing to a spreadsheet:
+   Data merging:
+      Merge                    : Write matching rows/labels only
+      Clear                    : Like Merge, but clear data before writing
+      ReCalc=flag              : 0 No automatic recalculation for every write
+                               : 1 Do not change recalculation
+   Text=<string>               : Write text string in a cell; specify Rng for location
+   HText=<string>              : Write text strings in a row; specify Rng for location
+   VText=<string>              : Write text strings in a column; specify Rng for location
+   TextId=<string>             : Write identifier and explanatory text;
+                                 specify Rng for location
+      Link=<string>            : Hyperlink
+      LinkId=<id>              : Hyperlink to symbol written
+   Output Strings:
+      ResetOut
+      EpsOut=<string>
+      NaOut=<string>
+      MInfOut=<string>
+      PInfOut=<string>
+      UndfOut=<string>
+      ZeroOut=<string>
+   Default Values:
+      Squeeze=flag             : Also SQ; default=Y
+                                 N Write all values including defaults
+                                 Y Write non-default values only
+   IntAsText=flag              : Write UELs as text when an integer; default=Y

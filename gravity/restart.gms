@@ -1,8 +1,10 @@
-set	rb(r) /usa/;
+$title	Filter and Save Trade Data
+
+singleton set	rb(r) /usa/;
 
 parameter	mktchk;
 mktchk(itrd(i),rb(r),s,"supply") = round(vom(i,r,s) - (xs_0(i,s) + sum(ss,bvdfm(i,s,ss))),3);
-mktchk(itrd(i),rb(r),s,"demand") = round(a0(i,"usa",s) - (bvifm(i,s)*(1+rtm0(i,r,s)) +
+mktchk(itrd(i),rb(r),s,"demand") = round(a0(i,rb,s) - (bvifm(i,s)*(1+rtm0(i,r,s)) +
 				sum(ss,bvdfm(i,ss,s)*(1+rtd0(i,r,s)))),3);
 option mktchk:3:3:1;
 display mktchk;
@@ -48,31 +50,31 @@ parameter	abstol	Absolute tolerance /1e-5/
 
 bvdfm(i,s,ss)$(bvdfm(i,s,ss)<abstol) = 0;
 bvifm(i,s)$(bvifm(i,s)<abstol) = 0;
-bvdfm(i,s,s)$(not bvdfm(i,s,s)) = 0.5 * vom(i,"usa",s);
-
+bvdfm(i,s,s)$(not bvdfm(i,s,s)) = 0.5 * vom(i,rb,s);
 SOLVE lsqr USING QCP minimizing OBJ;
 
 BVDFM_.FX(i,s,ss)$(bvdfm_.L(i,s,ss)<abstol) = 0;
 BVIFM_.FX(i,s)$(bvifm_.l(i,s)<abstol) = 0;
-
 SOLVE lsqr USING QCP minimizing OBJ;
 
-parameter	vdfm(i,r,s,ss)	Bilateral trade
+parameter	bd0(i,r,s,ss)	Bilateral trade
 		vifm(i,r,s)	Imports
 		yd0(i,r,s)	Domestic supply and demand;
 
-vdfm(itrd(i),"usa",s,ss) = BVDFM_.L(i,s,ss);
+bd0(itrd(i),rb,s,ss) = BVDFM_.L(i,s,ss);
 option bvdfm:3:0:1;
 display bvdfm;
 
-vifm(itrd(i),"usa",s) = BVIFM_.L(i,s);
+vifm(itrd(i),rb,s) = BVIFM_.L(i,s);
 
-a0(itrd(i),"usa",s) = sum(ss,	vdfm(i,"usa",ss,s)*(1+rtd0(i,"usa",s))) + 
-				vifm(i,"usa",s)    *(1+rtm0(i,"usa",s));
-xs0(itrd(i),"usa",s) = xs_0(i,s);
-nd0(itrd(i),"usa",s) = nd_0(i,s);
-md0(itrd(i),"usa",s) = md_0(i,s);
-yd0(itrd(i),"usa",s) = yd_0(i,s);
+a0(itrd(i),rb,s) = sum(ss,	bd0(i,rb,ss,s)*(1+rtd0(i,rb,s))) + 
+				vifm(i,rb,s)    *(1+rtm0(i,rb,s));
+xs0(itrd(i),rb,s) = xs_0(i,s);
+nd0(itrd(i),rb,s) = nd_0(i,s);
+md0(itrd(i),rb,s) = md_0(i,s);
+yd0(itrd(i),rb,s) = yd_0(i,s);
+
+$exit
 
 set	pnm(i,r)	Pooled national market
 	bnm(i,r)	Bilateral national markets;
@@ -200,7 +202,104 @@ gtapwindc_b.iterlim = 0;
 $include gtapwindc_b.gen
 solve gtapwindc_b using mcp;
 
-bnm(itrd,"usa") = yes;
-pnm(itrd,"usa") = no;
+bnm(itrd,rb) = yes;
+pnm(itrd,rb) = no;
 $include gtapwindc_b.gen
 solve gtapwindc_b using mcp;
+
+
+$eolcom !
+
+* Define aggregation to Census divisions
+
+set	r9      Census divisions /
+		neg     "New England" 
+		mid     "Mid Atlantic" 
+		enc     "East North Central" 
+		wnc     "West North Central" 
+		sac     "South Atlantic" 
+		esc     "East South Central" 
+		wsc     "West South Central" 
+		mtn     "Mountain" 
+		pac     "Pacific" /;
+
+set     r9map(r9,r)      Mapping of target regions rr and source regions r /
+		   neg.(ct,me,ma,nh,ri,vt)
+		   mid.(nj,ny,pa)
+		   enc.(il,in,mi,oh,wi)
+		   wnc.(ia,ks,mn,mo,ne,nd,sd)
+		   sac.(de,fl,ga,md,dc,nc,sc,va,wv)
+		   esc.(al,ky,ms,tn)
+		   wsc.(ar,la,ok,tx)
+		   mtn.(az,co,id,mt,nv,nm,ut,wy)
+		   pac.(ak,ca,hi,or,wa) /;
+
+
+set   r4           Aggregated regions /
+               nor    ! northeast
+	       mid    ! midwest
+	       sou    ! south
+	       wes    ! west
+      /;
+
+set   r4map(r4,r)   Mapping between census divisions and states /
+         nor.(        
+               ct     ! connecticut
+	       me     ! maine
+	       ma     ! massachusetts
+	       nh     ! new hampshire
+	       ri     ! rhode island
+	       vt     ! vermont
+	       nj     ! new jersey
+	       ny     ! new york
+	       pa     ! pennsylvania
+             )
+         mid.(        
+	       in     ! indiana
+	       il     ! illinois
+	       mi     ! michigan
+	       oh     ! ohio
+	       wi     ! wisconsin
+	       ia     ! iowa
+	       ks     ! kansas
+	       mn     ! minnesota
+	       mo     ! missouri
+	       ne     ! nebraska
+	       nd     ! north dakota
+	       sd     ! south dakota
+             )
+	 sou.(        
+	       dc     ! district of columbia
+	       de     ! delaware
+	       fl     ! florida
+	       ga     ! georgia
+	       md     ! maryland
+	       nc     ! north carolina
+	       sc     ! south carolina
+	       va     ! virginia
+	       wv     ! west virginia
+	       al     ! alabama
+	       ky     ! kentucky
+	       ms     ! mississippi
+	       tn     ! tennessee
+	       ar     ! arkansas
+	       la     ! louisiana
+	       ok     ! oklahoma
+	       tx     ! texas
+             )
+         wes.(        
+               az     ! arizona
+	       co     ! colorado
+	       id     ! idaho
+	       nm     ! new mexico
+	       mt     ! montana
+	       ut     ! utah
+	       nv     ! nevada
+	       wy     ! wyoming
+	       ak     ! alaska
+	       ca     ! california
+	       hi     ! hawaii
+	       or     ! oregon
+	       wa     ! washington
+             )
+     /;

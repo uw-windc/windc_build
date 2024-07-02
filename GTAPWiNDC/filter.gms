@@ -178,7 +178,7 @@ $include gtapwindc_calib.gms
 $include %gams.scrdir%chkmodel
 
 execute_unload '%dsout%',
-	r,g,i,f,s,h,sf,mf, vom, rto, vafm, vfm, rtf0, rtf, a0, rtd0, yd0, nd0, md0,
+	r,g,i,f,s,h,sf,mf, vom, rto, vafm, vfm, rtf0, rtf, a0, rtd0, yd0, bd0, nd0, md0,
 	ns0, xs0, rtm0, c0, cd0, evom, evomh, hhtrn0, sav0, vim, vxmd, pvxmd,
 	pvtwr, rtxs, rtms, vtwr, vtw, vst, vb, esube, esubva, etrndn, etrae,
 	esubdm, esubm;

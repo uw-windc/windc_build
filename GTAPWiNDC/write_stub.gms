@@ -64,6 +64,7 @@ parameters
 	a0_(i,r,s_)		Absorption,
 	yl0_(i,r,s_)		Local domestic absorption,
 	yd0_(i,r,s_)		Local absorption
+	bd0_(i,r,s_,s_)		Bilateral trade
 	nd0_(i,mkts,r,s_)	National market domestic absorption,
 	md0_(i,r,s_)		Import absorption,
 
@@ -108,6 +109,7 @@ yl0_(i,r,s_) = 0;
 md0_(i,r,s_) = sum(g,vifm(i,g,r));
 nd0_(i,mkt,r,s_) = sum(g,vdfm(i,g,r));
 yd0_(i,r,s_) = 0;
+bd0_(i,r,s_,s_) = 0;
 
 xs0_(i,r,s_) = sum(s,vxmd(i,r,s)) + vst(i,r);
 ns0_(i,mkt,r,s_) = vom(i,r) - xs0_(i,r,s_);
@@ -157,7 +159,7 @@ esubm(i) = 2 * esubdm(i);
 execute_unload '%dsout%',
 	r,s_=s,g_=g,i_=i,g_=a,h,f,sf,mf,trn,
 	vom_=vom, vafm_=vafm, vfm_=vfm, 
-	a0_=a0, yl0_=yl0, md0_=md0, yd0_=yd0, nd0_=nd0, c0_=c0, cd0_=cd0, ns0_=ns0, xs0_=xs0,
+	a0_=a0, yl0_=yl0, md0_=md0, yd0_=yd0, bd0_=bd0, nd0_=nd0, c0_=c0, cd0_=cd0, ns0_=ns0, xs0_=xs0,
 	evom_=evom, evomh_=evomh, 
 	rtd0_=rtd0, rtm0_=rtm0, esube_=esube,
 	etrndn_=etrndn, hhtrn0, sav0,

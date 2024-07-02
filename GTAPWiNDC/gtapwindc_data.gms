@@ -48,11 +48,11 @@ $if not defined s $load s
 $if not defined h $load h
 
 $loaddc sf mf
-
 option sf:0:0:1, mf:0:0:1, f:0:0:1;
 display f, sf, mf;
 
-alias (i,j), (r,rr);
+
+alias (i,j), (r,rr), (s,ss);
 
 parameters
 	vom(g,r,s)		Total supply at market prices
@@ -68,6 +68,7 @@ parameters
 	rtd0(i,r,s)		Benchmark tax rate on domestic demand
 
 	yd0(i,r,s)		Local absorption
+	bd0(i,r,s,ss)		Bilateral demand
 	nd0(i,mkt,r,s)		National market domestic absorption
 	md0(i,r,s)		Import absorption
 
@@ -100,7 +101,7 @@ parameters
 	esubdm(i)		Elasticity of substitution (M versus D),
 	esubm(i)		Intra-import elasticity of substitution;
 
-$loaddc vom rto vafm vfm rtf0 rtf a0 rtd0 yd0 nd0 md0 ns0 xs0 rtm0 c0
+$loaddc vom rto vafm vfm rtf0 rtf a0 rtd0 yd0 bd0 nd0 md0 ns0 xs0 rtm0 c0
 $loaddc cd0 evom evomh hhtrn0 sav0 vim vxmd pvxmd pvtwr rtxs rtms vtwr vtw vst
 $loaddc vb esube esubva etrndn etrae esubdm esubm
 

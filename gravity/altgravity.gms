@@ -160,22 +160,28 @@ $ontext
 $model:gravity
 
 $sectors:
-	AD(i,s)$(aref(i,s) and ib(i))		! Absorption (Armington demand)
+	Z(i,r,s)$z_(i,r,s)	! Absorption (Armington demand)
 
 $commodities:
-	PD( i,s)$(aref(i,s) and ib(i))		! Demand price
-	PO(i,s)$(yref(i,s) and ib(i))		! Output price
-	PI(i,prt)$(mref(i,prt) and ib(i))	! Import price
-	PFX					! Price level
+	PZ(i,r,s)$pz_(i,r,s)	! Demand price
+	PY(g,r,s)$py_(g,r,s)	! Output price
+	PP(i,prt)$pp_(i,prt)	! Port price
+	PFX			! Price level
 
 $consumers:
-	XD(i,prt)$(eref(i,prt) and ib(i))	! Export demand
-	D(i,  s)$(aref(i,  s) and ib(i))	! Final demand
-	RA					! PE Closure Agent
+	XD(i,prt)$xd_(i,prt)	! Export demand
+	D(i,s)$d_(i,s)		! Final demand
+	RA			! PE Closure Agent
 
 $auxiliary:
-	SY(i,s)$(yref(i,s) and ib(i))		! Output supply
-	SM(i,prt)$(mref(i,prt) and ib(i))	! Import supply
+	SY(i,s)$sy_(i,s)	! Output supply
+	SM(i,prt)$sm_(i,prt)	! Import supply
+
+$prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn:esubn(i)
+	o:PZ(i,r,s)	q:(lamda_a(i,s)*a0(i,r,s))
+	i:PY(i,r,ss)	q:(tau_d(i,ss,s)*bd0(i,r,ss,s))	p:(1/tau_d(i,ss,s))  dn:$sameas(s,ss) nn:(not sameas(s,ss))
+	i:PP(i,prt)	q:(tau_m(i,prt,s)*
+
 
 $prod:AD(i,s)$(aref(i,s) and ib(i))  s:esub_dm(i)  L:esub_ln(i)  m:esub_mm(i)  d(L):esub_nn(i) 
   o:PD(i,s)	q:(lamda_a(i,s)*aref(i,s))
