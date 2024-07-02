@@ -1,6 +1,0 @@
-$original_file = 'import1.csv'
-$destination_file =  'imports.csv'
-(Get-Content $original_file) | Foreach-Object {
-    $_ -replace '\[', '' `
-       -replace '\],', '' `
-    } | Add-Content $destination_file

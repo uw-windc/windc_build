@@ -16,6 +16,8 @@ bd0(itrd(i),rb,s,ss)$sum(n_(i,mkt,rb),1) = 0;
 $include gtapwindc.gen
 solve gtapwindc using mcp;
 
+*	Impose a 50% tariff on US imports:
+
 rtms(i,r,"usa") = 0.5;
 gtapwindc.iterlim = 10000;
 $include gtapwindc.gen

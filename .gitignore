@@ -45,3 +45,4 @@ data/*
 *.out
 *.pdf
 GTAPWiNDC/225b/gamsnext.cmd
+gravity/tradedata/censuskey.gms

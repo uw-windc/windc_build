@@ -51,16 +51,31 @@ $prod:X(i,r)$x_(i,r)  s:esubx(i)
 	o:P(i,r)	q:vxm(i,r)
 	i:PY(i,r,s)	q:xs0(i,r,s)
 
+*	-----------------------------------------------------------------------------
+
+*	Domestic trade flows are represented here:
+
+*	Pooled model: set mkt=pooled, yd0=0, bd0=0
+
+*	Bilateral model:  mkt ignored, nd0=0, yd0=local use, bd0=intra-national trade
+
+*		Potential problem: density and footprint.
+
+*	Census model:  mkt=Census regions, bd0=0  yd0=local use, nd0=imports by census region
+
+
 $prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn(dn):esubn(i)
 	o:PZ(i,r,s)	q:a0(i,r,s)
-	i:PY(i,r,s)	q:yd0(i,r,s)	 a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) dn:
-	i:PN(i,mkt,r)	q:nd0(i,mkt,r,s) a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
-	i:PY(i,r,ss)	q:bd0(i,r,ss,s)  a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
 	i:PM(i,r)	q:md0(i,r,s)	 a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) 
+	i:PN(i,mkt,r)	q:nd0(i,mkt,r,s) a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
+	i:PY(i,r,s)	q:yd0(i,r,s)	 a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) dn:
+	i:PY(i,r,ss)	q:bd0(i,r,ss,s)  a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nn:
 
 $prod:N(i,mkt,r)$n_(i,mkt,r)  s:esubn(i)
 	o:PN(i,mkt,r)	q:vnm(i,mkt,r)
 	i:PY(i,r,s)	q:ns0(i,mkt,r,s)
+
+*	-----------------------------------------------------------------------------
 
 $prod:FT(sf,r)$pk_(sf,r)  t:0
 	o:PKS(sf,r,s)	q:evom(sf,r,s)
