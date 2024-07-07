@@ -1,0 +1,4438 @@
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/05/24 15:01:53 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   2   
+   3  set     seq /export,"export*",import,"import*", e_gtap, e_census, m_gtap, m_census/;
+   4   
+INCLUDE    d:\GitHub\windc_build\GTAPWiNDC\gtapwindc_data.gms
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/05/24 15:01:53 Page 2
+GAMS Code to Read a GTAPWINDC Dataset
+C o m p i l a t i o n
+
+
+   7   
+   8  *.$set fs %system.dirsep%
+   9   
+  11   
+  14   
+  15  sets
+  16          r(*)            Regions (countries)
+  17          s(*)            Subregions
+  18          g(*)            Commodities (plus I and G)
+  19          i(g)            Commodities
+  20          h(*)            Households
+  21          f(*)            Factors of production
+  22          sf(f)           Specific factors
+  23          mf(f)           Mobile factors;
+  24   
+  25   
+GDXIN   d:\GitHub\windc_build\GTAPWiNDC\2017\gtapwindc\43_filtered.gdx
+  27   
+--- LOAD  r = 1:r
+--- LOAD  g = 2:g
+--- LOAD  i = 3:i
+--- LOAD  f = 4:f
+  29   
+  30  *       Define the national markets:
+  31   
+  32  set mkt /pooled/;
+  33   
+  34  set     trn     Transfer types /
+  35                  hucval          Unemployment compensation
+  36                  hwcval          Workers compensation
+  37                  hssval          Social security
+  38                  hssival         Supplemental security
+  39                  hpawval         Public assistance or welfare
+  40                  hvetval         Veterans benefits
+  41                  hsurval         Survivors income
+  42                  hdisval         Disability
+  43                  medicare        Medicare
+  44                  medicaid        Medicaid
+  45                  hedval          Educational assistance
+  46                  hcspval         Child support
+  47                  hfinval         Financial assistance /;
+  48   
+  49   
+  50  *       These sets are defined prior to reading the dataset in the disaggregation routine:
+  51   
+--- LOAD  s = 5:s
+--- LOAD  h = 6:h
+  54   
+--- LOAD  sf = 7:sf
+--- LOAD  mf = 8:mf
+  56  option sf:0:0:1, mf:0:0:1, f:0:0:1;
+  57  display f, sf, mf;
+  58   
+  59   
+  60  alias (i,j), (r,rr), (s,ss);
+  61   
+  62  parameters
+  63          vom(g,r,s)              Total supply at market prices
+  64          rto(g,r)                Output (or income) subsidy rates
+  65          vafm(i,g,r,s)           Intermediate demand at market prices,
+  66          vfm(f,g,r,s)            Factor demand at market prices,
+  67          rtf0(f,g,r)             Benchmark primary factor tax rate
+  68          rtf(f,g,r)              Primary factor tax rate
+  69   
+  70          xd0(i,r,s)              Local domestic absorption
+  71          a0(i,r,s)               Absorption
+  72          rtd(i,r,s)              Tax rate on domestic demand
+  73          rtd0(i,r,s)             Benchmark tax rate on domestic demand
+  74   
+  75          yd0(i,r,s)              Local absorption
+  76          bd0(i,r,s,ss)           Bilateral demand
+  77          nd0(i,mkt,r,s)          National market domestic absorption
+  78          md0(i,r,s)              Import absorption
+  79   
+  80          rtm(i,r,s)              Tax rate on import demand
+  81          rtm0(i,r,s)             Benchmark tax rate on import demand
+  82          c0(r,s,h)               Total household consumption
+  83          cd0(i,r,s,h)            Household consumption at market prices
+  84          evom(f,r,s)             Primary factor supply
+  85          evomh(f,r,s,h)          Household primary factor endowment
+  86          hhtrn0(r,s,h,trn)       Household transfers
+  87          sav0(r,s,h)             Household saving
+  88          vim(i,r)                Aggregate imports at market prices
+  89          ns0(i,mkt,r,s)          National market supply
+  90          xs0(i,r,s)              Export market supply
+  91   
+  92          vxmd(i,r,rr)            Trade - bilateral exports at market prices,
+  93          pvxmd(i,rr,r)           Import price (power of benchmark tariff)
+  94          pvtwr(i,rr,r)           Import price for transport services (power of tariff)
+  95          rtxs(i,rr,r)            Export subsidy rates
+  96          rtms(i,rr,r)            Import taxes rates
+  97          vtwr(j,i,rr,r)          Trade margins on international transport
+  98          vtw(j)                  Aggregate international transportation services,
+  99          vst(j,r)                Trade - exports for international transportation
+ 100          vb(r)                   Current account balance
+ 101   
+ 102          esube(g)                Energy demand elasticity
+ 103          esubva(g)               Elasticity of substitution between factors,
+ 104          etrndn(i)               Elasticity of transformation -- local goods supply
+ 105          etrae(f)                Elasticity of transformation -- sluggish factors,
+ 106          esubdm(i)               Elasticity of substitution (M versus D),
+ 107          esubm(i)                Intra-import elasticity of substitution;
+ 108   
+--- LOAD  vom = 9:vom
+--- LOAD  rto = 10:rto
+--- LOAD  vafm = 11:vafm
+--- LOAD  vfm = 12:vfm
+--- LOAD  rtf0 = 13:rtf0
+--- LOAD  rtf = 14:rtf
+--- LOAD  a0 = 15:a0
+--- LOAD  rtd0 = 16:rtd0
+--- LOAD  yd0 = 17:yd0
+--- LOAD  bd0 = 18:bd0
+--- LOAD  nd0 = 19:nd0
+--- LOAD  md0 = 20:md0
+--- LOAD  ns0 = 21:ns0
+--- LOAD  xs0 = 22:xs0
+--- LOAD  rtm0 = 23:rtm0
+--- LOAD  c0 = 24:c0
+--- LOAD  cd0 = 25:cd0
+--- LOAD  evom = 26:evom
+--- LOAD  evomh = 27:evomh
+--- LOAD  hhtrn0 = 28:hhtrn0
+--- LOAD  sav0 = 29:sav0
+--- LOAD  vim = 30:vim
+--- LOAD  vxmd = 31:vxmd
+--- LOAD  pvxmd = 32:pvxmd
+--- LOAD  pvtwr = 33:pvtwr
+--- LOAD  rtxs = 34:rtxs
+--- LOAD  rtms = 35:rtms
+--- LOAD  vtwr = 36:vtwr
+--- LOAD  vtw = 37:vtw
+--- LOAD  vst = 38:vst
+--- LOAD  vb = 39:vb
+--- LOAD  esube = 40:esube
+--- LOAD  esubva = 41:esubva
+--- LOAD  etrndn = 42:etrndn
+--- LOAD  etrae = 43:etrae
+--- LOAD  esubdm = 44:esubdm
+--- LOAD  esubm = 45:esubm
+ 112   
+ 113  rtd(i,r,s) = rtd0(i,r,s);
+ 114  rtm(i,r,s) = rtm0(i,r,s);
+ 115   
+ 116  sets    y_(g,r,s)       Flag: Production
+ 117          x_(i,r)         Flag: Export demand
+ 118          n_(i,mkt,r)     Flag: national market demand
+ 119          z_(i,r,s)       Flag: Armington demand
+ 120          c_(r,s,h)       Flag: Consumption
+ 121          ft_(f,r,s)      Flag: Specific factor transformation
+ 122   
+ 123          m_(i,r)         Flag: Import
+ 124          yt_(j)          Flag: Transport
+ 125   
+ 126          py_(g,r,s)      Flag: Output price
+ 127          pz_(i,r,s)      Flag: Armington composite price
+ 128          p_(i,r)         Flag: export oods price
+ 129          pc_(r,s,h)      Flag: Consumption price
+ 130          pf_(f,r,s)      Flag: Primary factors rent
+ 131          ps_(f,g,r,s)    Flag: Sector-specific primary factors
+ 132          pm_(i,r)        Flag: Import price
+ 133          pn_(i,mkt,r)    Flag: national market
+ 134          pt_(j)          Flag: Transportation services
+ 135          pk_(f,r)        Flag: Capital market,
+ 136          rh_(r,s,h)      Flag: representative household;
+ 137   
+ 138  parameter
+ 139          vxm(i,r)        Aggregate exports at market prices
+ 140          vnm(i,mkt,r)    Aggregate national market supply;
+ 141   
+ 142  vxm(i,r) = sum(rr,vxmd(i,r,rr))+vst(i,r);
+ 143  vnm(i,mkt,r) = sum(s,nd0(i,mkt,r,s));
+ 144   
+ 145  parameter       esubx(i)        Elasticity of substitution in export demand
+ 146                  esubn(i)        Elasticity of substitution in national demand;
+ 147   
+ 148  esubx(i) = 8;
+ 149  esubn(i) = 4;
+ 150   
+ 151   
+ 152  y_(g,r,s) = vom(g,r,s);
+ 153  x_(i,r) = vxm(i,r);
+ 154  n_(i,mkt,r) = vnm(i,mkt,r);
+ 155  pn_(i,mkt,r) = n_(i,mkt,r);
+ 156  z_(i,r,s) = a0(i,r,s);
+ 157  c_(r,s,h) = c0(r,s,h);
+ 158  ft_(sf,r,s) = evom(sf,r,s);
+ 159  m_(i,r) = vim(i,r);
+ 160  yt_(j) = vtw(j);
+ 161  py_(g,r,s) = vom(g,r,s);
+ 162  pz_(i,r,s) = a0(i,r,s);
+ 163  p_(i,r) = vxm(i,r);
+ 164  pc_(r,s,h) = c0(r,s,h);
+ 165  pf_(f,r,s) = evom(f,r,s);
+ 166  ps_(sf,g,r,s) = vfm(sf,g,r,s);
+ 167  pm_(i,r) = vim(i,r);
+ 168  pt_(j) = vtw(j);
+ 169  pk_(sf,r) = sum(s,evom(sf,r,s));
+ 170  rh_(r,s,h) = c0(r,s,h);
+ 171   
+       
+      parameter	xchk;
+      xchk(i,r,s,"xn0") = xn0(i,r,s);
+      xchk(i,r,s,"xd0") = xd0(i,r,s);
+      xchk(i,r,s,"vom") = vom(i,r,s);
+      xchk(i,r,s,"chk") = vom(i,r,s) - xd0(i,r,s) - xn0(i,r,s);
+      option xchk:3:3:1;
+      display xchk;
+       
+      parameter	mktchk;
+      mktchk(p_(i,r),"xn0") = sum(s,xn0(i,r,s));
+      mktchk(p_(i,r),"nd0") = sum(s,nd0(i,r,s));
+      mktchk(p_(i,r),"vxmd") =sum(rr,vxmd(i,r,rr));
+      mktchk(p_(i,r),"vst") = vst(i,r);
+      mktchk(p_(i,r),"chk") = sum(s,xn0(i,r,s)) - (sum(s,nd0(i,r,s)) + sum(rr,vxmd(i,r,rr)) + vst(i,r));
+      display "Cross check all indices:", mktchk;
+       
+      mktchk(p_(i,r),"ns0") = sum(s, ns0(i,r,s));
+      mktchk(p_(i,r),"nd0") = sum(z_(i,r,s),nd0(i,r,s));
+      mktchk(p_(i,r),"vxmd") =sum(m_(i,rr),vxmd(i,r,rr));
+      mktchk(p_(i,r),"vst") = vst(i,r);
+      mktchk(p_(i,r),"chk") = sum(x_(i,r),vnm(i,r)) - ( sum(z_(i,r,s),nd0(i,r,s)) + sum(m_(i,rr),vxmd(i,r,rr)) + vst(i,r)$yt_(i) );
+      display "Cross check on active domain:", mktchk;
+       
+       
+ 199   
+ 200   
+ 201  *       Adjust elasticities for other goods and services (these are somehow set
+ 202  *       to a very high level in the dataset):
+ 203   
+ 204  esubdm("ogs") = 5;
+ 205  esubm("ogs") = 8;
+ 206   
+ 207  set rnum(r)     Numeraire region for denominating current account transfers;
+ 208   
+ 209  parameter       gdp(r)  Gross domestic product;
+ 210  gdp(r)$(not sameas(r,"usa")) = sum(s, sum(h,c0(r,s,h)) + vom("g",r,s) + vom("i",r,s)) - vb(r);
+ 211   
+ 212  *       Numeraire region:
+ 213  rnum(r) = yes$(gdp(r) = smax(r.local,gdp(r)));
+ 214   
+ 215  parameter       vbchk   Cross check on VB;
+ 216  vbchk = sum(r,vb(r));
+ 217  display vbchk;
+ 218   
+ 219  option evom:3:0:1;
+ 220  display evom;
+ 221   
+ 222  option evomh:3:0:1;
+ 223  display evomh;
+ 224   
+ 225  parameter       landdata(s,*)   Land earnings data;
+ 226  landdata(s,"vfm") = sum(g,vfm("lnd",g,"usa",s));
+ 227  landdata(s,"evomh") = sum(h,evomh("lnd","usa",s,h));
+ 228  landdata(s,"vfm-evomh") = landdata(s,"vfm") - landdata(s,"evomh");
+ 229  display landdata;
+ 230  *.$include ..\GTAPWiNDC\gtapwindc_mge
+ 231  *       Assume that land can move freely across sectors within each state:
+ 232   
+ 233  option s:0:0:1;
+ 234  display s;
+ 235   
+ 236  set     s48(s) /
+ 237          AL    Alabama
+ 238          AR    Arizona
+ 239          AZ    Arkansas
+ 240          CA    California
+ 241          CO    Colorado
+ 242          CT    Connecticut
+ 243          DE    Delaware
+ 244          DC    District of Columbia
+ 245          FL    Florida
+ 246          GA    Georgia
+ 247          HI    Hawaii
+ 248          ID    Idaho
+ 249          IL    Illinois
+ 250          IN    Indiana
+ 251          IA    Iowa
+ 252          KS    Kansas
+ 253          KY    Kentucky
+ 254          LA    Louisiana
+ 255          ME    Maine
+ 256          MD    Maryland
+ 257          MA    Massachusetts
+ 258          MI    Michigan
+ 259          MN    Minnesota
+ 260          MS    Mississippi
+ 261          MO    Missouri
+ 262          MT    Montana
+ 263          NE    Nebraska
+ 264          NV    Nevada
+ 265          NH    New Hampshire
+ 266          NJ    New Jersey
+ 267          NM    New Mexico
+ 268          NY    New York
+ 269          NC    North Carolina
+ 270          ND    North Dakota
+ 271          OH    Ohio
+ 272          OK    Oklahoma
+ 273          OR    Oregon
+ 274          PA    Pennsylvania
+ 275          RI    Rhode Island
+ 276          SC    South Carolina
+ 277          SD    South Dakota
+ 278          TN    Tennessee
+ 279          TX    Texas
+ 280          UT    Utah
+ 281          VT    Vermont
+ 282          VA    Virginia
+ 283          WA    Washington
+ 284          WV    West Virginia
+ 285          WI    Wisconsin
+ 286          WY    Wyoming /;
+ 287   
+ 288  etrae("lnd") = 8;
+ 289   
+ 290  set     pd(*)   Port districts;
+ 291   
+ 292  set             flow /  export, import /;
+ 293   
+ 294  parameter       trade(i,r,pd,flow)      Trade data;
+GDXIN   d:\GitHub\windc_build\gravity\tradedata\tradedata.gdx
+ 296   
+--- LOAD  pd = 4:pd
+--- LOAD  trade = 1:trade
+ 299   
+ 300   
+ 301  set itrd(i)             Sectors with trade flows;
+ 302  option itrd<trade;
+ 303  itrd(itrd) = i(itrd);
+ 304  option itrd:0:0:1;
+ 305  display itrd;
+ 306   
+ 307  set             loc /set.s, set.pd/;
+ 308   
+ 309  parameter       dist(s,loc)     Distances from state to state or port;
+GDXIN   d:\GitHub\windc_build\gravity\geography.gdx
+--- LOAD  dist = 2:dist
+ 312   
+ 313  parameter       tradecompare    Comparison of US trade;
+ 314  tradecompare(i,r,"export_gtap") = vxmd(i,"usa",r);
+ 315  tradecompare(i,r,"export_cenus") = sum(pd,trade(i,r,pd,"export"));
+ 316  tradecompare(i,r,"import_gtap") =
+ 317          vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa");
+ 318  tradecompare(i,r,"import_census") = sum(pd,trade(i,r,pd,"import"));
+ 319  option tradecompare:1:2:1;
+ 320  display tradecompare;
+ 321   
+ 322  set     src /gtap,census/
+ 323          dir /export,import/;
+ 324   
+ 325  parameter       tradetotals     Cross check on totals;
+ 326  tradetotals("commodity",itrd(i),"export","gtap") = sum(r,vxmd(i,"usa",r));
+ 327  tradetotals("commodity",itrd(i),"import","gtap") = sum(r,vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa"));
+ 328  tradetotals("commodity",itrd(i),"import","census") = sum((r,pd),trade(i,r,pd,"import"));
+ 329  tradetotals("commodity",itrd(i),"export","census") = sum((r,pd),trade(i,r,pd,"export"));
+ 330   
+ 331  tradetotals("region",r,"export","gtap") = sum(itrd(i),vxmd(i,"usa",r));
+ 332  tradetotals("region",r,"import","gtap") = sum(itrd(i),vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa"));
+ 333   
+ 334  tradetotals("region",r,"import","census") = sum((itrd(i),pd),trade(i,r,pd,"import"));
+ 335  tradetotals("region",r,"export","census") = sum((itrd(i),pd),trade(i,r,pd,"export"));
+ 336   
+ 337  option tradetotals:1:2:2;
+ 338  display tradetotals;
+EXIT d:\GitHub\windc_build\gravity\newgravity.gms
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/05/24 15:01:53 Page 3
+GAMS Code to Read a GTAPWINDC Dataset
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  d:\GitHub\windc_build\gravity\newgravity.gms
+     2        5 INCLUDE        1       5  .d:\GitHub\windc_build\GTAPWiNDC\gtapwindc_data.gms
+     3       26 GDXIN          2      21  .d:\GitHub\windc_build\GTAPWiNDC\2017\gtapwindc\43_filtered.gdx
+     4      295 GDXIN          1      71  d:\GitHub\windc_build\gravity\tradedata\tradedata.gdx
+     5      310 GDXIN          1      86  d:\GitHub\windc_build\gravity\geography.gdx
+     6      339 EXIT           1     115  d:\GitHub\windc_build\gravity\newgravity.gms
+
+
+COMPILATION TIME     =        0.047 SECONDS     16 MB  46.4.1 485757e2 WEX-WEI
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/05/24 15:01:53 Page 4
+GAMS Code to Read a GTAPWINDC Dataset
+E x e c u t i o n
+
+
+----     57 SET f  Factors of production
+
+mgr  Officials and Mangers legislators (ISCO-88 Major Groups 1-2)
+tec  Technicians technicians and associate professionals
+clk  Clerks
+srv  Service and market sales workers
+lab  Agricultural and unskilled workers (Major Groups 6-9)
+cap  Capital
+lnd  Land
+res  Natural resources
+
+
+----     57 SET sf  Specific factors
+
+cap
+lnd
+res
+
+
+----     57 SET mf  Mobile factors
+
+mgr
+tec
+clk
+srv
+lab
+
+
+----    217 PARAMETER vbchk                =  -1.58665E-6  Cross check on VB
+
+----    220 PARAMETER evom  Primary factor supply
+
+mgr.CHN.rest  934.436
+mgr.JPN.rest  274.591
+mgr.KOR.rest  133.873
+mgr.IDN.rest   37.411
+mgr.IND.rest  415.938
+mgr.CAN.rest  345.325
+mgr.USA.AL     52.625
+mgr.USA.AK     15.692
+mgr.USA.AR     25.137
+mgr.USA.AZ     73.843
+mgr.USA.CA    548.031
+mgr.USA.CO     76.699
+mgr.USA.CT     61.144
+mgr.USA.DE     15.479
+mgr.USA.DC     50.112
+mgr.USA.FL    221.598
+mgr.USA.GA    126.264
+mgr.USA.HI     35.443
+mgr.USA.ID     15.015
+mgr.USA.IL    167.185
+mgr.USA.IN     68.076
+mgr.USA.IA     35.132
+mgr.USA.KS     38.885
+mgr.USA.KY     49.097
+mgr.USA.LA     47.261
+mgr.USA.ME     14.118
+mgr.USA.MD    115.166
+mgr.USA.MA    129.432
+mgr.USA.MI    102.168
+mgr.USA.MN     73.189
+mgr.USA.MS     26.629
+mgr.USA.MO     67.284
+mgr.USA.MT     10.540
+mgr.USA.NE     25.160
+mgr.USA.NV     42.522
+mgr.USA.NH     18.483
+mgr.USA.NJ    114.864
+mgr.USA.NM     29.904
+mgr.USA.NY    313.410
+mgr.USA.NC    134.503
+mgr.USA.ND     12.150
+mgr.USA.OH    131.738
+mgr.USA.OK     39.367
+mgr.USA.OR     43.011
+mgr.USA.PA    149.596
+mgr.USA.RI     15.838
+mgr.USA.SC     51.864
+mgr.USA.SD     11.952
+mgr.USA.TN     73.917
+mgr.USA.TX    327.020
+mgr.USA.UT     35.372
+mgr.USA.VT      7.116
+mgr.USA.VA    161.323
+mgr.USA.WA    105.046
+mgr.USA.WV     15.115
+mgr.USA.WI     59.803
+mgr.USA.WY      6.824
+mgr.MEX.rest   63.099
+mgr.ARG.rest   40.994
+mgr.BRA.rest  301.997
+mgr.FRA.rest  245.287
+mgr.DEU.rest  382.274
+mgr.ITA.rest  125.296
+mgr.GBR.rest  499.170
+mgr.RUS.rest  180.785
+mgr.SAU.rest   54.126
+mgr.TUR.rest   36.680
+mgr.ZAF.rest   56.342
+mgr.ANZ.rest  308.017
+mgr.REU.rest  729.000
+mgr.OEX.rest  137.766
+mgr.LIC.rest   90.324
+mgr.MIC.rest  738.771
+tec.CHN.rest  752.562
+tec.JPN.rest  380.268
+tec.KOR.rest  118.093
+tec.IDN.rest   65.102
+tec.IND.rest  159.253
+tec.CAN.rest  150.194
+tec.USA.AL      9.353
+tec.USA.AK      2.548
+tec.USA.AR      5.173
+tec.USA.AZ     15.011
+tec.USA.CA    115.983
+tec.USA.CO     15.467
+tec.USA.CT     13.535
+tec.USA.DE      3.577
+tec.USA.DC      7.178
+tec.USA.FL     47.200
+tec.USA.GA     27.363
+tec.USA.HI      5.601
+tec.USA.ID      2.978
+tec.USA.IL     37.679
+tec.USA.IN     13.023
+tec.USA.IA      7.586
+tec.USA.KS      7.506
+tec.USA.KY      9.180
+tec.USA.LA      9.389
+tec.USA.ME      2.761
+tec.USA.MD     19.538
+tec.USA.MA     25.224
+tec.USA.MI     20.369
+tec.USA.MN     15.353
+tec.USA.MS      4.839
+tec.USA.MO     13.948
+tec.USA.MT      2.026
+tec.USA.NE      5.626
+tec.USA.NV      9.025
+tec.USA.NH      3.760
+tec.USA.NJ     26.597
+tec.USA.NM      4.541
+tec.USA.NY     79.690
+tec.USA.NC     25.001
+tec.USA.ND      2.259
+tec.USA.OH     27.878
+tec.USA.OK      7.586
+tec.USA.OR      8.563
+tec.USA.PA     31.499
+tec.USA.RI      2.881
+tec.USA.SC      9.604
+tec.USA.SD      2.475
+tec.USA.TN     15.563
+tec.USA.TX     71.193
+tec.USA.UT      7.482
+tec.USA.VT      1.397
+tec.USA.VA     26.654
+tec.USA.WA     22.686
+tec.USA.WV      2.792
+tec.USA.WI     12.556
+tec.USA.WY      1.375
+tec.MEX.rest   63.318
+tec.ARG.rest   54.824
+tec.BRA.rest  112.457
+tec.FRA.rest  199.583
+tec.DEU.rest  281.277
+tec.ITA.rest  156.316
+tec.GBR.rest  249.803
+tec.RUS.rest   68.170
+tec.SAU.rest   40.244
+tec.TUR.rest   31.561
+tec.ZAF.rest   36.294
+tec.ANZ.rest  155.722
+tec.REU.rest  516.849
+tec.OEX.rest   90.773
+tec.LIC.rest   64.830
+tec.MIC.rest  486.046
+clk.CHN.rest  731.253
+clk.JPN.rest  229.673
+clk.KOR.rest  135.187
+clk.IDN.rest   54.746
+clk.IND.rest  134.267
+clk.CAN.rest  115.149
+clk.USA.AL     13.251
+clk.USA.AK      3.883
+clk.USA.AR      6.833
+clk.USA.AZ     19.446
+clk.USA.CA    151.286
+clk.USA.CO     20.397
+clk.USA.CT     16.135
+clk.USA.DE      3.924
+clk.USA.DC     11.354
+clk.USA.FL     59.724
+clk.USA.GA     35.318
+clk.USA.HI      8.120
+clk.USA.ID      3.917
+clk.USA.IL     46.221
+clk.USA.IN     17.751
+clk.USA.IA      9.050
+clk.USA.KS     10.201
+clk.USA.KY     12.677
+clk.USA.LA     12.411
+clk.USA.ME      3.599
+clk.USA.MD     28.390
+clk.USA.MA     33.298
+clk.USA.MI     27.250
+clk.USA.MN     19.631
+clk.USA.MS      6.685
+clk.USA.MO     18.058
+clk.USA.MT      2.689
+clk.USA.NE      6.911
+clk.USA.NV     10.250
+clk.USA.NH      4.829
+clk.USA.NJ     33.148
+clk.USA.NM      6.985
+clk.USA.NY     86.472
+clk.USA.NC     33.865
+clk.USA.ND      3.069
+clk.USA.OH     35.369
+clk.USA.OK     10.395
+clk.USA.OR     11.369
+clk.USA.PA     41.180
+clk.USA.RI      3.900
+clk.USA.SC     13.236
+clk.USA.SD      2.928
+clk.USA.TN     20.013
+clk.USA.TX     90.508
+clk.USA.UT      9.568
+clk.USA.VT      1.791
+clk.USA.VA     39.591
+clk.USA.WA     29.699
+clk.USA.WV      3.842
+clk.USA.WI     16.121
+clk.USA.WY      1.808
+clk.MEX.rest   20.733
+clk.ARG.rest   63.205
+clk.BRA.rest  121.354
+clk.FRA.rest  109.058
+clk.DEU.rest  189.418
+clk.ITA.rest   56.120
+clk.GBR.rest  119.822
+clk.RUS.rest   11.412
+clk.SAU.rest   27.060
+clk.TUR.rest   23.863
+clk.ZAF.rest   33.243
+clk.ANZ.rest   87.730
+clk.REU.rest  282.261
+clk.OEX.rest  106.175
+clk.LIC.rest   61.443
+clk.MIC.rest  330.740
+srv.CHN.rest 1105.225
+srv.JPN.rest  199.890
+srv.KOR.rest  130.427
+srv.IDN.rest   17.971
+srv.IND.rest   96.735
+srv.CAN.rest   75.357
+srv.USA.AL      5.548
+srv.USA.AK      1.299
+srv.USA.AR      3.199
+srv.USA.AZ      9.900
+srv.USA.CA     76.997
+srv.USA.CO     10.506
+srv.USA.CT      8.084
+srv.USA.DE      2.157
+srv.USA.DC      4.899
+srv.USA.FL     33.295
+srv.USA.GA     16.051
+srv.USA.HI      4.371
+srv.USA.ID      1.929
+srv.USA.IL     25.002
+srv.USA.IN      8.963
+srv.USA.IA      4.646
+srv.USA.KS      4.495
+srv.USA.KY      5.395
+srv.USA.LA      6.435
+srv.USA.ME      1.899
+srv.USA.MD     11.766
+srv.USA.MA     16.781
+srv.USA.MI     14.505
+srv.USA.MN     10.041
+srv.USA.MS      3.144
+srv.USA.MO      8.921
+srv.USA.MT      1.296
+srv.USA.NE      3.140
+srv.USA.NV     10.646
+srv.USA.NH      2.511
+srv.USA.NJ     17.092
+srv.USA.NM      2.636
+srv.USA.NY     50.624
+srv.USA.NC     15.867
+srv.USA.ND      1.231
+srv.USA.OH     17.498
+srv.USA.OK      4.452
+srv.USA.OR      6.286
+srv.USA.PA     20.137
+srv.USA.RI      1.836
+srv.USA.SC      6.681
+srv.USA.SD      1.514
+srv.USA.TN     10.893
+srv.USA.TX     43.872
+srv.USA.UT      4.681
+srv.USA.VT      1.092
+srv.USA.VA     15.750
+srv.USA.WA     13.456
+srv.USA.WV      1.770
+srv.USA.WI      8.115
+srv.USA.WY      0.904
+srv.MEX.rest   33.121
+srv.ARG.rest   51.942
+srv.BRA.rest  156.378
+srv.FRA.rest   83.511
+srv.DEU.rest  128.875
+srv.ITA.rest   65.893
+srv.GBR.rest  117.921
+srv.RUS.rest   94.464
+srv.SAU.rest   48.359
+srv.TUR.rest   43.152
+srv.ZAF.rest   21.208
+srv.ANZ.rest   80.989
+srv.REU.rest  314.184
+srv.OEX.rest   67.332
+srv.LIC.rest   45.131
+srv.MIC.rest  353.237
+lab.CHN.rest 2341.369
+lab.JPN.rest  390.339
+lab.KOR.rest   97.434
+lab.IDN.rest  189.332
+lab.IND.rest  524.799
+lab.CAN.rest  133.243
+lab.USA.AL     18.844
+lab.USA.AK      3.952
+lab.USA.AR     10.545
+lab.USA.AZ     24.872
+lab.USA.CA    209.751
+lab.USA.CO     26.697
+lab.USA.CT     19.101
+lab.USA.DE      3.848
+lab.USA.DC      4.845
+lab.USA.FL     69.568
+lab.USA.GA     46.594
+lab.USA.HI      5.968
+lab.USA.ID      5.701
+lab.USA.IL     64.205
+lab.USA.IN     38.836
+lab.USA.IA     16.652
+lab.USA.KS     13.133
+lab.USA.KY     18.053
+lab.USA.LA     19.086
+lab.USA.ME      4.250
+lab.USA.MD     27.680
+lab.USA.MA     38.667
+lab.USA.MI     45.899
+lab.USA.MN     32.170
+lab.USA.MS      9.331
+lab.USA.MO     24.199
+lab.USA.MT      3.379
+lab.USA.NE     10.480
+lab.USA.NV     14.371
+lab.USA.NH      5.838
+lab.USA.NJ     40.496
+lab.USA.NM      5.785
+lab.USA.NY     89.549
+lab.USA.NC     47.924
+lab.USA.ND      4.674
+lab.USA.OH     52.700
+lab.USA.OK     13.778
+lab.USA.OR     18.125
+lab.USA.PA     58.460
+lab.USA.RI      4.217
+lab.USA.SC     20.115
+lab.USA.SD      4.180
+lab.USA.TN     30.316
+lab.USA.TX    132.331
+lab.USA.UT     16.344
+lab.USA.VT      2.282
+lab.USA.VA     37.352
+lab.USA.WA     39.101
+lab.USA.WV      5.879
+lab.USA.WI     29.821
+lab.USA.WY      3.034
+lab.MEX.rest  139.524
+lab.ARG.rest   31.132
+lab.BRA.rest  158.009
+lab.FRA.rest  131.160
+lab.DEU.rest  219.346
+lab.ITA.rest   81.487
+lab.GBR.rest  270.875
+lab.RUS.rest  128.839
+lab.SAU.rest   76.738
+lab.TUR.rest   56.295
+lab.ZAF.rest   32.437
+lab.ANZ.rest  110.162
+lab.REU.rest  422.008
+lab.OEX.rest  208.452
+lab.LIC.rest  173.425
+lab.MIC.rest  748.187
+cap.CHN.rest 4741.758
+cap.JPN.rest 2323.329
+cap.KOR.rest  688.427
+cap.IDN.rest  566.838
+cap.IND.rest 1060.890
+cap.CAN.rest  468.249
+cap.USA.AL     80.373
+cap.USA.AK     19.845
+cap.USA.AR     44.405
+cap.USA.AZ    126.186
+cap.USA.CA   1020.876
+cap.USA.CO    134.616
+cap.USA.CT    101.657
+cap.USA.DE     25.412
+cap.USA.DC     43.681
+cap.USA.FL    393.907
+cap.USA.GA    213.023
+cap.USA.HI     38.968
+cap.USA.ID     27.072
+cap.USA.IL    310.310
+cap.USA.IN    134.936
+cap.USA.IA     69.946
+cap.USA.KS     60.432
+cap.USA.KY     76.737
+cap.USA.LA     85.475
+cap.USA.ME     22.850
+cap.USA.MD    152.483
+cap.USA.MA    201.168
+cap.USA.MI    188.281
+cap.USA.MN    131.509
+cap.USA.MS     40.096
+cap.USA.MO    112.039
+cap.USA.MT     17.680
+cap.USA.NE     44.979
+cap.USA.NV     69.340
+cap.USA.NH     31.065
+cap.USA.NJ    224.146
+cap.USA.NM     35.489
+cap.USA.NY    587.203
+cap.USA.NC    212.973
+cap.USA.ND     22.345
+cap.USA.OH    235.610
+cap.USA.OK     67.106
+cap.USA.OR     81.543
+cap.USA.PA    273.803
+cap.USA.RI     22.198
+cap.USA.SC     86.161
+cap.USA.SD     19.180
+cap.USA.TN    128.391
+cap.USA.TX    614.954
+cap.USA.UT     62.588
+cap.USA.VT     11.943
+cap.USA.VA    203.025
+cap.USA.WA    185.231
+cap.USA.WV     27.734
+cap.USA.WI    117.438
+cap.USA.WY     14.239
+cap.MEX.rest  733.228
+cap.ARG.rest  260.023
+cap.BRA.rest  654.000
+cap.FRA.rest  900.764
+cap.DEU.rest 1482.678
+cap.ITA.rest  905.860
+cap.GBR.rest  801.609
+cap.RUS.rest  853.112
+cap.SAU.rest  408.383
+cap.TUR.rest  473.800
+cap.ZAF.rest  145.995
+cap.ANZ.rest  542.315
+cap.REU.rest 3466.443
+cap.OEX.rest 1073.151
+cap.LIC.rest  518.198
+cap.MIC.rest 3209.948
+lnd.CHN.rest  250.416
+lnd.JPN.rest    9.424
+lnd.KOR.rest   13.693
+lnd.IDN.rest   40.703
+lnd.IND.rest  106.741
+lnd.CAN.rest    1.029
+lnd.USA.AL      0.496
+lnd.USA.AR      0.913
+lnd.USA.AZ      0.528
+lnd.USA.CA      7.037
+lnd.USA.CO      0.554
+lnd.USA.CT      0.040
+lnd.USA.DE      0.123
+lnd.USA.FL      1.025
+lnd.USA.GA      0.984
+lnd.USA.HI      0.065
+lnd.USA.ID      0.660
+lnd.USA.IL      2.319
+lnd.USA.IN      1.345
+lnd.USA.IA      2.950
+lnd.USA.KS      1.539
+lnd.USA.KY      0.615
+lnd.USA.LA      0.405
+lnd.USA.ME      0.067
+lnd.USA.MD      0.224
+lnd.USA.MA      0.033
+lnd.USA.MI      0.796
+lnd.USA.MN      1.994
+lnd.USA.MS      0.666
+lnd.USA.MO      1.181
+lnd.USA.MT      0.414
+lnd.USA.NE      2.031
+lnd.USA.NV      0.040
+lnd.USA.NH      0.012
+lnd.USA.NJ      0.122
+lnd.USA.NM      0.219
+lnd.USA.NY      0.430
+lnd.USA.NC      1.094
+lnd.USA.ND      1.285
+lnd.USA.OH      1.038
+lnd.USA.OK      0.651
+lnd.USA.OR      0.514
+lnd.USA.PA      0.551
+lnd.USA.RI      0.003
+lnd.USA.SC      0.234
+lnd.USA.SD      1.105
+lnd.USA.TN      0.420
+lnd.USA.TX      2.394
+lnd.USA.UT      0.127
+lnd.USA.VT      0.045
+lnd.USA.VA      0.331
+lnd.USA.WA      1.344
+lnd.USA.WV      0.047
+lnd.USA.WI      0.929
+lnd.USA.WY      0.113
+lnd.MEX.rest    9.927
+lnd.ARG.rest    7.633
+lnd.BRA.rest   11.514
+lnd.FRA.rest    8.709
+lnd.DEU.rest    7.243
+lnd.ITA.rest    7.703
+lnd.GBR.rest    5.652
+lnd.RUS.rest    5.480
+lnd.SAU.rest    1.063
+lnd.TUR.rest    4.792
+lnd.ZAF.rest    2.070
+lnd.ANZ.rest    5.358
+lnd.REU.rest   41.827
+lnd.OEX.rest   18.162
+lnd.LIC.rest   48.543
+lnd.MIC.rest  129.191
+res.CHN.rest  115.689
+res.JPN.rest    4.202
+res.KOR.rest    2.001
+res.IDN.rest   23.786
+res.IND.rest   26.520
+res.CAN.rest   26.430
+res.USA.AL      0.617
+res.USA.AK      2.421
+res.USA.AR      0.323
+res.USA.AZ      1.227
+res.USA.CA      4.528
+res.USA.CO      3.915
+res.USA.CT      0.050
+res.USA.FL      0.595
+res.USA.GA      0.454
+res.USA.HI      0.013
+res.USA.ID      0.207
+res.USA.IL      0.507
+res.USA.IN      0.422
+res.USA.IA      0.192
+res.USA.KS      0.399
+res.USA.KY      0.546
+res.USA.LA      2.655
+res.USA.ME      0.088
+res.USA.MD      0.085
+res.USA.MA      0.128
+res.USA.MI      0.403
+res.USA.MN      0.421
+res.USA.MS      0.323
+res.USA.MO      0.286
+res.USA.MT      0.474
+res.USA.NE      0.090
+res.USA.NV      1.061
+res.USA.NH      0.038
+res.USA.NJ      0.128
+res.USA.NM      1.763
+res.USA.NY      0.235
+res.USA.NC      0.320
+res.USA.ND      2.267
+res.USA.OH      1.332
+res.USA.OK      6.809
+res.USA.OR      0.297
+res.USA.PA      2.859
+res.USA.RI      0.025
+res.USA.SC      0.180
+res.USA.SD      0.061
+res.USA.TN      0.246
+res.USA.TX     36.363
+res.USA.UT      0.863
+res.USA.VT      0.057
+res.USA.VA      0.407
+res.USA.WA      0.447
+res.USA.WV      2.068
+res.USA.WI      0.259
+res.USA.WY      1.710
+res.MEX.rest   12.005
+res.ARG.rest    3.715
+res.BRA.rest   16.563
+res.FRA.rest    1.630
+res.DEU.rest    4.184
+res.ITA.rest    1.968
+res.GBR.rest    5.824
+res.RUS.rest   72.605
+res.SAU.rest   61.651
+res.TUR.rest    2.353
+res.ZAF.rest    7.305
+res.ANZ.rest   32.407
+res.REU.rest   34.243
+res.OEX.rest  100.564
+res.LIC.rest   24.261
+res.MIC.rest  129.596
+
+
+----    223 PARAMETER evomh  Household primary factor endowment
+
+mgr.CHN.rest.rest     934.436
+mgr.JPN.rest.rest     274.591
+mgr.KOR.rest.rest     133.873
+mgr.IDN.rest.rest      37.411
+mgr.IND.rest.rest     415.938
+mgr.CAN.rest.rest     345.325
+mgr.USA.AL  .hh1        1.967
+mgr.USA.AL  .hh2        5.137
+mgr.USA.AL  .hh3        8.230
+mgr.USA.AL  .hh4       18.002
+mgr.USA.AL  .hh5       19.288
+mgr.USA.AK  .hh1        0.095
+mgr.USA.AK  .hh2        0.979
+mgr.USA.AK  .hh3        1.768
+mgr.USA.AK  .hh4        6.791
+mgr.USA.AK  .hh5        6.059
+mgr.USA.AR  .hh1        0.639
+mgr.USA.AR  .hh2        3.184
+mgr.USA.AR  .hh3        4.021
+mgr.USA.AR  .hh4        9.172
+mgr.USA.AR  .hh5        8.121
+mgr.USA.AZ  .hh1        1.410
+mgr.USA.AZ  .hh2        7.200
+mgr.USA.AZ  .hh3       10.488
+mgr.USA.AZ  .hh4       30.647
+mgr.USA.AZ  .hh5       24.099
+mgr.USA.CA  .hh1        8.597
+mgr.USA.CA  .hh2       37.895
+mgr.USA.CA  .hh3       56.346
+mgr.USA.CA  .hh4      177.315
+mgr.USA.CA  .hh5      267.877
+mgr.USA.CO  .hh1        0.193
+mgr.USA.CO  .hh2        4.069
+mgr.USA.CO  .hh3        8.539
+mgr.USA.CO  .hh4       28.226
+mgr.USA.CO  .hh5       35.671
+mgr.USA.CT  .hh1        2.407
+mgr.USA.CT  .hh2        4.537
+mgr.USA.CT  .hh3        7.576
+mgr.USA.CT  .hh4       20.021
+mgr.USA.CT  .hh5       26.603
+mgr.USA.DE  .hh1        0.701
+mgr.USA.DE  .hh2        1.445
+mgr.USA.DE  .hh3        2.229
+mgr.USA.DE  .hh4        4.901
+mgr.USA.DE  .hh5        6.204
+mgr.USA.DC  .hh1        6.287
+mgr.USA.DC  .hh2        6.866
+mgr.USA.DC  .hh3        7.452
+mgr.USA.DC  .hh4       11.284
+mgr.USA.DC  .hh5       18.223
+mgr.USA.FL  .hh1        2.330
+mgr.USA.FL  .hh2       20.584
+mgr.USA.FL  .hh3       31.289
+mgr.USA.FL  .hh4       84.662
+mgr.USA.FL  .hh5       82.733
+mgr.USA.GA  .hh1        2.284
+mgr.USA.GA  .hh2       12.735
+mgr.USA.GA  .hh3       16.345
+mgr.USA.GA  .hh4       47.136
+mgr.USA.GA  .hh5       47.764
+mgr.USA.HI  .hh1        0.681
+mgr.USA.HI  .hh2        2.454
+mgr.USA.HI  .hh3        4.034
+mgr.USA.HI  .hh4       11.170
+mgr.USA.HI  .hh5       17.103
+mgr.USA.ID  .hh1        0.311
+mgr.USA.ID  .hh2        1.323
+mgr.USA.ID  .hh3        2.448
+mgr.USA.ID  .hh4        6.403
+mgr.USA.ID  .hh5        4.531
+mgr.USA.IL  .hh1        1.834
+mgr.USA.IL  .hh2       10.378
+mgr.USA.IL  .hh3       19.880
+mgr.USA.IL  .hh4       58.382
+mgr.USA.IL  .hh5       76.711
+mgr.USA.IN  .hh1        0.603
+mgr.USA.IN  .hh2        6.040
+mgr.USA.IN  .hh3       11.067
+mgr.USA.IN  .hh4       30.649
+mgr.USA.IN  .hh5       19.717
+mgr.USA.IA  .hh1        1.334
+mgr.USA.IA  .hh2        3.315
+mgr.USA.IA  .hh3        5.041
+mgr.USA.IA  .hh4       14.899
+mgr.USA.IA  .hh5       10.543
+mgr.USA.KS  .hh1        1.264
+mgr.USA.KS  .hh2        3.455
+mgr.USA.KS  .hh3        5.454
+mgr.USA.KS  .hh4       15.618
+mgr.USA.KS  .hh5       13.094
+mgr.USA.KY  .hh1        1.157
+mgr.USA.KY  .hh2        4.986
+mgr.USA.KY  .hh3        7.528
+mgr.USA.KY  .hh4       18.655
+mgr.USA.KY  .hh5       16.771
+mgr.USA.LA  .hh1        1.579
+mgr.USA.LA  .hh2        5.295
+mgr.USA.LA  .hh3        7.007
+mgr.USA.LA  .hh4       17.925
+mgr.USA.LA  .hh5       15.454
+mgr.USA.ME  .hh1        0.355
+mgr.USA.ME  .hh2        1.355
+mgr.USA.ME  .hh3        2.269
+mgr.USA.ME  .hh4        5.846
+mgr.USA.ME  .hh5        4.293
+mgr.USA.MD  .hh1        3.535
+mgr.USA.MD  .hh2        9.485
+mgr.USA.MD  .hh3       12.290
+mgr.USA.MD  .hh4       34.412
+mgr.USA.MD  .hh5       55.443
+mgr.USA.MA  .hh1        5.208
+mgr.USA.MA  .hh2        9.631
+mgr.USA.MA  .hh3       12.399
+mgr.USA.MA  .hh4       38.207
+mgr.USA.MA  .hh5       63.986
+mgr.USA.MI  .hh1        1.471
+mgr.USA.MI  .hh2        8.589
+mgr.USA.MI  .hh3       11.549
+mgr.USA.MI  .hh4       38.025
+mgr.USA.MI  .hh5       42.533
+mgr.USA.MN  .hh1        1.184
+mgr.USA.MN  .hh2        4.350
+mgr.USA.MN  .hh3        7.733
+mgr.USA.MN  .hh4       28.716
+mgr.USA.MN  .hh5       31.205
+mgr.USA.MS  .hh1        0.811
+mgr.USA.MS  .hh2        3.965
+mgr.USA.MS  .hh3        5.442
+mgr.USA.MS  .hh4       11.298
+mgr.USA.MS  .hh5        5.113
+mgr.USA.MO  .hh1        1.456
+mgr.USA.MO  .hh2        6.525
+mgr.USA.MO  .hh3        9.266
+mgr.USA.MO  .hh4       25.886
+mgr.USA.MO  .hh5       24.151
+mgr.USA.MT  .hh1        0.251
+mgr.USA.MT  .hh2        1.042
+mgr.USA.MT  .hh3        1.385
+mgr.USA.MT  .hh4        4.471
+mgr.USA.MT  .hh5        3.390
+mgr.USA.NE  .hh1        1.062
+mgr.USA.NE  .hh2        2.552
+mgr.USA.NE  .hh3        3.485
+mgr.USA.NE  .hh4        9.099
+mgr.USA.NE  .hh5        8.962
+mgr.USA.NV  .hh1        0.145
+mgr.USA.NV  .hh2        4.206
+mgr.USA.NV  .hh3        5.882
+mgr.USA.NV  .hh4       19.495
+mgr.USA.NV  .hh5       12.794
+mgr.USA.NH  .hh1        0.109
+mgr.USA.NH  .hh2        1.277
+mgr.USA.NH  .hh3        2.034
+mgr.USA.NH  .hh4        6.241
+mgr.USA.NH  .hh5        8.823
+mgr.USA.NJ  .hh1       -0.701
+mgr.USA.NJ  .hh2        5.792
+mgr.USA.NJ  .hh3       11.439
+mgr.USA.NJ  .hh4       35.301
+mgr.USA.NJ  .hh5       63.033
+mgr.USA.NM  .hh1        2.456
+mgr.USA.NM  .hh2        4.209
+mgr.USA.NM  .hh3        4.927
+mgr.USA.NM  .hh4       10.553
+mgr.USA.NM  .hh5        7.760
+mgr.USA.NY  .hh1        9.480
+mgr.USA.NY  .hh2       24.167
+mgr.USA.NY  .hh3       33.384
+mgr.USA.NY  .hh4       94.520
+mgr.USA.NY  .hh5      151.859
+mgr.USA.NC  .hh1        4.214
+mgr.USA.NC  .hh2       14.667
+mgr.USA.NC  .hh3       19.088
+mgr.USA.NC  .hh4       48.652
+mgr.USA.NC  .hh5       47.881
+mgr.USA.ND  .hh1        0.480
+mgr.USA.ND  .hh2        1.351
+mgr.USA.ND  .hh3        1.901
+mgr.USA.ND  .hh4        5.278
+mgr.USA.ND  .hh5        3.140
+mgr.USA.OH  .hh1        2.564
+mgr.USA.OH  .hh2       10.153
+mgr.USA.OH  .hh3       17.150
+mgr.USA.OH  .hh4       54.324
+mgr.USA.OH  .hh5       47.547
+mgr.USA.OK  .hh1        0.674
+mgr.USA.OK  .hh2        4.875
+mgr.USA.OK  .hh3        5.471
+mgr.USA.OK  .hh4       17.238
+mgr.USA.OK  .hh5       11.108
+mgr.USA.OR  .hh1        1.290
+mgr.USA.OR  .hh2        3.272
+mgr.USA.OR  .hh3        5.718
+mgr.USA.OR  .hh4       16.729
+mgr.USA.OR  .hh5       16.002
+mgr.USA.PA  .hh1        1.473
+mgr.USA.PA  .hh2        9.316
+mgr.USA.PA  .hh3       14.855
+mgr.USA.PA  .hh4       54.097
+mgr.USA.PA  .hh5       69.853
+mgr.USA.RI  .hh1        0.566
+mgr.USA.RI  .hh2        1.256
+mgr.USA.RI  .hh3        1.996
+mgr.USA.RI  .hh4        5.249
+mgr.USA.RI  .hh5        6.771
+mgr.USA.SC  .hh1        0.837
+mgr.USA.SC  .hh2        4.541
+mgr.USA.SC  .hh3        7.451
+mgr.USA.SC  .hh4       20.482
+mgr.USA.SC  .hh5       18.553
+mgr.USA.SD  .hh1        0.391
+mgr.USA.SD  .hh2        1.459
+mgr.USA.SD  .hh3        1.800
+mgr.USA.SD  .hh4        4.606
+mgr.USA.SD  .hh5        3.696
+mgr.USA.TN  .hh1        1.586
+mgr.USA.TN  .hh2        7.396
+mgr.USA.TN  .hh3        9.411
+mgr.USA.TN  .hh4       26.716
+mgr.USA.TN  .hh5       28.808
+mgr.USA.TX  .hh1        1.572
+mgr.USA.TX  .hh2       28.742
+mgr.USA.TX  .hh3       40.154
+mgr.USA.TX  .hh4      128.327
+mgr.USA.TX  .hh5      128.224
+mgr.USA.UT  .hh1        0.539
+mgr.USA.UT  .hh2        2.903
+mgr.USA.UT  .hh3        4.955
+mgr.USA.UT  .hh4       14.052
+mgr.USA.UT  .hh5       12.922
+mgr.USA.VT  .hh1        0.097
+mgr.USA.VT  .hh2        0.528
+mgr.USA.VT  .hh3        0.899
+mgr.USA.VT  .hh4        2.719
+mgr.USA.VT  .hh5        2.872
+mgr.USA.VA  .hh1        3.458
+mgr.USA.VA  .hh2       12.630
+mgr.USA.VA  .hh3       14.873
+mgr.USA.VA  .hh4       57.631
+mgr.USA.VA  .hh5       72.732
+mgr.USA.WA  .hh1       -2.274
+mgr.USA.WA  .hh2        3.206
+mgr.USA.WA  .hh3        7.253
+mgr.USA.WA  .hh4       41.741
+mgr.USA.WA  .hh5       55.120
+mgr.USA.WV  .hh1        0.409
+mgr.USA.WV  .hh2        1.711
+mgr.USA.WV  .hh3        2.217
+mgr.USA.WV  .hh4        6.296
+mgr.USA.WV  .hh5        4.482
+mgr.USA.WI  .hh1        0.699
+mgr.USA.WI  .hh2        4.832
+mgr.USA.WI  .hh3        8.969
+mgr.USA.WI  .hh4       23.258
+mgr.USA.WI  .hh5       22.044
+mgr.USA.WY  .hh1        0.033
+mgr.USA.WY  .hh2        0.669
+mgr.USA.WY  .hh3        0.861
+mgr.USA.WY  .hh4        3.429
+mgr.USA.WY  .hh5        1.832
+mgr.MEX.rest.rest      63.099
+mgr.ARG.rest.rest      40.994
+mgr.BRA.rest.rest     301.997
+mgr.FRA.rest.rest     245.287
+mgr.DEU.rest.rest     382.274
+mgr.ITA.rest.rest     125.296
+mgr.GBR.rest.rest     499.170
+mgr.RUS.rest.rest     180.785
+mgr.SAU.rest.rest      54.126
+mgr.TUR.rest.rest      36.680
+mgr.ZAF.rest.rest      56.342
+mgr.ANZ.rest.rest     308.017
+mgr.REU.rest.rest     729.000
+mgr.OEX.rest.rest     137.766
+mgr.LIC.rest.rest      90.324
+mgr.MIC.rest.rest     738.771
+tec.CHN.rest.rest     752.562
+tec.JPN.rest.rest     380.268
+tec.KOR.rest.rest     118.093
+tec.IDN.rest.rest      65.102
+tec.IND.rest.rest     159.253
+tec.CAN.rest.rest     150.194
+tec.USA.AL  .hh1        0.097
+tec.USA.AL  .hh2        0.754
+tec.USA.AL  .hh3        1.395
+tec.USA.AL  .hh4        3.421
+tec.USA.AL  .hh5        3.687
+tec.USA.AK  .hh1       -0.121
+tec.USA.AK  .hh2        0.062
+tec.USA.AK  .hh3        0.225
+tec.USA.AK  .hh4        1.267
+tec.USA.AK  .hh5        1.115
+tec.USA.AR  .hh1        0.125
+tec.USA.AR  .hh2        0.652
+tec.USA.AR  .hh3        0.826
+tec.USA.AR  .hh4        1.894
+tec.USA.AR  .hh5        1.676
+tec.USA.AZ  .hh1        0.233
+tec.USA.AZ  .hh2        1.433
+tec.USA.AZ  .hh3        2.115
+tec.USA.AZ  .hh4        6.294
+tec.USA.AZ  .hh5        4.936
+tec.USA.CA  .hh1        2.256
+tec.USA.CA  .hh2        8.330
+tec.USA.CA  .hh3       12.155
+tec.USA.CA  .hh4       37.234
+tec.USA.CA  .hh5       56.009
+tec.USA.CO  .hh1       -0.047
+tec.USA.CO  .hh2        0.757
+tec.USA.CO  .hh3        1.683
+tec.USA.CO  .hh4        5.765
+tec.USA.CO  .hh5        7.308
+tec.USA.CT  .hh1        0.671
+tec.USA.CT  .hh2        1.112
+tec.USA.CT  .hh3        1.742
+tec.USA.CT  .hh4        4.323
+tec.USA.CT  .hh5        5.687
+tec.USA.DE  .hh1        0.219
+tec.USA.DE  .hh2        0.373
+tec.USA.DE  .hh3        0.536
+tec.USA.DE  .hh4        1.090
+tec.USA.DE  .hh5        1.360
+tec.USA.DC  .hh1        0.661
+tec.USA.DC  .hh2        0.781
+tec.USA.DC  .hh3        0.903
+tec.USA.DC  .hh4        1.697
+tec.USA.DC  .hh5        3.136
+tec.USA.FL  .hh1        0.735
+tec.USA.FL  .hh2        4.519
+tec.USA.FL  .hh3        6.739
+tec.USA.FL  .hh4       17.804
+tec.USA.FL  .hh5       17.404
+tec.USA.GA  .hh1        0.711
+tec.USA.GA  .hh2        2.877
+tec.USA.GA  .hh3        3.626
+tec.USA.GA  .hh4       10.009
+tec.USA.GA  .hh5       10.140
+tec.USA.HI  .hh1       -0.208
+tec.USA.HI  .hh2        0.160
+tec.USA.HI  .hh3        0.487
+tec.USA.HI  .hh4        1.967
+tec.USA.HI  .hh5        3.196
+tec.USA.ID  .hh1        0.038
+tec.USA.ID  .hh2        0.247
+tec.USA.ID  .hh3        0.480
+tec.USA.ID  .hh4        1.300
+tec.USA.ID  .hh5        0.912
+tec.USA.IL  .hh1        0.984
+tec.USA.IL  .hh2        2.755
+tec.USA.IL  .hh3        4.725
+tec.USA.IL  .hh4       12.707
+tec.USA.IL  .hh5       16.507
+tec.USA.IN  .hh1       -0.093
+tec.USA.IN  .hh2        1.034
+tec.USA.IN  .hh3        2.076
+tec.USA.IN  .hh4        6.136
+tec.USA.IN  .hh5        3.870
+tec.USA.IA  .hh1        0.337
+tec.USA.IA  .hh2        0.748
+tec.USA.IA  .hh3        1.106
+tec.USA.IA  .hh4        3.149
+tec.USA.IA  .hh5        2.246
+tec.USA.KS  .hh1        0.151
+tec.USA.KS  .hh2        0.605
+tec.USA.KS  .hh3        1.020
+tec.USA.KS  .hh4        3.127
+tec.USA.KS  .hh5        2.604
+tec.USA.KY  .hh1        0.040
+tec.USA.KY  .hh2        0.834
+tec.USA.KY  .hh3        1.361
+tec.USA.KY  .hh4        3.668
+tec.USA.KY  .hh5        3.277
+tec.USA.LA  .hh1        0.246
+tec.USA.LA  .hh2        1.016
+tec.USA.LA  .hh3        1.371
+tec.USA.LA  .hh4        3.634
+tec.USA.LA  .hh5        3.122
+tec.USA.ME  .hh1        0.040
+tec.USA.ME  .hh2        0.248
+tec.USA.ME  .hh3        0.437
+tec.USA.ME  .hh4        1.179
+tec.USA.ME  .hh5        0.857
+tec.USA.MD  .hh1       -0.135
+tec.USA.MD  .hh2        1.099
+tec.USA.MD  .hh3        1.680
+tec.USA.MD  .hh4        6.267
+tec.USA.MD  .hh5       10.627
+tec.USA.MA  .hh1        0.758
+tec.USA.MA  .hh2        1.675
+tec.USA.MA  .hh3        2.249
+tec.USA.MA  .hh4        7.599
+tec.USA.MA  .hh5       12.944
+tec.USA.MI  .hh1        0.142
+tec.USA.MI  .hh2        1.618
+tec.USA.MI  .hh3        2.232
+tec.USA.MI  .hh4        7.721
+tec.USA.MI  .hh5        8.655
+tec.USA.MN  .hh1        0.281
+tec.USA.MN  .hh2        0.938
+tec.USA.MN  .hh3        1.639
+tec.USA.MN  .hh4        5.989
+tec.USA.MN  .hh5        6.505
+tec.USA.MS  .hh1        0.032
+tec.USA.MS  .hh2        0.686
+tec.USA.MS  .hh3        0.992
+tec.USA.MS  .hh4        2.206
+tec.USA.MS  .hh5        0.924
+tec.USA.MO  .hh1        0.302
+tec.USA.MO  .hh2        1.353
+tec.USA.MO  .hh3        1.921
+tec.USA.MO  .hh4        5.366
+tec.USA.MO  .hh5        5.007
+tec.USA.MT  .hh1        0.020
+tec.USA.MT  .hh2        0.184
+tec.USA.MT  .hh3        0.255
+tec.USA.MT  .hh4        0.895
+tec.USA.MT  .hh5        0.671
+tec.USA.NE  .hh1        0.302
+tec.USA.NE  .hh2        0.611
+tec.USA.NE  .hh3        0.804
+tec.USA.NE  .hh4        1.968
+tec.USA.NE  .hh5        1.940
+tec.USA.NV  .hh1        0.072
+tec.USA.NV  .hh2        0.914
+tec.USA.NV  .hh3        1.261
+tec.USA.NV  .hh4        4.084
+tec.USA.NV  .hh5        2.694
+tec.USA.NH  .hh1        0.008
+tec.USA.NH  .hh2        0.250
+tec.USA.NH  .hh3        0.407
+tec.USA.NH  .hh4        1.279
+tec.USA.NH  .hh5        1.815
+tec.USA.NJ  .hh1        0.411
+tec.USA.NJ  .hh2        1.758
+tec.USA.NJ  .hh3        2.928
+tec.USA.NJ  .hh4        7.875
+tec.USA.NJ  .hh5       13.625
+tec.USA.NM  .hh1        0.177
+tec.USA.NM  .hh2        0.541
+tec.USA.NM  .hh3        0.690
+tec.USA.NM  .hh4        1.856
+tec.USA.NM  .hh5        1.277
+tec.USA.NY  .hh1        4.908
+tec.USA.NY  .hh2        7.953
+tec.USA.NY  .hh3        9.864
+tec.USA.NY  .hh4       22.539
+tec.USA.NY  .hh5       34.426
+tec.USA.NC  .hh1        0.297
+tec.USA.NC  .hh2        2.464
+tec.USA.NC  .hh3        3.381
+tec.USA.NC  .hh4        9.510
+tec.USA.NC  .hh5        9.350
+tec.USA.ND  .hh1        0.048
+tec.USA.ND  .hh2        0.228
+tec.USA.ND  .hh3        0.342
+tec.USA.ND  .hh4        1.042
+tec.USA.ND  .hh5        0.599
+tec.USA.OH  .hh1        0.645
+tec.USA.OH  .hh2        2.218
+tec.USA.OH  .hh3        3.669
+tec.USA.OH  .hh4       11.376
+tec.USA.OH  .hh5        9.971
+tec.USA.OK  .hh1        0.025
+tec.USA.OK  .hh2        0.896
+tec.USA.OK  .hh3        1.019
+tec.USA.OK  .hh4        3.459
+tec.USA.OK  .hh5        2.188
+tec.USA.OR  .hh1        0.197
+tec.USA.OR  .hh2        0.607
+tec.USA.OR  .hh3        1.115
+tec.USA.OR  .hh4        3.397
+tec.USA.OR  .hh5        3.247
+tec.USA.PA  .hh1        0.403
+tec.USA.PA  .hh2        2.028
+tec.USA.PA  .hh3        3.177
+tec.USA.PA  .hh4       11.312
+tec.USA.PA  .hh5       14.579
+tec.USA.RI  .hh1        0.037
+tec.USA.RI  .hh2        0.180
+tec.USA.RI  .hh3        0.333
+tec.USA.RI  .hh4        1.008
+tec.USA.RI  .hh5        1.323
+tec.USA.SC  .hh1       -0.056
+tec.USA.SC  .hh2        0.712
+tec.USA.SC  .hh3        1.315
+tec.USA.SC  .hh4        4.017
+tec.USA.SC  .hh5        3.617
+tec.USA.SD  .hh1        0.081
+tec.USA.SD  .hh2        0.302
+tec.USA.SD  .hh3        0.373
+tec.USA.SD  .hh4        0.954
+tec.USA.SD  .hh5        0.766
+tec.USA.TN  .hh1        0.377
+tec.USA.TN  .hh2        1.581
+tec.USA.TN  .hh3        1.999
+tec.USA.TN  .hh4        5.586
+tec.USA.TN  .hh5        6.020
+tec.USA.TX  .hh1        1.005
+tec.USA.TX  .hh2        6.638
+tec.USA.TX  .hh3        9.004
+tec.USA.TX  .hh4       27.284
+tec.USA.TX  .hh5       27.262
+tec.USA.UT  .hh1        0.141
+tec.USA.UT  .hh2        0.632
+tec.USA.UT  .hh3        1.057
+tec.USA.UT  .hh4        2.943
+tec.USA.UT  .hh5        2.709
+tec.USA.VT  .hh1        0.004
+tec.USA.VT  .hh2        0.094
+tec.USA.VT  .hh3        0.171
+tec.USA.VT  .hh4        0.548
+tec.USA.VT  .hh5        0.580
+tec.USA.VA  .hh1       -0.641
+tec.USA.VA  .hh2        1.260
+tec.USA.VA  .hh3        1.725
+tec.USA.VA  .hh4       10.590
+tec.USA.VA  .hh5       13.720
+tec.USA.WA  .hh1       -0.290
+tec.USA.WA  .hh2        0.846
+tec.USA.WA  .hh3        1.685
+tec.USA.WA  .hh4        8.835
+tec.USA.WA  .hh5       11.609
+tec.USA.WV  .hh1        0.016
+tec.USA.WV  .hh2        0.286
+tec.USA.WV  .hh3        0.391
+tec.USA.WV  .hh4        1.237
+tec.USA.WV  .hh5        0.861
+tec.USA.WI  .hh1        0.176
+tec.USA.WI  .hh2        1.033
+tec.USA.WI  .hh3        1.891
+tec.USA.WI  .hh4        4.853
+tec.USA.WI  .hh5        4.602
+tec.USA.WY  .hh1       -0.001
+tec.USA.WY  .hh2        0.131
+tec.USA.WY  .hh3        0.171
+tec.USA.WY  .hh4        0.703
+tec.USA.WY  .hh5        0.372
+tec.MEX.rest.rest      63.318
+tec.ARG.rest.rest      54.824
+tec.BRA.rest.rest     112.457
+tec.FRA.rest.rest     199.583
+tec.DEU.rest.rest     281.277
+tec.ITA.rest.rest     156.316
+tec.GBR.rest.rest     249.803
+tec.RUS.rest.rest      68.170
+tec.SAU.rest.rest      40.244
+tec.TUR.rest.rest      31.561
+tec.ZAF.rest.rest      36.294
+tec.ANZ.rest.rest     155.722
+tec.REU.rest.rest     516.849
+tec.OEX.rest.rest      90.773
+tec.LIC.rest.rest      64.830
+tec.MIC.rest.rest     486.046
+clk.CHN.rest.rest     731.253
+clk.JPN.rest.rest     229.673
+clk.KOR.rest.rest     135.187
+clk.IDN.rest.rest      54.746
+clk.IND.rest.rest     134.267
+clk.CAN.rest.rest     115.149
+clk.USA.AL  .hh1        0.365
+clk.USA.AL  .hh2        1.211
+clk.USA.AL  .hh3        2.037
+clk.USA.AL  .hh4        4.647
+clk.USA.AL  .hh5        4.991
+clk.USA.AK  .hh1       -0.036
+clk.USA.AK  .hh2        0.200
+clk.USA.AK  .hh3        0.410
+clk.USA.AK  .hh4        1.752
+clk.USA.AK  .hh5        1.557
+clk.USA.AR  .hh1        0.195
+clk.USA.AR  .hh2        0.874
+clk.USA.AR  .hh3        1.098
+clk.USA.AR  .hh4        2.474
+clk.USA.AR  .hh5        2.193
+clk.USA.AZ  .hh1        0.321
+clk.USA.AZ  .hh2        1.868
+clk.USA.AZ  .hh3        2.746
+clk.USA.AZ  .hh4        8.130
+clk.USA.AZ  .hh5        6.381
+clk.USA.CA  .hh1        3.279
+clk.USA.CA  .hh2       11.104
+clk.USA.CA  .hh3       16.032
+clk.USA.CA  .hh4       48.342
+clk.USA.CA  .hh5       72.530
+clk.USA.CO  .hh1        0.034
+clk.USA.CO  .hh2        1.069
+clk.USA.CO  .hh3        2.263
+clk.USA.CO  .hh4        7.521
+clk.USA.CO  .hh5        9.510
+clk.USA.CT  .hh1        0.604
+clk.USA.CT  .hh2        1.172
+clk.USA.CT  .hh3        1.984
+clk.USA.CT  .hh4        5.308
+clk.USA.CT  .hh5        7.066
+clk.USA.DE  .hh1        0.145
+clk.USA.DE  .hh2        0.344
+clk.USA.DE  .hh3        0.553
+clk.USA.DE  .hh4        1.267
+clk.USA.DE  .hh5        1.615
+clk.USA.DC  .hh1        1.273
+clk.USA.DC  .hh2        1.428
+clk.USA.DC  .hh3        1.584
+clk.USA.DC  .hh4        2.608
+clk.USA.DC  .hh5        4.461
+clk.USA.FL  .hh1        0.730
+clk.USA.FL  .hh2        5.605
+clk.USA.FL  .hh3        8.465
+clk.USA.FL  .hh4       22.720
+clk.USA.FL  .hh5       22.205
+clk.USA.GA  .hh1        0.929
+clk.USA.GA  .hh2        3.720
+clk.USA.GA  .hh3        4.684
+clk.USA.GA  .hh4       12.908
+clk.USA.GA  .hh5       13.076
+clk.USA.HI  .hh1       -0.087
+clk.USA.HI  .hh2        0.386
+clk.USA.HI  .hh3        0.808
+clk.USA.HI  .hh4        2.714
+clk.USA.HI  .hh5        4.299
+clk.USA.ID  .hh1        0.064
+clk.USA.ID  .hh2        0.335
+clk.USA.ID  .hh3        0.635
+clk.USA.ID  .hh4        1.691
+clk.USA.ID  .hh5        1.191
+clk.USA.IL  .hh1        0.803
+clk.USA.IL  .hh2        3.085
+clk.USA.IL  .hh3        5.623
+clk.USA.IL  .hh4       15.907
+clk.USA.IL  .hh5       20.802
+clk.USA.IN  .hh1        0.075
+clk.USA.IN  .hh2        1.527
+clk.USA.IN  .hh3        2.870
+clk.USA.IN  .hh4        8.100
+clk.USA.IN  .hh5        5.180
+clk.USA.IA  .hh1        0.289
+clk.USA.IA  .hh2        0.819
+clk.USA.IA  .hh3        1.280
+clk.USA.IA  .hh4        3.913
+clk.USA.IA  .hh5        2.749
+clk.USA.KS  .hh1        0.301
+clk.USA.KS  .hh2        0.886
+clk.USA.KS  .hh3        1.420
+clk.USA.KS  .hh4        4.135
+clk.USA.KS  .hh5        3.460
+clk.USA.KY  .hh1        0.222
+clk.USA.KY  .hh2        1.244
+clk.USA.KY  .hh3        1.923
+clk.USA.KY  .hh4        4.895
+clk.USA.KY  .hh5        4.392
+clk.USA.LA  .hh1        0.379
+clk.USA.LA  .hh2        1.372
+clk.USA.LA  .hh3        1.829
+clk.USA.LA  .hh4        4.745
+clk.USA.LA  .hh5        4.085
+clk.USA.ME  .hh1        0.060
+clk.USA.ME  .hh2        0.328
+clk.USA.ME  .hh3        0.572
+clk.USA.ME  .hh4        1.527
+clk.USA.ME  .hh5        1.112
+clk.USA.MD  .hh1        0.470
+clk.USA.MD  .hh2        2.059
+clk.USA.MD  .hh3        2.809
+clk.USA.MD  .hh4        8.717
+clk.USA.MD  .hh5       14.334
+clk.USA.MA  .hh1        1.137
+clk.USA.MA  .hh2        2.318
+clk.USA.MA  .hh3        3.057
+clk.USA.MA  .hh4        9.951
+clk.USA.MA  .hh5       16.836
+clk.USA.MI  .hh1        0.385
+clk.USA.MI  .hh2        2.287
+clk.USA.MI  .hh3        3.077
+clk.USA.MI  .hh4       10.149
+clk.USA.MI  .hh5       11.353
+clk.USA.MN  .hh1        0.333
+clk.USA.MN  .hh2        1.179
+clk.USA.MN  .hh3        2.082
+clk.USA.MN  .hh4        7.686
+clk.USA.MN  .hh5        8.351
+clk.USA.MS  .hh1        0.131
+clk.USA.MS  .hh2        0.974
+clk.USA.MS  .hh3        1.368
+clk.USA.MS  .hh4        2.932
+clk.USA.MS  .hh5        1.280
+clk.USA.MO  .hh1        0.406
+clk.USA.MO  .hh2        1.760
+clk.USA.MO  .hh3        2.492
+clk.USA.MO  .hh4        6.931
+clk.USA.MO  .hh5        6.468
+clk.USA.MT  .hh1        0.042
+clk.USA.MT  .hh2        0.253
+clk.USA.MT  .hh3        0.345
+clk.USA.MT  .hh4        1.169
+clk.USA.MT  .hh5        0.880
+clk.USA.NE  .hh1        0.322
+clk.USA.NE  .hh2        0.720
+clk.USA.NE  .hh3        0.969
+clk.USA.NE  .hh4        2.469
+clk.USA.NE  .hh5        2.432
+clk.USA.NV  .hh1       -0.183
+clk.USA.NV  .hh2        0.902
+clk.USA.NV  .hh3        1.350
+clk.USA.NV  .hh4        4.986
+clk.USA.NV  .hh5        3.196
+clk.USA.NH  .hh1        0.008
+clk.USA.NH  .hh2        0.320
+clk.USA.NH  .hh3        0.522
+clk.USA.NH  .hh4        1.645
+clk.USA.NH  .hh5        2.335
+clk.USA.NJ  .hh1        0.307
+clk.USA.NJ  .hh2        2.041
+clk.USA.NJ  .hh3        3.549
+clk.USA.NJ  .hh4        9.922
+clk.USA.NJ  .hh5       17.329
+clk.USA.NM  .hh1        0.456
+clk.USA.NM  .hh2        0.924
+clk.USA.NM  .hh3        1.115
+clk.USA.NM  .hh4        2.618
+clk.USA.NM  .hh5        1.872
+clk.USA.NY  .hh1        3.084
+clk.USA.NY  .hh2        7.007
+clk.USA.NY  .hh3        9.469
+clk.USA.NY  .hh4       25.798
+clk.USA.NY  .hh5       41.113
+clk.USA.NC  .hh1        0.714
+clk.USA.NC  .hh2        3.506
+clk.USA.NC  .hh3        4.686
+clk.USA.NC  .hh4       12.583
+clk.USA.NC  .hh5       12.377
+clk.USA.ND  .hh1        0.093
+clk.USA.ND  .hh2        0.326
+clk.USA.ND  .hh3        0.473
+clk.USA.ND  .hh4        1.374
+clk.USA.ND  .hh5        0.803
+clk.USA.OH  .hh1        0.721
+clk.USA.OH  .hh2        2.748
+clk.USA.OH  .hh3        4.617
+clk.USA.OH  .hh4       14.546
+clk.USA.OH  .hh5       12.736
+clk.USA.OK  .hh1        0.156
+clk.USA.OK  .hh2        1.278
+clk.USA.OK  .hh3        1.437
+clk.USA.OK  .hh4        4.580
+clk.USA.OK  .hh5        2.943
+clk.USA.OR  .hh1        0.321
+clk.USA.OR  .hh2        0.850
+clk.USA.OR  .hh3        1.503
+clk.USA.OR  .hh4        4.444
+clk.USA.OR  .hh5        4.250
+clk.USA.PA  .hh1        0.638
+clk.USA.PA  .hh2        2.733
+clk.USA.PA  .hh3        4.213
+clk.USA.PA  .hh4       14.694
+clk.USA.PA  .hh5       18.902
+clk.USA.RI  .hh1        0.085
+clk.USA.RI  .hh2        0.269
+clk.USA.RI  .hh3        0.467
+clk.USA.RI  .hh4        1.336
+clk.USA.RI  .hh5        1.742
+clk.USA.SC  .hh1        0.100
+clk.USA.SC  .hh2        1.089
+clk.USA.SC  .hh3        1.867
+clk.USA.SC  .hh4        5.347
+clk.USA.SC  .hh5        4.832
+clk.USA.SD  .hh1        0.052
+clk.USA.SD  .hh2        0.337
+clk.USA.SD  .hh3        0.428
+clk.USA.SD  .hh4        1.177
+clk.USA.SD  .hh5        0.934
+clk.USA.TN  .hh1        0.478
+clk.USA.TN  .hh2        2.030
+clk.USA.TN  .hh3        2.568
+clk.USA.TN  .hh4        7.190
+clk.USA.TN  .hh5        7.749
+clk.USA.TX  .hh1        1.053
+clk.USA.TX  .hh2        8.310
+clk.USA.TX  .hh3       11.358
+clk.USA.TX  .hh4       34.908
+clk.USA.TX  .hh5       34.880
+clk.USA.UT  .hh1        0.168
+clk.USA.UT  .hh2        0.800
+clk.USA.UT  .hh3        1.348
+clk.USA.UT  .hh4        3.777
+clk.USA.UT  .hh5        3.476
+clk.USA.VT  .hh1        0.004
+clk.USA.VT  .hh2        0.119
+clk.USA.VT  .hh3        0.218
+clk.USA.VT  .hh4        0.704
+clk.USA.VT  .hh5        0.745
+clk.USA.VA  .hh1        0.224
+clk.USA.VA  .hh2        2.674
+clk.USA.VA  .hh3        3.273
+clk.USA.VA  .hh4       14.693
+clk.USA.VA  .hh5       18.727
+clk.USA.WA  .hh1       -0.279
+clk.USA.WA  .hh2        1.185
+clk.USA.WA  .hh3        2.266
+clk.USA.WA  .hh4       11.477
+clk.USA.WA  .hh5       15.051
+clk.USA.WV  .hh1        0.070
+clk.USA.WV  .hh2        0.418
+clk.USA.WV  .hh3        0.553
+clk.USA.WV  .hh4        1.642
+clk.USA.WV  .hh5        1.158
+clk.USA.WI  .hh1        0.216
+clk.USA.WI  .hh2        1.320
+clk.USA.WI  .hh3        2.425
+clk.USA.WI  .hh4        6.242
+clk.USA.WI  .hh5        5.917
+clk.USA.WY  .hh1        0.006
+clk.USA.WY  .hh2        0.176
+clk.USA.WY  .hh3        0.227
+clk.USA.WY  .hh4        0.913
+clk.USA.WY  .hh5        0.486
+clk.MEX.rest.rest      20.733
+clk.ARG.rest.rest      63.205
+clk.BRA.rest.rest     121.354
+clk.FRA.rest.rest     109.058
+clk.DEU.rest.rest     189.418
+clk.ITA.rest.rest      56.120
+clk.GBR.rest.rest     119.822
+clk.RUS.rest.rest      11.412
+clk.SAU.rest.rest      27.060
+clk.TUR.rest.rest      23.863
+clk.ZAF.rest.rest      33.243
+clk.ANZ.rest.rest      87.730
+clk.REU.rest.rest     282.261
+clk.OEX.rest.rest     106.175
+clk.LIC.rest.rest      61.443
+clk.MIC.rest.rest     330.740
+srv.CHN.rest.rest    1105.225
+srv.JPN.rest.rest     199.890
+srv.KOR.rest.rest     130.427
+srv.IDN.rest.rest      17.971
+srv.IND.rest.rest      96.735
+srv.CAN.rest.rest      75.357
+srv.USA.AL  .hh1       -0.044
+srv.USA.AL  .hh2        0.383
+srv.USA.AL  .hh3        0.800
+srv.USA.AL  .hh4        2.117
+srv.USA.AL  .hh5        2.290
+srv.USA.AK  .hh1       -0.150
+srv.USA.AK  .hh2       -0.031
+srv.USA.AK  .hh3        0.075
+srv.USA.AK  .hh4        0.752
+srv.USA.AK  .hh5        0.653
+srv.USA.AR  .hh1        0.049
+srv.USA.AR  .hh2        0.391
+srv.USA.AR  .hh3        0.504
+srv.USA.AR  .hh4        1.198
+srv.USA.AR  .hh5        1.057
+srv.USA.AZ  .hh1        0.180
+srv.USA.AZ  .hh2        0.960
+srv.USA.AZ  .hh3        1.403
+srv.USA.AZ  .hh4        4.120
+srv.USA.AZ  .hh5        3.237
+srv.USA.CA  .hh1        1.789
+srv.USA.CA  .hh2        5.736
+srv.USA.CA  .hh3        8.223
+srv.USA.CA  .hh4       24.523
+srv.USA.CA  .hh5       36.726
+srv.USA.CO  .hh1        0.060
+srv.USA.CO  .hh2        0.583
+srv.USA.CO  .hh3        1.185
+srv.USA.CO  .hh4        3.838
+srv.USA.CO  .hh5        4.841
+srv.USA.CT  .hh1        0.293
+srv.USA.CT  .hh2        0.580
+srv.USA.CT  .hh3        0.990
+srv.USA.CT  .hh4        2.667
+srv.USA.CT  .hh5        3.554
+srv.USA.DE  .hh1        0.109
+srv.USA.DE  .hh2        0.209
+srv.USA.DE  .hh3        0.314
+srv.USA.DE  .hh4        0.675
+srv.USA.DE  .hh5        0.850
+srv.USA.DC  .hh1        0.476
+srv.USA.DC  .hh2        0.554
+srv.USA.DC  .hh3        0.633
+srv.USA.DC  .hh4        1.150
+srv.USA.DC  .hh5        2.085
+srv.USA.FL  .hh1        1.001
+srv.USA.FL  .hh2        3.461
+srv.USA.FL  .hh3        4.903
+srv.USA.FL  .hh4       12.095
+srv.USA.FL  .hh5       11.835
+srv.USA.GA  .hh1        0.115
+srv.USA.GA  .hh2        1.524
+srv.USA.GA  .hh3        2.010
+srv.USA.GA  .hh4        6.159
+srv.USA.GA  .hh5        6.244
+srv.USA.HI  .hh1        0.011
+srv.USA.HI  .hh2        0.250
+srv.USA.HI  .hh3        0.463
+srv.USA.HI  .hh4        1.424
+srv.USA.HI  .hh5        2.224
+srv.USA.ID  .hh1        0.023
+srv.USA.ID  .hh2        0.159
+srv.USA.ID  .hh3        0.311
+srv.USA.ID  .hh4        0.844
+srv.USA.ID  .hh5        0.592
+srv.USA.IL  .hh1        0.742
+srv.USA.IL  .hh2        1.893
+srv.USA.IL  .hh3        3.174
+srv.USA.IL  .hh4        8.362
+srv.USA.IL  .hh5       10.831
+srv.USA.IN  .hh1        0.039
+srv.USA.IN  .hh2        0.772
+srv.USA.IN  .hh3        1.449
+srv.USA.IN  .hh4        4.088
+srv.USA.IN  .hh5        2.615
+srv.USA.IA  .hh1        0.162
+srv.USA.IA  .hh2        0.429
+srv.USA.IA  .hh3        0.662
+srv.USA.IA  .hh4        1.990
+srv.USA.IA  .hh5        1.403
+srv.USA.KS  .hh1        0.021
+srv.USA.KS  .hh2        0.317
+srv.USA.KS  .hh3        0.586
+srv.USA.KS  .hh4        1.956
+srv.USA.KS  .hh5        1.615
+srv.USA.KY  .hh1       -0.088
+srv.USA.KY  .hh2        0.428
+srv.USA.KY  .hh3        0.770
+srv.USA.KY  .hh4        2.270
+srv.USA.KY  .hh5        2.016
+srv.USA.LA  .hh1        0.226
+srv.USA.LA  .hh2        0.727
+srv.USA.LA  .hh3        0.957
+srv.USA.LA  .hh4        2.429
+srv.USA.LA  .hh5        2.096
+srv.USA.ME  .hh1        0.047
+srv.USA.ME  .hh2        0.182
+srv.USA.ME  .hh3        0.305
+srv.USA.ME  .hh4        0.787
+srv.USA.ME  .hh5        0.578
+srv.USA.MD  .hh1       -0.274
+srv.USA.MD  .hh2        0.528
+srv.USA.MD  .hh3        0.906
+srv.USA.MD  .hh4        3.887
+srv.USA.MD  .hh5        6.720
+srv.USA.MA  .hh1        0.570
+srv.USA.MA  .hh2        1.166
+srv.USA.MA  .hh3        1.539
+srv.USA.MA  .hh4        5.016
+srv.USA.MA  .hh5        8.490
+srv.USA.MI  .hh1        0.346
+srv.USA.MI  .hh2        1.305
+srv.USA.MI  .hh3        1.704
+srv.USA.MI  .hh4        5.271
+srv.USA.MI  .hh5        5.879
+srv.USA.MN  .hh1        0.195
+srv.USA.MN  .hh2        0.622
+srv.USA.MN  .hh3        1.078
+srv.USA.MN  .hh4        3.905
+srv.USA.MN  .hh5        4.241
+srv.USA.MS  .hh1        0.020
+srv.USA.MS  .hh2        0.445
+srv.USA.MS  .hh3        0.644
+srv.USA.MS  .hh4        1.433
+srv.USA.MS  .hh5        0.600
+srv.USA.MO  .hh1        0.167
+srv.USA.MO  .hh2        0.850
+srv.USA.MO  .hh3        1.220
+srv.USA.MO  .hh4        3.459
+srv.USA.MO  .hh5        3.225
+srv.USA.MT  .hh1        0.009
+srv.USA.MT  .hh2        0.116
+srv.USA.MT  .hh3        0.162
+srv.USA.MT  .hh4        0.578
+srv.USA.MT  .hh5        0.432
+srv.USA.NE  .hh1        0.093
+srv.USA.NE  .hh2        0.294
+srv.USA.NE  .hh3        0.419
+srv.USA.NE  .hh4        1.176
+srv.USA.NE  .hh5        1.158
+srv.USA.NV  .hh1        1.003
+srv.USA.NV  .hh2        1.550
+srv.USA.NV  .hh3        1.776
+srv.USA.NV  .hh4        3.610
+srv.USA.NV  .hh5        2.707
+srv.USA.NH  .hh1        0.019
+srv.USA.NH  .hh2        0.176
+srv.USA.NH  .hh3        0.278
+srv.USA.NH  .hh4        0.845
+srv.USA.NH  .hh5        1.193
+srv.USA.NJ  .hh1        0.228
+srv.USA.NJ  .hh2        1.103
+srv.USA.NJ  .hh3        1.864
+srv.USA.NJ  .hh4        5.080
+srv.USA.NJ  .hh5        8.816
+srv.USA.NM  .hh1        0.052
+srv.USA.NM  .hh2        0.288
+srv.USA.NM  .hh3        0.385
+srv.USA.NM  .hh4        1.143
+srv.USA.NM  .hh5        0.767
+srv.USA.NY  .hh1        2.956
+srv.USA.NY  .hh2        4.935
+srv.USA.NY  .hh3        6.177
+srv.USA.NY  .hh4       14.415
+srv.USA.NY  .hh5       22.141
+srv.USA.NC  .hh1        0.117
+srv.USA.NC  .hh2        1.525
+srv.USA.NC  .hh3        2.121
+srv.USA.NC  .hh4        6.104
+srv.USA.NC  .hh5        6.001
+srv.USA.ND  .hh1       -0.017
+srv.USA.ND  .hh2        0.101
+srv.USA.ND  .hh3        0.175
+srv.USA.ND  .hh4        0.630
+srv.USA.ND  .hh5        0.342
+srv.USA.OH  .hh1        0.295
+srv.USA.OH  .hh2        1.317
+srv.USA.OH  .hh3        2.260
+srv.USA.OH  .hh4        7.269
+srv.USA.OH  .hh5        6.356
+srv.USA.OK  .hh1       -0.080
+srv.USA.OK  .hh2        0.486
+srv.USA.OK  .hh3        0.567
+srv.USA.OK  .hh4        2.152
+srv.USA.OK  .hh5        1.326
+srv.USA.OR  .hh1        0.272
+srv.USA.OR  .hh2        0.539
+srv.USA.OR  .hh3        0.868
+srv.USA.OR  .hh4        2.352
+srv.USA.OR  .hh5        2.254
+srv.USA.PA  .hh1        0.194
+srv.USA.PA  .hh2        1.251
+srv.USA.PA  .hh3        1.998
+srv.USA.PA  .hh4        7.285
+srv.USA.PA  .hh5        9.408
+srv.USA.RI  .hh1        0.017
+srv.USA.RI  .hh2        0.110
+srv.USA.RI  .hh3        0.209
+srv.USA.RI  .hh4        0.648
+srv.USA.RI  .hh5        0.853
+srv.USA.SC  .hh1        0.051
+srv.USA.SC  .hh2        0.550
+srv.USA.SC  .hh3        0.943
+srv.USA.SC  .hh4        2.698
+srv.USA.SC  .hh5        2.439
+srv.USA.SD  .hh1        0.033
+srv.USA.SD  .hh2        0.177
+srv.USA.SD  .hh3        0.223
+srv.USA.SD  .hh4        0.601
+srv.USA.SD  .hh5        0.479
+srv.USA.TN  .hh1        0.400
+srv.USA.TN  .hh2        1.183
+srv.USA.TN  .hh3        1.455
+srv.USA.TN  .hh4        3.786
+srv.USA.TN  .hh5        4.068
+srv.USA.TX  .hh1        0.173
+srv.USA.TX  .hh2        3.834
+srv.USA.TX  .hh3        5.372
+srv.USA.TX  .hh4       17.253
+srv.USA.TX  .hh5       17.239
+srv.USA.UT  .hh1        0.056
+srv.USA.UT  .hh2        0.374
+srv.USA.UT  .hh3        0.651
+srv.USA.UT  .hh4        1.876
+srv.USA.UT  .hh5        1.724
+srv.USA.VT  .hh1        0.040
+srv.USA.VT  .hh2        0.098
+srv.USA.VT  .hh3        0.148
+srv.USA.VT  .hh4        0.393
+srv.USA.VT  .hh5        0.414
+srv.USA.VA  .hh1       -0.732
+srv.USA.VA  .hh2        0.504
+srv.USA.VA  .hh3        0.807
+srv.USA.VA  .hh4        6.568
+srv.USA.VA  .hh5        8.603
+srv.USA.WA  .hh1       -0.446
+srv.USA.WA  .hh2        0.292
+srv.USA.WA  .hh3        0.838
+srv.USA.WA  .hh4        5.485
+srv.USA.WA  .hh5        7.288
+srv.USA.WV  .hh1        0.002
+srv.USA.WV  .hh2        0.177
+srv.USA.WV  .hh3        0.245
+srv.USA.WV  .hh4        0.795
+srv.USA.WV  .hh5        0.551
+srv.USA.WI  .hh1        0.106
+srv.USA.WI  .hh2        0.662
+srv.USA.WI  .hh3        1.220
+srv.USA.WI  .hh4        3.145
+srv.USA.WI  .hh5        2.982
+srv.USA.WY  .hh1        0.001
+srv.USA.WY  .hh2        0.087
+srv.USA.WY  .hh3        0.113
+srv.USA.WY  .hh4        0.459
+srv.USA.WY  .hh5        0.244
+srv.MEX.rest.rest      33.121
+srv.ARG.rest.rest      51.942
+srv.BRA.rest.rest     156.378
+srv.FRA.rest.rest      83.511
+srv.DEU.rest.rest     128.875
+srv.ITA.rest.rest      65.893
+srv.GBR.rest.rest     117.921
+srv.RUS.rest.rest      94.464
+srv.SAU.rest.rest      48.359
+srv.TUR.rest.rest      43.152
+srv.ZAF.rest.rest      21.208
+srv.ANZ.rest.rest      80.989
+srv.REU.rest.rest     314.184
+srv.OEX.rest.rest      67.332
+srv.LIC.rest.rest      45.131
+srv.MIC.rest.rest     353.237
+lab.CHN.rest.rest    2341.369
+lab.JPN.rest.rest     390.339
+lab.KOR.rest.rest      97.434
+lab.IDN.rest.rest     189.332
+lab.IND.rest.rest     524.799
+lab.CAN.rest.rest     133.243
+lab.USA.AL  .hh1        0.717
+lab.USA.AL  .hh2        1.848
+lab.USA.AL  .hh3        2.950
+lab.USA.AL  .hh4        6.435
+lab.USA.AL  .hh5        6.893
+lab.USA.AK  .hh1       -0.295
+lab.USA.AK  .hh2        0.020
+lab.USA.AK  .hh3        0.302
+lab.USA.AK  .hh4        2.093
+lab.USA.AK  .hh5        1.832
+lab.USA.AR  .hh1        0.544
+lab.USA.AR  .hh2        1.452
+lab.USA.AR  .hh3        1.750
+lab.USA.AR  .hh4        3.587
+lab.USA.AR  .hh5        3.212
+lab.USA.AZ  .hh1        0.211
+lab.USA.AZ  .hh2        2.276
+lab.USA.AZ  .hh3        3.448
+lab.USA.AZ  .hh4       10.636
+lab.USA.AZ  .hh5        8.301
+lab.USA.CA  .hh1        5.934
+lab.USA.CA  .hh2       16.381
+lab.USA.CA  .hh3       22.960
+lab.USA.CA  .hh4       66.093
+lab.USA.CA  .hh5       98.384
+lab.USA.CO  .hh1       -0.061
+lab.USA.CO  .hh2        1.321
+lab.USA.CO  .hh3        2.915
+lab.USA.CO  .hh4        9.934
+lab.USA.CO  .hh5       12.589
+lab.USA.CT  .hh1        0.318
+lab.USA.CT  .hh2        1.077
+lab.USA.CT  .hh3        2.161
+lab.USA.CT  .hh4        6.599
+lab.USA.CT  .hh5        8.946
+lab.USA.DE  .hh1       -0.084
+lab.USA.DE  .hh2        0.181
+lab.USA.DE  .hh3        0.460
+lab.USA.DE  .hh4        1.413
+lab.USA.DE  .hh5        1.878
+lab.USA.DC  .hh1       -0.363
+lab.USA.DC  .hh2       -0.156
+lab.USA.DC  .hh3        0.052
+lab.USA.DC  .hh4        1.419
+lab.USA.DC  .hh5        3.893
+lab.USA.FL  .hh1       -1.058
+lab.USA.FL  .hh2        5.450
+lab.USA.FL  .hh3        9.267
+lab.USA.FL  .hh4       28.298
+lab.USA.FL  .hh5       27.610
+lab.USA.GA  .hh1        1.129
+lab.USA.GA  .hh2        4.855
+lab.USA.GA  .hh3        6.143
+lab.USA.GA  .hh4       17.121
+lab.USA.GA  .hh5       17.345
+lab.USA.HI  .hh1       -1.091
+lab.USA.HI  .hh2       -0.459
+lab.USA.HI  .hh3        0.104
+lab.USA.HI  .hh4        2.649
+lab.USA.HI  .hh5        4.764
+lab.USA.ID  .hh1        0.180
+lab.USA.ID  .hh2        0.541
+lab.USA.ID  .hh3        0.942
+lab.USA.ID  .hh4        2.352
+lab.USA.ID  .hh5        1.685
+lab.USA.IL  .hh1        1.573
+lab.USA.IL  .hh2        4.619
+lab.USA.IL  .hh3        8.007
+lab.USA.IL  .hh4       21.736
+lab.USA.IL  .hh5       28.271
+lab.USA.IN  .hh1        3.127
+lab.USA.IN  .hh2        5.066
+lab.USA.IN  .hh3        6.859
+lab.USA.IN  .hh4       13.841
+lab.USA.IN  .hh5        9.943
+lab.USA.IA  .hh1        1.301
+lab.USA.IA  .hh2        2.007
+lab.USA.IA  .hh3        2.623
+lab.USA.IA  .hh4        6.137
+lab.USA.IA  .hh5        4.584
+lab.USA.KS  .hh1        0.304
+lab.USA.KS  .hh2        1.085
+lab.USA.KS  .hh3        1.799
+lab.USA.KS  .hh4        5.422
+lab.USA.KS  .hh5        4.522
+lab.USA.KY  .hh1        0.522
+lab.USA.KY  .hh2        1.887
+lab.USA.KY  .hh3        2.794
+lab.USA.KY  .hh4        6.761
+lab.USA.KY  .hh5        6.089
+lab.USA.LA  .hh1        1.010
+lab.USA.LA  .hh2        2.335
+lab.USA.LA  .hh3        2.945
+lab.USA.LA  .hh4        6.838
+lab.USA.LA  .hh5        5.957
+lab.USA.ME  .hh1       -0.030
+lab.USA.ME  .hh2        0.326
+lab.USA.ME  .hh3        0.652
+lab.USA.ME  .hh4        1.928
+lab.USA.ME  .hh5        1.374
+lab.USA.MD  .hh1       -1.416
+lab.USA.MD  .hh2        0.705
+lab.USA.MD  .hh3        1.705
+lab.USA.MD  .hh4        9.593
+lab.USA.MD  .hh5       17.092
+lab.USA.MA  .hh1        0.360
+lab.USA.MA  .hh2        1.937
+lab.USA.MA  .hh3        2.924
+lab.USA.MA  .hh4       12.127
+lab.USA.MA  .hh5       21.318
+lab.USA.MI  .hh1        2.418
+lab.USA.MI  .hh2        4.956
+lab.USA.MI  .hh3        6.012
+lab.USA.MI  .hh4       15.452
+lab.USA.MI  .hh5       17.060
+lab.USA.MN  .hh1        1.637
+lab.USA.MN  .hh2        2.766
+lab.USA.MN  .hh3        3.972
+lab.USA.MN  .hh4       11.454
+lab.USA.MN  .hh5       12.341
+lab.USA.MS  .hh1        0.256
+lab.USA.MS  .hh2        1.381
+lab.USA.MS  .hh3        1.908
+lab.USA.MS  .hh4        3.996
+lab.USA.MS  .hh5        1.791
+lab.USA.MO  .hh1        0.561
+lab.USA.MO  .hh2        2.368
+lab.USA.MO  .hh3        3.346
+lab.USA.MO  .hh4        9.271
+lab.USA.MO  .hh5        8.653
+lab.USA.MT  .hh1        0.014
+lab.USA.MT  .hh2        0.296
+lab.USA.MT  .hh3        0.418
+lab.USA.MT  .hh4        1.518
+lab.USA.MT  .hh5        1.133
+lab.USA.NE  .hh1        0.680
+lab.USA.NE  .hh2        1.212
+lab.USA.NE  .hh3        1.544
+lab.USA.NE  .hh4        3.546
+lab.USA.NE  .hh5        3.497
+lab.USA.NV  .hh1       -0.106
+lab.USA.NV  .hh2        1.342
+lab.USA.NV  .hh3        1.939
+lab.USA.NV  .hh4        6.793
+lab.USA.NV  .hh5        4.404
+lab.USA.NH  .hh1       -0.112
+lab.USA.NH  .hh2        0.305
+lab.USA.NH  .hh3        0.575
+lab.USA.NH  .hh4        2.075
+lab.USA.NH  .hh5        2.995
+lab.USA.NJ  .hh1       -0.342
+lab.USA.NJ  .hh2        1.973
+lab.USA.NJ  .hh3        3.987
+lab.USA.NJ  .hh4       12.495
+lab.USA.NJ  .hh5       22.383
+lab.USA.NM  .hh1       -0.100
+lab.USA.NM  .hh2        0.525
+lab.USA.NM  .hh3        0.781
+lab.USA.NM  .hh4        2.787
+lab.USA.NM  .hh5        1.791
+lab.USA.NY  .hh1       -1.060
+lab.USA.NY  .hh2        4.177
+lab.USA.NY  .hh3        7.463
+lab.USA.NY  .hh4       29.262
+lab.USA.NY  .hh5       49.707
+lab.USA.NC  .hh1        1.496
+lab.USA.NC  .hh2        5.223
+lab.USA.NC  .hh3        6.799
+lab.USA.NC  .hh4       17.340
+lab.USA.NC  .hh5       17.066
+lab.USA.ND  .hh1        0.240
+lab.USA.ND  .hh2        0.550
+lab.USA.ND  .hh3        0.746
+lab.USA.ND  .hh4        1.950
+lab.USA.ND  .hh5        1.188
+lab.USA.OH  .hh1        2.059
+lab.USA.OH  .hh2        4.766
+lab.USA.OH  .hh3        7.260
+lab.USA.OH  .hh4       20.515
+lab.USA.OH  .hh5       18.099
+lab.USA.OK  .hh1        0.188
+lab.USA.OK  .hh2        1.687
+lab.USA.OK  .hh3        1.899
+lab.USA.OK  .hh4        6.095
+lab.USA.OK  .hh5        3.909
+lab.USA.OR  .hh1        1.018
+lab.USA.OR  .hh2        1.725
+lab.USA.OR  .hh3        2.597
+lab.USA.OR  .hh4        6.523
+lab.USA.OR  .hh5        6.264
+lab.USA.PA  .hh1        1.549
+lab.USA.PA  .hh2        4.346
+lab.USA.PA  .hh3        6.321
+lab.USA.PA  .hh4       20.313
+lab.USA.PA  .hh5       25.931
+lab.USA.RI  .hh1       -0.084
+lab.USA.RI  .hh2        0.162
+lab.USA.RI  .hh3        0.426
+lab.USA.RI  .hh4        1.585
+lab.USA.RI  .hh5        2.128
+lab.USA.SC  .hh1        0.623
+lab.USA.SC  .hh2        1.944
+lab.USA.SC  .hh3        2.981
+lab.USA.SC  .hh4        7.628
+lab.USA.SC  .hh5        6.940
+lab.USA.SD  .hh1        0.123
+lab.USA.SD  .hh2        0.504
+lab.USA.SD  .hh3        0.625
+lab.USA.SD  .hh4        1.626
+lab.USA.SD  .hh5        1.302
+lab.USA.TN  .hh1        1.358
+lab.USA.TN  .hh2        3.429
+lab.USA.TN  .hh3        4.148
+lab.USA.TN  .hh4       10.318
+lab.USA.TN  .hh5       11.064
+lab.USA.TX  .hh1        3.706
+lab.USA.TX  .hh2       13.394
+lab.USA.TX  .hh3       17.463
+lab.USA.TX  .hh4       48.902
+lab.USA.TX  .hh5       48.866
+lab.USA.UT  .hh1        0.939
+lab.USA.UT  .hh2        1.782
+lab.USA.UT  .hh3        2.513
+lab.USA.UT  .hh4        5.757
+lab.USA.UT  .hh5        5.354
+lab.USA.VT  .hh1       -0.016
+lab.USA.VT  .hh2        0.137
+lab.USA.VT  .hh3        0.270
+lab.USA.VT  .hh4        0.919
+lab.USA.VT  .hh5        0.973
+lab.USA.VA  .hh1       -2.801
+lab.USA.VA  .hh2        0.470
+lab.USA.VA  .hh3        1.269
+lab.USA.VA  .hh4       16.515
+lab.USA.VA  .hh5       21.899
+lab.USA.WA  .hh1       -0.482
+lab.USA.WA  .hh2        1.472
+lab.USA.WA  .hh3        2.915
+lab.USA.WA  .hh4       15.212
+lab.USA.WA  .hh5       19.983
+lab.USA.WV  .hh1        0.244
+lab.USA.WV  .hh2        0.708
+lab.USA.WV  .hh3        0.888
+lab.USA.WV  .hh4        2.343
+lab.USA.WV  .hh5        1.696
+lab.USA.WI  .hh1        1.949
+lab.USA.WI  .hh2        3.422
+lab.USA.WI  .hh3        4.898
+lab.USA.WI  .hh4        9.992
+lab.USA.WI  .hh5        9.560
+lab.USA.WY  .hh1        0.132
+lab.USA.WY  .hh2        0.359
+lab.USA.WY  .hh3        0.427
+lab.USA.WY  .hh4        1.343
+lab.USA.WY  .hh5        0.773
+lab.MEX.rest.rest     139.524
+lab.ARG.rest.rest      31.132
+lab.BRA.rest.rest     158.009
+lab.FRA.rest.rest     131.160
+lab.DEU.rest.rest     219.346
+lab.ITA.rest.rest      81.487
+lab.GBR.rest.rest     270.875
+lab.RUS.rest.rest     128.839
+lab.SAU.rest.rest      76.738
+lab.TUR.rest.rest      56.295
+lab.ZAF.rest.rest      32.437
+lab.ANZ.rest.rest     110.162
+lab.REU.rest.rest     422.008
+lab.OEX.rest.rest     208.452
+lab.LIC.rest.rest     173.425
+lab.MIC.rest.rest     748.187
+cap.CHN.rest.rest    4741.758
+cap.JPN.rest.rest    2323.329
+cap.KOR.rest.rest     688.427
+cap.IDN.rest.rest     566.838
+cap.IND.rest.rest    1060.890
+cap.CAN.rest.rest     468.249
+cap.USA.AL  .hh1        1.334
+cap.USA.AL  .hh2        5.079
+cap.USA.AL  .hh3        7.897
+cap.USA.AL  .hh4       19.430
+cap.USA.AL  .hh5       39.997
+cap.USA.AK  .hh1        0.439
+cap.USA.AK  .hh2        0.817
+cap.USA.AK  .hh3        0.962
+cap.USA.AK  .hh4        5.550
+cap.USA.AK  .hh5       10.550
+cap.USA.AR  .hh1        1.068
+cap.USA.AR  .hh2        3.591
+cap.USA.AR  .hh3        3.929
+cap.USA.AR  .hh4       15.657
+cap.USA.AR  .hh5       24.736
+cap.USA.AZ  .hh1        3.648
+cap.USA.AZ  .hh2        8.886
+cap.USA.AZ  .hh3       12.720
+cap.USA.AZ  .hh4       44.050
+cap.USA.AZ  .hh5       58.669
+cap.USA.CA  .hh1       15.661
+cap.USA.CA  .hh2       50.975
+cap.USA.CA  .hh3       75.153
+cap.USA.CA  .hh4      255.954
+cap.USA.CA  .hh5      596.297
+cap.USA.CO  .hh1        1.446
+cap.USA.CO  .hh2       10.367
+cap.USA.CO  .hh3       11.074
+cap.USA.CO  .hh4       35.830
+cap.USA.CO  .hh5       75.293
+cap.USA.CT  .hh1        0.936
+cap.USA.CT  .hh2        5.040
+cap.USA.CT  .hh3        5.262
+cap.USA.CT  .hh4       22.382
+cap.USA.CT  .hh5       49.267
+cap.USA.DE  .hh1        0.266
+cap.USA.DE  .hh2        0.927
+cap.USA.DE  .hh3        1.014
+cap.USA.DE  .hh4        4.184
+cap.USA.DE  .hh5       10.281
+cap.USA.DC  .hh1        0.208
+cap.USA.DC  .hh2        0.474
+cap.USA.DC  .hh3        1.049
+cap.USA.DC  .hh4        3.987
+cap.USA.DC  .hh5       18.316
+cap.USA.FL  .hh1       15.699
+cap.USA.FL  .hh2       34.904
+cap.USA.FL  .hh3       50.986
+cap.USA.FL  .hh4      155.018
+cap.USA.FL  .hh5      259.736
+cap.USA.GA  .hh1        3.033
+cap.USA.GA  .hh2        6.706
+cap.USA.GA  .hh3       15.213
+cap.USA.GA  .hh4       52.257
+cap.USA.GA  .hh5      102.037
+cap.USA.HI  .hh1        0.630
+cap.USA.HI  .hh2        1.240
+cap.USA.HI  .hh3        1.872
+cap.USA.HI  .hh4        8.865
+cap.USA.HI  .hh5       19.277
+cap.USA.ID  .hh1        0.365
+cap.USA.ID  .hh2        2.928
+cap.USA.ID  .hh3        3.002
+cap.USA.ID  .hh4       10.958
+cap.USA.ID  .hh5       15.934
+cap.USA.IL  .hh1        2.914
+cap.USA.IL  .hh2       11.847
+cap.USA.IL  .hh3       20.669
+cap.USA.IL  .hh4       69.563
+cap.USA.IL  .hh5      155.988
+cap.USA.IN  .hh1        1.521
+cap.USA.IN  .hh2        4.835
+cap.USA.IN  .hh3        7.701
+cap.USA.IN  .hh4       34.795
+cap.USA.IN  .hh5       54.162
+cap.USA.IA  .hh1        0.900
+cap.USA.IA  .hh2        4.129
+cap.USA.IA  .hh3        7.526
+cap.USA.IA  .hh4       27.858
+cap.USA.IA  .hh5       30.090
+cap.USA.KS  .hh1        1.235
+cap.USA.KS  .hh2        3.867
+cap.USA.KS  .hh3        6.398
+cap.USA.KS  .hh4       18.657
+cap.USA.KS  .hh5       57.247
+cap.USA.KY  .hh1        1.300
+cap.USA.KY  .hh2        5.953
+cap.USA.KY  .hh3        9.810
+cap.USA.KY  .hh4       27.469
+cap.USA.KY  .hh5       40.479
+cap.USA.LA  .hh1        2.371
+cap.USA.LA  .hh2        4.422
+cap.USA.LA  .hh3        5.753
+cap.USA.LA  .hh4       20.047
+cap.USA.LA  .hh5       38.011
+cap.USA.ME  .hh1        0.451
+cap.USA.ME  .hh2        2.512
+cap.USA.ME  .hh3        4.243
+cap.USA.ME  .hh4        9.718
+cap.USA.ME  .hh5       17.735
+cap.USA.MD  .hh1        2.950
+cap.USA.MD  .hh2        6.033
+cap.USA.MD  .hh3        8.895
+cap.USA.MD  .hh4       32.350
+cap.USA.MD  .hh5      117.991
+cap.USA.MA  .hh1        2.135
+cap.USA.MA  .hh2        8.617
+cap.USA.MA  .hh3       10.172
+cap.USA.MA  .hh4       49.598
+cap.USA.MA  .hh5      102.453
+cap.USA.MI  .hh1        4.443
+cap.USA.MI  .hh2       13.342
+cap.USA.MI  .hh3       14.490
+cap.USA.MI  .hh4       43.889
+cap.USA.MI  .hh5      115.009
+cap.USA.MN  .hh1        2.243
+cap.USA.MN  .hh2        6.703
+cap.USA.MN  .hh3       13.488
+cap.USA.MN  .hh4       44.702
+cap.USA.MN  .hh5       64.452
+cap.USA.MS  .hh1        1.415
+cap.USA.MS  .hh2        3.966
+cap.USA.MS  .hh3        4.538
+cap.USA.MS  .hh4       12.347
+cap.USA.MS  .hh5       20.530
+cap.USA.MO  .hh1        3.072
+cap.USA.MO  .hh2        6.640
+cap.USA.MO  .hh3       10.729
+cap.USA.MO  .hh4       43.904
+cap.USA.MO  .hh5       82.945
+cap.USA.MT  .hh1        0.530
+cap.USA.MT  .hh2        2.366
+cap.USA.MT  .hh3        2.875
+cap.USA.MT  .hh4        8.496
+cap.USA.MT  .hh5       12.724
+cap.USA.NE  .hh1        0.554
+cap.USA.NE  .hh2        2.572
+cap.USA.NE  .hh3        4.435
+cap.USA.NE  .hh4       15.244
+cap.USA.NE  .hh5       25.807
+cap.USA.NV  .hh1        1.275
+cap.USA.NV  .hh2        4.466
+cap.USA.NV  .hh3        2.799
+cap.USA.NV  .hh4       16.702
+cap.USA.NV  .hh5       42.774
+cap.USA.NH  .hh1        0.549
+cap.USA.NH  .hh2        2.131
+cap.USA.NH  .hh3        3.585
+cap.USA.NH  .hh4       11.669
+cap.USA.NH  .hh5       22.926
+cap.USA.NJ  .hh1        1.897
+cap.USA.NJ  .hh2        6.829
+cap.USA.NJ  .hh3       12.127
+cap.USA.NJ  .hh4       47.918
+cap.USA.NJ  .hh5      140.149
+cap.USA.NM  .hh1        1.299
+cap.USA.NM  .hh2        2.246
+cap.USA.NM  .hh3        3.150
+cap.USA.NM  .hh4       11.707
+cap.USA.NM  .hh5       16.178
+cap.USA.NY  .hh1        7.583
+cap.USA.NY  .hh2       24.383
+cap.USA.NY  .hh3       37.811
+cap.USA.NY  .hh4      120.925
+cap.USA.NY  .hh5      266.981
+cap.USA.NC  .hh1        3.821
+cap.USA.NC  .hh2       14.338
+cap.USA.NC  .hh3       18.802
+cap.USA.NC  .hh4       57.016
+cap.USA.NC  .hh5      116.512
+cap.USA.ND  .hh1        0.064
+cap.USA.ND  .hh2        1.458
+cap.USA.ND  .hh3        2.269
+cap.USA.ND  .hh4        6.959
+cap.USA.ND  .hh5       10.461
+cap.USA.OH  .hh1        3.378
+cap.USA.OH  .hh2       10.774
+cap.USA.OH  .hh3       17.812
+cap.USA.OH  .hh4       67.057
+cap.USA.OH  .hh5      118.063
+cap.USA.OK  .hh1        2.244
+cap.USA.OK  .hh2        7.912
+cap.USA.OK  .hh3        8.618
+cap.USA.OK  .hh4       30.851
+cap.USA.OK  .hh5       50.445
+cap.USA.OR  .hh1        1.854
+cap.USA.OR  .hh2        7.207
+cap.USA.OR  .hh3       12.828
+cap.USA.OR  .hh4       37.541
+cap.USA.OR  .hh5       58.180
+cap.USA.PA  .hh1        2.982
+cap.USA.PA  .hh2       13.186
+cap.USA.PA  .hh3       20.537
+cap.USA.PA  .hh4       85.071
+cap.USA.PA  .hh5      167.759
+cap.USA.RI  .hh1        0.343
+cap.USA.RI  .hh2        0.852
+cap.USA.RI  .hh3        1.070
+cap.USA.RI  .hh4        6.037
+cap.USA.RI  .hh5       11.312
+cap.USA.SC  .hh1        1.834
+cap.USA.SC  .hh2        6.467
+cap.USA.SC  .hh3        9.953
+cap.USA.SC  .hh4       24.680
+cap.USA.SC  .hh5       52.497
+cap.USA.SD  .hh1        0.107
+cap.USA.SD  .hh2        2.462
+cap.USA.SD  .hh3        2.925
+cap.USA.SD  .hh4        9.426
+cap.USA.SD  .hh5       14.858
+cap.USA.TN  .hh1        2.349
+cap.USA.TN  .hh2        8.980
+cap.USA.TN  .hh3        6.681
+cap.USA.TN  .hh4       43.879
+cap.USA.TN  .hh5      107.690
+cap.USA.TX  .hh1       13.150
+cap.USA.TX  .hh2       34.887
+cap.USA.TX  .hh3       42.999
+cap.USA.TX  .hh4      135.977
+cap.USA.TX  .hh5      384.405
+cap.USA.UT  .hh1        0.782
+cap.USA.UT  .hh2        2.470
+cap.USA.UT  .hh3        3.979
+cap.USA.UT  .hh4       16.986
+cap.USA.UT  .hh5       31.557
+cap.USA.VT  .hh1        0.258
+cap.USA.VT  .hh2        0.756
+cap.USA.VT  .hh3        2.028
+cap.USA.VT  .hh4        6.634
+cap.USA.VT  .hh5        9.445
+cap.USA.VA  .hh1        3.329
+cap.USA.VA  .hh2        9.184
+cap.USA.VA  .hh3        7.280
+cap.USA.VA  .hh4       43.024
+cap.USA.VA  .hh5      109.113
+cap.USA.WA  .hh1        3.266
+cap.USA.WA  .hh2        5.801
+cap.USA.WA  .hh3       15.548
+cap.USA.WA  .hh4       42.313
+cap.USA.WA  .hh5      126.515
+cap.USA.WV  .hh1        0.756
+cap.USA.WV  .hh2        1.677
+cap.USA.WV  .hh3        2.473
+cap.USA.WV  .hh4        6.256
+cap.USA.WV  .hh5       13.894
+cap.USA.WI  .hh1        0.983
+cap.USA.WI  .hh2        4.924
+cap.USA.WI  .hh3        9.707
+cap.USA.WI  .hh4       46.212
+cap.USA.WI  .hh5       95.952
+cap.USA.WY  .hh1        0.224
+cap.USA.WY  .hh2        1.200
+cap.USA.WY  .hh3        0.916
+cap.USA.WY  .hh4        4.851
+cap.USA.WY  .hh5        7.338
+cap.MEX.rest.rest     733.228
+cap.ARG.rest.rest     260.023
+cap.BRA.rest.rest     654.000
+cap.FRA.rest.rest     900.764
+cap.DEU.rest.rest    1482.678
+cap.ITA.rest.rest     905.860
+cap.GBR.rest.rest     801.609
+cap.RUS.rest.rest     853.112
+cap.SAU.rest.rest     408.383
+cap.TUR.rest.rest     473.800
+cap.ZAF.rest.rest     145.995
+cap.ANZ.rest.rest     542.315
+cap.REU.rest.rest    3466.443
+cap.OEX.rest.rest    1073.151
+cap.LIC.rest.rest     518.198
+cap.MIC.rest.rest    3209.948
+lnd.CHN.rest.rest     250.416
+lnd.JPN.rest.rest       9.424
+lnd.KOR.rest.rest      13.693
+lnd.IDN.rest.rest      40.703
+lnd.IND.rest.rest     106.741
+lnd.CAN.rest.rest       1.029
+lnd.USA.AL  .hh1        0.008
+lnd.USA.AL  .hh2        0.029
+lnd.USA.AL  .hh3        0.046
+lnd.USA.AL  .hh4        0.113
+lnd.USA.AL  .hh5        0.232
+lnd.USA.AK  .hh1        0.003
+lnd.USA.AK  .hh2        0.005
+lnd.USA.AK  .hh3        0.006
+lnd.USA.AK  .hh4        0.032
+lnd.USA.AK  .hh5        0.061
+lnd.USA.AR  .hh1        0.006
+lnd.USA.AR  .hh2        0.021
+lnd.USA.AR  .hh3        0.023
+lnd.USA.AR  .hh4        0.091
+lnd.USA.AR  .hh5        0.143
+lnd.USA.AZ  .hh1        0.021
+lnd.USA.AZ  .hh2        0.052
+lnd.USA.AZ  .hh3        0.074
+lnd.USA.AZ  .hh4        0.255
+lnd.USA.AZ  .hh5        0.340
+lnd.USA.CA  .hh1        0.091
+lnd.USA.CA  .hh2        0.296
+lnd.USA.CA  .hh3        0.436
+lnd.USA.CA  .hh4        1.484
+lnd.USA.CA  .hh5        3.458
+lnd.USA.CO  .hh1        0.008
+lnd.USA.CO  .hh2        0.060
+lnd.USA.CO  .hh3        0.064
+lnd.USA.CO  .hh4        0.208
+lnd.USA.CO  .hh5        0.437
+lnd.USA.CT  .hh1        0.005
+lnd.USA.CT  .hh2        0.029
+lnd.USA.CT  .hh3        0.031
+lnd.USA.CT  .hh4        0.130
+lnd.USA.CT  .hh5        0.286
+lnd.USA.DE  .hh1        0.002
+lnd.USA.DE  .hh2        0.005
+lnd.USA.DE  .hh3        0.006
+lnd.USA.DE  .hh4        0.024
+lnd.USA.DE  .hh5        0.060
+lnd.USA.DC  .hh1        0.001
+lnd.USA.DC  .hh2        0.003
+lnd.USA.DC  .hh3        0.006
+lnd.USA.DC  .hh4        0.023
+lnd.USA.DC  .hh5        0.106
+lnd.USA.FL  .hh1        0.091
+lnd.USA.FL  .hh2        0.202
+lnd.USA.FL  .hh3        0.296
+lnd.USA.FL  .hh4        0.899
+lnd.USA.FL  .hh5        1.506
+lnd.USA.GA  .hh1        0.018
+lnd.USA.GA  .hh2        0.039
+lnd.USA.GA  .hh3        0.088
+lnd.USA.GA  .hh4        0.303
+lnd.USA.GA  .hh5        0.592
+lnd.USA.HI  .hh1        0.004
+lnd.USA.HI  .hh2        0.007
+lnd.USA.HI  .hh3        0.011
+lnd.USA.HI  .hh4        0.051
+lnd.USA.HI  .hh5        0.112
+lnd.USA.ID  .hh1        0.002
+lnd.USA.ID  .hh2        0.017
+lnd.USA.ID  .hh3        0.017
+lnd.USA.ID  .hh4        0.064
+lnd.USA.ID  .hh5        0.092
+lnd.USA.IL  .hh1        0.017
+lnd.USA.IL  .hh2        0.069
+lnd.USA.IL  .hh3        0.120
+lnd.USA.IL  .hh4        0.403
+lnd.USA.IL  .hh5        0.905
+lnd.USA.IN  .hh1        0.009
+lnd.USA.IN  .hh2        0.028
+lnd.USA.IN  .hh3        0.045
+lnd.USA.IN  .hh4        0.202
+lnd.USA.IN  .hh5        0.314
+lnd.USA.IA  .hh1        0.005
+lnd.USA.IA  .hh2        0.024
+lnd.USA.IA  .hh3        0.044
+lnd.USA.IA  .hh4        0.162
+lnd.USA.IA  .hh5        0.174
+lnd.USA.KS  .hh1        0.007
+lnd.USA.KS  .hh2        0.022
+lnd.USA.KS  .hh3        0.037
+lnd.USA.KS  .hh4        0.108
+lnd.USA.KS  .hh5        0.332
+lnd.USA.KY  .hh1        0.008
+lnd.USA.KY  .hh2        0.035
+lnd.USA.KY  .hh3        0.057
+lnd.USA.KY  .hh4        0.159
+lnd.USA.KY  .hh5        0.235
+lnd.USA.LA  .hh1        0.014
+lnd.USA.LA  .hh2        0.026
+lnd.USA.LA  .hh3        0.033
+lnd.USA.LA  .hh4        0.116
+lnd.USA.LA  .hh5        0.220
+lnd.USA.ME  .hh1        0.003
+lnd.USA.ME  .hh2        0.015
+lnd.USA.ME  .hh3        0.025
+lnd.USA.ME  .hh4        0.056
+lnd.USA.ME  .hh5        0.103
+lnd.USA.MD  .hh1        0.017
+lnd.USA.MD  .hh2        0.035
+lnd.USA.MD  .hh3        0.052
+lnd.USA.MD  .hh4        0.188
+lnd.USA.MD  .hh5        0.684
+lnd.USA.MA  .hh1        0.012
+lnd.USA.MA  .hh2        0.050
+lnd.USA.MA  .hh3        0.059
+lnd.USA.MA  .hh4        0.288
+lnd.USA.MA  .hh5        0.594
+lnd.USA.MI  .hh1        0.026
+lnd.USA.MI  .hh2        0.077
+lnd.USA.MI  .hh3        0.084
+lnd.USA.MI  .hh4        0.254
+lnd.USA.MI  .hh5        0.667
+lnd.USA.MN  .hh1        0.013
+lnd.USA.MN  .hh2        0.039
+lnd.USA.MN  .hh3        0.078
+lnd.USA.MN  .hh4        0.259
+lnd.USA.MN  .hh5        0.374
+lnd.USA.MS  .hh1        0.008
+lnd.USA.MS  .hh2        0.023
+lnd.USA.MS  .hh3        0.026
+lnd.USA.MS  .hh4        0.072
+lnd.USA.MS  .hh5        0.119
+lnd.USA.MO  .hh1        0.018
+lnd.USA.MO  .hh2        0.039
+lnd.USA.MO  .hh3        0.062
+lnd.USA.MO  .hh4        0.255
+lnd.USA.MO  .hh5        0.481
+lnd.USA.MT  .hh1        0.003
+lnd.USA.MT  .hh2        0.014
+lnd.USA.MT  .hh3        0.017
+lnd.USA.MT  .hh4        0.049
+lnd.USA.MT  .hh5        0.074
+lnd.USA.NE  .hh1        0.003
+lnd.USA.NE  .hh2        0.015
+lnd.USA.NE  .hh3        0.026
+lnd.USA.NE  .hh4        0.088
+lnd.USA.NE  .hh5        0.150
+lnd.USA.NV  .hh1        0.007
+lnd.USA.NV  .hh2        0.026
+lnd.USA.NV  .hh3        0.016
+lnd.USA.NV  .hh4        0.097
+lnd.USA.NV  .hh5        0.248
+lnd.USA.NH  .hh1        0.003
+lnd.USA.NH  .hh2        0.012
+lnd.USA.NH  .hh3        0.021
+lnd.USA.NH  .hh4        0.068
+lnd.USA.NH  .hh5        0.133
+lnd.USA.NJ  .hh1        0.011
+lnd.USA.NJ  .hh2        0.040
+lnd.USA.NJ  .hh3        0.070
+lnd.USA.NJ  .hh4        0.278
+lnd.USA.NJ  .hh5        0.813
+lnd.USA.NM  .hh1        0.008
+lnd.USA.NM  .hh2        0.013
+lnd.USA.NM  .hh3        0.018
+lnd.USA.NM  .hh4        0.068
+lnd.USA.NM  .hh5        0.094
+lnd.USA.NY  .hh1        0.044
+lnd.USA.NY  .hh2        0.141
+lnd.USA.NY  .hh3        0.219
+lnd.USA.NY  .hh4        0.701
+lnd.USA.NY  .hh5        1.548
+lnd.USA.NC  .hh1        0.022
+lnd.USA.NC  .hh2        0.083
+lnd.USA.NC  .hh3        0.109
+lnd.USA.NC  .hh4        0.331
+lnd.USA.NC  .hh5        0.676
+lnd.USA.ND  .hh1  3.683992E-4
+lnd.USA.ND  .hh2        0.008
+lnd.USA.ND  .hh3        0.013
+lnd.USA.ND  .hh4        0.040
+lnd.USA.ND  .hh5        0.061
+lnd.USA.OH  .hh1        0.020
+lnd.USA.OH  .hh2        0.062
+lnd.USA.OH  .hh3        0.103
+lnd.USA.OH  .hh4        0.389
+lnd.USA.OH  .hh5        0.685
+lnd.USA.OK  .hh1        0.013
+lnd.USA.OK  .hh2        0.046
+lnd.USA.OK  .hh3        0.050
+lnd.USA.OK  .hh4        0.179
+lnd.USA.OK  .hh5        0.293
+lnd.USA.OR  .hh1        0.011
+lnd.USA.OR  .hh2        0.042
+lnd.USA.OR  .hh3        0.074
+lnd.USA.OR  .hh4        0.218
+lnd.USA.OR  .hh5        0.337
+lnd.USA.PA  .hh1        0.017
+lnd.USA.PA  .hh2        0.076
+lnd.USA.PA  .hh3        0.119
+lnd.USA.PA  .hh4        0.493
+lnd.USA.PA  .hh5        0.973
+lnd.USA.RI  .hh1        0.002
+lnd.USA.RI  .hh2        0.005
+lnd.USA.RI  .hh3        0.006
+lnd.USA.RI  .hh4        0.035
+lnd.USA.RI  .hh5        0.066
+lnd.USA.SC  .hh1        0.011
+lnd.USA.SC  .hh2        0.038
+lnd.USA.SC  .hh3        0.058
+lnd.USA.SC  .hh4        0.143
+lnd.USA.SC  .hh5        0.304
+lnd.USA.SD  .hh1        0.001
+lnd.USA.SD  .hh2        0.014
+lnd.USA.SD  .hh3        0.017
+lnd.USA.SD  .hh4        0.055
+lnd.USA.SD  .hh5        0.086
+lnd.USA.TN  .hh1        0.014
+lnd.USA.TN  .hh2        0.052
+lnd.USA.TN  .hh3        0.039
+lnd.USA.TN  .hh4        0.254
+lnd.USA.TN  .hh5        0.624
+lnd.USA.TX  .hh1        0.076
+lnd.USA.TX  .hh2        0.202
+lnd.USA.TX  .hh3        0.249
+lnd.USA.TX  .hh4        0.788
+lnd.USA.TX  .hh5        2.229
+lnd.USA.UT  .hh1        0.005
+lnd.USA.UT  .hh2        0.014
+lnd.USA.UT  .hh3        0.023
+lnd.USA.UT  .hh4        0.098
+lnd.USA.UT  .hh5        0.183
+lnd.USA.VT  .hh1        0.001
+lnd.USA.VT  .hh2        0.004
+lnd.USA.VT  .hh3        0.012
+lnd.USA.VT  .hh4        0.038
+lnd.USA.VT  .hh5        0.055
+lnd.USA.VA  .hh1        0.019
+lnd.USA.VA  .hh2        0.053
+lnd.USA.VA  .hh3        0.042
+lnd.USA.VA  .hh4        0.249
+lnd.USA.VA  .hh5        0.633
+lnd.USA.WA  .hh1        0.019
+lnd.USA.WA  .hh2        0.034
+lnd.USA.WA  .hh3        0.090
+lnd.USA.WA  .hh4        0.245
+lnd.USA.WA  .hh5        0.734
+lnd.USA.WV  .hh1        0.004
+lnd.USA.WV  .hh2        0.010
+lnd.USA.WV  .hh3        0.014
+lnd.USA.WV  .hh4        0.036
+lnd.USA.WV  .hh5        0.081
+lnd.USA.WI  .hh1        0.006
+lnd.USA.WI  .hh2        0.029
+lnd.USA.WI  .hh3        0.056
+lnd.USA.WI  .hh4        0.268
+lnd.USA.WI  .hh5        0.556
+lnd.USA.WY  .hh1        0.001
+lnd.USA.WY  .hh2        0.007
+lnd.USA.WY  .hh3        0.005
+lnd.USA.WY  .hh4        0.028
+lnd.USA.WY  .hh5        0.043
+lnd.MEX.rest.rest       9.927
+lnd.ARG.rest.rest       7.633
+lnd.BRA.rest.rest      11.514
+lnd.FRA.rest.rest       8.709
+lnd.DEU.rest.rest       7.243
+lnd.ITA.rest.rest       7.703
+lnd.GBR.rest.rest       5.652
+lnd.RUS.rest.rest       5.480
+lnd.SAU.rest.rest       1.063
+lnd.TUR.rest.rest       4.792
+lnd.ZAF.rest.rest       2.070
+lnd.ANZ.rest.rest       5.358
+lnd.REU.rest.rest      41.827
+lnd.OEX.rest.rest      18.162
+lnd.LIC.rest.rest      48.543
+lnd.MIC.rest.rest     129.191
+res.CHN.rest.rest     115.689
+res.JPN.rest.rest       4.202
+res.KOR.rest.rest       2.001
+res.IDN.rest.rest      23.786
+res.IND.rest.rest      26.520
+res.CAN.rest.rest      26.430
+res.USA.AL  .hh1        0.015
+res.USA.AL  .hh2        0.057
+res.USA.AL  .hh3        0.088
+res.USA.AL  .hh4        0.217
+res.USA.AL  .hh5        0.448
+res.USA.AK  .hh1        0.005
+res.USA.AK  .hh2        0.009
+res.USA.AK  .hh3        0.011
+res.USA.AK  .hh4        0.062
+res.USA.AK  .hh5        0.118
+res.USA.AR  .hh1        0.012
+res.USA.AR  .hh2        0.040
+res.USA.AR  .hh3        0.044
+res.USA.AR  .hh4        0.175
+res.USA.AR  .hh5        0.277
+res.USA.AZ  .hh1        0.041
+res.USA.AZ  .hh2        0.099
+res.USA.AZ  .hh3        0.142
+res.USA.AZ  .hh4        0.493
+res.USA.AZ  .hh5        0.657
+res.USA.CA  .hh1        0.175
+res.USA.CA  .hh2        0.570
+res.USA.CA  .hh3        0.841
+res.USA.CA  .hh4        2.864
+res.USA.CA  .hh5        6.673
+res.USA.CO  .hh1        0.016
+res.USA.CO  .hh2        0.116
+res.USA.CO  .hh3        0.124
+res.USA.CO  .hh4        0.401
+res.USA.CO  .hh5        0.843
+res.USA.CT  .hh1        0.010
+res.USA.CT  .hh2        0.056
+res.USA.CT  .hh3        0.059
+res.USA.CT  .hh4        0.250
+res.USA.CT  .hh5        0.551
+res.USA.DE  .hh1        0.003
+res.USA.DE  .hh2        0.010
+res.USA.DE  .hh3        0.011
+res.USA.DE  .hh4        0.047
+res.USA.DE  .hh5        0.115
+res.USA.DC  .hh1        0.002
+res.USA.DC  .hh2        0.005
+res.USA.DC  .hh3        0.012
+res.USA.DC  .hh4        0.045
+res.USA.DC  .hh5        0.205
+res.USA.FL  .hh1        0.176
+res.USA.FL  .hh2        0.391
+res.USA.FL  .hh3        0.571
+res.USA.FL  .hh4        1.735
+res.USA.FL  .hh5        2.907
+res.USA.GA  .hh1        0.034
+res.USA.GA  .hh2        0.075
+res.USA.GA  .hh3        0.170
+res.USA.GA  .hh4        0.585
+res.USA.GA  .hh5        1.142
+res.USA.HI  .hh1        0.007
+res.USA.HI  .hh2        0.014
+res.USA.HI  .hh3        0.021
+res.USA.HI  .hh4        0.099
+res.USA.HI  .hh5        0.216
+res.USA.ID  .hh1        0.004
+res.USA.ID  .hh2        0.033
+res.USA.ID  .hh3        0.034
+res.USA.ID  .hh4        0.123
+res.USA.ID  .hh5        0.178
+res.USA.IL  .hh1        0.033
+res.USA.IL  .hh2        0.133
+res.USA.IL  .hh3        0.231
+res.USA.IL  .hh4        0.778
+res.USA.IL  .hh5        1.746
+res.USA.IN  .hh1        0.017
+res.USA.IN  .hh2        0.054
+res.USA.IN  .hh3        0.086
+res.USA.IN  .hh4        0.389
+res.USA.IN  .hh5        0.606
+res.USA.IA  .hh1        0.010
+res.USA.IA  .hh2        0.046
+res.USA.IA  .hh3        0.084
+res.USA.IA  .hh4        0.312
+res.USA.IA  .hh5        0.337
+res.USA.KS  .hh1        0.014
+res.USA.KS  .hh2        0.043
+res.USA.KS  .hh3        0.072
+res.USA.KS  .hh4        0.209
+res.USA.KS  .hh5        0.641
+res.USA.KY  .hh1        0.015
+res.USA.KY  .hh2        0.067
+res.USA.KY  .hh3        0.110
+res.USA.KY  .hh4        0.307
+res.USA.KY  .hh5        0.453
+res.USA.LA  .hh1        0.027
+res.USA.LA  .hh2        0.049
+res.USA.LA  .hh3        0.064
+res.USA.LA  .hh4        0.224
+res.USA.LA  .hh5        0.425
+res.USA.ME  .hh1        0.005
+res.USA.ME  .hh2        0.028
+res.USA.ME  .hh3        0.047
+res.USA.ME  .hh4        0.109
+res.USA.ME  .hh5        0.198
+res.USA.MD  .hh1        0.033
+res.USA.MD  .hh2        0.068
+res.USA.MD  .hh3        0.100
+res.USA.MD  .hh4        0.362
+res.USA.MD  .hh5        1.320
+res.USA.MA  .hh1        0.024
+res.USA.MA  .hh2        0.096
+res.USA.MA  .hh3        0.114
+res.USA.MA  .hh4        0.555
+res.USA.MA  .hh5        1.147
+res.USA.MI  .hh1        0.050
+res.USA.MI  .hh2        0.149
+res.USA.MI  .hh3        0.162
+res.USA.MI  .hh4        0.491
+res.USA.MI  .hh5        1.287
+res.USA.MN  .hh1        0.025
+res.USA.MN  .hh2        0.075
+res.USA.MN  .hh3        0.151
+res.USA.MN  .hh4        0.500
+res.USA.MN  .hh5        0.721
+res.USA.MS  .hh1        0.016
+res.USA.MS  .hh2        0.044
+res.USA.MS  .hh3        0.051
+res.USA.MS  .hh4        0.138
+res.USA.MS  .hh5        0.230
+res.USA.MO  .hh1        0.034
+res.USA.MO  .hh2        0.074
+res.USA.MO  .hh3        0.120
+res.USA.MO  .hh4        0.491
+res.USA.MO  .hh5        0.928
+res.USA.MT  .hh1        0.006
+res.USA.MT  .hh2        0.026
+res.USA.MT  .hh3        0.032
+res.USA.MT  .hh4        0.095
+res.USA.MT  .hh5        0.142
+res.USA.NE  .hh1        0.006
+res.USA.NE  .hh2        0.029
+res.USA.NE  .hh3        0.050
+res.USA.NE  .hh4        0.171
+res.USA.NE  .hh5        0.289
+res.USA.NV  .hh1        0.014
+res.USA.NV  .hh2        0.050
+res.USA.NV  .hh3        0.031
+res.USA.NV  .hh4        0.187
+res.USA.NV  .hh5        0.479
+res.USA.NH  .hh1        0.006
+res.USA.NH  .hh2        0.024
+res.USA.NH  .hh3        0.040
+res.USA.NH  .hh4        0.131
+res.USA.NH  .hh5        0.257
+res.USA.NJ  .hh1        0.021
+res.USA.NJ  .hh2        0.076
+res.USA.NJ  .hh3        0.136
+res.USA.NJ  .hh4        0.536
+res.USA.NJ  .hh5        1.568
+res.USA.NM  .hh1        0.015
+res.USA.NM  .hh2        0.025
+res.USA.NM  .hh3        0.035
+res.USA.NM  .hh4        0.131
+res.USA.NM  .hh5        0.181
+res.USA.NY  .hh1        0.085
+res.USA.NY  .hh2        0.273
+res.USA.NY  .hh3        0.423
+res.USA.NY  .hh4        1.353
+res.USA.NY  .hh5        2.988
+res.USA.NC  .hh1        0.043
+res.USA.NC  .hh2        0.160
+res.USA.NC  .hh3        0.210
+res.USA.NC  .hh4        0.638
+res.USA.NC  .hh5        1.304
+res.USA.ND  .hh1        0.001
+res.USA.ND  .hh2        0.016
+res.USA.ND  .hh3        0.025
+res.USA.ND  .hh4        0.078
+res.USA.ND  .hh5        0.117
+res.USA.OH  .hh1        0.038
+res.USA.OH  .hh2        0.121
+res.USA.OH  .hh3        0.199
+res.USA.OH  .hh4        0.750
+res.USA.OH  .hh5        1.321
+res.USA.OK  .hh1        0.025
+res.USA.OK  .hh2        0.089
+res.USA.OK  .hh3        0.096
+res.USA.OK  .hh4        0.345
+res.USA.OK  .hh5        0.565
+res.USA.OR  .hh1        0.021
+res.USA.OR  .hh2        0.081
+res.USA.OR  .hh3        0.144
+res.USA.OR  .hh4        0.420
+res.USA.OR  .hh5        0.651
+res.USA.PA  .hh1        0.033
+res.USA.PA  .hh2        0.148
+res.USA.PA  .hh3        0.230
+res.USA.PA  .hh4        0.952
+res.USA.PA  .hh5        1.877
+res.USA.RI  .hh1        0.004
+res.USA.RI  .hh2        0.010
+res.USA.RI  .hh3        0.012
+res.USA.RI  .hh4        0.068
+res.USA.RI  .hh5        0.127
+res.USA.SC  .hh1        0.021
+res.USA.SC  .hh2        0.072
+res.USA.SC  .hh3        0.111
+res.USA.SC  .hh4        0.276
+res.USA.SC  .hh5        0.587
+res.USA.SD  .hh1        0.001
+res.USA.SD  .hh2        0.028
+res.USA.SD  .hh3        0.033
+res.USA.SD  .hh4        0.105
+res.USA.SD  .hh5        0.166
+res.USA.TN  .hh1        0.026
+res.USA.TN  .hh2        0.100
+res.USA.TN  .hh3        0.075
+res.USA.TN  .hh4        0.491
+res.USA.TN  .hh5        1.205
+res.USA.TX  .hh1        0.147
+res.USA.TX  .hh2        0.390
+res.USA.TX  .hh3        0.481
+res.USA.TX  .hh4        1.522
+res.USA.TX  .hh5        4.302
+res.USA.UT  .hh1        0.009
+res.USA.UT  .hh2        0.028
+res.USA.UT  .hh3        0.045
+res.USA.UT  .hh4        0.190
+res.USA.UT  .hh5        0.353
+res.USA.VT  .hh1        0.003
+res.USA.VT  .hh2        0.008
+res.USA.VT  .hh3        0.023
+res.USA.VT  .hh4        0.074
+res.USA.VT  .hh5        0.106
+res.USA.VA  .hh1        0.037
+res.USA.VA  .hh2        0.103
+res.USA.VA  .hh3        0.081
+res.USA.VA  .hh4        0.481
+res.USA.VA  .hh5        1.221
+res.USA.WA  .hh1        0.037
+res.USA.WA  .hh2        0.065
+res.USA.WA  .hh3        0.174
+res.USA.WA  .hh4        0.474
+res.USA.WA  .hh5        1.416
+res.USA.WV  .hh1        0.008
+res.USA.WV  .hh2        0.019
+res.USA.WV  .hh3        0.028
+res.USA.WV  .hh4        0.070
+res.USA.WV  .hh5        0.155
+res.USA.WI  .hh1        0.011
+res.USA.WI  .hh2        0.055
+res.USA.WI  .hh3        0.109
+res.USA.WI  .hh4        0.517
+res.USA.WI  .hh5        1.074
+res.USA.WY  .hh1        0.003
+res.USA.WY  .hh2        0.013
+res.USA.WY  .hh3        0.010
+res.USA.WY  .hh4        0.054
+res.USA.WY  .hh5        0.082
+res.MEX.rest.rest      12.005
+res.ARG.rest.rest       3.715
+res.BRA.rest.rest      16.563
+res.FRA.rest.rest       1.630
+res.DEU.rest.rest       4.184
+res.ITA.rest.rest       1.968
+res.GBR.rest.rest       5.824
+res.RUS.rest.rest      72.605
+res.SAU.rest.rest      61.651
+res.TUR.rest.rest       2.353
+res.ZAF.rest.rest       7.305
+res.ANZ.rest.rest      32.407
+res.REU.rest.rest      34.243
+res.OEX.rest.rest     100.564
+res.LIC.rest.rest      24.261
+res.MIC.rest.rest     129.596
+
+
+----    229 PARAMETER landdata  Land earnings data
+
+           vfm       evomh   vfm-evomh
+
+AL       0.496       0.428       0.069
+AK                   0.106      -0.106
+AR       0.913       0.284       0.629
+AZ       0.528       0.742      -0.214
+CA       7.037       5.764       1.273
+CO       0.554       0.777      -0.223
+CT       0.040       0.481      -0.441
+DE       0.123       0.097       0.026
+DC                   0.139      -0.139
+FL       1.025       2.994      -1.969
+GA       0.984       1.039      -0.055
+HI       0.065       0.185      -0.120
+ID       0.660       0.192       0.468
+IL       2.319       1.513       0.806
+IN       1.345       0.597       0.747
+IA       2.950       0.409       2.542
+KS       1.539       0.507       1.032
+KY       0.615       0.493       0.122
+LA       0.405       0.409      -0.004
+ME       0.067       0.201      -0.134
+MD       0.224       0.975      -0.752
+MA       0.033       1.003      -0.970
+MI       0.796       1.109      -0.313
+MN       1.994       0.763       1.231
+MS       0.666       0.248       0.418
+MO       1.181       0.854       0.327
+MT       0.414       0.157       0.258
+NE       2.031       0.282       1.749
+NV       0.040       0.394      -0.354
+NH       0.012       0.237      -0.225
+NJ       0.122       1.211      -1.089
+NM       0.219       0.201       0.018
+NY       0.430       2.654      -2.224
+NC       1.094       1.221      -0.126
+ND       1.285       0.123       1.162
+OH       1.038       1.259      -0.221
+OK       0.651       0.580       0.071
+OR       0.514       0.682      -0.168
+PA       0.551       1.679      -1.128
+RI       0.003       0.114      -0.110
+SC       0.234       0.553      -0.320
+SD       1.105       0.173       0.933
+TN       0.420       0.983      -0.563
+TX       2.394       3.545      -1.152
+UT       0.127       0.323      -0.196
+VT       0.045       0.111      -0.066
+VA       0.331       0.997      -0.666
+WA       1.344       1.122       0.222
+WV       0.047       0.145      -0.098
+WI       0.929       0.915       0.014
+WY       0.113       0.084       0.029
+
+
+----    234 SET s  Subregions
+
+AL    Alabama
+AK    Alaska
+AR    Arizona
+AZ    Arkansas
+CA    California
+CO    Colorado
+CT    Connecticut
+DE    Delaware
+DC    District of Columbia
+FL    Florida
+GA    Georgia
+HI    Hawaii
+ID    Idaho
+IL    Illinois
+IN    Indiana
+IA    Iowa
+KS    Kansas
+KY    Kentucky
+LA    Louisiana
+ME    Maine
+MD    Maryland
+MA    Massachusetts
+MI    Michigan
+MN    Minnesota
+MS    Mississippi
+MO    Missouri
+MT    Montana
+NE    Nebraska
+NV    Nevada
+NH    New Hampshire
+NJ    New Jersey
+NM    New Mexico
+NY    New York
+NC    North Carolina
+ND    North Dakota
+OH    Ohio
+OK    Oklahoma
+OR    Oregon
+PA    Pennsylvania
+RI    Rhode Island
+SC    South Carolina
+SD    South Dakota
+TN    Tennessee
+TX    Texas
+UT    Utah
+VT    Vermont
+VA    Virginia
+WA    Washington
+WV    West Virginia
+WI    Wisconsin
+WY    Wyoming
+rest
+
+
+----    305 SET itrd  Sectors with trade flows
+
+pdr  Paddy rice
+wht  Wheat
+gro  Cereal grains nec
+v_f  Vegetables, fruit, nuts
+osd  Oil seeds
+c_b  Sugar cane, sugar beet
+pfb  Plant-based fibers
+ocr  Crops nec
+ctl  Bovine cattle, sheep, goats and horses
+oap  Animal products nec
+rmk  Raw milk
+wol  Wool, silk-worm cocoons
+oxt  Coal, minining and supporting activities
+tex  Textiles
+lum  Lumber and wood products
+ppp  Paper products, publishing
+oil  Petroleum, coal products
+nmm  Mineral products nec
+fmp  Metal products
+eeq  Electronic equipment
+ome  Machinery and equipment nec
+mvh  Motor vehicles and parts
+otn  Transport equipment nec
+omf  Manufactures nec
+fof  Forestry and fishing
+fbp  Food and beverage and tobacco products (311FT)
+alt  Apparel and leather and allied products (315AL)
+pmt  Primary metals (331)
+ogs  Crude oil and natural gas
+uti  Utilities (electricity-gas-water)
+CRP  Chemical, rubber, plastic products
+
+
+----    320 PARAMETER tradecompare  Comparison of US trade
+
+         export_gt~  export_ce~  import_gt~  import_ce~
+
+pdr.CHN 3.451795E-6         0.4 4.289875E-4 1.083500E-5
+pdr.JPN 4.969480E-7         0.4 2.742780E-7 1.083500E-5
+pdr.KOR 3.947604E-7         0.4 2.345997E-7 1.083500E-5
+pdr.IDN                     0.4 2.383255E-6 1.083500E-5
+pdr.IND 1.446684E-6         0.4 6.189804E-4 1.083500E-5
+pdr.CAN 1.995130E-4         0.4 3.910977E-7 1.083500E-5
+pdr.USA                     0.4             1.083500E-5
+pdr.MEX         0.2         0.4 1.749144E-7 1.083500E-5
+pdr.ARG 1.893148E-7         0.4             1.083500E-5
+pdr.BRA                     0.4 6.627589E-6 1.083500E-5
+pdr.FRA 1.283765E-4         0.4 1.308592E-4 1.083500E-5
+pdr.DEU                     0.4 1.209351E-7 1.083500E-5
+pdr.ITA 6.483957E-4         0.4 1.295679E-6 1.083500E-5
+pdr.GBR 4.706574E-7         0.4 1.155303E-5 1.083500E-5
+pdr.RUS                     0.4             1.083500E-5
+pdr.SAU 1.425956E-7         0.4             1.083500E-5
+pdr.TUR 9.888033E-3         0.4 1.066708E-6 1.083500E-5
+pdr.ZAF                     0.4             1.083500E-5
+pdr.ANZ 3.424335E-7         0.4             1.083500E-5
+pdr.REU 5.217336E-4         0.4 9.032733E-5 1.083500E-5
+pdr.OEX         0.1         0.4 2.229871E-4 1.083500E-5
+pdr.LIC 8.879204E-6         0.4 4.068433E-4 1.083500E-5
+pdr.MIC         0.1         0.4 3.798473E-4 1.083500E-5
+wht.CHN         0.4         6.1 1.235428E-4         0.7
+wht.JPN         0.8         6.1 2.242200E-6         0.7
+wht.KOR         0.3         6.1 8.555666E-6         0.7
+wht.IDN         0.3         6.1 2.957280E-6         0.7
+wht.IND 9.177725E-5         6.1 5.031552E-4         0.7
+wht.CAN 1.982864E-2         6.1         0.7         0.7
+wht.USA                     6.1                     0.7
+wht.MEX         0.9         6.1 2.709948E-3         0.7
+wht.ARG 1.201008E-5         6.1 5.120090E-3         0.7
+wht.BRA         0.1         6.1 1.187561E-5         0.7
+wht.FRA 6.058410E-3         6.1 6.506349E-3         0.7
+wht.DEU                     6.1                     0.7
+wht.ITA         0.1         6.1 7.305457E-4         0.7
+wht.GBR 3.625805E-2         6.1 5.913373E-4         0.7
+wht.RUS                     6.1 7.412188E-5         0.7
+wht.SAU 3.012310E-2         6.1 8.330701E-6         0.7
+wht.TUR                     6.1 3.522014E-5         0.7
+wht.ZAF 2.400376E-2         6.1 7.333354E-6         0.7
+wht.ANZ 2.883114E-5         6.1 2.198981E-6         0.7
+wht.REU 9.563535E-3         6.1 4.664513E-3         0.7
+wht.OEX         0.5         6.1 1.003620E-3         0.7
+wht.LIC         0.3         6.1 8.137206E-4         0.7
+wht.MIC         2.7         6.1 2.011732E-3         0.7
+gro.CHN         1.0        10.8 8.942757E-4         0.9
+gro.JPN         2.6        10.8 6.420924E-5         0.9
+gro.KOR         0.8        10.8 1.029428E-4         0.9
+gro.IDN 3.854745E-2        10.8 1.887582E-4         0.9
+gro.IND 4.451383E-3        10.8 3.007688E-3         0.9
+gro.CAN         0.3        10.8         0.6         0.9
+gro.USA                    10.8                     0.9
+gro.MEX         2.9        10.8 1.844919E-2         0.9
+gro.ARG 1.968037E-2        10.8         0.1         0.9
+gro.BRA 8.829595E-3        10.8 3.300625E-2         0.9
+gro.FRA 2.753965E-2        10.8 1.210873E-2         0.9
+gro.DEU 2.721725E-3        10.8 1.921997E-2         0.9
+gro.ITA 1.725159E-2        10.8 5.752772E-4         0.9
+gro.GBR 1.758851E-2        10.8 8.153758E-5         0.9
+gro.RUS 2.932374E-3        10.8 2.457842E-3         0.9
+gro.SAU         0.3        10.8 3.515607E-6         0.9
+gro.TUR 3.200629E-3        10.8         0.1         0.9
+gro.ZAF         0.1        10.8 1.777037E-3         0.9
+gro.ANZ 2.706155E-3        10.8 7.426297E-4         0.9
+gro.REU         0.1        10.8 3.533129E-2         0.9
+gro.OEX         0.1        10.8 2.951219E-4         0.9
+gro.LIC         0.1        10.8 4.155276E-3         0.9
+gro.MIC         3.0        10.8         0.2         0.9
+v_f.CHN         1.5        17.9         0.4        23.1
+v_f.JPN         0.9        17.9 1.418950E-2        23.1
+v_f.KOR         0.8        17.9         0.1        23.1
+v_f.IDN         0.1        17.9 2.868815E-2        23.1
+v_f.IND         1.0        17.9         0.3        23.1
+v_f.CAN         6.3        17.9         2.2        23.1
+v_f.USA                    17.9                    23.1
+v_f.MEX         1.4        17.9        13.4        23.1
+v_f.ARG 2.032727E-2        17.9         0.2        23.1
+v_f.BRA 4.611082E-2        17.9         0.1        23.1
+v_f.FRA         0.2        17.9         0.1        23.1
+v_f.DEU         0.7        17.9 4.660956E-3        23.1
+v_f.ITA         0.4        17.9         0.1        23.1
+v_f.GBR         0.4        17.9 1.070399E-2        23.1
+v_f.RUS 1.443099E-3        17.9 3.181299E-4        23.1
+v_f.SAU         0.2        17.9 3.871894E-3        23.1
+v_f.TUR         0.4        17.9         0.1        23.1
+v_f.ZAF 4.030066E-2        17.9         0.1        23.1
+v_f.ANZ         0.3        17.9         0.2        23.1
+v_f.REU         1.9        17.9         0.4        23.1
+v_f.OEX         0.5        17.9 2.140566E-2        23.1
+v_f.LIC         0.1        17.9         0.2        23.1
+v_f.MIC         2.4        17.9         9.9        23.1
+osd.CHN        12.6        22.2 1.854666E-2         1.0
+osd.JPN         1.2        22.2 6.461802E-4         1.0
+osd.KOR         0.3        22.2 1.139940E-4         1.0
+osd.IDN         0.9        22.2 1.404647E-4         1.0
+osd.IND 6.818649E-4        22.2         0.2         1.0
+osd.CAN         0.4        22.2         0.5         1.0
+osd.USA                    22.2                     1.0
+osd.MEX         1.8        22.2 2.161605E-2         1.0
+osd.ARG 2.315461E-3        22.2         0.1         1.0
+osd.BRA 4.263037E-3        22.2                     1.0
+osd.FRA         0.1        22.2 1.679731E-2         1.0
+osd.DEU         0.5        22.2 3.553565E-3         1.0
+osd.ITA         0.1        22.2 4.881868E-4         1.0
+osd.GBR 1.638952E-2        22.2 1.400344E-3         1.0
+osd.RUS 7.764682E-3        22.2 4.998435E-3         1.0
+osd.SAU         0.1        22.2                     1.0
+osd.TUR         0.2        22.2         0.1         1.0
+osd.ZAF 6.635195E-4        22.2 1.516758E-4         1.0
+osd.ANZ 5.832425E-3        22.2 2.318292E-3         1.0
+osd.REU         1.4        22.2 4.111285E-2         1.0
+osd.OEX         0.1        22.2 1.785507E-3         1.0
+osd.LIC         0.4        22.2 2.736984E-2         1.0
+osd.MIC         3.2        22.2         0.2         1.0
+c_b.CHN 4.432479E-5 8.477330E-3 4.096163E-5 1.391648E-3
+c_b.JPN 6.800612E-5 8.477330E-3 3.129324E-7 1.391648E-3
+c_b.KOR 2.569317E-5 8.477330E-3             1.391648E-3
+c_b.IDN 1.691680E-6 8.477330E-3             1.391648E-3
+c_b.IND 1.796802E-5 8.477330E-3 8.392787E-6 1.391648E-3
+c_b.CAN 8.023151E-3 8.477330E-3 1.392980E-7 1.391648E-3
+c_b.USA             8.477330E-3             1.391648E-3
+c_b.MEX 9.101094E-6 8.477330E-3 3.130594E-4 1.391648E-3
+c_b.ARG 1.855597E-5 8.477330E-3 2.680814E-7 1.391648E-3
+c_b.BRA 2.498151E-5 8.477330E-3 1.928413E-5 1.391648E-3
+c_b.FRA 1.197387E-4 8.477330E-3 1.704455E-4 1.391648E-3
+c_b.DEU 2.449230E-6 8.477330E-3 4.830882E-5 1.391648E-3
+c_b.ITA 4.519013E-6 8.477330E-3 1.299234E-6 1.391648E-3
+c_b.GBR 5.845630E-6 8.477330E-3 8.155967E-5 1.391648E-3
+c_b.RUS             8.477330E-3 2.099915E-5 1.391648E-3
+c_b.SAU 1.771057E-6 8.477330E-3             1.391648E-3
+c_b.TUR 1.543802E-6 8.477330E-3 7.383802E-6 1.391648E-3
+c_b.ZAF 5.644989E-6 8.477330E-3             1.391648E-3
+c_b.ANZ 5.080430E-6 8.477330E-3             1.391648E-3
+c_b.REU 8.819165E-5 8.477330E-3 1.266585E-4 1.391648E-3
+c_b.OEX 5.886398E-6 8.477330E-3 1.424440E-4 1.391648E-3
+c_b.LIC 1.144305E-5 8.477330E-3 6.926115E-4 1.391648E-3
+c_b.MIC 1.548838E-4 8.477330E-3 7.254924E-4 1.391648E-3
+pfb.CHN         1.0         5.8 4.771738E-5 3.636898E-2
+pfb.JPN         0.1         5.8 3.642939E-5 3.636898E-2
+pfb.KOR         0.3         5.8 3.875614E-4 3.636898E-2
+pfb.IDN         0.5         5.8 1.375960E-5 3.636898E-2
+pfb.IND         0.5         5.8 4.449921E-2 3.636898E-2
+pfb.CAN 3.069209E-3         5.8 6.953355E-5 3.636898E-2
+pfb.USA                     5.8             3.636898E-2
+pfb.MEX         0.4         5.8 1.425073E-3 3.636898E-2
+pfb.ARG 9.854754E-4         5.8 7.364428E-6 3.636898E-2
+pfb.BRA 4.882967E-2         5.8 1.400410E-4 3.636898E-2
+pfb.FRA 2.996146E-3         5.8 2.951224E-3 3.636898E-2
+pfb.DEU 4.072137E-3         5.8 2.145441E-4 3.636898E-2
+pfb.ITA 4.775459E-3         5.8 3.868995E-5 3.636898E-2
+pfb.GBR 1.241879E-3         5.8 2.055611E-4 3.636898E-2
+pfb.RUS 4.506301E-5         5.8 5.873787E-6 3.636898E-2
+pfb.SAU 2.595718E-4         5.8 6.336051E-7 3.636898E-2
+pfb.TUR         0.8         5.8 1.892454E-4 3.636898E-2
+pfb.ZAF 8.164837E-5         5.8             3.636898E-2
+pfb.ANZ 7.479345E-4         5.8 4.573104E-5 3.636898E-2
+pfb.REU 1.424396E-2         5.8 3.513595E-3 3.636898E-2
+pfb.OEX 1.226289E-2         5.8 1.035001E-4 3.636898E-2
+pfb.LIC         0.3         5.8 1.692454E-3 3.636898E-2
+pfb.MIC         2.3         5.8 2.815884E-2 3.636898E-2
+ocr.CHN         0.6         2.9         0.3         8.7
+ocr.JPN         0.6         2.9 4.020473E-2         8.7
+ocr.KOR         0.4         2.9 1.142852E-2         8.7
+ocr.IDN 8.974359E-3         2.9         0.5         8.7
+ocr.IND 7.530655E-3         2.9         0.4         8.7
+ocr.CAN         0.6         2.9         0.6         8.7
+ocr.USA                     2.9                     8.7
+ocr.MEX         0.1         2.9         0.3         8.7
+ocr.ARG 1.740003E-2         2.9         0.1         8.7
+ocr.BRA 1.208660E-2         2.9         1.0         8.7
+ocr.FRA 3.566718E-2         2.9 3.132890E-2         8.7
+ocr.DEU         0.1         2.9         0.1         8.7
+ocr.ITA 3.283715E-2         2.9 1.183594E-2         8.7
+ocr.GBR         0.1         2.9         0.1         8.7
+ocr.RUS 5.358743E-3         2.9 9.032197E-4         8.7
+ocr.SAU         0.2         2.9 4.603292E-5         8.7
+ocr.TUR 7.406880E-3         2.9         0.3         8.7
+ocr.ZAF 4.677197E-3         2.9 1.589053E-2         8.7
+ocr.ANZ 3.280819E-2         2.9         0.1         8.7
+ocr.REU         0.2         2.9         1.1         8.7
+ocr.OEX         0.1         2.9 4.524935E-2         8.7
+ocr.LIC 9.449958E-3         2.9         0.8         8.7
+ocr.MIC         0.3         2.9         6.8         8.7
+ctl.CHN 1.698461E-2         0.8 2.317441E-4         2.0
+ctl.JPN         0.1         0.8 5.984716E-4         2.0
+ctl.KOR 1.634217E-2         0.8 2.137686E-4         2.0
+ctl.IDN 2.840114E-4         0.8 9.587121E-5         2.0
+ctl.IND 5.174236E-4         0.8 1.568834E-5         2.0
+ctl.CAN         0.2         0.8         1.0         2.0
+ctl.USA                     0.8                     2.0
+ctl.MEX         0.1         0.8         0.7         2.0
+ctl.ARG 9.072545E-3         0.8 1.077904E-2         2.0
+ctl.BRA 1.574305E-2         0.8 7.515903E-3         2.0
+ctl.FRA 1.794529E-2         0.8 3.551534E-2         2.0
+ctl.DEU 8.329904E-3         0.8         0.1         2.0
+ctl.ITA 6.687383E-3         0.8 1.149485E-4         2.0
+ctl.GBR         0.1         0.8 1.970668E-2         2.0
+ctl.RUS 1.131910E-2         0.8 1.172331E-5         2.0
+ctl.SAU 6.988911E-3         0.8 2.116290E-5         2.0
+ctl.TUR 1.722162E-2         0.8 1.874856E-5         2.0
+ctl.ZAF 2.662571E-3         0.8 5.721339E-5         2.0
+ctl.ANZ 3.074527E-2         0.8 1.475302E-2         2.0
+ctl.REU         0.1         0.8         0.3         2.0
+ctl.OEX         0.1         0.8 6.769789E-4         2.0
+ctl.LIC 6.895468E-3         0.8 4.483571E-3         2.0
+ctl.MIC 4.544560E-2         0.8 1.039284E-2         2.0
+oap.CHN         1.3         3.0         0.2         1.8
+oap.JPN         0.1         3.0 1.872446E-4         1.8
+oap.KOR         0.3         3.0 2.041387E-4         1.8
+oap.IDN         0.1         3.0 1.650558E-2         1.8
+oap.IND 5.441528E-3         3.0         0.1         1.8
+oap.CAN         0.3         3.0         0.7         1.8
+oap.USA                     3.0                     1.8
+oap.MEX         0.4         3.0         0.1         1.8
+oap.ARG 1.125428E-3         3.0         0.1         1.8
+oap.BRA 4.212857E-2         3.0         0.2         1.8
+oap.FRA 4.748558E-2         3.0 3.875178E-2         1.8
+oap.DEU 3.844410E-2         3.0 2.450778E-2         1.8
+oap.ITA         0.1         3.0 5.195826E-3         1.8
+oap.GBR 1.573484E-2         3.0 1.861473E-2         1.8
+oap.RUS 2.152736E-3         3.0 1.916717E-3         1.8
+oap.SAU 5.436842E-4         3.0 1.119093E-4         1.8
+oap.TUR 1.148079E-2         3.0 8.773147E-3         1.8
+oap.ZAF 6.989660E-4         3.0 2.177866E-3         1.8
+oap.ANZ 9.193979E-3         3.0         0.2         1.8
+oap.REU         0.1         3.0         0.1         1.8
+oap.OEX 2.337675E-2         3.0 2.668251E-3         1.8
+oap.LIC 3.427125E-2         3.0 3.624982E-2         1.8
+oap.MIC         0.5         3.0         0.2         1.8
+rmk.CHN 2.835155E-4         1.5 1.472856E-4         0.1
+rmk.JPN 3.947912E-5         1.5 9.598706E-6         0.1
+rmk.KOR 3.136102E-5         1.5 3.659497E-6         0.1
+rmk.IDN 1.082052E-5         1.5 1.901843E-5         0.1
+rmk.IND 1.149292E-4         1.5 1.538419E-3         0.1
+rmk.CAN 7.671248E-5         1.5 7.021933E-5         0.1
+rmk.USA                     1.5                     0.1
+rmk.MEX 5.821350E-5         1.5 3.593333E-5         0.1
+rmk.ARG 1.503977E-5         1.5 1.525119E-5         0.1
+rmk.BRA 6.283859E-5         1.5 2.097561E-4         0.1
+rmk.FRA 4.421367E-5         1.5 1.029654E-4         0.1
+rmk.DEU 1.566605E-5         1.5 1.390153E-4         0.1
+rmk.ITA 2.890505E-5         1.5 1.213958E-4         0.1
+rmk.GBR 3.739052E-5         1.5 3.936576E-5         0.1
+rmk.RUS 1.724035E-6         1.5 1.903978E-4         0.1
+rmk.SAU 1.132825E-5         1.5 1.329123E-6         0.1
+rmk.TUR 9.874649E-6         1.5 2.302262E-5         0.1
+rmk.ZAF 5.452125E-6         1.5 1.296321E-5         0.1
+rmk.ANZ 3.249605E-5         1.5 8.856275E-6         0.1
+rmk.REU 8.222080E-5         1.5 8.210537E-4         0.1
+rmk.OEX 3.813203E-5         1.5 2.615122E-5         0.1
+rmk.LIC 2.556828E-5         1.5 1.370561E-3         0.1
+rmk.MIC 1.355243E-4         1.5 1.691331E-3         0.1
+wol.CHN 1.566751E-2 2.232093E-2 2.664646E-4 5.401825E-3
+wol.JPN 3.614821E-5 2.232093E-2 8.334887E-6 5.401825E-3
+wol.KOR 2.871504E-5 2.232093E-2 7.443872E-6 5.401825E-3
+wol.IDN 1.268711E-5 2.232093E-2 2.318363E-5 5.401825E-3
+wol.IND 2.705214E-3 2.232093E-2 1.851866E-4 5.401825E-3
+wol.CAN 1.839705E-4 2.232093E-2 9.108356E-4 5.401825E-3
+wol.USA             2.232093E-2             5.401825E-3
+wol.MEX 6.227383E-5 2.232093E-2 8.386922E-5 5.401825E-3
+wol.ARG 1.377084E-5 2.232093E-2 5.935630E-6 5.401825E-3
+wol.BRA 5.753680E-5 2.232093E-2 2.430854E-5 5.401825E-3
+wol.FRA 5.824555E-4 2.232093E-2 5.882959E-4 5.401825E-3
+wol.DEU 4.825416E-5 2.232093E-2 1.441847E-4 5.401825E-3
+wol.ITA 3.823639E-4 2.232093E-2 4.458253E-5 5.401825E-3
+wol.GBR 5.432290E-4 2.232093E-2 8.993298E-4 5.401825E-3
+wol.RUS 4.631372E-6 2.232093E-2 8.248380E-6 5.401825E-3
+wol.SAU 1.037247E-5 2.232093E-2 2.509614E-6 5.401825E-3
+wol.TUR 1.534058E-5 2.232093E-2 2.418509E-6 5.401825E-3
+wol.ZAF 2.901865E-3 2.232093E-2 9.639230E-5 5.401825E-3
+wol.ANZ 1.447363E-4 2.232093E-2 2.571984E-3 5.401825E-3
+wol.REU 1.756073E-3 2.232093E-2 3.721212E-3 5.401825E-3
+wol.OEX 3.491478E-5 2.232093E-2 6.454291E-5 5.401825E-3
+wol.LIC 6.189913E-5 2.232093E-2 2.901578E-4 5.401825E-3
+wol.MIC 5.553938E-4 2.232093E-2 5.849648E-4 5.401825E-3
+oxt.CHN         2.1        10.5         0.3         5.0
+oxt.JPN         1.9        10.5         0.1         5.0
+oxt.KOR         1.2        10.5 1.633120E-2         5.0
+oxt.IDN 4.243407E-2        10.5 3.331381E-2         5.0
+oxt.IND         1.0        10.5         0.1         5.0
+oxt.CAN         2.7        10.5         1.3         5.0
+oxt.USA                    10.5                     5.0
+oxt.MEX         1.6        10.5         0.3         5.0
+oxt.ARG         0.1        10.5 7.324920E-3         5.0
+oxt.BRA         0.7        10.5         0.7         5.0
+oxt.FRA         0.4        10.5         0.1         5.0
+oxt.DEU         1.3        10.5 3.134375E-2         5.0
+oxt.ITA         0.4        10.5 4.197110E-2         5.0
+oxt.GBR         0.5        10.5 4.523504E-2         5.0
+oxt.RUS 4.752927E-3        10.5         0.1         5.0
+oxt.SAU 2.809229E-2        10.5                     5.0
+oxt.TUR         0.2        10.5         0.1         5.0
+oxt.ZAF         0.1        10.5         0.2         5.0
+oxt.ANZ         0.2        10.5         0.2         5.0
+oxt.REU         2.5        10.5         0.4         5.0
+oxt.OEX         0.3        10.5         0.5         5.0
+oxt.LIC 1.054066E-2        10.5         0.4         5.0
+oxt.MIC         1.9        10.5         1.9         5.0
+tex.CHN         1.0        13.4        17.3        26.0
+tex.JPN         0.2        13.4         0.7        26.0
+tex.KOR         0.2        13.4         1.1        26.0
+tex.IDN         0.1        13.4         0.2        26.0
+tex.IND         0.1        13.4         5.0        26.0
+tex.CAN         2.8        13.4         1.4        26.0
+tex.USA                    13.4                    26.0
+tex.MEX         4.4        13.4         2.0        26.0
+tex.ARG 3.696311E-2        13.4 2.858518E-3        26.0
+tex.BRA         0.2        13.4         0.1        26.0
+tex.FRA         0.1        13.4         0.2        26.0
+tex.DEU         0.2        13.4         0.8        26.0
+tex.ITA         0.1        13.4         0.7        26.0
+tex.GBR         0.3        13.4         0.3        26.0
+tex.RUS 3.325783E-2        13.4 7.783974E-3        26.0
+tex.SAU         0.1        13.4         0.1        26.0
+tex.TUR         0.1        13.4         1.2        26.0
+tex.ZAF 2.503982E-2        13.4 2.678632E-2        26.0
+tex.ANZ         0.2        13.4         0.1        26.0
+tex.REU         0.9        13.4         1.5        26.0
+tex.OEX         0.1        13.4         0.1        26.0
+tex.LIC         0.1        13.4         0.4        26.0
+tex.MIC         3.9        13.4         4.1        26.0
+lum.CHN         1.7         8.5         4.7        19.6
+lum.JPN         0.4         8.5 1.663055E-2        19.6
+lum.KOR         0.1         8.5 7.294939E-3        19.6
+lum.IDN 3.326028E-2         8.5         0.4        19.6
+lum.IND 9.826186E-3         8.5         0.2        19.6
+lum.CAN         1.6         8.5         4.7        19.6
+lum.USA                     8.5                    19.6
+lum.MEX         0.6         8.5         0.4        19.6
+lum.ARG 3.045995E-3         8.5 4.801428E-2        19.6
+lum.BRA 1.124351E-2         8.5         1.2        19.6
+lum.FRA         0.1         8.5         0.3        19.6
+lum.DEU         0.1         8.5         0.5        19.6
+lum.ITA         0.1         8.5         0.2        19.6
+lum.GBR         0.7         8.5 1.635322E-2        19.6
+lum.RUS 2.588353E-3         8.5 3.074391E-2        19.6
+lum.SAU 1.493834E-2         8.5 5.055662E-5        19.6
+lum.TUR         0.1         8.5 5.074535E-3        19.6
+lum.ZAF 1.347344E-2         8.5 8.841980E-3        19.6
+lum.ANZ         0.1         8.5         0.2        19.6
+lum.REU         0.4         8.5         1.0        19.6
+lum.OEX 4.823296E-2         8.5 3.827825E-3        19.6
+lum.LIC 1.039930E-2         8.5 4.046776E-2        19.6
+lum.MIC         0.6         8.5         1.6        19.6
+ppp.CHN         4.7        28.1         5.1        21.6
+ppp.JPN         1.3        28.1         0.5        21.6
+ppp.KOR         0.7        28.1         0.6        21.6
+ppp.IDN         0.4        28.1         0.3        21.6
+ppp.IND         0.8        28.1         0.2        21.6
+ppp.CAN         8.2        28.1         9.6        21.6
+ppp.USA                    28.1                    21.6
+ppp.MEX         5.6        28.1         1.7        21.6
+ppp.ARG         0.1        28.1 1.572940E-2        21.6
+ppp.BRA         0.3        28.1         1.5        21.6
+ppp.FRA         0.2        28.1         0.5        21.6
+ppp.DEU         0.6        28.1         1.1        21.6
+ppp.ITA         0.6        28.1         0.3        21.6
+ppp.GBR         1.0        28.1         0.9        21.6
+ppp.RUS         0.1        28.1 2.408181E-2        21.6
+ppp.SAU         0.2        28.1 1.111865E-3        21.6
+ppp.TUR         0.3        28.1 3.612077E-2        21.6
+ppp.ZAF         0.1        28.1 3.922961E-2        21.6
+ppp.ANZ         0.4        28.1         0.2        21.6
+ppp.REU         1.6        28.1         2.3        21.6
+ppp.OEX         0.2        28.1 2.503417E-2        21.6
+ppp.LIC         0.1        28.1 9.353236E-3        21.6
+ppp.MIC         4.0        28.1         1.1        21.6
+oil.CHN         5.3        94.5         2.8        37.2
+oil.JPN         4.1        94.5         0.8        37.2
+oil.KOR         1.3        94.5         3.1        37.2
+oil.IDN         0.4        94.5         0.1        37.2
+oil.IND         1.1        94.5         4.7        37.2
+oil.CAN         6.1        94.5         8.4        37.2
+oil.USA                    94.5                    37.2
+oil.MEX        19.4        94.5         1.6        37.2
+oil.ARG         1.4        94.5         0.4        37.2
+oil.BRA         8.7        94.5         2.3        37.2
+oil.FRA         2.3        94.5         1.0        37.2
+oil.DEU         0.6        94.5         0.1        37.2
+oil.ITA         0.8        94.5         0.4        37.2
+oil.GBR         1.3        94.5         1.8        37.2
+oil.RUS 4.863253E-2        94.5        10.0        37.2
+oil.SAU         0.3        94.5         0.3        37.2
+oil.TUR         1.9        94.5         0.2        37.2
+oil.ZAF         0.4        94.5         0.1        37.2
+oil.ANZ         0.5        94.5 9.628429E-3        37.2
+oil.REU         5.7        94.5         7.8        37.2
+oil.OEX         3.4        94.5         2.6        37.2
+oil.LIC         1.1        94.5         0.1        37.2
+oil.MIC        29.2        94.5         7.7        37.2
+nmm.CHN         1.4        11.5         9.3        19.8
+nmm.JPN         0.7        11.5         1.3        19.8
+nmm.KOR         0.4        11.5         0.4        19.8
+nmm.IDN 1.253948E-2        11.5         0.1        19.8
+nmm.IND         0.2        11.5         0.8        19.8
+nmm.CAN         4.0        11.5         2.3        19.8
+nmm.USA                    11.5                    19.8
+nmm.MEX         1.8        11.5         3.2        19.8
+nmm.ARG 2.922172E-2        11.5 9.659402E-3        19.8
+nmm.BRA         0.1        11.5         1.1        19.8
+nmm.FRA         0.3        11.5         0.5        19.8
+nmm.DEU         1.3        11.5         1.3        19.8
+nmm.ITA         0.2        11.5         1.9        19.8
+nmm.GBR         0.4        11.5         0.4        19.8
+nmm.RUS 3.287141E-2        11.5 1.455814E-2        19.8
+nmm.SAU 3.738496E-2        11.5 5.711528E-3        19.8
+nmm.TUR 4.782407E-2        11.5         0.8        19.8
+nmm.ZAF         0.1        11.5         0.1        19.8
+nmm.ANZ         0.1        11.5 2.273090E-2        19.8
+nmm.REU         0.9        11.5         2.4        19.8
+nmm.OEX         0.2        11.5         0.1        19.8
+nmm.LIC 3.217769E-2        11.5 1.635547E-2        19.8
+nmm.MIC         1.2        11.5         1.6        19.8
+fmp.CHN         1.3        28.9        19.7        49.5
+fmp.JPN         0.8        28.9         3.0        49.5
+fmp.KOR         0.6        28.9         2.0        49.5
+fmp.IDN         0.1        28.9         0.2        49.5
+fmp.IND         0.3        28.9         1.4        49.5
+fmp.CAN         8.8        28.9         7.1        49.5
+fmp.USA                    28.9                    49.5
+fmp.MEX         8.9        28.9         6.6        49.5
+fmp.ARG         0.1        28.9 2.893886E-2        49.5
+fmp.BRA         0.6        28.9         0.4        49.5
+fmp.FRA         0.6        28.9         0.8        49.5
+fmp.DEU         0.9        28.9         3.5        49.5
+fmp.ITA         0.3        28.9         1.7        49.5
+fmp.GBR         1.0        28.9         0.9        49.5
+fmp.RUS         0.1        28.9         0.1        49.5
+fmp.SAU         1.6        28.9 1.762803E-2        49.5
+fmp.TUR         0.3        28.9         0.3        49.5
+fmp.ZAF         0.1        28.9 4.301063E-2        49.5
+fmp.ANZ         0.8        28.9         0.1        49.5
+fmp.REU         1.8        28.9         4.1        49.5
+fmp.OEX         1.9        28.9         0.1        49.5
+fmp.LIC         0.2        28.9 3.694793E-2        49.5
+fmp.MIC         3.5        28.9         7.6        49.5
+eeq.CHN        31.6       222.9       205.5       441.3
+eeq.JPN        13.7       222.9        25.0       441.3
+eeq.KOR        14.8       222.9        22.7       441.3
+eeq.IDN         0.5       222.9         2.0       441.3
+eeq.IND         3.0       222.9         2.1       441.3
+eeq.CAN        42.1       222.9        13.3       441.3
+eeq.USA                   222.9                   441.3
+eeq.MEX        65.9       222.9       108.6       441.3
+eeq.ARG         2.0       222.9 1.586359E-2       441.3
+eeq.BRA         5.4       222.9         0.7       441.3
+eeq.FRA         4.7       222.9         5.4       441.3
+eeq.DEU        11.0       222.9        18.3       441.3
+eeq.ITA         1.8       222.9         3.1       441.3
+eeq.GBR         7.2       222.9         7.4       441.3
+eeq.RUS         1.0       222.9         0.1       441.3
+eeq.SAU         2.2       222.9         0.1       441.3
+eeq.TUR         0.9       222.9         0.4       441.3
+eeq.ZAF         0.6       222.9         0.1       441.3
+eeq.ANZ         4.4       222.9         1.0       441.3
+eeq.REU        22.4       222.9        26.8       441.3
+eeq.OEX         5.8       222.9         0.2       441.3
+eeq.LIC         0.9       222.9         0.2       441.3
+eeq.MIC        52.5       222.9        72.8       441.3
+ome.CHN         9.5       129.7        32.6       166.4
+ome.JPN         4.7       129.7        24.5       166.4
+ome.KOR         3.4       129.7         7.6       166.4
+ome.IDN         0.5       129.7         0.3       166.4
+ome.IND         1.6       129.7         2.6       166.4
+ome.CAN        32.1       129.7        15.9       166.4
+ome.USA                   129.7                   166.4
+ome.MEX        21.2       129.7        23.5       166.4
+ome.ARG         1.3       129.7         0.1       166.4
+ome.BRA         2.9       129.7         1.5       166.4
+ome.FRA         2.4       129.7         3.8       166.4
+ome.DEU         5.4       129.7        20.7       166.4
+ome.ITA         1.7       129.7         8.8       166.4
+ome.GBR         4.3       129.7         5.9       166.4
+ome.RUS         1.4       129.7         0.1       166.4
+ome.SAU         2.1       129.7 2.398518E-2       166.4
+ome.TUR         0.6       129.7         0.7       166.4
+ome.ZAF         1.1       129.7         0.3       166.4
+ome.ANZ         4.4       129.7         0.6       166.4
+ome.REU        12.1       129.7        17.6       166.4
+ome.OEX         3.3       129.7         0.1       166.4
+ome.LIC         1.0       129.7 2.496888E-2       166.4
+ome.MIC        21.7       129.7        12.1       166.4
+mvh.CHN        14.1       131.0        18.6       276.8
+mvh.JPN         1.8       131.0        54.4       276.8
+mvh.KOR         2.2       131.0        21.3       276.8
+mvh.IDN 4.856720E-2       131.0         0.1       276.8
+mvh.IND         0.5       131.0         1.5       276.8
+mvh.CAN        57.4       131.0        58.8       276.8
+mvh.USA                   131.0                   276.8
+mvh.MEX        29.0       131.0        92.6       276.8
+mvh.ARG         0.3       131.0         0.1       276.8
+mvh.BRA         2.0       131.0         0.9       276.8
+mvh.FRA         0.7       131.0         0.9       276.8
+mvh.DEU         7.5       131.0        30.5       276.8
+mvh.ITA         1.0       131.0         6.3       276.8
+mvh.GBR         2.9       131.0        10.1       276.8
+mvh.RUS         0.5       131.0 5.524246E-3       276.8
+mvh.SAU         2.1       131.0 1.339866E-3       276.8
+mvh.TUR         0.3       131.0         1.3       276.8
+mvh.ZAF         0.5       131.0         1.3       276.8
+mvh.ANZ         3.3       131.0         0.3       276.8
+mvh.REU         5.4       131.0        13.7       276.8
+mvh.OEX         4.1       131.0 3.298843E-2       276.8
+mvh.LIC         1.0       131.0 2.517095E-2       276.8
+mvh.MIC         8.3       131.0         3.8       276.8
+otn.CHN         0.3       110.1         5.5        53.4
+otn.JPN         7.5       110.1         6.8        53.4
+otn.KOR         0.8       110.1         1.4        53.4
+otn.IDN         0.1       110.1         0.1        53.4
+otn.IND         0.7       110.1         0.3        53.4
+otn.CAN         2.8       110.1         9.0        53.4
+otn.USA                   110.1                    53.4
+otn.MEX         2.0       110.1         2.6        53.4
+otn.ARG         0.1       110.1 6.186929E-3        53.4
+otn.BRA         0.3       110.1         2.6        53.4
+otn.FRA         1.3       110.1        12.3        53.4
+otn.DEU         0.5       110.1         5.8        53.4
+otn.ITA         0.5       110.1         2.2        53.4
+otn.GBR         0.7       110.1         7.1        53.4
+otn.RUS 2.469239E-2       110.1         0.5        53.4
+otn.SAU         1.5       110.1 4.009492E-3        53.4
+otn.TUR         0.3       110.1         0.6        53.4
+otn.ZAF 4.266518E-2       110.1         0.1        53.4
+otn.ANZ         1.6       110.1         0.6        53.4
+otn.REU         7.4       110.1         5.0        53.4
+otn.OEX         0.7       110.1 2.872435E-2        53.4
+otn.LIC         1.4       110.1 3.510001E-2        53.4
+otn.MIC        15.8       110.1         4.9        53.4
+omf.CHN         5.8        52.4        60.9       165.2
+omf.JPN         5.0        52.4         2.7       165.2
+omf.KOR         1.3        52.4         1.3       165.2
+omf.IDN         0.1        52.4         1.9       165.2
+omf.IND         6.4        52.4        10.6       165.2
+omf.CAN        11.9        52.4         6.8       165.2
+omf.USA                    52.4                   165.2
+omf.MEX         6.4        52.4        18.2       165.2
+omf.ARG         0.4        52.4 2.223114E-2       165.2
+omf.BRA         1.1        52.4         0.6       165.2
+omf.FRA         2.8        52.4         3.4       165.2
+omf.DEU         3.4        52.4         4.1       165.2
+omf.ITA         1.2        52.4         4.4       165.2
+omf.GBR         6.4        52.4         5.6       165.2
+omf.RUS         0.3        52.4         0.1       165.2
+omf.SAU         0.4        52.4 4.210322E-3       165.2
+omf.TUR         0.2        52.4         0.4       165.2
+omf.ZAF         0.3        52.4         0.7       165.2
+omf.ANZ         2.2        52.4         1.3       165.2
+omf.REU        18.6        52.4        19.3       165.2
+omf.OEX         1.9        52.4         0.3       165.2
+omf.LIC         0.1        52.4         0.4       165.2
+omf.MIC        13.7        52.4        28.4       165.2
+cns.CHN         0.1                     0.2
+cns.JPN         0.4                     0.2
+cns.KOR         0.1                     0.2
+cns.IDN 4.054787E-3             1.091921E-2
+cns.IND 1.959571E-2             3.248998E-2
+cns.CAN         0.2                     0.3
+cns.MEX 2.217237E-2             3.895009E-2
+cns.ARG 1.251261E-3             3.048256E-5
+cns.BRA 5.476265E-3             3.794602E-3
+cns.FRA         0.2                     0.1
+cns.DEU         0.1                     0.1
+cns.ITA         0.1             2.108471E-2
+cns.GBR         0.1                     0.2
+cns.RUS         0.1                     0.1
+cns.SAU         0.1                     0.2
+cns.TUR 4.884658E-3                     0.1
+cns.ZAF 1.814456E-3             5.834987E-3
+cns.ANZ 1.342245E-2             4.769365E-2
+cns.REU         0.2                     0.5
+cns.OEX         0.4                     0.3
+cns.LIC         0.4                     0.1
+cns.MIC         1.0                     0.6
+trd.CHN         2.3                    10.4
+trd.JPN         1.9                     0.3
+trd.KOR         0.8                     0.2
+trd.IDN         0.3             2.736202E-2
+trd.IND         0.9                     0.1
+trd.CAN         1.0                     1.6
+trd.MEX         0.7                     0.3
+trd.ARG         0.2             2.929380E-2
+trd.BRA         1.1                     1.1
+trd.FRA         2.1                     1.1
+trd.DEU         1.7                     1.3
+trd.ITA         0.3                     0.2
+trd.GBR         1.2                     1.5
+trd.RUS         0.1                     0.1
+trd.SAU         0.7             1.581079E-2
+trd.TUR         0.3                     0.1
+trd.ZAF         0.1             4.747630E-2
+trd.ANZ         0.5                     0.1
+trd.REU         4.3                     2.0
+trd.OEX         1.0                     0.8
+trd.LIC         1.2                     0.1
+trd.MIC         6.7                     3.1
+otp.CHN         1.6                     0.6
+otp.JPN         0.7                     0.2
+otp.KOR         0.7             4.500551E-2
+otp.IDN         0.1                     0.1
+otp.IND         0.4                     0.1
+otp.CAN         0.6                     0.7
+otp.MEX         0.3                     0.8
+otp.ARG         0.1                     0.1
+otp.BRA         0.4                     0.3
+otp.FRA         0.5                     0.5
+otp.DEU         0.6                     0.3
+otp.ITA         0.2                     0.3
+otp.GBR         0.3                     0.7
+otp.RUS 1.649014E-2                     0.1
+otp.SAU         0.1             1.652477E-2
+otp.TUR         0.1                     0.1
+otp.ZAF 3.804995E-2             3.540241E-2
+otp.ANZ         0.2                     0.1
+otp.REU         1.6                     1.1
+otp.OEX         0.5                     0.7
+otp.LIC         0.7                     0.4
+otp.MIC         1.9                     2.7
+wtp.CHN         0.9                     0.4
+wtp.JPN         2.1             3.616567E-2
+wtp.KOR         1.5             4.734868E-2
+wtp.IDN         0.1             1.646736E-2
+wtp.IND         0.1             9.014129E-3
+wtp.CAN         0.3                     0.2
+wtp.MEX 2.483416E-2             2.057320E-2
+wtp.ARG 8.160650E-3             2.316216E-2
+wtp.BRA         0.6                     0.5
+wtp.FRA         0.6             2.052381E-2
+wtp.DEU         1.0             1.521397E-2
+wtp.ITA         0.2             3.730127E-2
+wtp.GBR         0.2                     0.1
+wtp.RUS 1.658126E-2             1.495680E-2
+wtp.SAU 1.749198E-2             7.364048E-4
+wtp.TUR 3.496667E-2             1.324380E-3
+wtp.ZAF 4.448648E-2             1.215414E-3
+wtp.ANZ         0.1             7.806689E-3
+wtp.REU         3.0                     0.2
+wtp.OEX         0.3                     0.3
+wtp.LIC         0.2                     0.3
+wtp.MIC         2.0                     1.2
+atp.CHN         8.2                     5.1
+atp.JPN         3.2                     1.5
+atp.KOR         1.9                     0.8
+atp.IDN         0.2                     0.1
+atp.IND         0.4                     0.1
+atp.CAN         6.2                     4.4
+atp.MEX         2.1                     2.9
+atp.ARG         0.9                     0.2
+atp.BRA         1.6                     0.5
+atp.FRA         1.6                     2.8
+atp.DEU         2.0                     3.6
+atp.ITA         0.6                     0.5
+atp.GBR         3.3                     5.0
+atp.RUS         0.1                     0.4
+atp.SAU         0.3                     0.2
+atp.TUR         0.5                     0.9
+atp.ZAF         0.2                     0.2
+atp.ANZ         0.9                     1.2
+atp.REU         3.9                     6.0
+atp.OEX         1.9                     1.1
+atp.LIC         1.5                     0.9
+atp.MIC         8.8                     8.9
+cmn.CHN         3.2                     3.4
+cmn.JPN         3.8                     1.7
+cmn.KOR         1.0                     0.6
+cmn.IDN         0.3                     0.1
+cmn.IND         1.9                    13.9
+cmn.CAN         6.0                     7.0
+cmn.MEX         1.3                     1.0
+cmn.ARG         1.5                     1.0
+cmn.BRA         3.4                     1.1
+cmn.FRA         2.0                     1.7
+cmn.DEU         5.4                     5.1
+cmn.ITA         1.1                     0.6
+cmn.GBR         4.0                     6.1
+cmn.RUS         0.5                     0.5
+cmn.SAU         0.3             4.422057E-2
+cmn.TUR         0.2                     0.1
+cmn.ZAF         0.3                     0.2
+cmn.ANZ         2.3                     0.9
+cmn.REU        13.3                    13.9
+cmn.OEX         2.5                     2.1
+cmn.LIC         0.4                     0.5
+cmn.MIC        10.2                     8.9
+ofi.CHN         6.8                     3.7
+ofi.JPN         4.5                     2.7
+ofi.KOR         1.5                     0.5
+ofi.IDN         0.4                     0.2
+ofi.IND         1.8                     0.8
+ofi.CAN         8.4                     4.2
+ofi.MEX         2.9                     0.4
+ofi.ARG         0.9                     0.1
+ofi.BRA         3.0                     1.1
+ofi.FRA         2.0                     1.5
+ofi.DEU         3.2                     1.5
+ofi.ITA         0.7                     0.5
+ofi.GBR        14.4                    17.1
+ofi.RUS         1.1                     0.4
+ofi.SAU         1.0                     0.2
+ofi.TUR         0.3                     0.1
+ofi.ZAF         0.5                     0.2
+ofi.ANZ         3.1                     0.9
+ofi.REU        20.4                     5.8
+ofi.OEX         2.6                     1.4
+ofi.LIC         1.0                     0.1
+ofi.MIC        14.8                     5.5
+obs.CHN         6.3                     9.5
+obs.JPN        15.2                     6.5
+obs.KOR         5.0                     2.1
+obs.IDN         0.6                     0.2
+obs.IND         3.3                    10.0
+obs.CAN        11.3                    11.3
+obs.MEX         2.5                     2.8
+obs.ARG         0.7                     0.7
+obs.BRA         4.0                     3.6
+obs.FRA         7.1                     6.0
+obs.DEU        11.7                    11.2
+obs.ITA         1.7                     1.7
+obs.GBR        19.3                    23.0
+obs.RUS         0.8                     0.6
+obs.SAU         1.2                     0.1
+obs.TUR         0.4                     0.2
+obs.ZAF         0.3                     0.4
+obs.ANZ         2.5                     2.0
+obs.REU        69.7                    30.7
+obs.OEX         4.7                     4.0
+obs.LIC         2.9                     0.7
+obs.MIC        35.2                    20.3
+ros.CHN        14.3                     3.7
+ros.JPN         5.0                     2.4
+ros.KOR         5.1                     0.9
+ros.IDN         0.6                     0.5
+ros.IND         4.9                     2.3
+ros.CAN        14.4                     6.8
+ros.MEX         9.9                    14.1
+ros.ARG         2.3                     0.5
+ros.BRA         4.6                     1.0
+ros.FRA         2.4                     3.6
+ros.DEU         4.4                     2.3
+ros.ITA         1.7                     4.8
+ros.GBR         7.1                     4.4
+ros.RUS         0.8                     0.2
+ros.SAU         1.0                     0.4
+ros.TUR         0.4                     0.6
+ros.ZAF         0.4                     0.7
+ros.ANZ         6.8                     1.7
+ros.REU        10.0                    12.4
+ros.OEX         5.5                     3.5
+ros.LIC         1.9                     2.6
+ros.MIC        20.8                    30.7
+osg.CHN        19.6                     1.5
+osg.JPN         2.8                     3.9
+osg.KOR         2.5                     1.9
+osg.IDN         0.3                     0.3
+osg.IND         4.6                     0.5
+osg.CAN         3.3                     2.7
+osg.MEX         1.5                     0.6
+osg.ARG         0.5                     0.1
+osg.BRA         2.8                     0.3
+osg.FRA         1.1                     1.0
+osg.DEU         1.9                     4.3
+osg.ITA         1.0                     1.2
+osg.GBR         4.1                     4.5
+osg.RUS         0.5                     0.2
+osg.SAU         4.1                     0.3
+osg.TUR         0.5                     0.5
+osg.ZAF         0.2                     0.1
+osg.ANZ         1.2                     1.4
+osg.REU         4.4                     4.1
+osg.OEX         3.5                     1.7
+osg.LIC         1.0                     0.7
+osg.MIC        10.6                     7.4
+dwe.CHN         0.8             3.072314E-2
+dwe.JPN         0.6                     0.3
+dwe.KOR         0.3                     0.1
+dwe.IDN 2.364561E-2                     0.1
+dwe.IND         0.1             3.054569E-2
+dwe.CAN         0.4                     0.2
+dwe.MEX         0.4                     0.1
+dwe.ARG 4.975135E-2                     0.1
+dwe.BRA         0.1                     1.3
+dwe.FRA         0.5                     0.2
+dwe.DEU         0.5                     0.2
+dwe.ITA         0.1             3.787256E-2
+dwe.GBR         0.5                     0.1
+dwe.RUS         0.1             2.649510E-2
+dwe.SAU         0.3             8.020468E-3
+dwe.TUR         0.1             1.503593E-2
+dwe.ZAF 3.379641E-2             2.689116E-2
+dwe.ANZ         0.1             1.386807E-2
+dwe.REU         1.5                     2.2
+dwe.OEX         0.4                     0.2
+dwe.LIC         0.6                     0.1
+dwe.MIC         3.4                     1.7
+ISR.CHN         1.3                     0.5
+ISR.JPN         2.7                     0.4
+ISR.KOR         0.3                     0.1
+ISR.IDN         0.1             3.696249E-3
+ISR.IND         0.7                     0.2
+ISR.CAN         2.0                     0.9
+ISR.MEX         1.5                     0.4
+ISR.ARG         0.1                     0.1
+ISR.BRA         0.4                     0.1
+ISR.FRA         0.7                     0.8
+ISR.DEU         0.8                     3.4
+ISR.ITA         0.1                     0.1
+ISR.GBR         1.4                     5.8
+ISR.RUS 3.182126E-2             5.391170E-3
+ISR.SAU         0.1             3.051379E-3
+ISR.TUR         0.1             3.033116E-2
+ISR.ZAF         0.1             1.274796E-2
+ISR.ANZ         1.0                     0.4
+ISR.REU         1.9                    10.9
+ISR.OEX         0.7                     0.7
+ISR.LIC         0.2                     0.1
+ISR.MIC         5.7                    20.4
+fof.CHN         0.9         1.8 3.524234E-2         2.3
+fof.JPN         0.5         1.8 4.310243E-2         2.3
+fof.KOR 4.347023E-2         1.8 3.448309E-2         2.3
+fof.IDN 3.691210E-3         1.8 2.993222E-2         2.3
+fof.IND 1.361701E-2         1.8 4.502383E-2         2.3
+fof.CAN         0.6         1.8         1.4         2.3
+fof.USA                     1.8                     2.3
+fof.MEX 3.124924E-2         1.8         0.2         2.3
+fof.ARG 8.389274E-4         1.8 4.191898E-3         2.3
+fof.BRA 1.946179E-3         1.8 4.164452E-2         2.3
+fof.FRA 4.223615E-2         1.8 4.290583E-2         2.3
+fof.DEU 2.257629E-2         1.8 7.752654E-3         2.3
+fof.ITA         0.1         1.8 1.264209E-2         2.3
+fof.GBR 2.094977E-2         1.8         0.3         2.3
+fof.RUS 2.343842E-4         1.8 1.081997E-4         2.3
+fof.SAU 6.484223E-3         1.8 2.133563E-6         2.3
+fof.TUR 7.283049E-3         1.8 3.395657E-2         2.3
+fof.ZAF 1.596736E-3         1.8 4.194901E-3         2.3
+fof.ANZ 3.965978E-3         1.8         0.1         2.3
+fof.REU         0.2         1.8         0.5         2.3
+fof.OEX 9.278501E-3         1.8 3.227269E-2         2.3
+fof.LIC 1.626159E-3         1.8         0.1         2.3
+fof.MIC         0.2         1.8         0.6         2.3
+fbp.CHN         6.2        71.6         7.7        79.7
+fbp.JPN         8.7        71.6         0.9        79.7
+fbp.KOR         4.5        71.6         0.8        79.7
+fbp.IDN         1.0        71.6         3.8        79.7
+fbp.IND         0.5        71.6         4.1        79.7
+fbp.CAN        18.0        71.6        20.0        79.7
+fbp.USA                    71.6                    79.7
+fbp.MEX        11.5        71.6        13.5        79.7
+fbp.ARG         0.1        71.6         1.1        79.7
+fbp.BRA         1.1        71.6         2.8        79.7
+fbp.FRA         0.6        71.6         5.6        79.7
+fbp.DEU         0.8        71.6         2.1        79.7
+fbp.ITA         0.3        71.6         5.3        79.7
+fbp.GBR         1.3        71.6         2.7        79.7
+fbp.RUS         0.2        71.6         0.5        79.7
+fbp.SAU         0.7        71.6 6.499425E-3        79.7
+fbp.TUR         0.5        71.6         0.6        79.7
+fbp.ZAF         0.2        71.6         0.2        79.7
+fbp.ANZ         1.7        71.6         5.7        79.7
+fbp.REU         3.5        71.6        12.6        79.7
+fbp.OEX         1.3        71.6         0.2        79.7
+fbp.LIC         1.2        71.6         0.3        79.7
+fbp.MIC        17.2        71.6        20.0        79.7
+alt.CHN         0.7         7.5        67.0        96.7
+alt.JPN         0.2         7.5         0.1        96.7
+alt.KOR         0.2         7.5         0.4        96.7
+alt.IDN 4.145878E-2         7.5         7.9        96.7
+alt.IND         0.1         7.5         5.9        96.7
+alt.CAN         3.6         7.5         1.1        96.7
+alt.USA                     7.5                    96.7
+alt.MEX         1.5         7.5         5.2        96.7
+alt.ARG 1.171932E-2         7.5         0.1        96.7
+alt.BRA 3.590583E-2         7.5         0.4        96.7
+alt.FRA         0.2         7.5         1.3        96.7
+alt.DEU         0.1         7.5         0.3        96.7
+alt.ITA         0.4         7.5         4.7        96.7
+alt.GBR         0.4         7.5         0.7        96.7
+alt.RUS 2.902399E-2         7.5 5.547209E-3        96.7
+alt.SAU 4.566038E-2         7.5 1.084059E-3        96.7
+alt.TUR 2.783999E-2         7.5         0.7        96.7
+alt.ZAF 1.026074E-2         7.5 2.151373E-2        96.7
+alt.ANZ         0.2         7.5 4.705433E-2        96.7
+alt.REU         0.6         7.5         1.9        96.7
+alt.OEX         0.2         7.5 2.825864E-2        96.7
+alt.LIC         0.1         7.5        11.8        96.7
+alt.MIC         2.1         7.5        46.8        96.7
+pmt.CHN         9.4        49.0         5.4        86.4
+pmt.JPN         1.5        49.0         3.2        86.4
+pmt.KOR         1.5        49.0         4.3        86.4
+pmt.IDN         0.1        49.0         0.5        86.4
+pmt.IND         3.4        49.0         1.8        86.4
+pmt.CAN        13.2        49.0        24.6        86.4
+pmt.USA                    49.0                    86.4
+pmt.MEX        11.9        49.0        10.2        86.4
+pmt.ARG         0.1        49.0         0.9        86.4
+pmt.BRA         0.3        49.0         4.5        86.4
+pmt.FRA         1.0        49.0         1.4        86.4
+pmt.DEU         2.3        49.0         4.7        86.4
+pmt.ITA         1.4        49.0         1.5        86.4
+pmt.GBR         6.6        49.0         2.1        86.4
+pmt.RUS         0.1        49.0         6.0        86.4
+pmt.SAU         0.2        49.0         0.4        86.4
+pmt.TUR         1.1        49.0         1.4        86.4
+pmt.ZAF         0.1        49.0         3.8        86.4
+pmt.ANZ         0.3        49.0         1.2        86.4
+pmt.REU        10.1        49.0         7.1        86.4
+pmt.OEX         1.1        49.0         3.4        86.4
+pmt.LIC         0.3        49.0         0.2        86.4
+pmt.MIC         4.4        49.0        15.9        86.4
+ogs.CHN         3.1        30.9 3.577972E-2       130.3
+ogs.JPN         1.3        30.9 3.775113E-5       130.3
+ogs.KOR         2.6        30.9 4.445722E-7       130.3
+ogs.IDN                    30.9         0.6       130.3
+ogs.IND         0.8        30.9 6.257407E-4       130.3
+ogs.CAN         7.5        30.9        63.3       130.3
+ogs.USA                    30.9                   130.3
+ogs.MEX        14.7        30.9        11.5       130.3
+ogs.ARG         0.4        30.9         0.1       130.3
+ogs.BRA         0.6        30.9         3.7       130.3
+ogs.FRA         0.5        30.9 2.424039E-3       130.3
+ogs.DEU         0.3        30.9 6.036423E-5       130.3
+ogs.ITA         0.7        30.9 5.041368E-5       130.3
+ogs.GBR         0.9        30.9         0.2       130.3
+ogs.RUS                    30.9         1.1       130.3
+ogs.SAU 8.602901E-7        30.9        21.8       130.3
+ogs.TUR         0.2        30.9 1.173225E-6       130.3
+ogs.ZAF 4.899660E-2        30.9 9.536827E-4       130.3
+ogs.ANZ 3.033025E-2        30.9 3.236924E-2       130.3
+ogs.REU         1.9        30.9         1.4       130.3
+ogs.OEX         0.5        30.9        18.5       130.3
+ogs.LIC 6.885560E-3        30.9         4.1       130.3
+ogs.MIC         2.9        30.9        28.3       130.3
+uti.CHN         0.2         0.2 1.427043E-2         2.3
+uti.JPN 1.441128E-2         0.2 7.803939E-4         2.3
+uti.KOR 1.069112E-2         0.2 4.969314E-4         2.3
+uti.IDN 2.834468E-3         0.2 1.534939E-3         2.3
+uti.IND         0.1         0.2 4.194492E-3         2.3
+uti.CAN         0.5         0.2         4.7         2.3
+uti.USA                     0.2                     2.3
+uti.MEX         0.1         0.2 1.755024E-2         2.3
+uti.ARG 7.419844E-3         0.2 6.738135E-4         2.3
+uti.BRA 3.118739E-2         0.2 2.874025E-3         2.3
+uti.FRA 1.877799E-2         0.2 9.991717E-3         2.3
+uti.DEU 2.538399E-2         0.2 1.329224E-2         2.3
+uti.ITA 1.499415E-2         0.2 4.466706E-3         2.3
+uti.GBR 1.630106E-2         0.2 1.573082E-2         2.3
+uti.RUS 8.604278E-4         0.2 5.625552E-3         2.3
+uti.SAU 1.719965E-3         0.2 1.257567E-3         2.3
+uti.TUR 2.865674E-3         0.2 1.032686E-3         2.3
+uti.ZAF 2.098920E-2         0.2 1.963553E-3         2.3
+uti.ANZ         0.1         0.2 4.897201E-3         2.3
+uti.REU         0.1         0.2         0.1         2.3
+uti.OEX         0.3         0.2         0.1         2.3
+uti.LIC 2.033950E-2         0.2 1.891685E-2         2.3
+uti.MIC         0.2         0.2         0.1         2.3
+CRP.CHN        19.7       204.9        36.2       223.3
+CRP.JPN        14.0       204.9        12.9       223.3
+CRP.KOR         7.5       204.9         7.4       223.3
+CRP.IDN         1.0       204.9         3.2       223.3
+CRP.IND         4.1       204.9        10.8       223.3
+CRP.CAN        41.7       204.9        32.1       223.3
+CRP.USA                   204.9                   223.3
+CRP.MEX        37.6       204.9        12.1       223.3
+CRP.ARG         2.3       204.9         1.3       223.3
+CRP.BRA         8.2       204.9         2.7       223.3
+CRP.FRA         5.2       204.9         9.1       223.3
+CRP.DEU         9.2       204.9        27.2       223.3
+CRP.ITA         4.9       204.9         7.4       223.3
+CRP.GBR         7.5       204.9        13.2       223.3
+CRP.RUS         0.9       204.9         1.8       223.3
+CRP.SAU         1.3       204.9         0.6       223.3
+CRP.TUR         1.0       204.9         0.5       223.3
+CRP.ZAF         1.0       204.9         0.7       223.3
+CRP.ANZ         4.6       204.9         1.3       223.3
+CRP.REU        37.4       204.9        65.6       223.3
+CRP.OEX         2.8       204.9         1.2       223.3
+CRP.LIC         0.6       204.9         0.4       223.3
+CRP.MIC        30.8       204.9        27.5       223.3
+
+
+----    338 PARAMETER tradetotals  Cross check on totals
+
+                   export      export      import      import
+                     gtap      census        gtap      census
+
+commodity.pdr         0.4        10.0 2.302954E-3 2.492050E-4
+commodity.wht         6.5       140.1         0.7        15.6
+commodity.gro        11.6       248.2         1.1        21.5
+commodity.v_f        19.4       411.0        27.8       531.7
+commodity.osd        23.4       510.4         1.2        23.3
+commodity.c_b 8.640472E-3         0.2 2.399621E-3 3.200790E-2
+commodity.pfb         6.1       134.1         0.1         0.8
+commodity.ocr         3.3        65.9        12.6       200.4
+commodity.ctl         0.9        18.4         2.2        46.5
+commodity.oap         3.4        68.0         2.0        40.3
+commodity.rmk 1.161406E-3        34.0 6.597549E-3         2.3
+commodity.wol 2.580935E-2         0.5 1.053439E-2         0.1
+commodity.oxt        19.2       242.0         6.9       116.0
+commodity.tex        15.2       308.6        37.4       597.4
+commodity.lum         6.6       195.2        15.5       449.8
+commodity.ppp        31.5       645.9        26.1       496.2
+commodity.oil        95.3      2172.8        56.3       855.1
+commodity.nmm        13.6       263.8        27.6       456.3
+commodity.fmp        34.5       665.5        59.8      1139.3
+commodity.eeq       294.4      5125.9       515.9     10151.0
+commodity.ome       138.7      2983.2       179.5      3828.3
+commodity.mvh       144.6      3014.1       316.5      6367.0
+commodity.otn        46.2      2532.3        67.6      1228.6
+commodity.omf        89.9      1204.7       171.4      3800.4
+commodity.fof         2.6        40.5         3.5        53.4
+commodity.fbp        81.4      1646.4       110.7      1834.1
+commodity.alt        10.9       171.7       156.6      2223.0
+commodity.pmt        70.4      1126.1       104.5      1987.1
+commodity.ogs        39.0       711.3       154.7      2996.8
+commodity.uti         1.6         4.3         5.0        52.1
+commodity.CRP       243.3      4711.6       275.3      5136.9
+
+region   .CHN       137.4      1278.6       499.8      1941.4
+region   .JPN        74.5      1278.6       137.0      1941.4
+region   .KOR        46.6      1278.6        74.5      1941.4
+region   .IDN         6.7      1278.6        22.5      1941.4
+region   .IND        26.3      1278.6        53.1      1941.4
+region   .CAN       273.9      1278.6       292.1      1941.4
+region   .USA                  1278.6                  1941.4
+region   .MEX       252.3      1278.6       328.8      1941.4
+region   .ARG         8.8      1278.6         4.8      1941.4
+region   .BRA        32.8      1278.6        29.2      1941.4
+region   .FRA        23.8      1278.6        46.9      1941.4
+region   .DEU        46.9      1278.6       121.3      1941.4
+region   .ITA        16.9      1278.6        49.1      1941.4
+region   .GBR        44.4      1278.6        60.0      1941.4
+region   .RUS         4.7      1278.6        20.5      1941.4
+region   .SAU        13.6      1278.6        23.3      1941.4
+region   .TUR         9.4      1278.6        10.1      1941.4
+region   .ZAF         4.8      1278.6         7.9      1941.4
+region   .ANZ        25.5      1278.6        13.5      1941.4
+region   .REU       137.0      1278.6       193.0      1941.4
+region   .OEX        29.6      1278.6        27.7      1941.4
+region   .LIC         9.5      1278.6        19.5      1941.4
+region   .MIC       228.6      1278.6       304.1      1941.4
+
+
+
+USER: Small MUD - 5 User License                     G230511|0002AO-GEN
+      University of Wisconsin-Madison, Agricultural & Applied EconDC289
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      d:\GitHub\windc_build\gravity\newgravity.gms
+Output     d:\GitHub\windc_build\gravity\newgravity.lst

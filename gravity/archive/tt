@@ -1,0 +1,155 @@
+$title	Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+
+set	r	Regions (trading partners) /r1*r5/
+	s(*)	Subregions (states)/s1*s10/
+	pd(*)	Port districts /p1*p3/;
+
+set	r(*)	Regions (trading partners)
+	s(*)	Subregions (states),
+	pd(*)	Port districts;
+
+$gdxin 'gravity_estimate.gdx'
+$load r s pd
+
+alias (s,ss), (pd,ppd);
+
+parameter
+	y0(s)		Reference output (data)
+	d0(s)		Reference demand (data)
+	m0(r,pd)	Reference aggregate imports (data)
+	x0(pd,r)	Reference aggregate exports (data)
+
+	eref(s,r)	Reference exports (calibrated)
+	bdref(s,s)	Reference intra-state demand (calibrated)
+	mdref(r,s)	Reference import demand (calibrated)
+
+	tau_d(s,s)	Iceberg cost coefficient -- domestic trade
+	tau_m(ps,s)	Iceberg cost coefficient -- imports
+	tau_x(s,pd)	Iceberg cost coefficient -- exports
+
+	pfxendow	Foreign exchange endowment -- for PE closure 
+
+	lamda_a(s)	Scale parameter for absorption demand
+
+	thetad(s)	State s share of domestic demand
+	thetay(s)	State s share of domestic supply
+
+	dtot		Total absorption
+	ytot		Total production
+	mtot		Total imports
+	xtot		Total exports
+	dchk		Cross check on benchmark data;
+
+dtot = sum(s,d0(s));
+ytot = sum(s, y0(s));
+mtot = sum((r,pd),m0(r,pd));
+xtot = sum((pr,r),x0(pd,r));
+dchk = dtot - (ytot + mtot - xtot);
+abort$round(dchk,6) "Benchmark demand is inconsistent";
+
+eref(s,r)   = y0(s) * sum(pd,x0(pd,r))/xtot * xtot/ytot;
+bdref(s,ss) = y0(s) * (ytot-xtot)/ytot * d0(ss)/dtot;
+mdref(r,s)  = sum(pd,m0(r,pd)) * d0(s)/dtot;
+
+sets	z_(s), pz_(s), py_(s), pm_(r,s), px_(s,r), pp_(r,pd);
+
+z_(s) = yes$d0(s);
+pz_(s) = z_(s);
+py_(s) = yes$y0(s);
+pm_(r,s) = yes$mdref(r,s);
+px_(s,r) = yes$sum(pd,x0(pd,r));
+pp_(r,pd) = yes$m0(r,pd);
+
+$ontext
+$model:gravity
+
+$sectors:
+	Z(s)$z_(s)	! Absorption (Armington demand)
+
+$commodities:
+	PZ(s)$pz_(s)	! Demand price -- absorption in state s
+	PY(s)$py_(s)	! Output price in state s
+	PM(r,s)$pm_(r,s) ! Price of imports from r in state s
+	PX(s,r)$px_(s,r) ! CIF price of exports from s in r
+	PP(r,pd)$pp_(r,pd) ! Port price of imports (CIF)
+	PFX		! Price level
+
+$consumers:
+	RA		! PE Closure Agent
+	XD(r)		! Export demand
+	D(s)		! Final demand
+
+$auxiliary:
+	SY(i,s)		! Output supply
+	SM(i,r,prt)	! Import supply
+	MU(pd,r)	! Port congestion premium
+
+*	Demand for domestic and imported goods in subregion s:
+
+$prod:Z(s)$z_(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn:(4*esubdm)
+	o:PZ(s)		q:(lamda_a(s)*d0(s))
+	i:PY(ss)	q:(tau_d(ss,s)*bdref(ss,s))  p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:(not sameas(s,ss))
+	i:PM(r,s)	q:mdref(r,s)	mm:
+
+*	Imports from region r comes from port district pd to subregion s:
+
+$prod:MD(r,pd,s)$md_(pd,r,s)
+	o:PM(r,s)	q:1
+	i:PP(r,pd)	q:tau_m(pd,s)
+
+*	External equations describe supply of domestic
+*	and imported goods:
+
+$demand:RA
+	  d:PFX
+	  e:PFX		q:pfxendow
+	  e:PY(s)	q:y0(s)	r:SY(s)
+	  e:PP(r,pd)	q:m0(r,pd)	r:SM(r,pd)
+
+*	Supply adjustments for both domestic and imported goods
+*	hold value of sales fixed:
+
+$constraint:SY(s)
+	SY(s)*PY(s) =e= PFX;
+
+$constraint:SM(r,pd)
+	SM(r,pd)*PI(i,pd) =e= PFX;
+
+$constraint:MU(pd,r)
+	PFX*x0(pd,r) =e= sum(s, XS(s,pd,r)*PX(s,r));
+
+*	Export from subregion s through port district pd:
+
+$prod:XS(s,pd,r)
+	o:PX(s,r)	q:1	a:RA	n:MU(pd,r)
+	i:PY(s)		q:tau_x(s,pd)
+
+*	Value of exports to region r:
+
+$demand:XD(r)   s:esub_x
+	d:PX(s,r)	q:eref(s,r)
+	e:PFX		q:(sum(pd,x0(pd,r)))
+
+$demand:D(s)
+	  d:PZ(s)
+	  e:PFX		q:d0(s)
+
+$offtext
+$sysinclude mpsgeset gravity
+
+SY.L(s) = 1;
+SM.L(s) = 1;
+MU.FX(pd,r) = 0;
+
+SY.FX(s)$(not y0(s)) = 0;
+SM.FX(r,pd)$(not m0(r,pd)) = 0;
+
+MD.L(r,pd,s) = 
+XS.L(s,pd,r) = 
+
+*	Benchmark replication:
+
+lamda_a(s) = 1;
+tau_d(s,s) = 1;
+tau_m(ps,s) = 1;
+tau_x(s,pd) = 1;

@@ -1,0 +1,993 @@
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 1
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+C o m p i l a t i o n
+
+
+   2   
+   3  set     r(*)    Regions (trading partners)
+   4          s(*)    Subregions (states),
+   5          pd(*)   Port districts;
+   6   
+   7  *.$if not set ds $abort "Need to have dataset defined by --ds=xxx";
+   8   
+GDXIN   d:\GitHub\windc_build\gravity\wht.gdx
+--- LOAD  r = 3:r
+--- LOAD  s = 1:s
+--- LOAD  pd = 2:pd
+  12   
+  13  set             loc /set.s, set.pd/;
+  14   
+  15  parameter       dist(s,loc)     Distances from state to state or port;
+--- LOAD  dist = 8:dist
+  17   
+  18  alias (s,ss), (pd,ppd), (r,rr);
+  19   
+  20  parameter
+  21          y0(s)           Reference output (data)
+  22          z0(s)           Reference demand (data)
+  23          m0(r,pd)        Reference aggregate imports (data)
+  24          x0(pd,r)        Reference aggregate exports (data),
+  25          ms0(pd)         Aggregate imports by port (data),
+  26          mb0(r)          Bilateral imports by region (data)
+  27          xd0(pd)         Aggregate exports by port (data)
+  28          xb0(r)          Bilateral exports by region (data);
+  29   
+--- LOAD  y0 = 4:y0
+--- LOAD  m0 = 6:m0
+--- LOAD  x0 = 7:x0
+--- LOAD  z0 = 5:d0
+  31   
+  32  m0(r,pd)$(not round(m0(r,pd),3)) = 0;
+  33  x0(pd,r)$(not round(x0(pd,r),3)) = 0;
+  34   
+  35  y0(s) = 1e3 * y0(s);
+  36  z0(s) = 1e3 * z0(s);
+  37  m0(r,pd) = 1e3 * m0(r,pd);
+  38  x0(pd,r) = 1e3 * x0(pd,r);
+  39   
+  40  parameter
+  41          bdref(s,s)      Reference intra-state demand (calibrated)
+  42          mdref(pd,s)     Reference import demand (calibrated)
+  43          eref(s,pd)      Reference exports (calibrated)
+  44   
+  45          tau_d(s,s)      Iceberg cost coefficient -- domestic trade
+  46          tau_m(pd,s)     Iceberg cost coefficient -- imports
+  47          tau_x(s,pd)     Iceberg cost coefficient -- exports
+  48   
+  49          pfxendow        Foreign exchange endowment -- for PE closure
+  50   
+  51          lamda(s)        Scale parameter for absorption demand
+  52   
+  53          ytot            Total production
+  54          mtot            Total imports
+  55          xtot            Total exports
+  56          ztot            Total absorption;
+  57   
+  58  ytot = sum(s, y0(s));
+  59  mtot = sum((r,pd),m0(r,pd));
+  60  xtot = sum((pd,r),x0(pd,r));
+  61  ztot = sum(s,z0(s));
+  62   
+  63  parameter       zscale  Demand scale factor;
+  64  zscale = (ytot + mtot - xtot)/ztot;
+  65  display zscale;
+  66  z0(s) = z0(s)*zscale;
+  67  ztot = sum(s,z0(s));
+  68   
+  69  ms0(pd) = sum(r,m0(r,pd));
+  70  mb0(r) = sum(pd,m0(r,pd));
+  71  xd0(pd) = sum(r,x0(pd,r));
+  72  xb0(r) = sum(pd,x0(pd,r));
+  73   
+  74  mdref(pd,s) = z0(s)  * ms0(pd)/ztot;
+  75  bdref(s,ss) = z0(ss) * (ytot-xtot)/ytot *y0(s)/ztot;
+  76  eref(s,pd)  = y0(s) * xtot/ytot * xd0(pd)/xtot;
+  77  display eref;
+  78   
+  79  alias (u,*);
+  80  parameter       ymkt;
+  81  ymkt(s,"y0") = y0(s);
+  82  ymkt(s,"bdref") = sum(ss,bdref(s,ss));
+  83  ymkt(s,"eref") = sum(pd,eref(s,pd));
+  84  ymkt(s,"y0-bd-e") = y0(s) - sum(ss,bdref(s,ss)) - sum(pd,eref(s,pd));
+  85  display ymkt;
+  86   
+  87  set     elast   Elasticities used for iceberg trade cost calculations /"3.0","4.0","5.0"/;
+  88   
+  89  parameter
+  90          epsilon                 Elasticity of trade wrt trade cost /-1/,
+  91          tau(s,*,elast)          Travel cost to closest port;
+  92   
+  93  tau(s,"min",elast) = smin(loc(pd), dist(s,loc)**(epsilon/(1-elast.val)));
+  94  tau(s,"max",elast) = smax(loc(pd), dist(s,loc)**(epsilon/(1-elast.val)));
+  95  tau(s,"ave",elast) = sum(loc(pd),  dist(s,loc)**(epsilon/(1-elast.val)))/card(pd);
+  96  option tau:1:1:2;
+  97  display tau;
+  98   
+  99  sets    z_(s),
+ 100          pz_(s), py_(s), pm_(pd),
+ 101          xd_(pd), fd_(s);
+ 102  z_(s) = yes$z0(s);
+ 103  pz_(s) = z_(s);
+ 104  py_(s) = y0(s);
+ 105  pm_(pd) = yes$ms0(pd);
+ 106  xd_(pd) = yes$xd0(pd);
+ 107  fd_(s) = yes$z0(s);
+ 108   
+ 109  parameter       esubdm  /4/
+ 110                  esubx   /4/;
+ 111   
+ 112  pfxendow = sum(s,y0(s));
+ 113   
+      $model:gravity
+       
+      $sectors:
+      	Z(s)$z_(s)		! Absorption (Armington demand)
+       
+      $commodities:
+      	PZ(s)$pz_(s)	! Demand price -- absorption in state s
+      	PY(s)$py_(s)	! Output price in state s
+      	PM(pd)$pm_(pd)  ! Price of imports from r in state s
+      	PFX		! Price level
+       
+      $consumers:
+      	RA		! PE Closure Agent
+      	XD(pd)$xd_(pd)	! Export demand
+      	FD(s)$fd_(s)	! Final demand
+       
+      $auxiliary:
+      	SY(s)$y0(s)	! Output supply
+      	SM(pd)$ms0(pd)	! Import supply
+       
+      *	Demand for domestic and imported goods in subregion s:
+       
+      $prod:Z(s)$z_(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
+      	o:PZ(s)		q:(lamda(s)*z0(s))
+      	i:PY(ss)	q:(tau_d(ss,s)*bdref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
+      	i:PM(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))
+       
+      $demand:RA
+      	  d:PFX
+      	  e:PFX		q:pfxendow
+      	  e:PY(s)$y0(s)		q:y0(s)		r:SY(s)
+      	  e:PM(pd)$pm_(pd)	q:ms0(pd)	r:SM(pd)
+       
+      *	Value of exports through port pd:
+       
+      $demand:XD(pd)$xd_(pd)  s:esubx
+      	d:PY(s)		q:(tau_x(s,pd)*eref(s,pd))	p:(1/tau_x(s,pd))
+      	e:PFX		q:xd0(pd)
+       
+      $demand:FD(s)$fd_(s)
+      	  d:PZ(s)
+      	  e:PFX		q:z0(s)
+       
+      *	Supply adjustments for both domestic and imported goods
+      *	hold value of sales fixed:
+       
+      $constraint:SY(s)$y0(s)
+      	SY(s)*PY(s) =e= PFX;
+       
+      *	Supply of imports:
+       
+      $constraint:SM(pd)$ms0(pd)
+      	SM(pd)*PM(pd) =e= PFX;
+       
+SYSINCLUDE c:\gams\46\mpsgeset
+ 173  * Default values for named arguments
+ 183   
+INCLUDE    d:\GitHub\windc_build\gravity\225a\gamsgeh.dat
+       
+      MPSGE PREPROCESSOR VERSION 12/95
+          1
+          2  $sectors:
+          3  	Z(s)$z_(s)		! Absorption (Armington demand)
+          4
+          5  $commodities:
+          6  	PZ(s)$pz_(s)	! Demand price -- absorption in state s
+          7  	PY(s)$py_(s)	! Output price in state s
+          8  	PM(pd)$pm_(pd)  ! Price of imports from r in state s
+          9  	PFX		! Price level
+         10
+         11  $consumers:
+         12  	RA		! PE Closure Agent
+         13  	XD(pd)$xd_(pd)	! Export demand
+         14  	FD(s)$fd_(s)	! Final demand
+         15
+         16  $auxiliary:
+         17  	SY(s)$y0(s)	! Output supply
+         18  	SM(pd)$ms0(pd)	! Import supply
+         19
+         20  *	Demand for domestic and imported goods in subregion s:
+         21
+         22  $prod:Z(s)$z_(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
+         23  	o:PZ(s)		q:(lamda(s)*z0(s))
+         24  	i:PY(ss)	q:(tau_d(ss,s)*bdref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
+         25  	i:PM(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))
+         26
+         27  $demand:RA
+         28  	  d:PFX
+         29  	  e:PFX		q:pfxendow
+         30  	  e:PY(s)$y0(s)		q:y0(s)		r:SY(s)
+         31  	  e:PM(pd)$pm_(pd)	q:ms0(pd)	r:SM(pd)
+         32
+         33  *	Value of exports through port pd:
+         34
+         35  $demand:XD(pd)$xd_(pd)  s:esubx
+         36  	d:PY(s)		q:(tau_x(s,pd)*eref(s,pd))	p:(1/tau_x(s,pd))
+         37  	e:PFX		q:xd0(pd)
+         38
+         39  $demand:FD(s)$fd_(s)
+         40  	  d:PZ(s)
+         41  	  e:PFX		q:z0(s)
+         42
+         43  *	Supply adjustments for both domestic and imported goods
+         44  *	hold value of sales fixed:
+         45
+         46  $constraint:SY(s)$y0(s)
+         47  	SY(s)*PY(s) =e= PFX;
+         48
+         49  *	Supply of imports:
+         50
+         51  $constraint:SM(pd)$ms0(pd)
+         52  	SM(pd)*PM(pd) =e= PFX;
+         53
+         54  $offtext
+       
+       
+      Symbol Listing
+       
+      Note:   Parameter and set references appearing within
+              parentheses are not identified by the preprocessor.
+       
+      Symbol      Type       References
+      ==========  =====      ==================================================
+      ESUBDM      PARAM          22
+      ESUBX       PARAM          35
+      FD          CONSU          14   39
+      MS0         PARAM          31
+      PD          SET             8   25   31   31   31   35   37
+      PFX         PRICE           9   28   29   37   41
+      PFXENDOW    PARAM          29
+      PM          PRICE           8   25   31
+      PY          PRICE           7   24   30   36
+      PZ          PRICE           6   23   40
+      RA          CONSU          12   27
+      S           SET             3   22   23   30   30   30   36   39   40   41
+      SM          AUXIL          18   31
+      SS          SET            24
+      SY          AUXIL          17   30
+      XD          CONSU          13   35
+      XD0         PARAM          37
+      Y0          PARAM          30
+      Z           ACTIV           3   22
+      Z0          PARAM          41
+       
+ 361   
+ 364  GRAVITY.INTEGER1=1;
+EXIT c:\gams\46\mpsgeset
+ 367   
+ 368  SY.FX(s) = 1;
+ 369  SM.FX(pd) = 1;
+ 370   
+ 371  *       Benchmark replication:
+ 372   
+ 373  lamda(s) = 1;
+ 374  tau_d(ss,s) = 1;
+ 375  tau_m(pd,s) = 1;
+ 376  tau_x(s,pd) = 1;
+ 377   
+ 378  *.GRAVITY.holdfixed = yes;
+ 379   
+ 380  GRAVITY.iterlim = 0;
+INCLUDE    d:\GitHub\windc_build\gravity\GRAVITY.GEN
+ 516  solve gravity using mcp;
+ 517   
+ 518  parameter       solvelog        Solution log;
+ 519   
+ 520  solvelog("objval","Benchmark") = gravity.objval;
+ 521  solvelog("modelstat","Benchmark") = gravity.modelstat;
+ 522  solvelog("solvestat","Benchmark") = gravity.solvestat;
+ 523   
+ 524   
+ 525  *       Solve each sector independently:
+ 526   
+ 532   
+ 533   
+ 534  tau_d(s,ss(loc)) = dist(s,loc)**(epsilon/(1-4*esubdm));
+ 535  tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-esubdm));
+ 536  tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-esubx));
+ 537   
+ 538  *       Scale distances:
+ 539   
+ 540  parameter       tau_min(s)      Minimum value of tau;
+ 541   
+ 542  tau_min(s)$z0(s) = min(
+ 543          smin( ss$y0(ss), tau_d(ss,s)),
+ 544          smin(pd$ms0(pd), tau_m(pd,s)) ) + eps;
+ 545  display tau_min;
+ 546   
+ 547  tau_d(ss,s)$z0(s) = tau_d(ss,s)/tau_min(s);
+ 548  tau_m(pd,s)$z0(s) = tau_m(pd,s)/tau_min(s);
+ 549   
+ 550  *       Scale productivity:
+ 551   
+ 552  lamda(s)$z0(s) = sum(ss, tau_d(ss, s)*bdref(ss,s)/z0(s)) +
+ 553                   sum(pd, tau_m(pd,s)*mdref(pd,s)/z0(s));
+ 554   
+ 555  SY.UP(s) = +inf; SY.LO(s) = 0;
+ 556  SM.UP(pd) = +inf; SM.LO(pd) = 0;
+ 557   
+ 558  SY.FX(s)$(not y0(s)) = 0;
+ 559  SM.FX(pd)$(not sum(r,m0(r,pd))) = 0;
+ 560   
+ 561  GRAVITY.iterlim = 100000;
+INCLUDE    d:\GitHub\windc_build\gravity\GRAVITY.GEN
+ 697  solve gravity using mcp;
+ 698   
+ 699   
+ 700   
+EXIT d:\GitHub\windc_build\gravity\oldmodel.gms
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 2
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  d:\GitHub\windc_build\gravity\oldmodel.gms
+     2       10 GDXIN          1      10  d:\GitHub\windc_build\gravity\wht.gdx
+     3      170 SYSINCLUDE     1     170  .c:\gams\46\mpsgeset
+     4      200 CALL           3      38  .gmsge_nx "d:\GitHub\windc_build\gravity\225a\gamscge.dat"
+     5      202 INCLUDE        3      40  ..d:\GitHub\windc_build\gravity\225a\gamsgeh.dat
+     6      366 EXIT           3      42  .c:\gams\46\mpsgeset
+     7      381 INCLUDE        1     185  .d:\GitHub\windc_build\gravity\GRAVITY.GEN
+     8      515 EXIT           7     134  .d:\GitHub\windc_build\gravity\GRAVITY.GEN
+     9      562 INCLUDE        1     232  .d:\GitHub\windc_build\gravity\GRAVITY.GEN
+    10      696 EXIT           9     134  .d:\GitHub\windc_build\gravity\GRAVITY.GEN
+    11      701 EXIT           1     237  d:\GitHub\windc_build\gravity\oldmodel.gms
+
+
+COMPILATION TIME     =        0.031 SECONDS      3 MB  46.4.1 485757e2 WEX-WEI
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 3
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+E x e c u t i o n
+
+
+----     65 PARAMETER zscale               =        1.001  Demand scale factor
+
+----     77 PARAMETER eref  Reference exports (calibrated)
+
+       IL_Chic     OR_Colu     MI_Detr     TX_ElPa     MT_Grea     TX_Hous     TX_Lare     CA_LosA     FL_Miam     MN_Minn     LA_NewO     AZ_Noga     VA_Norf     ND_Pemb     TX_PrtA     CA_SanD     CA_SanF     WA_Seat
+
+AL       0.018      16.236       0.025       0.566       0.030       6.140       1.867       0.057       0.003       0.747       4.511       0.078       0.048       0.010       0.536       0.011       0.006       0.170
+AR       0.016      14.369       0.022       0.501       0.027       5.434       1.652       0.051       0.003       0.661       3.993       0.069       0.042       0.009       0.474       0.010       0.005       0.150
+AZ       0.035      31.114       0.048       1.085       0.058      11.766       3.577       0.110       0.006       1.432       8.645       0.149       0.092       0.020       1.026       0.022       0.012       0.325
+CA       0.055      49.366       0.075       1.721       0.092      18.669       5.675       0.174       0.010       2.272      13.717       0.236       0.145       0.032       1.628       0.034       0.019       0.516
+CO       0.132     119.118       0.182       4.153       0.222      45.047      13.694       0.420       0.024       5.481      33.099       0.569       0.350       0.077       3.929       0.083       0.045       1.245
+DE       0.009       7.950       0.012       0.277       0.015       3.006       0.914       0.028       0.002       0.366       2.209       0.038       0.023       0.005       0.262       0.006       0.003       0.083
+GA       0.009       8.319       0.013       0.290       0.016       3.146       0.956       0.029       0.002       0.383       2.312       0.040       0.024       0.005       0.274       0.006       0.003       0.087
+ID       0.182     164.136       0.251       5.723       0.306      62.071      18.869       0.579       0.032       7.553      45.608       0.784       0.483       0.105       5.414       0.114       0.062       1.716
+IL       0.080      72.086       0.110       2.513       0.134      27.261       8.287       0.254       0.014       3.317      20.030       0.344       0.212       0.046       2.378       0.050       0.027       0.753
+IN       0.043      38.402       0.059       1.339       0.072      14.522       4.415       0.136       0.008       1.767      10.670       0.183       0.113       0.025       1.267       0.027       0.015       0.401
+KS       0.542     487.395       0.745      16.993       0.908     184.318      56.032       1.720       0.096      22.428     135.430       2.327       1.434       0.313      16.076       0.339       0.185       5.095
+KY       0.056      50.279       0.077       1.753       0.094      19.014       5.780       0.177       0.010       2.314      13.971       0.240       0.148       0.032       1.658       0.035       0.019       0.526
+MD       0.028      24.786       0.038       0.864       0.046       9.373       2.850       0.087       0.005       1.141       6.887       0.118       0.073       0.016       0.818       0.017       0.009       0.259
+MI       0.072      64.444       0.099       2.247       0.120      24.371       7.409       0.227       0.013       2.965      17.907       0.308       0.190       0.041       2.126       0.045       0.024       0.674
+MN       0.180     162.257       0.248       5.657       0.302      61.361      18.653       0.573       0.032       7.467      45.085       0.775       0.477       0.104       5.352       0.113       0.062       1.696
+MS       0.005       4.313       0.007       0.150       0.008       1.631       0.496       0.015       0.001       0.198       1.198       0.021       0.013       0.003       0.142       0.003       0.002       0.045
+MO       0.074      66.659       0.102       2.324       0.124      25.208       7.663       0.235       0.013       3.067      18.522       0.318       0.196       0.043       2.199       0.046       0.025       0.697
+MT       0.339     304.740       0.466      10.625       0.568     115.243      35.034       1.075       0.060      14.023      84.676       1.455       0.896       0.196      10.051       0.212       0.116       3.185
+NE       0.091      82.166       0.126       2.865       0.153      31.073       9.446       0.290       0.016       3.781      22.831       0.392       0.242       0.053       2.710       0.057       0.031       0.859
+NM       0.008       7.208       0.011       0.251       0.013       2.726       0.829       0.025       0.001       0.332       2.003       0.034       0.021       0.005       0.238       0.005       0.003       0.075
+NY       0.019      17.334       0.027       0.604       0.032       6.555       1.993       0.061       0.003       0.798       4.816       0.083       0.051       0.011       0.572       0.012       0.007       0.181
+NC       0.043      38.921       0.060       1.357       0.073      14.719       4.474       0.137       0.008       1.791      10.815       0.186       0.114       0.025       1.284       0.027       0.015       0.407
+ND       0.644     579.456       0.886      20.203       1.080     219.133      66.616       2.045       0.115      26.665     161.010       2.767       1.704       0.372      19.113       0.403       0.220       6.057
+OH       0.090      81.372       0.124       2.837       0.152      30.772       9.355       0.287       0.016       3.744      22.610       0.389       0.239       0.052       2.684       0.057       0.031       0.851
+OK       0.176     158.522       0.242       5.527       0.295      59.948      18.224       0.559       0.031       7.295      44.048       0.757       0.466       0.102       5.229       0.110       0.060       1.657
+OR       0.112     101.047       0.155       3.523       0.188      38.213      11.617       0.357       0.020       4.650      28.077       0.482       0.297       0.065       3.333       0.070       0.038       1.056
+PA       0.025      22.577       0.035       0.787       0.042       8.538       2.595       0.080       0.004       1.039       6.273       0.108       0.066       0.015       0.745       0.016       0.009       0.236
+SC       0.007       6.113       0.009       0.213       0.011       2.312       0.703       0.022       0.001       0.281       1.698       0.029       0.018       0.004       0.202       0.004       0.002       0.064
+SD       0.143     128.792       0.197       4.490       0.240      48.705      14.806       0.454       0.025       5.927      35.787       0.615       0.379       0.083       4.248       0.090       0.049       1.346
+TN       0.041      36.612       0.056       1.277       0.068      13.846       4.209       0.129       0.007       1.685      10.173       0.175       0.108       0.024       1.208       0.025       0.014       0.383
+TX       0.094      84.813       0.130       2.957       0.158      32.074       9.750       0.299       0.017       3.903      23.567       0.405       0.249       0.055       2.797       0.059       0.032       0.887
+UT       0.015      13.158       0.020       0.459       0.025       4.976       1.513       0.046       0.003       0.605       3.656       0.063       0.039       0.008       0.434       0.009       0.005       0.138
+VA       0.020      17.974       0.027       0.627       0.033       6.797       2.066       0.063       0.004       0.827       4.994       0.086       0.053       0.012       0.593       0.013       0.007       0.188
+WA       0.341     307.239       0.470      10.712       0.573     116.189      35.321       1.084       0.061      14.138      85.371       1.467       0.904       0.197      10.134       0.214       0.116       3.211
+WI       0.028      25.161       0.038       0.877       0.047       9.515       2.893       0.089       0.005       1.158       6.991       0.120       0.074       0.016       0.830       0.018       0.010       0.263
+WY       0.006       5.278       0.008       0.184       0.010       1.996       0.607       0.019       0.001       0.243       1.467       0.025       0.016       0.003       0.174       0.004       0.002       0.055
+
+
+----     85 PARAMETER ymkt  
+
+            y0       bdref        eref     y0-bd-e
+
+AL      73.801      42.742      31.059 3.55271E-15
+AR      65.314      37.827      27.487 1.77636E-14
+AZ     141.430      81.910      59.520 1.42109E-14
+CA     224.396     129.960      94.436 -1.4211E-14
+CO     541.458     313.587     227.871 2.27374E-13
+DE      36.137      20.929      15.208 3.55271E-15
+GA      37.816      21.901      15.915 5.32907E-15
+ID     746.088     432.099     313.989 1.13687E-13
+IL     327.672     189.772     137.900 2.84217E-14
+IN     174.557     101.095      73.462 -1.4211E-14
+KS    2215.477    1283.100     932.377 3.41061E-13
+KY     228.545     132.363      96.182 1.13687E-13
+MD     112.668      65.252      47.416 1.42109E-14
+MI     292.933     169.653     123.280 -1.4211E-14
+MN     737.548     427.153     310.395 -1.1369E-13
+MS      19.605      11.354       8.251 3.55271E-15
+MO     303.000     175.484     127.517 1.42109E-14
+MT    1385.209     802.248     582.961 1.13687E-13
+NE     373.489     216.307     157.182 5.68434E-14
+NM      32.763      18.975      13.788
+NY      78.790      45.632      33.159 1.42109E-14
+NC     176.919     102.463      74.456 2.84217E-14
+ND    2633.945    1525.457    1108.488
+OH     369.879     214.217     155.662 5.68434E-14
+OK     720.571     417.321     303.250 1.70530E-13
+OR     459.315     266.014     193.301 -5.6843E-14
+PA     102.624      59.435      43.189 1.42109E-14
+SC      27.785      16.092      11.693 7.10543E-15
+SD     585.432     339.055     246.377 -2.8422E-14
+TN     166.423      96.384      70.039 8.52651E-14
+TX     385.524     223.277     162.246 5.68434E-14
+UT      59.808      34.638      25.170 -3.5527E-15
+VA      81.702      47.318      34.384
+WA    1396.571     808.829     587.743
+WI     114.369      66.237      48.132 2.13163E-14
+WY      23.992      13.895      10.097 1.77636E-15
+
+
+----     97 PARAMETER tau  Travel cost to closest port
+
+       min.3.0     min.4.0     min.5.0     max.3.0     max.4.0     max.5.0     ave.3.0     ave.4.0     ave.5.0
+
+AL        13.7         5.7         3.7        45.8        12.8         6.8        29.2         9.4         5.4
+AR        16.9         6.6         4.1        41.7        12.0         6.5        29.8         9.6         5.4
+AZ        12.7         5.4         3.6        48.5        13.3         7.0        37.9        11.2         6.1
+CA        13.5         5.7         3.7        51.3        13.8         7.2        40.9        11.8         6.3
+CO        23.4         8.2         4.8        42.4        12.2         6.5        34.2        10.5         5.8
+CT         8.5         4.2         2.9        51.0        13.8         7.1        28.9         9.2         5.2
+DE         7.0         3.7         2.7        50.0        13.6         7.1        27.6         8.9         5.1
+DC         1.1         1.0         1.0        49.3        13.4         7.0        27.1         8.8         5.0
+FL        10.7         4.8         3.3        50.4        13.7         7.1        32.2        10.0         5.6
+GA        14.3         5.9         3.8        46.9        13.0         6.8        28.8         9.3         5.3
+ID        18.2         6.9         4.3        48.2        13.2         6.9        38.7        11.4         6.2
+IL         7.3         3.8         2.7        42.7        12.2         6.5        28.0         9.1         5.2
+IN        12.3         5.3         3.5        44.0        12.5         6.6        27.7         9.1         5.2
+IA        14.9         6.1         3.9        39.7        11.6         6.3        29.7         9.5         5.4
+KS        18.4         7.0         4.3        38.0        11.3         6.2        30.7         9.8         5.5
+KY        16.3         6.4         4.0        44.7        12.6         6.7        27.7         9.1         5.2
+LA        10.2         4.7         3.2        44.8        12.6         6.7        30.8         9.7         5.5
+ME         7.7         3.9         2.8        52.2        14.0         7.2        31.9         9.9         5.5
+MD         5.3         3.0         2.3        49.4        13.5         7.0        27.2         8.8         5.1
+MA         4.9         2.9         2.2        51.7        13.9         7.2        30.0         9.4         5.3
+MI         8.6         4.2         2.9        45.0        12.7         6.7        27.8         9.1         5.2
+MN         6.8         3.6         2.6        39.6        11.6         6.3        30.5         9.7         5.5
+MS        13.0         5.5         3.6        44.7        12.6         6.7        29.7         9.5         5.4
+MO        10.8         4.9         3.3        40.5        11.8         6.4        29.1         9.4         5.4
+MT        11.9         5.2         3.4        47.1        13.0         6.9        37.4        11.1         6.1
+NE        18.3         6.9         4.3        37.9        11.3         6.2        31.1         9.9         5.6
+NV        17.2         6.7         4.1        49.1        13.4         7.0        39.1        11.4         6.2
+NH         7.9         4.0         2.8        51.5        13.8         7.2        30.2         9.5         5.4
+NJ         5.6         3.2         2.4        50.4        13.6         7.1        27.8         8.9         5.1
+NM        14.5         6.0         3.8        44.8        12.6         6.7        35.1        10.7         5.9
+NY         7.4         3.8         2.7        50.4        13.6         7.1        28.2         9.0         5.2
+NC         9.5         4.5         3.1        48.4        13.3         7.0        28.0         9.1         5.2
+ND        13.8         5.7         3.7        42.9        12.3         6.5        33.7        10.4         5.8
+OH        10.5         4.8         3.2        45.9        12.8         6.8        27.3         8.9         5.1
+OK        14.5         5.9         3.8        39.2        11.5         6.3        31.1         9.8         5.5
+OR         8.9         4.3         3.0        51.8        13.9         7.2        41.7        11.9         6.4
+PA        10.2         4.7         3.2        49.1        13.4         7.0        27.5         8.9         5.1
+RI         3.6         2.4         1.9        51.7        13.9         7.2        29.7         9.3         5.3
+SC        10.5         4.8         3.2        48.2        13.2         6.9        28.5         9.2         5.3
+SD        16.3         6.4         4.0        40.2        11.7         6.3        32.0        10.0         5.6
+TN        17.1         6.6         4.1        44.7        12.6         6.7        28.3         9.2         5.3
+TX        13.2         5.6         3.6        41.7        12.0         6.5        32.4        10.1         5.7
+UT        22.1         7.9         4.7        46.1        12.8         6.8        37.1        11.1         6.1
+VT         7.2         3.7         2.7        50.8        13.7         7.1        30.1         9.5         5.4
+VA         9.9         4.6         3.1        49.3        13.4         7.0        27.7         9.0         5.2
+WA         7.5         3.8         2.7        51.8        13.9         7.2        41.5        11.9         6.4
+WV        13.9         5.8         3.7        47.3        13.1         6.9        27.2         8.9         5.1
+WI         8.9         4.3         3.0        42.2        12.1         6.5        28.8         9.3         5.3
+WY        19.7         7.3         4.4        43.8        12.4         6.6        35.3        10.7         5.9
+
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 4
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+Range Statistics    SOLVE GRAVITY Using MCP From line 516
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [        NA,        NA] - Zero values observed as well
+Bound     [min, max] : [ 1.000E+00, 1.000E+00] - Zero values observed as well
+Matrix    [min, max] : [ 1.000E+00, 1.000E+00]
+
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 5
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+Model Statistics    SOLVE GRAVITY Using MCP From line 516
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           52
+BLOCKS OF VARIABLES          10     SINGLE VARIABLES          272
+NON ZERO ELEMENTS           425     NON LINEAR N-Z            102
+CODE LENGTH                 205     CONSTANT POOL              16
+
+
+GENERATION TIME      =        0.000 SECONDS      7 MB  46.4.1 485757e2 WEX-WEI
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 6
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+Solution Report     SOLVE GRAVITY Using MCP From line 516
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   GRAVITY             
+     TYPE    MCP                 
+     SOLVER  MPSGE               FROM LINE  516
+
+**** SOLVER STATUS     2 Iteration Interrupt
+**** MODEL STATUS      6 Intermediate Infeasible
+
+ RESOURCE USAGE, LIMIT          0.078 10000000000.000
+ ITERATION COUNT, LIMIT         0             0
+ EVALUATION ERRORS              0             0
+
+
+ Default price normalization using income for RA
+
+--- Executing MCP subsolver PATH
+220 row/cols, 8686 non-zeros, 17.95% dense.
+
+Path 5.0.07 (Tue Apr 16 08:12:53 2024)
+Written by Todd Munson, Steven Dirkse, Youngdae Kim, and Michael Ferris
+
+FINAL STATISTICS
+Inf-Norm of Complementarity . .  1.5619e-05 eqn: (PFX)
+Inf-Norm of Normal Map. . . . .  1.5619e-05 eqn: (PFX)
+Inf-Norm of Minimum Map . . . .  1.5619e-05 eqn: (PFX)
+Inf-Norm of Fischer Function. .  1.5619e-05 eqn: (PFX)
+Inf-Norm of Grad Fischer Fcn. .  4.9397e-01 eqn: (PFX)
+Two-Norm of Grad Fischer Fcn. .  5.0179e-01
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU DUMMY01             .              .              .              .          
+
+  DUMMY01  Artificial equation for model: GRAVITY
+
+---- EQU EQ_001  Complementary equation(s) for SY
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL          .              .              .             1.0000      
+AR          .              .              .             1.0000      
+AZ          .              .              .             1.0000      
+CA          .              .              .             1.0000      
+CO          .              .              .             1.0000      
+DE          .              .              .             1.0000      
+GA          .              .              .             1.0000      
+ID          .              .              .             1.0000      
+IL          .              .              .             1.0000      
+IN          .              .              .             1.0000      
+KS          .              .              .             1.0000      
+KY          .              .              .             1.0000      
+MD          .              .              .             1.0000      
+MI          .              .              .             1.0000      
+MN          .              .              .             1.0000      
+MS          .              .              .             1.0000      
+MO          .              .              .             1.0000      
+MT          .              .              .             1.0000      
+NE          .              .              .             1.0000      
+NM          .              .              .             1.0000      
+NY          .              .              .             1.0000      
+NC          .              .              .             1.0000      
+ND          .              .              .             1.0000      
+OH          .              .              .             1.0000      
+OK          .              .              .             1.0000      
+OR          .              .              .             1.0000      
+PA          .              .              .             1.0000      
+SC          .              .              .             1.0000      
+SD          .              .              .             1.0000      
+TN          .              .              .             1.0000      
+TX          .              .              .             1.0000      
+UT          .              .              .             1.0000      
+VA          .              .              .             1.0000      
+WA          .              .              .             1.0000      
+WI          .              .              .             1.0000      
+WY          .              .              .             1.0000      
+
+---- EQU EQ_002  Complementary equation(s) for SM
+
+               LOWER          LEVEL          UPPER         MARGINAL
+
+MD_Balt          .              .              .             1.0000      
+NY_Buff          .              .              .             1.0000      
+OH_Clev          .              .              .             1.0000      
+MI_Detr          .              .              .             1.0000      
+MN_Dulu          .              .              .             1.0000      
+MT_Grea          .              .              .             1.0000      
+CA_LosA          .              .              .             1.0000      
+FL_Miam          .              .              .             1.0000      
+MN_Minn          .              .              .             1.0000      
+NY_NewY          .              .              .             1.0000      
+NY_Ogde          .              .              .             1.0000      
+ND_Pemb          .              .              .             1.0000      
+CA_SanD          .              .              .             1.0000      
+CA_SanF          .              .              .             1.0000      
+WA_Seat          .              .              .             1.0000      
+
+---- VAR Z  Absorption (Armington demand)
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL          .             1.0000        +INF      -3.934000E-7      
+AR          .             1.0000        +INF      4.9300099E-9      
+AZ          .             1.0000        +INF      1.4439995E-8      
+CA          .             1.0000        +INF      -2.643600E-6      
+CO          .             1.0000        +INF      1.1352001E-7      
+CT          .             1.0000        +INF      -4.203000E-8      
+DE          .             1.0000        +INF      2.3340008E-8      
+DC          .             1.0000        +INF      1.6970001E-9      
+FL          .             1.0000        +INF      -5.079000E-7      
+GA          .             1.0000        +INF      -1.549000E-7      
+HI          .             1.0000        +INF      -2.036001E-8      
+ID          .             1.0000        +INF      6.0249982E-8      
+IL          .             1.0000        +INF      -2.519001E-7      
+IN          .             1.0000        +INF      4.3080002E-7      
+IA          .             1.0000        +INF      9.3120021E-8      
+KS          .             1.0000        +INF      -6.928987E-8      
+KY          .             1.0000        +INF      -5.404501E-7      
+LA          .             1.0000        +INF      2.4161000E-7      
+ME          .             1.0000        +INF      4.0009997E-8      
+MD          .             1.0000        +INF      4.4858991E-7      
+MA          .             1.0000        +INF      -1.202600E-7      
+MI          .             1.0000        +INF      4.4229984E-7      
+MN          .             1.0000        +INF      2.6099837E-9      
+MS          .             1.0000        +INF      -4.239000E-8      
+MO          .             1.0000        +INF      4.1149989E-7      
+MT          .             1.0000        +INF      4.1760009E-8      
+NE          .             1.0000        +INF      -4.525000E-7      
+NV          .             1.0000        +INF      3.2820010E-8      
+NH          .             1.0000        +INF      3.6940004E-8      
+NJ          .             1.0000        +INF      6.0649986E-7      
+NM          .             1.0000        +INF      1.7860001E-8      
+NY          .             1.0000        +INF      1.9119984E-7      
+NC          .             1.0000        +INF      -5.207002E-7      
+ND          .             1.0000        +INF      2.2489970E-8      
+OH          .             1.0000        +INF      -2.126000E-7      
+OK          .             1.0000        +INF      -4.379999E-8      
+OR          .             1.0000        +INF      1.2362998E-7      
+PA          .             1.0000        +INF      -5.979999E-8      
+RI          .             1.0000        +INF      -8.377001E-9      
+SC          .             1.0000        +INF      2.8373998E-7      
+SD          .             1.0000        +INF      5.0899752E-9      
+TN          .             1.0000        +INF      3.7999997E-7      
+TX          .             1.0000        +INF      3.3390014E-7      
+UT          .             1.0000        +INF      -1.044002E-8      
+VT          .             1.0000        +INF      -1.648200E-8      
+VA          .             1.0000        +INF      -4.913001E-7      
+WA          .             1.0000        +INF      3.8733001E-7      
+WV          .             1.0000        +INF      3.2829972E-8      
+WI          .             1.0000        +INF      -5.218999E-7      
+WY          .             1.0000        +INF      3.5309006E-8      
+
+---- VAR PZ  Demand price -- absorption in state s
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL          .             1.0000        +INF             .          
+AR          .             1.0000        +INF             .          
+AZ          .             1.0000        +INF             .          
+CA          .             1.0000        +INF             .          
+CO          .             1.0000        +INF             .          
+CT          .             1.0000        +INF             .          
+DE          .             1.0000        +INF             .          
+DC          .             1.0000        +INF             .          
+FL          .             1.0000        +INF             .          
+GA          .             1.0000        +INF             .          
+HI          .             1.0000        +INF             .          
+ID          .             1.0000        +INF             .          
+IL          .             1.0000        +INF             .          
+IN          .             1.0000        +INF             .          
+IA          .             1.0000        +INF             .          
+KS          .             1.0000        +INF             .          
+KY          .             1.0000        +INF             .          
+LA          .             1.0000        +INF             .          
+ME          .             1.0000        +INF             .          
+MD          .             1.0000        +INF             .          
+MA          .             1.0000        +INF             .          
+MI          .             1.0000        +INF             .          
+MN          .             1.0000        +INF             .          
+MS          .             1.0000        +INF             .          
+MO          .             1.0000        +INF             .          
+MT          .             1.0000        +INF             .          
+NE          .             1.0000        +INF             .          
+NV          .             1.0000        +INF             .          
+NH          .             1.0000        +INF             .          
+NJ          .             1.0000        +INF             .          
+NM          .             1.0000        +INF             .          
+NY          .             1.0000        +INF             .          
+NC          .             1.0000        +INF             .          
+ND          .             1.0000        +INF             .          
+OH          .             1.0000        +INF             .          
+OK          .             1.0000        +INF             .          
+OR          .             1.0000        +INF             .          
+PA          .             1.0000        +INF             .          
+RI          .             1.0000        +INF             .          
+SC          .             1.0000        +INF             .          
+SD          .             1.0000        +INF             .          
+TN          .             1.0000        +INF             .          
+TX          .             1.0000        +INF             .          
+UT          .             1.0000        +INF             .          
+VT          .             1.0000        +INF             .          
+VA          .             1.0000        +INF             .          
+WA          .             1.0000        +INF             .          
+WV          .             1.0000        +INF             .          
+WI          .             1.0000        +INF             .          
+WY          .             1.0000        +INF             .          
+
+---- VAR PY  Output price in state s
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL          .             1.0000        +INF      4.6809009E-8      
+AR          .             1.0000        +INF      -2.542290E-8      
+AZ          .             1.0000        +INF      2.3552965E-8      
+CA          .             1.0000        +INF      -1.261803E-7      
+CO          .             1.0000        +INF      -5.981145E-7      
+DE          .             1.0000        +INF      -1.722204E-8      
+GA          .             1.0000        +INF      -1.155595E-9      
+ID          .             1.0000        +INF      -1.105931E-7      
+IL          .             1.0000        +INF      2.1496530E-7      
+IN          .             1.0000        +INF      -9.446975E-8      
+KS          .             1.0000        +INF      -3.241388E-6      
+KY          .             1.0000        +INF      -4.589403E-8      
+MD          .             1.0000        +INF      -8.201535E-9      
+MI          .             1.0000        +INF      -1.599356E-7      
+MN          .             1.0000        +INF      8.3040650E-8      
+MS          .             1.0000        +INF      -4.845898E-8      
+MO          .             1.0000        +INF      7.0363391E-8      
+MT          .             1.0000        +INF      -1.123688E-6      
+NE          .             1.0000        +INF      -2.032453E-7      
+NM          .             1.0000        +INF      -1.735305E-8      
+NY          .             1.0000        +INF      -8.566664E-8      
+NC          .             1.0000        +INF      -1.794981E-7      
+ND          .             1.0000        +INF      -3.729052E-6      
+OH          .             1.0000        +INF      -2.037506E-7      
+OK          .             1.0000        +INF      -1.011028E-7      
+OR          .             1.0000        +INF      5.7956863E-7      
+PA          .             1.0000        +INF      2.8775684E-7      
+SC          .             1.0000        +INF      2.4314140E-9      
+SD          .             1.0000        +INF      5.8376239E-8      
+TN          .             1.0000        +INF      -5.118003E-7      
+TX          .             1.0000        +INF      -5.297615E-7      
+UT          .             1.0000        +INF      -2.709071E-8      
+VA          .             1.0000        +INF      -3.302509E-8      
+WA          .             1.0000        +INF      -3.189331E-6      
+WI          .             1.0000        +INF      -1.085575E-7      
+WY          .             1.0000        +INF      2.8696151E-8      
+
+---- VAR PM  Price of imports from r in state s
+
+               LOWER          LEVEL          UPPER         MARGINAL
+
+MD_Balt          .             1.0000        +INF      1.5000001E-9      
+NY_Buff          .             1.0000        +INF      -4.319999E-8      
+OH_Clev          .             1.0000        +INF      4.999947E-10      
+MI_Detr          .             1.0000        +INF      -8.800008E-9      
+MN_Dulu          .             1.0000        +INF      3.4999985E-8      
+MT_Grea          .             1.0000        +INF      -1.600000E-7      
+CA_LosA          .             1.0000        +INF      -5.81000E-10      
+FL_Miam          .             1.0000        +INF      -5.260000E-9      
+MN_Minn          .             1.0000        +INF      5.5200005E-9      
+NY_NewY          .             1.0000        +INF      -1.740000E-9      
+NY_Ogde          .             1.0000        +INF      2.7200000E-8      
+ND_Pemb          .             1.0000        +INF      -8.300003E-8      
+CA_SanD          .             1.0000        +INF      3.1400007E-9      
+CA_SanF          .             1.0000        +INF      4.000134E-12      
+WA_Seat          .             1.0000        +INF      -6.20000E-10      
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR PFX                 .             1.0000        +INF      1.5619008E-5      
+---- VAR RA                  .         31626.9669        +INF             .          
+
+  PFX  Price level
+  RA  PE Closure Agent
+
+---- VAR XD  Export demand
+
+               LOWER          LEVEL          UPPER         MARGINAL
+
+IL_Chic          .             3.7786        +INF             .          
+OR_Colu          .          3399.7118        +INF             .          
+MI_Detr          .             5.1990        +INF             .          
+TX_ElPa          .           118.5342        +INF             .          
+MT_Grea          .             6.3362        +INF             .          
+TX_Hous          .          1285.6688        +INF             .          
+TX_Lare          .           390.8389        +INF             .          
+CA_LosA          .            11.9969        +INF             .          
+FL_Miam          .             0.6721        +INF             .          
+MN_Minn          .           156.4434        +INF             .          
+LA_NewO          .           944.6590        +INF             .          
+AZ_Noga          .            16.2323        +INF             .          
+VA_Norf          .             9.9996        +INF             .          
+ND_Pemb          .             2.1849        +INF             .          
+TX_PrtA          .           112.1347        +INF             .          
+CA_SanD          .             2.3662        +INF             .          
+CA_SanF          .             1.2886        +INF             .          
+WA_Seat          .            35.5356        +INF             .          
+
+---- VAR FD  Final demand
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL          .           105.5783        +INF             .          
+AR          .            94.2191        +INF             .          
+AZ          .            91.3510        +INF             .          
+CA          .          1184.2350        +INF             .          
+CO          .           135.3528        +INF             .          
+CT          .            85.6000        +INF             .          
+DE          .            33.4085        +INF             .          
+DC          .            11.2643        +INF             .          
+FL          .           311.1960        +INF             .          
+GA          .           325.5895        +INF             .          
+HI          .            18.8987        +INF             .          
+ID          .            65.8770        +INF             .          
+IL          .           470.4260        +INF             .          
+IN          .           308.0382        +INF             .          
+IA          .           170.4688        +INF             .          
+KS          .           168.9384        +INF             .          
+KY          .           175.1359        +INF             .          
+LA          .           159.5248        +INF             .          
+ME          .            28.2482        +INF             .          
+MD          .           138.3408        +INF             .          
+MA          .           177.3982        +INF             .          
+MI          .           241.6656        +INF             .          
+MN          .           173.6468        +INF             .          
+MS          .            57.9914        +INF             .          
+MO          .           207.4466        +INF             .          
+MT          .            46.3244        +INF             .          
+NE          .           107.9226        +INF             .          
+NV          .            37.4091        +INF             .          
+NH          .            26.8578        +INF             .          
+NJ          .           272.0962        +INF             .          
+NM          .            28.5179        +INF             .          
+NY          .           449.8940        +INF             .          
+NC          .           568.3666        +INF             .          
+ND          .            81.1943        +INF             .          
+OH          .           414.4870        +INF             .          
+OK          .            89.3015        +INF             .          
+OR          .           102.2581        +INF             .          
+PA          .           403.7292        +INF             .          
+RI          .            19.1369        +INF             .          
+SC          .           117.3076        +INF             .          
+SD          .            41.3823        +INF             .          
+TN          .           253.6541        +INF             .          
+TX          .           785.8716        +INF             .          
+UT          .            66.3003        +INF             .          
+VT          .            15.8564        +INF             .          
+VA          .           351.6136        +INF             .          
+WA          .           179.3664        +INF             .          
+WV          .            38.7883        +INF             .          
+WI          .           220.3091        +INF             .          
+WY          .            12.0465        +INF             .          
+
+---- VAR SY  Output supply
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+AL         1.0000         1.0000         1.0000         EPS         
+AR         1.0000         1.0000         1.0000         EPS         
+AZ         1.0000         1.0000         1.0000         EPS         
+CA         1.0000         1.0000         1.0000         EPS         
+CO         1.0000         1.0000         1.0000         EPS         
+DE         1.0000         1.0000         1.0000         EPS         
+GA         1.0000         1.0000         1.0000         EPS         
+ID         1.0000         1.0000         1.0000         EPS         
+IL         1.0000         1.0000         1.0000         EPS         
+IN         1.0000         1.0000         1.0000         EPS         
+KS         1.0000         1.0000         1.0000         EPS         
+KY         1.0000         1.0000         1.0000         EPS         
+MD         1.0000         1.0000         1.0000         EPS         
+MI         1.0000         1.0000         1.0000         EPS         
+MN         1.0000         1.0000         1.0000         EPS         
+MS         1.0000         1.0000         1.0000         EPS         
+MO         1.0000         1.0000         1.0000         EPS         
+MT         1.0000         1.0000         1.0000         EPS         
+NE         1.0000         1.0000         1.0000         EPS         
+NM         1.0000         1.0000         1.0000         EPS         
+NY         1.0000         1.0000         1.0000         EPS         
+NC         1.0000         1.0000         1.0000         EPS         
+ND         1.0000         1.0000         1.0000         EPS         
+OH         1.0000         1.0000         1.0000         EPS         
+OK         1.0000         1.0000         1.0000         EPS         
+OR         1.0000         1.0000         1.0000         EPS         
+PA         1.0000         1.0000         1.0000         EPS         
+SC         1.0000         1.0000         1.0000         EPS         
+SD         1.0000         1.0000         1.0000         EPS         
+TN         1.0000         1.0000         1.0000         EPS         
+TX         1.0000         1.0000         1.0000         EPS         
+UT         1.0000         1.0000         1.0000         EPS         
+VA         1.0000         1.0000         1.0000         EPS         
+WA         1.0000         1.0000         1.0000         EPS         
+WI         1.0000         1.0000         1.0000         EPS         
+WY         1.0000         1.0000         1.0000         EPS         
+
+---- VAR SM  Import supply
+
+               LOWER          LEVEL          UPPER         MARGINAL
+
+MD_Balt         1.0000         1.0000         1.0000         EPS         
+NY_Buff         1.0000         1.0000         1.0000         EPS         
+OH_Clev         1.0000         1.0000         1.0000         EPS         
+MI_Detr         1.0000         1.0000         1.0000         EPS         
+MN_Dulu         1.0000         1.0000         1.0000         EPS         
+MT_Grea         1.0000         1.0000         1.0000         EPS         
+CA_LosA         1.0000         1.0000         1.0000         EPS         
+FL_Miam         1.0000         1.0000         1.0000         EPS         
+MN_Minn         1.0000         1.0000         1.0000         EPS         
+NY_NewY         1.0000         1.0000         1.0000         EPS         
+NY_Ogde         1.0000         1.0000         1.0000         EPS         
+ND_Pemb         1.0000         1.0000         1.0000         EPS         
+CA_SanD         1.0000         1.0000         1.0000         EPS         
+CA_SanF         1.0000         1.0000         1.0000         EPS         
+WA_Seat         1.0000         1.0000         1.0000         EPS         
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0  REDEFINED
+                             0     ERRORS
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 7
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+E x e c u t i o n
+
+
+----    545 PARAMETER tau_min  Minimum value of tau
+
+AL 1.376, AR 1.368, AZ 1.309, CA 1.426, CO 1.331, CT 1.359, DE 1.236,
+DC 1.261, FL 1.494, GA 1.339, HI EPS, ID 1.404, IL 1.330, IN 1.353, IA
+1.437, KS 1.375, KY 1.355, LA 1.427, ME 1.469, MD 1.270, MA 1.418, MI
+1.345, MN 1.330, MS 1.382, MO 1.382, MT 1.412, NE 1.353, NV 1.467, NH
+1.429, NJ 1.340, NM 1.387, NY 1.345, NC 1.362, ND 1.394, OH 1.365, OK
+1.346, OR 1.347, PA 1.376, RI 1.404, SC 1.360, SD 1.387, TN 1.392, TX
+1.429, UT 1.313, VT 1.437, VA 1.358, WA 1.324, WV 1.416, WI 1.357, WY
+1.405
+
+**** Exec Error at line 547: division by eps
+**** Exec Error at line 548: division by eps
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/06/24 06:05:39 Page 8
+Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+Setup/Generation    SOLVE GRAVITY Using MCP From line 697
+
+
+**** SOLVE from line 697 ABORTED
+**** EXECERROR=2
+
+**** REPORT FILE SUMMARY
+
+MPS d:\GitHub\windc_build\gravity\225a\gamscge.dat
+
+
+EXECUTION TIME       =        0.219 SECONDS      7 MB  46.4.1 485757e2 WEX-WEI
+
+
+USER: Small MUD - 5 User License                     G230511|0002AO-GEN
+      University of Wisconsin-Madison, Agricultural & Applied EconDC289
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      d:\GitHub\windc_build\gravity\oldmodel.gms
+Output     d:\GitHub\windc_build\gravity\oldmodel.lst
+
+**** USER ERROR(S) ENCOUNTERED

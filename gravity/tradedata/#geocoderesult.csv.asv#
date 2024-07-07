@@ -1,0 +1,8 @@
+<p>Malformed input file or file not of type .CSV, .TXT, .DAT, .XLS, or
+.XLSX </p><p>The data should be in separate columns in a CSV or Excel
+file. Use a comma separator for text or DAT files.</p><p>If you're
+exporting the .CSV file from Excel, put each field value in a separate
+Excel column prior to exporting. Excel will automatically comma
+delimit the file when you save it as CSV.</p><p>Please check here for
+an example of a working .CSV input file and compare it to your own: <a
+href='https://geocoding.geo.census.gov/geocoder/Addresses.csv'>https://geocoding.geo.census.gov/geocoder/Addresses.csv</a></p>

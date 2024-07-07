@@ -1,0 +1,257 @@
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/03/24 20:28:33 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   2   
+   4   
+   6   
+   7  set     idx(*), name(*);
+   8   
+   9  set     ports_(idx<,name<)      Identifiers;
+GDXIN   d:\GitHub\windc_build\gravity\ports\ports.gdx
+--- LOAD  ports_ = 1:ports
+  12   
+  13  set     loc /latitude, longitude/;
+  14   
+  15  set     cty(*)  Country;
+  16   
+  17  parameter       portloc_(idx,name,cty<,loc)     Port locations;
+GDXIN   d:\GitHub\windc_build\gravity\ports\locations.gdx
+--- LOAD  portloc_ = 1:portloc
+  20   
+  21  option cty:0:0:1;
+  22  display cty;
+  23   
+EXIT d:\GitHub\windc_build\gravity\ports\read.gms
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/03/24 20:28:33 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  d:\GitHub\windc_build\gravity\ports\read.gms
+     2        1 CALL           1       1  csv2gdx UpdatedPub150.csv id=portloc index=(1,4,7) values=(108,109) output=locations.gdx useheader=y
+     3        3 CALL           1       3  pause
+     4        5 CALL           1       5  csv2gdx UpdatedPub150.csv id=ports index=(1,4) fieldsep=comma useheader=y output=ports.gdx
+     5       10 GDXIN          1      10  d:\GitHub\windc_build\gravity\ports\ports.gdx
+     6       18 GDXIN          1      18  d:\GitHub\windc_build\gravity\ports\locations.gdx
+     7       24 EXIT           1      24  d:\GitHub\windc_build\gravity\ports\read.gms
+
+
+COMPILATION TIME     =        1.187 SECONDS      4 MB  46.4.1 485757e2 WEX-WEI
+GAMS 46.4.1  485757e2 Apr 16, 2024          WEX-WEI x86 64bit/MS Windows - 07/03/24 20:28:33 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----     22 SET cty  Country
+
+MCO."Monaco"
+JOR."Jordan"
+DJI."Djibouti"
+HKG."Hong Kong"
+MAC."Macau"
+WSM."Samoa"
+*.Wake Island
+NRU."Nauru"
+USA."United States"
+MDG."Madagascar"
+TZA."Tanzania"
+TUR."Turkey"
+IDN."Indonesia"
+GIB."Gibraltar"
+BRA."Brazil"
+SAU."Saudi Arabia"
+SHN."Saint Helena, Ascension, and Tristan da Cunha"
+THA."Thailand"
+GRC."Greece"
+ESP."Spain"
+ITA."Italy"
+SSD."Sudan"
+PHL."Philippines"
+DZA."Algeria"
+SEN."Senegal"
+CHL."Chile"
+IND."India"
+MYS."Malaysia"
+ATA."Antarctica"
+NGA."Nigeria"
+FRA."France"
+SXM.Sint Maarten                                       
+EGY."Egypt"
+CHN."China"
+MMR."Burma"
+DOM."Dominican Republic"
+KHM."Cambodia"
+REU."Reunion"
+HND."Honduras"
+AGO."Angola"
+SGS."South Georgia and South Sandwich Islands"
+GNQ."Guinea"
+BHS."The Bahamas"
+PRI."Puerto Rico"
+CUB."Cuba"
+ISR."Israel"
+SOM."Somalia"
+KEN."Kenya"
+IRN."Iran"
+HRV."Croatia"
+LBY."Libya"
+PRT."Portugal"
+MOZ."Mozambique"
+JPN."Japan"
+CYP."Cyprus"
+CMR."Cameroon"
+VEN."Venezuela"
+*.Caribbean Netherlands                              
+PAN."Panama"
+MEX."Mexico"
+MAR."Morocco"
+STP."Sao Tome and Principe"
+GHA."Ghana"
+NZL."New Zealand"
+SGP."Singapore"
+BRN."Brunei"
+BMU."Bermuda"
+AUS."Australia"
+CRI."Costa Rica"
+COL."Colombia"
+CUW."Curacao"
+CPV."Cabo Verde"
+JAM."Jamaica"
+IRQ."Iraq"
+HTI."Haiti"
+MRT."Mauritania"
+PER."Peru"
+LCA."Saint Lucia"
+KWT."Kuwait"
+MLT."Malta"
+MUS."Mauritius"
+TUN."Tunisia"
+SVN."Slovenia"
+SLE."Sierra Leone"
+SLV."El Salvador"
+VNM."Vietnam"
+VIR."U.S. Virgin Islands"
+ZAF."South Africa"
+BHR."Bahrain"
+ATG."Antigua and Barbuda"
+QAT."Qatar"
+ALB."Albania"
+MNE."Montenegro"
+CAN."Canada"
+GLP."Guadeloupe"
+COM."Comoros"
+BIH."Bosnia and Herzegovina"
+TTO."Trinidad and Tobago"
+ECU."Ecuador"
+SYC."Seychelles"
+ESH."Western Sahara"
+PAK."Pakistan"
+ARE."United Arab Emirates"
+OMN."Oman"
+IOT."British Indian Ocean Territory"
+PRK."North Korea"
+KOR."South Korea"
+YEM."Yemen"
+JEY."Jersey"
+TWN."Taiwan"
+LKA."Sri Lanka"
+MDV."Maldives"
+BGD."Bangladesh"
+ABW."Aruba"
+LBN."Lebanon"
+SYR."Syria"
+TCA."Turks and Caicos Islands"
+KNA."Saint Kitts and Nevis"
+CYM."Cayman Islands"
+VGB."British Virgin Islands"
+ERI."Eritrea"
+CIV."Cote D'Ivoire"
+TGO."Togo"
+BEN."Benin"
+BLZ."Belize"
+GTM."Guatemala"
+NIC."Nicaragua"
+GNQ."Equatorial Guinea"
+LBR."Liberia"
+GMB."The Gambia"
+GNB."Guinea-Bissau"
+TLS."Timor-Leste"
+GAB."Gabon"
+NAM."Namibia"
+GUY."Guyana"
+COG."Congo (Kinshasa)"
+SUR."Suriname"
+CGD."Congo (Brazzaville)"
+RUS."Russia"
+DEU."Germany"
+COK."Cook Islands"
+VUT."Vanuatu"
+SLB."Solomon Islands"
+PNG."Papua New Guinea"
+PLW."Palau"
+FSM."Federated States of Micronesia"
+*.Midway Islands
+*.Johnson Atoll
+*.Christmas Island                                   
+Ukraine                                            
+Romania                                            
+United Kingdom                                     
+Faroe Islands                                      
+Belgium                                            
+Netherlands                                        
+Denmark                                            
+Sweden                                             
+Norway                                             
+Ireland                                            
+Isle of Man                                        
+Poland                                             
+Lithuania                                          
+Finland                                            
+Argentina                                          
+Uruguay                                            
+Greenland                                          
+Latvia                                             
+Georgia                                            
+New Caledonia                                      
+Iceland                                            
+French Guiana                                      
+Svalbard                                           
+Fiji                                               
+Tonga                                              
+Tuvalu                                             
+French Polynesia                                   
+Marshall Islands                                   
+Wallis and Futuna                                  
+Kiribati                                           
+Guernsey                                           
+Bulgaria                                           
+Estonia                                            
+Paraguay                                           
+Saint Pierre and Miquelon                          
+Northern Mariana Islands                           
+American Samoa                                     
+Falkland Islands (Islas Malvinas)                  
+Grenada                                            
+Barbados                                           
+Norfolk Island                                     
+Saint Vincent and the Grenadines (Windward Islands)
+Dominica                                           
+Martinique                                         
+Niue                                               
+Guam                                               
+
+
+
+USER: Small MUD - 5 User License                     G230511|0002AO-GEN
+      University of Wisconsin-Madison, Agricultural & Applied EconDC289
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      d:\GitHub\windc_build\gravity\ports\read.gms
+Output     d:\GitHub\windc_build\gravity\ports\read.lst

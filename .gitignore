@@ -46,3 +46,5 @@ data/*
 *.pdf
 GTAPWiNDC/225b/gamsnext.cmd
 gravity/tradedata/censuskey.gms
+gravity/tradedata/exports_x.json
+gravity/tradedata/imports_m.json

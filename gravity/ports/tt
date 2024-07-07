@@ -1,0 +1,109 @@
+1	OID_
+2	World Port Index Number
+3	Region Name
+4	Main Port Name
+5	Alternate Port Name
+6	UN/LOCODE
+7	Country Code
+8	World Water Body
+9	IHO S-130 Sea Area
+10	Sailing Direction or Publication
+11	Publication Link
+12	Standard Nautical Chart
+13	IHO S-57 Electronic Navigational Chart
+14	IHO S-101 Electronic Navigational Chart
+15	Digital Nautical Chart
+16	Tidal Range (m)
+17	Entrance Width (m)
+18	Channel Depth (m)
+19	Anchorage Depth (m)
+20	Cargo Pier Depth (m)
+21	Oil Terminal Depth (m)
+22	Liquified Natural Gas Terminal Depth (m)
+23	Maximum Vessel Length (m)
+24	Maximum Vessel Beam (m)
+25	Maximum Vessel Draft (m)
+26	Offshore Maximum Vessel Length (m)
+27	Offshore Maximum Vessel Beam (m)
+28	Offshore Maximum Vessel Draft (m)
+29	Harbor Size
+30	Harbor Type
+31	Harbor Use
+32	Shelter Afforded
+33	Entrance Restriction - Tide
+34	Entrance Restriction - Heavy Swell
+35	Entrance Restriction - Ice
+36	Entrance Restriction - Other
+37	Overhead Limits
+38	Underkeel Clearance Management System
+39	Good Holding Ground
+40	Turning Area
+41	Port Security
+42	Estimated Time of Arrival Message
+43	Quarantine - Pratique
+44	Quarantine - Sanitation
+45	Quarantine - Other
+46	Traffic Separation Scheme
+47	Vessel Traffic Service
+48	First Port of Entry
+49	US Representative
+50	Pilotage - Compulsory
+51	Pilotage - Available
+52	Pilotage - Local Assistance
+53	Pilotage - Advisable
+54	Tugs - Salvage
+55	Tugs - Assistance
+56	Communications - Telephone
+57	Communications - Telefax
+58	Communications - Radio
+59	Communications - Radiotelephone
+60	Communications - Airport
+61	Communications - Rail
+62	Search and Rescue
+63	NAVAREA
+64	Facilities - Wharves
+65	Facilities - Anchorage
+66	Facilities - Dangerous Cargo Anchorage
+67	Facilities - Med Mooring
+68	Facilities - Beach Mooring
+69	Facilities - Ice Mooring
+70	Facilities - Ro-Ro
+71	Facilities - Solid Bulk
+72	Facilities - Liquid Bulk
+73	Facilities - Container
+74	Facilities - Breakbulk
+75	Facilities - Oil Terminal
+76	Facilities - LNG Terminal
+77	Facilities - Other
+78	Medical Facilities
+79	Garbage Disposal
+80	Chemical Holding Tank Disposal
+81	Degaussing
+82	Dirty Ballast Disposal
+83	Cranes - Fixed
+84	Cranes - Mobile
+85	Cranes - Floating
+86	Cranes Container
+87	Lifts - 100+ Tons
+88	Lifts - 50-100 Tons
+89	Lifts - 25-49 Tons
+90	Lifts - 0-24 Tons
+91	Services - Longshoremen
+92	Services - Electricity
+93	Services -Steam
+94	Services - Navigation Equipment
+95	Services - Electrical Repair
+96	Services - Ice Breaking
+97	Services -Diving
+98	Supplies - Provisions
+99	Supplies - Potable Water
+100	Supplies - Fuel Oil
+101	Supplies - Diesel Oil
+102	Supplies - Aviation Fuel
+103	Supplies - Deck
+104	Supplies - Engine
+105	Repairs
+106	Dry Dock
+107	Railway
+108	Latitude
+109	Longitude

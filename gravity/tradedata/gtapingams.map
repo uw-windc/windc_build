@@ -1,0 +1,2076 @@
+$TITLE   GTAP Mapping which Relabels to Match GAMS Identifiers
+
+*	See GTAP resource 7088.pdf by Walmsley and Carrico for a description of
+*	labor categories.
+
+
+*	Count the number of primary factors.  There are five (res,lnd,skl,lab,cap)
+*	through version 8.1 and eight (res,lnd,cap + 5 labor types) thereafter.
+
+$eval factors card(f)
+
+*	Count the number of sectors in the source GTAP dataset.  
+*	There are 57 sectors through GTAP10p2 and 65 thereafter.
+
+$eval sectors card(i)
+
+$eolcom !
+
+
+$ifthen.factors %factors%==8
+
+*	GTAP 9 and 10:
+
+set ff  /
+	mgr	Officials and Mangers legislators (ISCO-88 Major Groups 1-2), 
+	tec	Technicians technicians and associate professionals
+	clk	Clerks
+	srv	Service and market sales workers
+	lab	Agricultural and unskilled workers (Major Groups 6-9)
+	cap     Capital,    
+	lnd     Land,    
+	res     Natural resources /;
+
+set mapf(*,*) /
+	off_mgr_pros.mgr	Officials and Mangers legislators (ISCO-88 Major Groups 1-2), 
+	tech_aspros.tec		Technicians technicians and associate professionals
+	clerks.clk		Clerks
+	service_shop.srv	Service and market sales workers,
+	ag_othlowsk.lab		Agricultural and unskilled workers (Major Groups 6-9)
+	Land.lnd		Land,    
+	Capital.cap		Capital,    
+	NatlRes.res		Natural resources/;
+
+$else.factors
+
+$if not %factors%==5 $abort "Error detected in gtapingams.map.  Expected 5 factors, found %factors%."
+
+*	GTAP 8 and 8.1:
+
+set ff  /
+	LND	"Land"
+	CAP	"Capital"
+	RES	"Natural resources"
+	LAB	"Unskilled laboer"
+	SKL	"Skilled labor"/;
+
+set mapf(*,*) /
+	land.LND	"Land"
+	capital.CAP	"Capital"
+	natlres.RES	"Natural resources"
+	UnskLab.LAB	"Unskilled laboer"
+	SkLab.SKL	"Skilled labor"/;
+
+$endif.factors
+
+$ontext
+
+*	------------------------------------------------------------------------------
+
+Some Documentation on Sectoral Identifiers in GTAPinGAMS
+--------------------------------------------------------
+
+1. Name changes TO accommodate GTAPinGAMS conventions for energy goods:
+
+	OIL.CRU	! "Crude Oil",
+	COA.COL	! "Coal",
+	P_C.OIL	! "Petroleum, coal products",
+	ELY.ELE	! "Electricity",
+
+In order to use ELE for electricity, we need a new identifier
+to represent electronic equipment.   In GTAPinGAMS versions 9 and
+earlier, we replaced ELE by EEQ. GTAP 10p3 now introduces EEQ as a
+new sector ("electrical equipment"), and we therefore use a new
+identifier, CEO, to replace ELE:
+
+	ELE.CEO	! "Computer, electronic and optical products",
+
+2. Sectors in which GTAP 10p3 has simply changed the identifier:
+
+OMN	OXT 	"Other Extraction (formerly omn Minerals nec)",
+ISR	INS 	"Insurance (formerly isr)",
+
+
+3. Sectors which have been disaggregated in GTAP10P3
+
+There are 65 sectors in 10p3 (and later), 57 in 10p2 (and earlier), so
+we have 8 additional sectors:
+
++2 -- CRP: Chemical Rubber Products: basic chemicals, other chemical
+products, rubber and plastics products
+
+	CHM 	"Chemical products",
+	BPH 	"Basic pharmaceutical products",
+	RPP 	"Rubber and plastic products",
+
++2 -- OSG: Other Services (Government): public administration and
+defense; compulsory social security, education, health and social
+work, sewage and refuse disposal, sanitation and similar activities,
+activities of membership organizations n.e.c., extra-territorial
+organizations and bodies
+
+	OSG 	"Public Administration and defense",
+	EDU 	"Education",
+	HHT 	"Human health and social work activities",
+
++1 -- TRD: Trade: all retail sales; wholesale trade and commission
+trade; hotels and restaurants; repairs of motor vehicles and personal
+and household goods; retail sale of automotive fuel
+
+	TRD 	"Trade",
+	AFS 	"Accommodation, Food and service activities",
+
++1 -- OTP: Other Transport: road, rail ; pipelines, auxiliary
+transport activities; travel agencies
+
+	OTP	"Transport nec",
+	WHS 	"Warehousing and support activities",
+
++1 -- OBS: Other Business Services: real estate, renting and business
+activities
+
+	OBS 	"Business services nec",
+	RSA 	"Real estate activities",
+
++1 -- OME: Manufacture of machinery and equipment n.e.c.
+	OME 	"Machinery and equipment nec",
+	EEQ	"Electrical equipment"		
+
+In GTAP version prior to 10p3 we substituted EEQ to represent
+"electronic equipment" to replace ELE.
+
+$offtext
+
+$ifthen.sectors %sectors%==65
+
+set	ii	Commodities in the aggregation /
+	PDR 	"Paddy rice",
+	WHT 	"Wheat",
+	GRO 	"Cereal grains nec",
+	V_F 	"Vegetables, fruit, nuts",
+	OSD 	"Oil seeds",
+	C_B 	"Sugar cane, sugar beet",
+	PFB 	"Plant-based fibers",
+	OCR 	"Crops nec",
+	CTL 	"Bovine cattle, sheep and goats, horses",
+	OAP 	"Animal products nec",
+	RMK 	"Raw milk",
+	WOL 	"Wool, silk-worm cocoons",
+	FRS 	"Forestry",
+	FSH 	"Fishing",
+	COL 	"Coal",
+	CRU 	"Crude Oil",
+	GAS 	"Gas",
+	OXT 	"Other Extraction (formerly omn Minerals nec)",
+	CMT 	"Bovine meat products",
+	OMT 	"Meat products nec",
+	VOL 	"Vegetable oils and fats",
+	MIL 	"Dairy products",
+	PCR 	"Processed rice",
+	SGR 	"Sugar",
+	OFD 	"Food products nec",
+	B_T 	"Beverages and tobacco products",
+	TEX 	"Textiles",
+	WAP 	"Wearing apparel",
+	LEA 	"Leather products",
+	LUM 	"Wood products",
+	PPP 	"Paper products, publishing",
+	OIL 	"Petroleum, coal products",
+	CHM 	"Chemical products",
+	BPH 	"Basic pharmaceutical products",
+	RPP 	"Rubber and plastic products",
+	NMM 	"Mineral products nec",
+	I_S 	"Ferrous metals",
+	NFM 	"Metals nec",
+	FMP 	"Metal products",
+	MVH 	"Motor vehicles and parts",
+	OTN 	"Transport equipment nec",
+	EEQ 	"Electronic equipment",
+	OME 	"Machinery and equipment nec",
+	OMF 	"Manufactures nec",
+	ELE 	"Electricity",
+	CEO	"Computer, electronic and optical products",
+	GDT 	"Gas manufacture, distribution",
+	WTR 	"Water",
+	CNS 	"Construction",
+	TRD 	"Trade",
+	AFS 	"Accommodation, Food and service activities",
+	OTP 	"Transport nec",
+	WTP 	"Water transport",
+	ATP 	"Air transport",
+	WHS 	"Warehousing and support activities",
+	CMN 	"Communication",
+	OFI 	"Financial services nec",
+	INS 	"Insurance (formerly isr)",
+	RSA 	"Real estate activities",
+	OBS 	"Business services nec",
+	ROS 	"Recreational and other services",
+	OSG 	"Public Administration and defense",
+	EDU 	"Education",
+	HHT 	"Human health and social work activities",
+	DWE 	"Dwellings" /;
+
+SET mapi(i,ii) Mapping of Sectors and Goods (from-to) /
+	PDR.PDR	! "Paddy rice",
+	WHT.WHT	! "Wheat",
+	GRO.GRO	! "Cereal grains nec",
+	V_F.V_F	! "Vegetables, fruit, nuts"				
+	OSD.OSD	! "Oil seeds"					
+	C_B.C_B	! "Sugar cane, sugar beet"				
+	PFB.PFB	! "Plant-based fibers"				
+	OCR.OCR	! "Crops nec"					
+	CTL.CTL	! "Bovine cattle, sheep and goats, horses"		
+	OAP.OAP	! "Animal products nec"				
+	RMK.RMK	! "Raw milk"					
+	WOL.WOL	! "Wool, silk-worm cocoons"				
+	FRS.FRS	! "Forestry"					
+	FSH.FSH	! "Fishing"						
+	COA.COL	! "Coal"						
+	OIL.CRU	! "Crude Oil"						
+	GAS.GAS	! "Gas"						
+	OXT.OXT	! "Other Extraction (formerly omn Minerals nec)"	
+	CMT.CMT	! "Bovine meat products"				
+	OMT.OMT	! "Meat products nec"				
+	VOL.VOL	! "Vegetable oils and fats"				
+	MIL.MIL	! "Dairy products"					
+	PCR.PCR	! "Processed rice"					
+	SGR.SGR	! "Sugar"						
+	OFD.OFD	! "Food products nec"				
+	B_T.B_T	! "Beverages and tobacco products"			
+	TEX.TEX	! "Textiles"					
+	WAP.WAP	! "Wearing apparel"					
+	LEA.LEA	! "Leather products"				
+	LUM.LUM	! "Wood products"					
+	PPP.PPP	! "Paper products, publishing"			
+	P_C.OIL	! "Petroleum, coal products"			
+	CHM.CHM	! "Chemical products"				
+	BPH.BPH	! "Basic pharmaceutical products"			
+	RPP.RPP	! "Rubber and plastic products"			
+	NMM.NMM	! "Mineral products nec"				
+	I_S.I_S	! "Ferrous metals"					
+	NFM.NFM	! "Metals nec"					
+	FMP.FMP	! "Metal products"					
+	EEQ.EEQ	! "Electrical equipment"		
+	OME.OME	! "Machinery and equipment nec"			
+	MVH.MVH	! "Motor vehicles and parts"			
+	OTN.OTN	! "Transport equipment nec"				
+	OMF.OMF	! "Manufactures nec"				
+	ELE.CEO	! "Computer, electronic and optical products"	
+	ELY.ELE	! "Electricity"					
+	GDT.GDT	! "Gas manufacture, distribution"			
+	WTR.WTR	! "Water"						
+	CNS.CNS	! "Construction"					
+	TRD.TRD	! "Trade"						
+	AFS.AFS	! "Accommodation, Food and service activities"	
+	OTP.OTP	! "Transport nec"					
+	WTP.WTP	! "Water transport"					
+	ATP.ATP	! "Air transport"					
+	WHS.WHS	! "Warehousing and support activities"		
+	CMN.CMN	! "Communication"					
+	OFI.OFI	! "Financial services nec"				
+	INS.INS	! "Insurance (formerly isr)"			
+	RSA.RSA	! "Real estate activities"				
+	OBS.OBS	! "Business services nec"				
+	ROS.ROS	! "Recreational and other services"			
+	OSG.OSG	! "Public Administration and defense"		
+	EDU.EDU	! "Education"					
+	HHT.HHT	! "Human health and social work activities"		
+	DWE.DWE	! "Dwellings"	
+	/;
+
+
+$else.sectors 
+
+*	Here we are assuming there are 57 sectors
+
+$if not %sectors%==57 $abort "Error detected in gtapingams.map.  Expected 57 sectors, found %sectors%"
+
+set	ii	Commodities in the aggregation /
+	PDR	"Paddy rice",
+	WHT	"Wheat",
+	GRO	"Cereal grains nec",
+	V_F	"Vegetables, fruit, nuts",
+	OSD	"Oil seeds",
+	C_B	"Sugar cane, sugar beet",
+	PFB	"Plant-based fibers",
+	OCR	"Crops nec",
+	CTL	"Bovine cattle, sheep and goats, horses",
+	OAP	"Animal products nec",
+	RMK	"Raw milk",
+	WOL	"Wool, silk-worm cocoons",
+	FRS	"Forestry",
+	FSH	"Fishing",
+	COL	"Coal",
+	CRU	"Crude Oil",
+	GAS	"Gas",
+	OMN	"Minerals nec",
+	CMT	"Bovine meat products",
+	OMT	"Meat products nec",
+	VOL	"Vegetable oils and fats",
+	MIL	"Dairy products",
+	PCR	"Processed rice",
+	SGR	"Sugar",
+	OFD	"Food products nec",
+	B_T	"Beverages and tobacco products",
+	TEX	"Textiles",
+	WAP	"Wearing apparel",
+	LEA	"Leather products",
+	LUM	"Wood products",
+	PPP	"Paper products, publishing",
+	OIL	"Petroleum, coal products",
+	CRP	"Chemical, rubber, plastic products",
+	NMM	"Mineral products nec",
+	I_S	"Ferrous metals",
+	NFM	"Metals nec",
+	FMP	"Metal products",
+	MVH	"Motor vehicles and parts",
+	OTN	"Transport equipment nec",
+	EEQ	"Electronic equipment",
+	OME	"Machinery and equipment nec",
+	OMF	"Manufactures nec",
+	ELE	"Electricity",
+	GDT	"Gas manufacture, distribution",
+	WTR	"Water",
+	CNS	"Construction",
+	TRD	"Trade",
+	OTP	"Transport nec",
+	WTP	"Water transport",
+	ATP	"Air transport",
+	CMN	"Communication",
+	OFI	"Financial services nec",
+	ISR	"Insurance",
+	OBS	"Business services nec",
+	ROS	"Recreational and other services",
+	OSG	"Public Administration, Defense, Education, Health",
+	DWE	"Dwellings" /;
+
+
+SET mapi(i,ii) Mapping of Sectors and Goods (from-to) /
+	PDR.PDR	! "Paddy rice",
+	WHT.WHT	! "Wheat",
+	GRO.GRO	! "Cereal grains nec",
+	V_F.V_F	! "Vegetables, fruit, nuts",
+	OSD.OSD	! "Oil seeds",
+	C_B.C_B	! "Sugar cane, sugar beet",
+	PFB.PFB	! "Plant-based fibers",
+	OCR.OCR	! "Crops nec",
+	CTL.CTL	! "Bovine cattle, sheep and goats, horses",
+	OAP.OAP	! "Animal products nec",
+	RMK.RMK	! "Raw milk",
+	WOL.WOL	! "Wool, silk-worm cocoons",
+	FRS.FRS	! "Forestry",
+	FSH.FSH	! "Fishing",
+	COA.COL	! "Coal",
+	OIL.CRU	! "Crude Oil",
+	GAS.GAS	! "Gas",
+	OMN.OMN	! "Minerals nec",
+	CMT.CMT	! "Bovine meat products",
+	OMT.OMT	! "Meat products nec",
+	VOL.VOL	! "Vegetable oils and fats",
+	MIL.MIL	! "Dairy products",
+	PCR.PCR	! "Processed rice",
+	SGR.SGR	! "Sugar",
+	OFD.OFD	! "Food products nec",
+	B_T.B_T	! "Beverages and tobacco products",
+	TEX.TEX	! "Textiles",
+	WAP.WAP	! "Wearing apparel",
+	LEA.LEA	! "Leather products",
+	LUM.LUM	! "Wood products",
+	PPP.PPP	! "Paper products, publishing",
+	P_C.OIL	! "Petroleum, coal products",
+	CRP.CRP	! "Chemical, rubber, plastic products",
+	NMM.NMM	! "Mineral products nec",
+	I_S.I_S	! "Ferrous metals",
+	NFM.NFM	! "Metals nec",
+	FMP.FMP	! "Metal products",
+	MVH.MVH	! "Motor vehicles and parts",
+	OTN.OTN	! "Transport equipment nec",
+	ELE.EEQ	! "Electronic equipment",
+	OME.OME	! "Machinery and equipment nec",
+	OMF.OMF	! "Manufactures nec",
+	ELY.ELE	! "Electricity",
+	GDT.GDT	! "Gas manufacture, distribution",
+	WTR.WTR	! "Water",
+	CNS.CNS	! "Construction",
+	TRD.TRD	! "Trade",
+	OTP.OTP	! "Transport nec",
+	WTP.WTP	! "Water transport",
+	ATP.ATP	! "Air transport",
+	CMN.CMN	! "Communication",
+	OFI.OFI	! "Financial services nec",
+	ISR.ISR	! "Insurance",
+	OBS.OBS	! "Business services nec",
+	ROS.ROS	! "Recreational and other services",
+	OSG.OSG	! "Public Administration, Defense, Education, Health",
+	DWE.DWE	! "Dwellings"
+	/;
+
+$endif.sectors
+
+*	No change in the regional aggregation here except for that we need to
+*	include TJK (Tajikistan) within GTAP10
+
+alias (r,rr);
+
+Set mapr(r,rr) Mapping of GTAP Regions (from-to);
+mapr(r,rr) = yes$sameas(r,rr);
+
+$exit
+*	----------------------------------------------------------------------------------
+*	Details for Region and Sectoral Classifications:
+*	----------------------------------------------------------------------------------
+
+AUS	Australia
+*	 Australia
+*	 Christmas Island
+*	 Cocos (Keeling) Islands
+*	 Heard Island and McDonald Islands
+*	 Norfolk Island
+NZL	New Zealand
+XOC	Rest of Oceania
+*	 American Samoa
+*	 Cook Islands
+*	 Fiji
+*	 French Polynesia
+*	 Guam
+*	 Kiribati
+*	 Marshall Islands
+*	 Micronesia Federated States of
+*	 Nauru
+*	 New Caledonia
+*	 Niue
+*	 Northern Mariana Islands
+*	 Palau
+*	 Papua New Guinea
+*	 Pitcairn
+*	 Samoa
+*	 Solomon Islands
+*	 Tokelau
+*	 Tonga
+*	 Tuvalu
+*	 United States Minor Outlying Islands
+*	 Vanuatu
+*	 Wallis and Futuna
+CHN	China
+HKG	Hong Kong
+JPN	Japan
+KOR	Korea Republic of
+MNG	Mongolia
+TWN	Taiwan
+XEA	Rest of East Asia
+*	 Korea Democratic Peoples Republic of
+*	 Macao
+BRN	Brunei Darussalam
+KHM	Cambodia
+IDN	Indonesia
+LAO	Lao People's Democratic Republic
+MYS	Malaysia
+PHL	Philippines
+SGP	Singapore
+THA	Thailand
+VNM	Viet Nam
+XSE	Rest of Southeast Asia
+*	 Myanmar
+*	 Timor Leste
+BGD	Bangladesh
+IND	India
+NPL	Nepal
+PAK	Pakistan
+LKA	Sri Lanka
+XSA	Rest of South Asia
+*	 Afghanistan
+*	 Bhutan
+*	 Maldives
+CAN	Canada
+USA	United States of America
+MEX	Mexico
+XNA	Rest of North America
+*	 Bermuda
+*	 Greenland
+*	 Saint Pierre and Miquelon
+ARG	Argentina
+BOL	Bolivia
+BRA	Brazil
+CHL	Chile
+COL	Colombia
+ECU	Ecuador
+PRY	Paraguay
+PER	Peru
+URY	Uruguay
+VEN	Venezuela
+XSM	Rest of South America
+*	 Falkland Islands (Malvinas)
+*	 French Guiana
+*	 Guyana
+*	 South Georgia and the South Sandwich Islands
+*	 Suriname
+CRI	Costa Rica
+GTM	Guatemala
+HND	Honduras
+NIC	Nicaragua
+PAN	Panama
+SLV	El Salvador
+XCA	Rest of Central America
+*	 Belize
+DOM	Dominican Republic
+JAM	Jamaica
+PRI	Puerto Rico
+TTO	Trinidad and Tobago
+XCB	Caribbean
+*	 Anguilla
+*	 Antigua & Barbuda
+*	 Aruba
+*	 Bahamas
+*	 Barbados
+*	 Cayman Islands
+*	 Cuba
+*	 Dominica
+*	 Grenada
+*	 Haiti
+*	 Montserrat
+*	 Netherlands Antilles
+*	 Saint Kitts and Nevis
+*	 Saint Lucia
+*	 Saint Vincent and the Grenadines
+*	 Turks and Caicos Islands
+*	 Virgin Islands British 
+*	 Virgin Islands U.S.
+AUT	Austria
+BEL	Belgium
+CYP	Cyprus
+CZE	Czech Republic
+DNK	Denmark
+EST	Estonia
+FIN	Finland
+*	 Aland Islands
+*	 Finland
+FRA	France
+*	 France
+*	 Guadeloupe
+*	 Martinique
+*	 Reunion
+DEU	Germany
+GRC	Greece
+HUN	Hungary
+IRL	Ireland
+ITA	Italy
+LVA	Latvia
+LTU	Lithuania
+LUX	Luxembourg
+MLT	Malta
+NLD	Netherlands
+POL	Poland
+PRT	Portugal
+SVK	Slovakia
+SVN	Slovenia
+ESP	Spain
+SWE	Sweden
+GBR	United Kingdom
+CHE	Switzerland
+NOR	Norway
+*	 Norway
+*	 Svalbard and Jan Mayen
+XEF	Rest of EFTA
+*	 Iceland
+*	 Liechtenstein
+ALB	Albania
+BGR	Bulgaria
+BLR	Belarus
+HRV	Croatia
+ROU	Romania
+RUS	Russian Federation
+UKR	Ukraine
+XEE	Rest of Eastern Europe
+*	 Moldova Republic of
+XER	Rest of Europe
+*	 Andorra
+*	 Bosnia and Herzegovina
+*	 Faroe Islands
+*	 Gibraltar
+*	 Guernsey 
+*	 Holy See (Vatican City State)
+*	 Isle of Man
+*	 Jersey
+*	 Macedonia the former Yugoslav Republic of
+*	 Monaco
+*	 Montenegro
+*	 San Marino
+*	 Serbia
+KAZ	Kazakhstan
+KGZ	Kyrgyzstan
+TJK	Tajikistan	(in 10p2 and later)
+XSU	Rest of Former Soviet Union
+*	 Turkmenistan
+*	 Uzbekistan
+ARM	Armenia
+AZE	Azerbaijan
+GEO	Georgia
+BHR	Bahrain
+IRN	Iran Islamic Republic of
+ISR	Israel
+JOR	Jordan
+KWT	Kuwait
+OMN	Oman
+QAT	Qatar
+SAU	Saudi Arabia
+TUR	Turkey
+ARE	United Arab Emirates
+XWS	Rest of Western Asia
+*	 Iraq
+*	 Lebanon
+*	 Palestinian Territory Occupied 
+*	 Syrian Arab Republic
+*	 Yemen
+EGY	Egypt
+MAR	Morocco
+TUN	Tunisia
+XNF	Rest of North Africa
+*	 Algeria
+*	 Libyan Arab Jamahiriya
+*	 Western Sahara
+BEN	Benin
+BFA	Burkina Faso
+CMR	Cameroon
+CIV	Cote d'Ivoire
+GHA	Ghana
+GIN	Guinea
+NGA	Nigeria
+SEN	Senegal
+TGO	Togo
+XWF	Rest of Western Africa
+*	 Cape Verde
+*	 Gambia
+*	 Guinea-Bissau
+*	 Liberia
+*	 Mali
+*	 Mauritania
+*	 Niger
+*	 Saint Helena, ASCENSION AND TRISTAN DA CUNHA
+*	 Sierra Leone
+XCF	Central Africa
+*	 Central African Republic
+*	 Chad
+*	 Congo
+*	 Equatorial Guinea
+*	 Gabon
+*	 Sao Tome and Principe
+XAC	South Central Africa
+*	 Angola
+*	 Congo the Democratic Republic of the
+ETH	Ethiopia
+KEN	Kenya
+MDG	Madagascar
+MWI	Malawi
+MUS	Mauritius
+MOZ	Mozambique
+RWA	Rwanda
+TZA	Tanzania United Republic of
+UGA	Uganda
+ZMB	Zambia
+ZWE	Zimbabwe
+XEC	Rest of Eastern Africa
+*	 Burundi
+*	 Comoros
+*	 Djibouti
+*	 Eritrea
+*	 Mayotte
+*	 Seychelles
+*	 Somalia
+*	 Sudan
+BWA	Botswana
+NAM	Namibia
+ZAF	South Africa
+XSC	Rest of South African Customs Union
+*	 Lesotho
+*	 Swaziland
+XTW	Rest of the World
+*	 Antarctica
+*	 Bouvet Island
+*	 British Indian Ocean Territory
+*	 French Southern Territories
+	/;
+
+
+Detailed sector list for the 57 sector dataset (10p2 and previous):
+
+1	pdr	Paddy Rice: rice, husked and unhusked
+2	wht	Wheat: wheat and meslin
+3	gro	Other Grains: maize (corn), barley, rye, oats, other cereals
+4	v_f	Veg & Fruit: vegetables, fruitvegetables, fruit and nuts, potatoes, cassava, truffles,
+5	osd	Oil Seeds: oil seeds and oleaginous fruit; soy beans, copra
+6	c_b	Cane & Beet: sugar cane and sugar beet
+7	pfb	Plant Fibres: cotton, flax, hemp, sisal and other raw vegetable materials used in textiles
+8	ocr	Other Crops: live plants; cut flowers and flower buds; flower seeds and fruit seeds; vegetable seeds, beverage and spice crops, unmanufactured tobacco, cereal straw and husks, unprepared, whether or not chopped, ground, pressed or in the form of pellets; swedes, mangolds, fodder roots, hay, lucerne (alfalfa), clover, sainfoin, forage kale, lupines, vetches and similar forage products, whether or not in the form of pellets, plants and parts of plants used primarily in perfumery, in pharmacy, or for insecticidal, fungicidal or similar purposes, sugar beet seed and seeds of forage plants, other raw vegetable materials
+9	ctl	Cattle: cattle, sheep, goats, horses, asses, mules, and hinnies; and semen thereof
+10	oap	Other Animal Products: swine, poultry and other live animals; eggs, in shell (fresh or cooked), natural honey, snails (fresh or preserved) except sea snails; frogs' legs, edible products of animal origin n.e.c., hides, skins and furskins, raw , insect waxes and spermaceti, whether or not refined or coloured
+11	rmk	Raw milk
+12	wol	Wool: wool, silk, and other raw animal materials used in textile
+13	frs	Forestry: forestry, logging and related service activities
+14	fsh	Fishing: hunting, trapping and game propagation including related service activities, fishing, fish farms; service activities incidental to fishing
+15	coa	Coal: mining and agglomeration of hard coal, lignite and peat
+16	oil	Oil: extraction of crude petroleum and natural gas (part), service activities incidental to oil and gas extraction excluding surveying (part)
+17	gas	Gas: extraction of crude petroleum and natural gas (part), service activities incidental to oil and gas extraction excluding surveying (part)
+18	omn	Other Mining: mining of metal ores, uranium, gems. other mining and quarrying
+19	cmt	Cattle Meat: fresh or chilled meat and edible offal of cattle, sheep, goats, horses, asses, mules, and hinnies. raw fats or grease from any animal or bird.
+20	omt	Other Meat: pig meat and offal. preserves and preparations of meat, meat offal or blood, flours, meals and pellets of meat or inedible meat offal; greaves
+21	vol	Vegetable Oils: crude and refined oils of soya-bean, maize (corn),olive, sesame, ground-nut, olive, sunflower-seed, safflower, cotton-seed, rape, colza and canola, mustard, coconut palm, palm kernel, castor, tung jojoba, babassu and linseed, perhaps partly or wholly hydrogenated,inter-esterified, re-esterified or elaidinised. Also margarine and similar preparations, animal or vegetable waxes, fats and oils and their fractions, cotton linters, oil-cake and other solid residues resulting from the extraction of vegetable fats or oils; flours and meals of oil seeds or oleaginous fruits, except those of mustard; degras and other residues resulting from the treatment of fatty substances or animal or vegetable waxes.
+22	mil	Milk: dairy products
+23	pcr	Processed Rice: rice, semi- or wholly milled
+24	sgr	Sugar
+25	ofd	Other Food: prepared and preserved fish or vegetables, fruit juices and vegetable juices, prepared and preserved fruit and nuts, all cereal flours, groats, meal and pellets of wheat, cereal groats, meal and pellets n.e.c., other cereal grain products (including corn flakes), other vegetable flours and meals, mixes and doughs for the preparation of bakers' wares, starches and starch products; sugars and sugar syrups n.e.c., preparations used in animal feeding, bakery products, cocoa, chocolate and sugar confectionery, macaroni, noodles, couscous and similar farinaceous products, food products n.e.c.
+26	b_t	Beverages and Tobacco products
+27	tex	Textiles: textiles and man-made fibres
+28	wap	Wearing Apparel: Clothing, dressing and dyeing of fur
+29	lea	Leather: tanning and dressing of leather; luggage, handbags, saddlery, harness and footwear
+30	lum	Lumber: wood and products of wood and cork, except furniture; articles of straw and plaiting materials
+31	ppp	Paper & Paper Products: includes publishing, printing and reproduction of recorded media
+32	p_c	Petroleum & Coke: coke oven products, refined petroleum products, processing of nuclear fuel
+33	crp	Chemical Rubber Products: basic chemicals, other chemical products, rubber and plastics products
+34	nmm	Non-Metallic Minerals: cement, plaster, lime, gravel, concrete
+35	i_s	Iron & Steel: basic production and casting
+36	nfm	Non-Ferrous Metals: production and casting of copper, aluminium, zinc, lead, gold, and silver
+37	fmp	Fabricated Metal Products: Sheet metal products, but not machinery and equipment
+38	mvh	Motor Motor vehicles and parts: cars, lorries, trailers and semi-trailers
+39	otn	Other Transport Equipment: Manufacture of other transport equipment
+40	ele	Electronic Equipment: office, accounting and computing machinery, radio, television and communication equipment and apparatus
+41	ome	Other Machinery & Equipment: electrical machinery and apparatus n.e.c., medical, precision and optical instruments, watches and clocks
+42	omf	Other Manufacturing: includes recycling
+43	ely	Electricity: production, collection and distribution
+44	gdt	Gas Distribution: distribution of gaseous fuels through mains; steam and hot water supply
+45	wtr	Water: collection, purification and distribution
+46	cns	Construction: building houses factories offices and roads
+47	trd	Trade: all retail sales; wholesale trade and commission trade; hotels and restaurants; repairs of motor vehicles and personal and household goods; retail sale of automotive fuel
+48	otp	Other Transport: road, rail ; pipelines, auxiliary transport activities; travel agencies
+49	wtp	Water transport
+50	atp	Air transport
+51	cmn	Communications: post and telecommunications
+52	ofi	Other Financial Intermediation: includes auxiliary activities but not insurance and pension funding (see next)
+53	isr	Insurance: includes pension funding, except compulsory social security
+54	obs	Other Business Services: real estate, renting and business activities
+55	ros	Recreation & Other Services: recreational, cultural and sporting activities, other service activities; private households with employed persons (servants)
+56	osg	Other Services (Government): public administration and defense; compulsory social security, education, health and social work, sewage and refuse disposal, sanitation and similar activities, activities of membership organizations n.e.c., extra-territorial organizations and bodies
+57	dwe	Dwellings: ownership of dwellings (imputed rents of houses occupied by owners)
+
+Detailed sector list for the 65 sector dataset (10p3 and subsequent):
+
+1	pdr	Rice: seed, paddy (not husked)
+2	wht	Wheat: seed, other
+3	gro	Other Grains: maize (corn), sorghum, barley, rye, oats, millets, other cereals
+4	v_f	Veg & Fruit: vegetables, fruit and nuts, edible roots and tubers, pulses
+5	osd	Oil Seeds: oil seeds and oleaginous fruit
+6	c_b	Cane & Beet: sugar crops
+7	pfb	Fibres crops
+8	ocr	Other Crops: stimulant; spice and aromatic crops; forage products; plants and parts of plants used primarily in perfumery, pharmacy, or for insecticidal, fungicidal or similar purposes; beet seeds (excluding sugar beet seeds) and seeds of forage plants; natural rubber in primary forms or in plates, sheets or strip, living plants; cut flowers and flower buds; flower seeds, unmanufactured tobacco; other raw vegetable materials nec
+9	ctl	Cattle: bovine animals, live, other ruminants, horses and other equines, bovine semen
+10	oap	Other Animal Products: swine; poultry; other live animals; eggs of hens or other birds in shell, fresh; reproductive materials of animals; natural honey; snails, fresh, chilled, frozen, dried, salted or in brine, except sea snails; edible products of animal origin n.e.c.; hides, skins and furskins, raw; insect waxes and spermaceti, whether or not refined or coloured
+11	rmk	Raw milk
+12	wol	Wool: wool, silk, and other raw animal materials used in textile
+13	frs	Forestry: forestry, logging and related service activities
+14	fsh	Fishing: hunting, trapping and game propagation including related service activities, fishing, fish farms; service activities incidental to fishing
+15	coa	Coal: mining and agglomeration of hard coal, lignite and peat
+16	oil	Oil: extraction of crude petroleum, service activities incidental to oil and gas extraction excluding surveying (part)
+17	gas	Gas: extraction of natural gas, service activities incidental to oil and gas extraction excluding surveying (part)
+18	oxt	Other Mining Extraction (formerly omn): mining of metal ores; other mining and quarrying
+19	cmt	Cattle Meat: fresh or chilled; meat of buffalo, fresh or chilled; meat of sheep, fresh or chilled; meat of goat, fresh or chilled; meat of camels and camelids, fresh or chilled; meat of horses and other equines, fresh or chilled; other meat of mammals, fresh or chilled; meat of mammals, frozen; edible offal of mammals, fresh, chilled or frozen
+20	omt	Other Meat: meat of pigs, fresh or chilled; meat of rabbits and hares, fresh or chilled; meat of poultry, fresh or chilled; meat of poultry, frozen; edible offal of poultry, fresh, chilled or frozen; other meat and edible offal, fresh, chilled or frozen; preserves and preparations of meat, meat offal or blood; flours, meals and pellets of meat or meat offal, inedible; greaves
+21	vol	Vegetable Oils: margarine and similar preparations; cotton linters; oil-cake and other residues resulting from the extraction of vegetable fats or oils; flours and meals of oil seeds or oleaginous fruits, except those of mustard; vegetable waxes, except triglycerides; degras; residues resulting from the treatment of fatty substances or animal or vegetable waxes; animal fats
+22	mil	Milk: dairy products
+23	pcr	Processed Rice: semi- or wholly milled, or husked
+24	sgr	Sugar and molasses
+25	ofd	Other Food: prepared and preserved fish, crustaceans, molluscs and other aquatic invertebrates; prepared and preserved vegetables, pulses and potatoes; prepared and preserved fruits and nuts; wheat and meslin flour; other cereal flours; groats, meal and pellets of wheat and other cereals; other cereal grain products (including corn flakes); other vegetable flours and meals; mixes and doughs for the preparation of bakers' wares; starches and starch products; sugars and sugar syrups n.e.c.; preparations used in animal feeding; lucerne (alfalfa) meal and pellets; bakery products; cocoa, chocolate and sugar confectionery; macaroni, noodles, couscous and similar farinaceous products; food products n.e.c.
+26	b_t	Beverages and Tobacco products
+27	tex	Manufacture of textiles
+28	wap	Manufacture of wearing apparel
+29	lea	Manufacture of leather and related products
+30	lum	Lumber: manufacture of wood and of products of wood and cork, except furniture; manufacture of articles of straw and plaiting materials
+31	ppp	Paper & Paper Products: includes printing and reproduction of recorded media
+32	p_c	Petroleum & Coke: manufacture of coke and refined petroleum products
+33	chm	Manufacture of chemicals and chemical products
+34	bph	Manufacture of pharmaceuticals, medicinal chemical and botanical products
+35	rpp	Manufacture of rubber and plastics products
+36	nmm	Manufacture of other non-metallic mineral products
+37	i_s	Iron & Steel: basic production and casting
+38	nfm	Non-Ferrous Metals: production and casting of copper, aluminium, zinc, lead, gold, and silver
+39	fmp	Manufacture of fabricated metal products, except machinery and equipment
+40	ele	Manufacture of computer, electronic and optical products
+41	eeq	Manufacture of electrical equipment
+42	ome	Manufacture of machinery and equipment n.e.c.
+43	mvh	Manufacture of motor vehicles, trailers and semi-trailers
+44	otn	Manufacture of other transport equipment
+45	omf	Other Manufacturing: includes furniture
+46	ely	Electricity; steam and air conditioning supply
+47	gdt	Gas manufacture, distribution
+48	wtr	Water supply; sewerage, waste management and remediation activities
+49	cns	Construction: building houses factories offices and roads
+50	trd	Wholesale and retail trade; repair of motor vehicles and motorcycles
+51	afs	Accommodation, Food and service activities
+52	otp	Land transport and transport via pipelines
+53	wtp	Water transport
+54	atp	Air transport
+55	whs	Warehousing and support activities
+56	cmn	Information and communication
+57	ofi	Other Financial Intermediation: includes auxiliary activities but not insurance and pension funding
+58	ins	Insurance (formerly isr): includes pension funding, except compulsory social security
+59	rsa	Real estate activities
+60	obs	Other Business Services nec
+61	ros	Recreation & Other Services: recreational, cultural and sporting activities, other service activities; private households with employed persons (servants)
+62	osg	Other Services (Government): public administration and defense; compulsory social security, activities of membership organizations n.e.c., extra-territorial organizations and bodies
+63	edu	Education
+64	hht	Human health and social work
+65	dwe	Dwellings: ownership of dwellings (imputed rents of houses occupied by owners)
+
+*	For reference, here is a list of the regions:
+
+$ifthen.gtap6r %gtapv%==6
+	aus	Australia
+	nzl	New Zealand
+	xoc	Rest of Oceania
+	chn	China
+	hkg	Hong Kong
+	jpn	Japan
+	kor	Korea
+	twn	Taiwan
+	xea	Rest of East Asia
+	idn	Indonesia
+	mys	Malaysia
+	phl	Philippines
+	sgp	Singapore
+	tha	Thailand
+	vnm	Vietnam
+	xse	Rest of Southeast Asia
+	bgd	Bangladesh
+	ind	India
+	lka	Sri Lanka
+	xsa	Rest of South Asia
+	can	Canada
+	usa	United States
+	mex	Mexico
+	xna	Rest of North America
+	col	Colombia
+	per	Peru
+	ven	Venezuela
+	xap	Rest of Andean Pact
+	arg	Argentina
+	bra	Brazil
+	chl	Chile
+	ury	Uruguay
+	xsm	Rest of South America
+	xca	Central America
+	xfa	Rest of FTAA
+	xcb	Rest of the Caribbean
+	aut	Austria
+	bel	Belgium
+	dnk	Denmark
+	fin	Finland
+	fra	France
+	deu	Germany
+	gbr	United Kingdom
+	grc	Greece
+	irl	Ireland
+	ita	Italy
+	lux	Luxembourg
+	nld	Netherlands
+	prt	Portugal
+	esp	Spain
+	swe	Sweden
+	che	Switzerland
+	xef	Rest of EFTA
+	xer	Rest of Europe
+	alb	Albania
+	bgr	Bulgaria
+	hrv	Croatia
+	cyp	Cyprus
+	cze	Czech Republic
+	hun	Hungary
+	mlt	Malta
+	pol	Poland
+	rom	Romania
+	svk	Slovakia
+	svn	Slovenia
+	est	Estonia
+	lva	Latvia
+	ltu	Lithuania
+	rus	Russian Federation
+	xsu	Rest of Former Soviet Union
+	tur	Turkey
+	xme	Rest of Middle East
+	mar	Morocco
+	tun	Tunisia
+	xnf	Rest of North Africa
+	bwa	Botswana
+	zaf	South Africa
+	xsc	Rest of South African CU
+	mwi	Malawi
+	moz	Mozambique
+	tza	Tanzania
+	zmb	Zambia
+	zwe	Zimbabwe
+	xsd	Rest of SADC
+	mdg	Madagascar
+	uga	Uganda
+	xss	Rest of Sub-Saharan Africa
+$endif.gtap6r
+
+$ifthen.gtap7r %gtapv%==7
+	aus	Australia
+	nzl	New Zealand
+	xoc	Rest of Oceania
+	chn	China
+	hkg	Hong Kong
+	jpn	Japan
+	kor	Korea
+	twn	Taiwan
+	xea	Rest of East Asia
+	khm	Cambodia
+	idn	Indonesia
+	lao	Lao People's Democratic Republ
+	mmr	Myanmar
+	mys	Malaysia
+	phl	Philippines
+	sgp	Singapore
+	tha	Thailand
+	vnm	Viet Nam
+	xse	Rest of Southeast Asia
+	bgd	Bangladesh
+	ind	India
+	pak	Pakistan
+	lka	Sri Lanka
+	xsa	Rest of South Asia
+	can	Canada
+	usa	United States of America
+	mex	Mexico
+	xna	Rest of North America
+	arg	Argentina
+	bol	Bolivia
+	bra	Brazil
+	chl	Chile
+	col	Colombia
+	ecu	Ecuador
+	pry	Paraguay
+	per	Peru
+	ury	Uruguay
+	ven	Venezuela
+	xsm	Rest of South America
+	cri	Costa Rica
+	gtm	Guatemala
+	nic	Nicaragua
+	pan	Panama
+	xca	Rest of Central America
+	xcb	Caribbean
+	aut	Austria
+	bel	Belgium
+	cyp	Cyprus
+	cze	Czech Republic
+	dnk	Denmark
+	est	Estonia
+	fin	Finland
+	fra	France
+	deu	Germany
+	grc	Greece
+	hun	Hungary
+	irl	Ireland
+	ita	Italy
+	lva	Latvia
+	ltu	Lithuania
+	lux	Luxembourg
+	mlt	Malta
+	nld	Netherlands
+	pol	Poland
+	prt	Portugal
+	svk	Slovakia
+	svn	Slovenia
+	esp	Spain
+	swe	Sweden
+	gbr	United Kingdom
+	che	Switzerland
+	nor	Norway
+	xef	Rest of EFTA
+	alb	Albania
+	bgr	Bulgaria
+	blr	Belarus
+	hrv	Croatia
+	rou	Romania
+	rus	Russian Federation
+	ukr	Ukraine
+	xee	Rest of Eastern Europe
+	xer	Rest of Europe
+	kaz	Kazakhstan
+	kgz	Kyrgyztan
+	xsu	Rest of Former Soviet Union
+	arm	Armenia
+	aze	Azerbaijan
+	geo	Georgia
+	irn	Iran Islamic Republic of
+	tur	Turkey
+	xws	Rest of Western Asia
+	egy	Egypt
+	mar	Morocco
+	tun	Tunisia
+	xnf	Rest of North Africa
+	nga	Nigeria
+	sen	Senegal
+	xwf	Rest of Western Africa
+	xcf	Central Africa
+	xac	South Central Africa
+	eth	Ethiopia
+	mdg	Madagascar
+	mwi	Malawi
+	mus	Mauritius
+	moz	Mozambique
+	tza	Tanzania
+	uga	Uganda
+	zmb	Zambia
+	zwe	Zimbabwe
+	xec	Rest of Eastern Africa
+	bwa	Botswana
+	zaf	South Africa
+	xsc	Rest of South African Customs 
+$endif.gtap7r
+
+$ifthen.gtap8r %gtapv%==8
+	aus	"Australia", 
+	nzl	"New Zealand", 
+	xoc	"Rest of Oceania", 
+	chn	"China", 
+	hkg	"Hong Kong", 
+	jpn	"Japan", 
+	kor	"Korea", 
+	mng	"Mongolia", 
+	twn	"Taiwan", 
+	xea	"Rest of East Asia", 
+	khm	"Cambodia", 
+	idn	"Indonesia", 
+	lao	"Lao People's Democratic Republ", 
+	mys	"Malaysia", 
+	phl	"Philippines", 
+	sgp	"Singapore", 
+	tha	"Thailand", 
+	vnm	"Viet Nam", 
+	xse	"Rest of Southeast Asia", 
+	bgd	"Bangladesh", 
+	ind	"India", 
+	npl	"Nepal", 
+	pak	"Pakistan", 
+	lka	"Sri Lanka", 
+	xsa	"Rest of South Asia", 
+	can	"Canada", 
+	usa	"United States of America", 
+	mex	"Mexico", 
+	xna	"Rest of North America", 
+	arg	"Argentina", 
+	bol	"Bolivia", 
+	bra	"Brazil", 
+	chl	"Chile", 
+	col	"Colombia", 
+	ecu	"Ecuador", 
+	pry	"Paraguay", 
+	per	"Peru", 
+	ury	"Uruguay", 
+	ven	"Venezuela", 
+	xsm	"Rest of South America", 
+	cri	"Costa Rica", 
+	gtm	"Guatemala", 
+	hnd	"Honduras", 
+	nic	"Nicaragua", 
+	pan	"Panama", 
+	slv	"El Salvador", 
+	xca	"Rest of Central America", 
+	xcb	"Caribbean", 
+	aut	"Austria", 
+	bel	"Belgium", 
+	cyp	"Cyprus", 
+	cze	"Czech Republic", 
+	dnk	"Denmark", 
+	est	"Estonia", 
+	fin	"Finland", 
+	fra	"France", 
+	deu	"Germany", 
+	grc	"Greece", 
+	hun	"Hungary", 
+	irl	"Ireland", 
+	ita	"Italy", 
+	lva	"Latvia", 
+	ltu	"Lithuania", 
+	lux	"Luxembourg", 
+	mlt	"Malta", 
+	nld	"Netherlands", 
+	pol	"Poland", 
+	prt	"Portugal", 
+	svk	"Slovakia", 
+	svn	"Slovenia", 
+	esp	"Spain", 
+	swe	"Sweden", 
+	gbr	"United Kingdom", 
+	che	"Switzerland", 
+	nor	"Norway", 
+	xef	"Rest of EFTA", 
+	alb	"Albania", 
+	bgr	"Bulgaria", 
+	blr	"Belarus", 
+	hrv	"Croatia", 
+	rou	"Romania", 
+	rus	"Russian Federation", 
+	ukr	"Ukraine", 
+	xee	"Rest of Eastern Europe", 
+	xer	"Rest of Europe", 
+	kaz	"Kazakhstan", 
+	kgz	"Kyrgyzstan", 
+	xsu	"Rest of Former Soviet Union", 
+	arm	"Armenia", 
+	aze	"Azerbaijan", 
+	geo	"Georgia", 
+	bhr	"Bahrain", 
+	irn	"Iran Islamic Republic of", 
+	isr	"Israel", 
+	kwt	"Kuwait", 
+	omn	"Oman", 
+	qat	"Qatar", 
+	sau	"Saudi Arabia", 
+	tur	"Turkey", 
+	are	"United Arab Emirates", 
+	xws	"Rest of Western Asia", 
+	egy	"Egypt", 
+	mar	"Morocco", 
+	tun	"Tunisia", 
+	xnf	"Rest of North Africa", 
+	cmr	"Cameroon", 
+	civ	"Cote d'Ivoire", 
+	gha	"Ghana", 
+	nga	"Nigeria", 
+	sen	"Senegal", 
+	xwf	"Rest of Western Africa", 
+	xcf	"Central Africa", 
+	xac	"South Central Africa", 
+	eth	"Ethiopia", 
+	ken	"Kenya", 
+	mdg	"Madagascar", 
+	mwi	"Malawi", 
+	mus	"Mauritius", 
+	moz	"Mozambique", 
+	tza	"Tanzania", 
+	uga	"Uganda", 
+	zmb	"Zambia", 
+	zwe	"Zimbabwe", 
+	xec	"Rest of Eastern Africa", 
+	bwa	"Botswana", 
+	nam	"Namibia"
+	zaf	"South Africa", 
+	xsc	"Rest of South African Customs", 
+	xtw	"Rest of the World"
+$endif.gtap8r
+
+$ifthen.gtap81r %gtapv%==81
+	aus	"Australia", 
+	nzl	"New Zealand", 
+	xoc	"Rest of Oceania", 
+	chn	"China", 
+	hkg	"Hong Kong", 
+	jpn	"Japan", 
+	kor	"Korea", 
+	mng	"Mongolia", 
+	twn	"Taiwan", 
+	xea	"Rest of East Asia", 
+	khm	"Cambodia", 
+	idn	"Indonesia", 
+	lao	"Lao Peoples Democratic Republ", 
+	mys	"Malaysia", 
+	phl	"Philippines", 
+	sgp	"Singapore", 
+	tha	"Thailand", 
+	vnm	"Viet Nam", 
+	xse	"Rest of Southeast Asia", 
+	bgd	"Bangladesh", 
+	ind	"India", 
+	npl	"Nepal", 
+	pak	"Pakistan", 
+	lka	"Sri Lanka", 
+	xsa	"Rest of South Asia", 
+	can	"Canada", 
+	usa	"United States of America", 
+	mex	"Mexico", 
+	xna	"Rest of North America", 
+	arg	"Argentina", 
+	bol	"Bolivia", 
+	bra	"Brazil", 
+	chl	"Chile", 
+	col	"Colombia", 
+	ecu	"Ecuador", 
+	pry	"Paraguay", 
+	per	"Peru", 
+	ury	"Uruguay", 
+	ven	"Venezuela", 
+	xsm	"Rest of South America", 
+	cri	"Costa Rica", 
+	gtm	"Guatemala", 
+	hnd	"Honduras", 
+	nic	"Nicaragua", 
+	pan	"Panama", 
+	slv	"El Salvador", 
+	xca	"Rest of Central America", 
+	xcb	"Caribbean", 
+	aut	"Austria", 
+	bel	"Belgium", 
+	cyp	"Cyprus", 
+	cze	"Czech Republic", 
+	dnk	"Denmark", 
+	est	"Estonia", 
+	fin	"Finland", 
+	fra	"France", 
+	deu	"Germany", 
+	grc	"Greece", 
+	hun	"Hungary", 
+	irl	"Ireland", 
+	ita	"Italy", 
+	lva	"Latvia", 
+	ltu	"Lithuania", 
+	lux	"Luxembourg", 
+	mlt	"Malta", 
+	nld	"Netherlands", 
+	pol	"Poland", 
+	prt	"Portugal", 
+	svk	"Slovakia", 
+	svn	"Slovenia", 
+	esp	"Spain", 
+	swe	"Sweden", 
+	gbr	"United Kingdom", 
+	che	"Switzerland", 
+	nor	"Norway", 
+	xef	"Rest of EFTA", 
+	alb	"Albania", 
+	bgr	"Bulgaria", 
+	blr	"Belarus", 
+	hrv	"Croatia", 
+	rou	"Romania", 
+	rus	"Russian Federation", 
+	ukr	"Ukraine", 
+	xee	"Rest of Eastern Europe", 
+	xer	"Rest of Europe", 
+	kaz	"Kazakhstan", 
+	kgz	"Kyrgyzstan", 
+	xsu	"Rest of Former Soviet Union", 
+	arm	"Armenia", 
+	aze	"Azerbaijan", 
+	geo	"Georgia", 
+	bhr	"Bahrain", 
+	irn	"Iran Islamic Republic of", 
+	isr	"Israel", 
+	kwt	"Kuwait", 
+	omn	"Oman", 
+	qat	"Qatar", 
+	sau	"Saudi Arabia", 
+	tur	"Turkey", 
+	are	"United Arab Emirates", 
+	xws	"Rest of Western Asia", 
+	egy	"Egypt", 
+	mar	"Morocco", 
+	tun	"Tunisia", 
+	xnf	"Rest of North Africa", 
+	ben	"Benin",
+	bfa	"Burkina Faso",
+	cmr	"Cameroon",
+	civ	"Cote dIvoire",
+	gha	"Ghana",
+	gin	"Guinea",
+	nga	"Nigeria",
+	sen	"Senegal",
+	tgo	"Togo",
+	xwf	"Rest of Western Africa",
+	xcf	"Central Africa",
+	xac	"South Central Africa",
+	eth	"Ethiopia",
+	ken	"Kenya",
+	mdg	"Madagascar",
+	mwi	"Malawi",
+	mus	"Mauritius",
+	moz	"Mozambique",
+	rwa	"Rwanda",
+	tza	"Tanzania",
+	uga	"Uganda",
+	zmb	"Zambia",
+	zwe	"Zimbabwe",
+	xec	"Rest of Eastern Africa",
+	bwa	"Botswana",
+	nam	"Namibia",
+	zaf	"South Africa",
+	xsc	"Rest of South African Customs",
+	xtw	"Rest of the World" 
+$endif.gtap81r
+
+$ifthen.gtap9r %gtapv%==9
+	aus	"Australia",
+	nzl	"New Zealand",
+	xoc	"Rest of Oceania",
+	chn	"China",
+	hkg	"Hong Kong",
+	jpn	"Japan",
+	kor	"Korea",
+	mng	"Mongolia",
+	twn	"Taiwan",
+	xea	"Rest of East Asia",
+	brn	"Brunei Darussalam",
+	khm	"Cambodia",
+	idn	"Indonesia",
+	lao	"Lao People's Democratic Republ",
+	mys	"Malaysia",
+	phl	"Philippines",
+	sgp	"Singapore",
+	tha	"Thailand",
+	vnm	"Viet Nam",
+	xse	"Rest of Southeast Asia",
+	bgd	"Bangladesh",
+	ind	"India",
+	npl	"Nepal",
+	pak	"Pakistan",
+	lka	"Sri Lanka",
+	xsa	"Rest of South Asia",
+	can	"Canada",
+	usa	"United States of America",
+	mex	"Mexico",
+	xna	"Rest of North America",
+	arg	"Argentina",
+	bol	"Bolivia",
+	bra	"Brazil",
+	chl	"Chile",
+	col	"Colombia",
+	ecu	"Ecuador",
+	pry	"Paraguay",
+	per	"Peru",
+	ury	"Uruguay",
+	ven	"Venezuela",
+	xsm	"Rest of South America",
+	cri	"Costa Rica",
+	gtm	"Guatemala",
+	hnd	"Honduras",
+	nic	"Nicaragua",
+	pan	"Panama",
+	slv	"El Salvador",
+	xca	"Rest of Central America",
+	dom	"Dominican Republic",
+	jam	"Jamaica",
+	pri	"Puerto Rico",
+	tto	"Trinidad and Tobago",
+	xcb	"Caribbean",
+	aut	"Austria",
+	bel	"Belgium",
+	cyp	"Cyprus",
+	cze	"Czech Republic",
+	dnk	"Denmark",
+	est	"Estonia",
+	fin	"Finland",
+	fra	"France",
+	deu	"Germany",
+	grc	"Greece",
+	hun	"Hungary",
+	irl	"Ireland",
+	ita	"Italy",
+	lva	"Latvia",
+	ltu	"Lithuania",
+	lux	"Luxembourg",
+	mlt	"Malta",
+	nld	"Netherlands",
+	pol	"Poland",
+	prt	"Portugal",
+	svk	"Slovakia",
+	svn	"Slovenia",
+	esp	"Spain",
+	swe	"Sweden",
+	gbr	"United Kingdom",
+	che	"Switzerland",
+	nor	"Norway",
+	xef	"Rest of EFTA",
+	alb	"Albania",
+	bgr	"Bulgaria",
+	blr	"Belarus",
+	hrv	"Croatia",
+	rou	"Romania",
+	rus	"Russian Federation",
+	ukr	"Ukraine",
+	xee	"Rest of Eastern Europe",
+	xer	"Rest of Europe",
+	kaz	"Kazakhstan",
+	kgz	"Kyrgyzstan",
+	xsu	"Rest of Former Soviet Union",
+	arm	"Armenia",
+	aze	"Azerbaijan",
+	geo	"Georgia",
+	bhr	"Bahrain",
+	irn	"Iran Islamic Republic of",
+	isr	"Israel",
+	jor	"Jordan",
+	kwt	"Kuwait",
+	omn	"Oman",
+	qat	"Qatar",
+	sau	"Saudi Arabia",
+	tur	"Turkey",
+	are	"United Arab Emirates",
+	xws	"Rest of Western Asia",
+	egy	"Egypt",
+	mar	"Morocco",
+	tun	"Tunisia",
+	xnf	"Rest of North Africa",
+	ben	"Benin",
+	bfa	"Burkina Faso",
+	cmr	"Cameroon",
+	civ	"Cote d'Ivoire",
+	gha	"Ghana",
+	gin	"Guinea",
+	nga	"Nigeria",
+	sen	"Senegal",
+	tgo	"Togo",
+	xwf	"Rest of Western Africa",
+	xcf	"Central Africa",
+	xac	"South Central Africa",
+	eth	"Ethiopia",
+	ken	"Kenya",
+	mdg	"Madagascar",
+	mwi	"Malawi",
+	mus	"Mauritius",
+	moz	"Mozambique",
+	rwa	"Rwanda",
+	tza	"Tanzania",
+	uga	"Uganda",
+	zmb	"Zambia",
+	zwe	"Zimbabwe",
+	xec	"Rest of Eastern Africa",
+	bwa	"Botswana",
+	nam	"Namibia",
+	zaf	"South Africa",
+	xsc	"Rest of South African Customs",
+	xtw	"Rest of the World" 
+$endif.gtap9r
+
+$ifthen.gtap10p2r %gtapv%==10p2
+	aus	"Australia",
+	nzl	"New Zealand",
+	xoc	"Rest of Oceania",
+	chn	"China",
+	hkg	"Hong Kong",
+	jpn	"Japan",
+	kor	"Korea",
+	mng	"Mongolia",
+	twn	"Taiwan",
+	xea	"Rest of East Asia",
+	brn	"Brunei Darussalam",
+	khm	"Cambodia",
+	idn	"Indonesia",
+	lao	"Lao People's Democratic Republ",
+	mys	"Malaysia",
+	phl	"Philippines",
+	sgp	"Singapore",
+	tha	"Thailand",
+	vnm	"Viet Nam",
+	xse	"Rest of Southeast Asia",
+	bgd	"Bangladesh",
+	ind	"India",
+	npl	"Nepal",
+	pak	"Pakistan",
+	lka	"Sri Lanka",
+	xsa	"Rest of South Asia",
+	can	"Canada",
+	usa	"United States of America",
+	mex	"Mexico",
+	xna	"Rest of North America",
+	arg	"Argentina",
+	bol	"Bolivia",
+	bra	"Brazil",
+	chl	"Chile",
+	col	"Colombia",
+	ecu	"Ecuador",
+	pry	"Paraguay",
+	per	"Peru",
+	ury	"Uruguay",
+	ven	"Venezuela",
+	xsm	"Rest of South America",
+	cri	"Costa Rica",
+	gtm	"Guatemala",
+	hnd	"Honduras",
+	nic	"Nicaragua",
+	pan	"Panama",
+	slv	"El Salvador",
+	xca	"Rest of Central America",
+	dom	"Dominican Republic",
+	jam	"Jamaica",
+	pri	"Puerto Rico",
+	tto	"Trinidad and Tobago",
+	xcb	"Caribbean",
+	aut	"Austria",
+	bel	"Belgium",
+	cyp	"Cyprus",
+	cze	"Czech Republic",
+	dnk	"Denmark",
+	est	"Estonia",
+	fin	"Finland",
+	fra	"France",
+	deu	"Germany",
+	grc	"Greece",
+	hun	"Hungary",
+	irl	"Ireland",
+	ita	"Italy",
+	lva	"Latvia",
+	ltu	"Lithuania",
+	lux	"Luxembourg",
+	mlt	"Malta",
+	nld	"Netherlands",
+	pol	"Poland",
+	prt	"Portugal",
+	svk	"Slovakia",
+	svn	"Slovenia",
+	esp	"Spain",
+	swe	"Sweden",
+	gbr	"United Kingdom",
+	che	"Switzerland",
+	nor	"Norway",
+	xef	"Rest of EFTA",
+	alb	"Albania",
+	bgr	"Bulgaria",
+	blr	"Belarus",
+	hrv	"Croatia",
+	rou	"Romania",
+	rus	"Russian Federation",
+	ukr	"Ukraine",
+	xee	"Rest of Eastern Europe",
+	xer	"Rest of Europe",
+	kaz	"Kazakhstan",
+	kgz	"Kyrgyzstan",
+	tjk	"Tajikistan",
+	xsu	"Rest of Former Soviet Union",
+	arm	"Armenia",
+	aze	"Azerbaijan",
+	geo	"Georgia",
+	bhr	"Bahrain",
+	irn	"Iran Islamic Republic of",
+	isr	"Israel",
+	jor	"Jordan",
+	kwt	"Kuwait",
+	omn	"Oman",
+	qat	"Qatar",
+	sau	"Saudi Arabia",
+	tur	"Turkey",
+	are	"United Arab Emirates",
+	xws	"Rest of Western Asia",
+	egy	"Egypt",
+	mar	"Morocco",
+	tun	"Tunisia",
+	xnf	"Rest of North Africa",
+	ben	"Benin",
+	bfa	"Burkina Faso",
+	cmr	"Cameroon",
+	civ	"Cote d'Ivoire",
+	gha	"Ghana",
+	gin	"Guinea",
+	nga	"Nigeria",
+	sen	"Senegal",
+	tgo	"Togo",
+	xwf	"Rest of Western Africa",
+	xcf	"Central Africa",
+	xac	"South Central Africa",
+	eth	"Ethiopia",
+	ken	"Kenya",
+	mdg	"Madagascar",
+	mwi	"Malawi",
+	mus	"Mauritius",
+	moz	"Mozambique",
+	rwa	"Rwanda",
+	tza	"Tanzania",
+	uga	"Uganda",
+	zmb	"Zambia",
+	zwe	"Zimbabwe",
+	xec	"Rest of Eastern Africa",
+	bwa	"Botswana",
+	nam	"Namibia",
+	zaf	"South Africa",
+	xsc	"Rest of South African Customs",
+	xtw	"Rest of the World" 
+$endif.gtap10p2r
+
+$ifthen.gtap10p3r %gtapv%==10p3
+	aus	"Australia",
+	nzl	"New Zealand",
+	xoc	"Rest of Oceania",
+	chn	"China",
+	hkg	"Hong Kong",
+	jpn	"Japan",
+	kor	"Korea",
+	mng	"Mongolia",
+	twn	"Taiwan",
+	xea	"Rest of East Asia",
+	brn	"Brunei Darussalam",
+	khm	"Cambodia",
+	idn	"Indonesia",
+	lao	"Lao People's Democratic Republ",
+	mys	"Malaysia",
+	phl	"Philippines",
+	sgp	"Singapore",
+	tha	"Thailand",
+	vnm	"Viet Nam",
+	xse	"Rest of Southeast Asia",
+	bgd	"Bangladesh",
+	ind	"India",
+	npl	"Nepal",
+	pak	"Pakistan",
+	lka	"Sri Lanka",
+	xsa	"Rest of South Asia",
+	can	"Canada",
+	usa	"United States of America",
+	mex	"Mexico",
+	xna	"Rest of North America",
+	arg	"Argentina",
+	bol	"Bolivia",
+	bra	"Brazil",
+	chl	"Chile",
+	col	"Colombia",
+	ecu	"Ecuador",
+	pry	"Paraguay",
+	per	"Peru",
+	ury	"Uruguay",
+	ven	"Venezuela",
+	xsm	"Rest of South America",
+	cri	"Costa Rica",
+	gtm	"Guatemala",
+	hnd	"Honduras",
+	nic	"Nicaragua",
+	pan	"Panama",
+	slv	"El Salvador",
+	xca	"Rest of Central America",
+	dom	"Dominican Republic",
+	jam	"Jamaica",
+	pri	"Puerto Rico",
+	tto	"Trinidad and Tobago",
+	xcb	"Caribbean",
+	aut	"Austria",
+	bel	"Belgium",
+	cyp	"Cyprus",
+	cze	"Czech Republic",
+	dnk	"Denmark",
+	est	"Estonia",
+	fin	"Finland",
+	fra	"France",
+	deu	"Germany",
+	grc	"Greece",
+	hun	"Hungary",
+	irl	"Ireland",
+	ita	"Italy",
+	lva	"Latvia",
+	ltu	"Lithuania",
+	lux	"Luxembourg",
+	mlt	"Malta",
+	nld	"Netherlands",
+	pol	"Poland",
+	prt	"Portugal",
+	svk	"Slovakia",
+	svn	"Slovenia",
+	esp	"Spain",
+	swe	"Sweden",
+	gbr	"United Kingdom",
+	che	"Switzerland",
+	nor	"Norway",
+	xef	"Rest of EFTA",
+	alb	"Albania",
+	bgr	"Bulgaria",
+	blr	"Belarus",
+	hrv	"Croatia",
+	rou	"Romania",
+	rus	"Russian Federation",
+	ukr	"Ukraine",
+	xee	"Rest of Eastern Europe",
+	xer	"Rest of Europe",
+	kaz	"Kazakhstan",
+	kgz	"Kyrgyzstan",
+	tjk	"Tajikistan",
+	xsu	"Rest of Former Soviet Union",
+	arm	"Armenia",
+	aze	"Azerbaijan",
+	geo	"Georgia",
+	bhr	"Bahrain",
+	irn	"Iran Islamic Republic of",
+	isr	"Israel",
+	jor	"Jordan",
+	kwt	"Kuwait",
+	omn	"Oman",
+	qat	"Qatar",
+	sau	"Saudi Arabia",
+	tur	"Turkey",
+	are	"United Arab Emirates",
+	xws	"Rest of Western Asia",
+	egy	"Egypt",
+	mar	"Morocco",
+	tun	"Tunisia",
+	xnf	"Rest of North Africa",
+	ben	"Benin",
+	bfa	"Burkina Faso",
+	cmr	"Cameroon",
+	civ	"Cote d'Ivoire",
+	gha	"Ghana",
+	gin	"Guinea",
+	nga	"Nigeria",
+	sen	"Senegal",
+	tgo	"Togo",
+	xwf	"Rest of Western Africa",
+	xcf	"Central Africa",
+	xac	"South Central Africa",
+	eth	"Ethiopia",
+	ken	"Kenya",
+	mdg	"Madagascar",
+	mwi	"Malawi",
+	mus	"Mauritius",
+	moz	"Mozambique",
+	rwa	"Rwanda",
+	tza	"Tanzania",
+	uga	"Uganda",
+	zmb	"Zambia",
+	zwe	"Zimbabwe",
+	xec	"Rest of Eastern Africa",
+	bwa	"Botswana",
+	nam	"Namibia",
+	zaf	"South Africa",
+	xsc	"Rest of South African Customs",
+	xtw	"Rest of the World" 
+$endif.gtap10p3r
+
+$ifthen.gtap10 %gtapv%==10
+	aus	"Australia"
+	nzl	"New Zealand"
+	xoc	"Rest of Oceania"
+	chn	"China"
+	hkg	"Hong Kong"
+	jpn	"Japan"
+	kor	"Korea"
+	mng	"Mongolia"
+	twn	"Taiwan"
+	xea	"Rest of East Asia"
+	brn	"Brunei Darussalam"
+	khm	"Cambodia"
+	idn	"Indonesia"
+	lao	"Lao People's Democratic Republic"
+	mys	"Malaysia"
+	phl	"Philippines"
+	sgp	"Singapore"
+	tha	"Thailand"
+	vnm	"Viet Nam"
+	xse	"Rest of Southeast Asia"
+	bgd	"Bangladesh"
+	ind	"India"
+	npl	"Nepal"
+	pak	"Pakistan"
+	lka	"Sri Lanka"
+	xsa	"Rest of South Asia"
+	can	"Canada"
+	usa	"United States of America"
+	mex	"Mexico"
+	xna	"Rest of North America"
+	arg	"Argentina"
+	bol	"Bolivia"
+	bra	"Brazil"
+	chl	"Chile"
+	col	"Colombia"
+	ecu	"Ecuador"
+	pry	"Paraguay"
+	per	"Peru"
+	ury	"Uruguay"
+	ven	"Venezuela"
+	xsm	"Rest of South America"
+	cri	"Costa Rica"
+	gtm	"Guatemala"
+	hnd	"Honduras"
+	nic	"Nicaragua"
+	pan	"Panama"
+	slv	"El Salvador"
+	xca	"Rest of Central America"
+	dom	"Dominican Republic"
+	jam	"Jamaica"
+	pri	"Puerto Rico"
+	tto	"Trinidad and Tobago"
+	xcb	"Caribbean"
+	aut	"Austria"
+	bel	"Belgium"
+	bgr	"Bulgaria"
+	hrv	"Croatia"
+	cyp	"Cyprus"
+	cze	"Czech Republic"
+	dnk	"Denmark"
+	est	"Estonia"
+	fin	"Finland"
+	fra	"France"
+	deu	"Germany"
+	grc	"Greece"
+	hun	"Hungary"
+	irl	"Ireland"
+	ita	"Italy"
+	lva	"Latvia"
+	ltu	"Lithuania"
+	lux	"Luxembourg"
+	mlt	"Malta"
+	nld	"Netherlands"
+	pol	"Poland"
+	prt	"Portugal"
+	rou	"Romania"
+	svk	"Slovakia"
+	svn	"Slovenia"
+	esp	"Spain"
+	swe	"Sweden"
+	gbr	"United Kingdom"
+	che	"Switzerland"
+	nor	"Norway"
+	xef	"Rest of EFTA"
+	alb	"Albania"
+	blr	"Belarus"
+	rus	"Russian Federation"
+	ukr	"Ukraine"
+	xee	"Rest of Eastern Europe"
+	xer	"Rest of Europe"
+	kaz	"Kazakhstan"
+	kgz	"Kyrgyzstan"
+	tjk	"Tajikistan"
+	xsu	"Rest of Former Soviet Union"
+	arm	"Armenia"
+	aze	"Azerbaijan"
+	geo	"Georgia"
+	bhr	"Bahrain"
+	irn	"Iran Islamic Republic of"
+	isr	"Israel"
+	jor	"Jordan"
+	kwt	"Kuwait"
+	omn	"Oman"
+	qat	"Qatar"
+	sau	"Saudi Arabia"
+	tur	"Turkey"
+	are	"United Arab Emirates"
+	xws	"Rest of Western Asia"
+	egy	"Egypt"
+	mar	"Morocco"
+	tun	"Tunisia"
+	xnf	"Rest of North Africa"
+	ben	"Benin"
+	bfa	"Burkina Faso"
+	cmr	"Cameroon"
+	civ	"Cote d'Ivoire"
+	gha	"Ghana"
+	gin	"Guinea"
+	nga	"Nigeria"
+	sen	"Senegal"
+	tgo	"Togo"
+	xwf	"Rest of Western Africa"
+	xcf	"Central Africa"
+	xac	"South Central Africa"
+	eth	"Ethiopia"
+	ken	"Kenya"
+	mdg	"Madagascar"
+	mwi	"Malawi"
+	mus	"Mauritius"
+	moz	"Mozambique"
+	rwa	"Rwanda"
+	tza	"Tanzania"
+	uga	"Uganda"
+	zmb	"Zambia"
+	zwe	"Zimbabwe"
+	xec	"Rest of Eastern Africa"
+	bwa	"Botswana"
+	nam	"Namibia"
+	zaf	"South Africa"
+	xsc	"Rest of South African Customs Union"
+	xtw	"Rest of the World"
+$endif.gtap10
+
+
+set countrymap(*,*) /
+	eur."European Union",
+	deu."Germany",
+	jpn."Japan",
+	chn."China",
+	twn."Taiwan",
+	kor."Korea, South",
+	che."Switzerland",
+	SGP."Singapore",
+	ITA."Italy",
+	THA."Thailand",
+	IRL."Ireland",
+	RUS."Russia",
+	DNK."Denmark",
+	ESP."Spain",
+	NOR."Norway",
+	IRN."Iran",
+	SAU."Saudi Arabia",
+	ARE."United Arab Emirates",
+	SWE."Sweden",
+	xea."Macau",
+	ISR."Israel",
+	HKG."Hong Kong",
+	MYS."Malaysia",
+	NGA."Nigeria",
+	vnm."Vietnam",
+	AUT."Austria",
+	HUN."Hungary",
+	VEN."Venezuela",
+	xoc."Papua New Guinea",
+	LUX."Luxembourg",
+	SVN."Slovenia",
+	BGR."Bulgaria",
+	CZE."Czechia",
+	KWT."Kuwait",
+	QAT."Qatar",
+	HRV."Croatia",
+	BWA."Botswana",
+	xsu."Uzbekistan",
+	FIN."Finland",
+	xws."Iraq",
+	AZE."Azerbaijan",
+	MLT."Malta",
+	GTM."Guatemala",
+	PRT."Portugal",
+	xcb."Cuba",
+	URY."Uruguay",
+	xef."Iceland",
+	EST."Estonia",
+	BRN."Brunei",
+	xnf."Libya",
+	*52."Eswatini",
+	BEL."Belgium",
+	LTU."Lithuania",
+	xcb."British Virgin Islands",
+	xsa."Afghanistan",
+	xsm."Suriname",
+	POL."Poland",
+	xoc."French Polynesia",
+	xoc."Cook Islands",
+	xoc."Kiribati",
+	xoc."Micronesia, Federated Sta",
+	xoc."Marshall Islands",
+	xcb."Saint Lucia",
+	xwf."Guinea-Bissau",
+	xoc."Nauru",
+	xer."San Marino",
+	xoc."Tuvalu",
+	xoc."Samoa",
+	xcb."Anguilla",
+	*71."Comoros",
+	xoc."Palau",
+	xoc."Tonga",
+	xcf."Sao Tome and Principe",
+	xcf."Equatorial Guinea",
+	xoc."Solomon Islands",
+	xcb."Grenada",
+	xoc."Vanuatu",
+	NPL."Nepal",
+	xcb."Dominica",
+	xcb."Antigua and Barbuda",
+	xcb."Saint Vincent and the Gre",
+	xcb."Saint Kitts and Nevis",
+	xec."Eritrea",
+	xca."Belize",
+	xwf."Gambia, The",
+	xer."Macedonia     Macedonia",
+	xsm."Guyana",
+	xwf."Cabo Verde",
+	DOM."Dominican Republic",
+	xws."Yemen     Yemen",
+	xec."South Sudan",
+	NAM."Namibia",
+	xcb."Barbados",
+	tjk."Tajikistan",
+	xsc."Lesotho",
+	xcf."Central African Republic",
+	xac."Congo, Democratic Republic",
+	xoc."Fiji",
+	LVA."Latvia",
+	xec."Seychelles",
+	xcb."Haiti",
+	ARM."Armenia",
+	xse."Timor-Leste",
+	xee."Moldova",
+	HND."Honduras",
+	MDG."Madagascar",
+	TGO."Togo",
+	*.109    Curacao                 
+	ECU."Ecuador",
+	JAM."Jamaica",
+	xec."Burundi",
+	ZWE."Zimbabwe",
+	xec."Djibouti",
+	xsa."Bhutan",
+	CIV."Cote d'Ivoire",
+	xec."Somalia",
+	xwf."Mauritania",
+	xcf."Chad",
+	PRY."Paraguay",
+	KGZ."Kyrgyzstan",
+	MWI."Malawi",
+	RWA."Rwanda",
+	SLV."El Salvador",
+	*.125    Kosovo                  
+	xcf."Gabon",
+	xwf."Liberia",
+	MUS."Mauritius",
+	xwf."Sierra Leone",
+	ZMB."Zambia",
+	NIC."Nicaragua",
+	CMR."Cameroon",
+	BEN."Benin",
+	xer."Montenegro",
+	xer."Bosnia and Herzegovina",
+	ALB."Albania",
+	xwf."Mali",
+	BLR."Belarus",
+	MNG."Mongolia",
+	xsa."Maldives",
+	CYP."Cyprus",
+	BFA."Burkina Faso",
+	xcf."Congo, Republic of the",
+	xwf."Niger",
+	UGA."Uganda",
+	PHL."Philippines",
+	TTO."Trinidad and Tobago",
+	BHR."Bahrain",
+	GEO."Georgia",
+	SVK."Slovakia",
+	XWS."West Bank",
+	XWS."Gaza Strip",
+	XOC."New Caledonia",
+	SEN."Senegal",
+	GRC."Greece",
+	CRI."Costa Rica",
+	XCB."Bahamas, The",
+	XER."Serbia",
+	KHM."Cambodia",
+	TZA."Tanzania",
+	MOZ."Mozambique",
+	XWS."Syria",
+	GHA."Ghana",
+	BOL."Bolivia",
+	LAO."Laos",
+	GIN."Guinea",
+	LKA."Sri Lanka",
+	PER."Peru",
+	BGD."Bangladesh",
+	XEC."Sudan",
+	JOR."Jordan",
+	MMR."Burma",
+	PAN."Panama",
+	UKR."Ukraine",
+	TUN."Tunisia",
+	CHL."Chile",
+	MAR."Morocco",
+	XSU."Turkmenistan",
+	KAZ."Kazakhstan",
+	KEN."Kenya",
+	NZL."New Zealand",
+	XAC."Angola",
+	ETH."Ethiopia",
+	ROU."Romania",
+	XSA."South Africa",
+	OMN."Oman",
+	BRA."Brazil",
+	COL."Colombia",
+	PAK."Pakistan",
+	XWS."Lebanon",
+	EGY."Egypt",
+	IDN."Indonesia",
+	MEX."Mexico",
+	XNF."Algeria",
+	ARG."Argentina",
+	AUS."Australia",
+	FRA."France",
+	TUR."Turkey",
+	CAN."Canada",
+	IND."India",
+	GBR."United Kingdom",
+	USA."United States" /
