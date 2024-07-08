@@ -1,59 +1,139 @@
-$title	Alternative Formulation
+$title	Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+*	Define a single sector to estimate here:
 
-parameter	mpsref(r,pd,s)	Reference imports;
+$if not set ds $set ds alt
+
+*	Two estimation methods have been implemented.  This is b:
+
+*		b	"Bilateral gravity" model which calibrates to
+*			import and export by port and bilateral trade partner.
+
+
+set	r(*)	Regions (trading partners)
+	s(*)	Subregions (states),
+	pd(*)	Port districts;
+
+$gdxin 'datasets\%ds%.gdx'
+$load r s pd
+
+*	Read economic data:
+
+parameter
+	y0(s)		Reference output (data)
+	z0(s)		Reference demand (data)
+	md0(r,pd)	Reference aggregate imports (data)
+	xs0(pd,r)	Reference aggregate exports (data);
+
+$load y0 md0 xs0 z0
+
+parameter	x0(r)	Export
+		m0(r)	Import;
+
+m0(r) = sum(pd,md0(r,pd));
+x0(r) = sum(pd,xs0(pd,r));
+
+*	Read geographic distances:
+
+set		loc		Locations (states and port districts) /set.s, set.pd/;
+parameter	dist(s,loc)	Distances from states to locations;
+$gdxin 'datasets\geography.gdx'
+$load dist
+$gdxin
+
+dist("dc","dc") = 1;
+
+alias (s,ss), (r,rr);
+
+parameter	zscale	Demand scale factor;
+zscale = (sum(s,y0(s)) + sum(r,m0(r)-x0(r)))/sum(s,z0(s));
+display zscale;
+
+z0(s) = z0(s)*zscale;
+
+parameter
+	tau_d(s,s)	Iceberg cost coefficient -- domestic trade
+	tau_m(r,s)	Iceberg cost coefficient -- import shipments 
+	tau_x(s,r)	Iceberg cost coefficient -- export shipments ;
+
+tau_d(ss,s) = 1;
+tau_m(r,s) = 1;
+tau_x(s,r) = 1;
+
+parameters
+	nref(s,s)	Intra-national trade
+	mref(r,s)	Imports
+	xref(s,r)	Exports,
+	ytot		Total production
+	mtot		Total imports
+	xtot		Total exports
+	ztot		Total absorption;
+
+ytot = sum(s, y0(s));
+mtot = sum(r,m0(r));
+xtot = sum(r,x0(r));
+ztot = sum(s,z0(s));
+
+nref(ss,s) = z0(s) * y0(ss)*(ytot-xtot)/ytot / ztot;
+mref(r,s)  = z0(s) * m0(r) / ztot;
+xref(s,r)  = x0(r) * y0(s) / ytot;
+
+parameter
+	esubdm	Elasticity of substitution (domestic versus imports) /4/
+	pfxendow	Foreign exchange endowment -- for PE closure ;
+
+pfxendow = 10 * (sum(s,y0(s))+sum(r,m0(r)));
+
+set	i_PY_Z(ss,s)	Domestic demand
+	i_PM_Z(r,s)	Import demand,
+	d_PY_X(s,r)	Export demand;
 
 $ontext
 $model:bgravity
 
 $sectors:
 	Z(s)$z0(s)		! Absorption (Armington demand)
-	M(r,s)$mref(r,s)
 
 $commodities:
 	PZ(s)$z0(s)		! Demand price -- absorption in state s
 	PY(s)$y0(s)		! Output price in state s
-	PI(r,pd)$md0(r,pd)	! Import price
-	PMS(r,s)$mref(r,s)	! Import supply price
+	PM(r)$m0(r)		! Import price
 	PFX			! Price level
 
 $consumers:
 	RA			! PE Closure Agent
-	BX(r)$x0(r)		! Export demand
+	X(r)$x0(r)		! Export demand
 	FD(s)$z0(s)		! Final demand
 
 $auxiliary:
 	SY(s)$y0(s)		! Output supply
-	BM(r,pd)$md0(r,pd)	! Bilateral import multiplier
+	SM(r)$m0(r)		! Import supply
 
 *	Demand for domestic and imported goods in subregion s:
 
 $prod:Z(s)$z0(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
-	o:PZ(s)		q:(lamda(s)*z0(s))
-	i:PY(ss)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
-	i:PMS(r,s)	q:(lamda_m(r,s)*mref(r,s))	mm:
-	
+	o:PZ(s)			q:z0(s)
+	i:PY(ss)$i_PY_Z(ss,s)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
+	i:PM(r)$i_PM_Z(r,s)	q:(tau_m(r,s)*mref(r,s))	p:(1/tau_m(r,s))   mm:
+
 $report:
 	v:PY_Z(ss,s)$(z0(s) and nref(ss,s))	i:PY(ss)	prod:Z(s)
-	v:PMS_Z(r,s)$(z0(s) and mref(r,s))	i:PMS(r,s)	prod:Z(s)
+	v:PM_Z(r,s)$(z0(s) and mref(r,s))	i:PM(r)		prod:Z(s)
 
-$prod:M(r,s)$mref(r,s)  s:(2*esubdm)
-	o:PMS(r,s)	q:(lamda_m(r,s)*mref(r,s))
-	i:PI(r,pd)	q:(tau_m(pd,s)*mpsref(r,pd,s))  p:(1/tau_m(pd,s))
-
-$demand:RA
-	  d:PFX
-	  e:PFX			q:pfxendow
-	  e:PY(s)$y0(s)		q:y0(s)		r:SY(s)
-	  e:PI(r,pd)		q:md0(r,pd)	r:BM(r,pd)
 
 *	Value of exports through port pd:
 
-$demand:BX(r)$x0(r)  s:(2*esubdm)
-	d:PY(s)$y0(s)	q:(sum(pd,tau_x(s,pd)*xsref(s,pd)))
-	e:PFX		q:x0(r)
+$demand:X(r)$x0(r)	s:(2*esubdm)
+	d:PY(s)$d_PY_X(s,r)	q:(tau_x(s,r)*xref(s,r))	p:(1/tau_x(s,r))
+	e:PFX			q:x0(r)
 
 $report:
-	v:PY_BX(s,r)$(x0(r) and sum(pd,xsref(s,pd)))	 d:PY(s)	demand:BX(r)
+	v:PY_X(s,r)$(x0(r) and xref(s,r))	d:PY(s)		demand:X(r)
+
+$demand:RA
+	d:PFX
+	e:PFX		q:pfxendow
+	e:PY(s)		q:y0(s)		r:SY(s)
+	e:PM(r)		q:m0(r)		r:SM(r)
 
 *	Final demand:
 
@@ -69,120 +149,138 @@ $constraint:SY(s)$y0(s)
 
 *	Supply of imports from region r:
 
-$constraint:BM(r,pd)$md0(r,pd)
-	BM(r,pd)*PI(r,pd) =e= PFX;
+$constraint:SM(r)$m0(r)
+	SM(r)*PM(r) =e= PFX;
 
 $offtext
 $sysinclude mpsgeset bgravity
 
-mdref(pd,s)  = z0(s)  * ms0(pd)/ztot;
-nref(s,ss)   = z0(ss) * y0(s) * (ytot-xtot)/ytot /ztot;
-xsref(s,pd)  = y0(s) *  xtot/ytot * xd0(pd)/xtot;
-mpsref(r,pd,s) = z0(s) * md0(r,pd)/ztot;
-mref(r,s) = z0(s) * m0(r) / ztot;
-
-parameter	lamda_m(r,s)	Scale parameter for import demand;
-lamda(s) = 1;
-lamda_m(r,s) = 1;
-tau_d(ss,s) = 1;
-tau_m(pd,s) = 1;
-tau_x(s,pd) = 1;
-
-
 SY.FX(s) = 1;
-BM.FX(r,pd) = 1;
+SM.FX(r) = 1;
 
-bgravity.iterlim = 0;
-bgravity.workspace=64;
-$include BGRAVITY.GEN
-solve bgravity using mcp;
-
-parameter	solvelog	Solution log;
-solvelog("b","objval","Benchmark") = bgravity.objval;
-solvelog("b","modelstat","Benchmark") = bgravity.modelstat;
-solvelog("b","solvestat","Benchmark") = bgravity.solvestat;
-
-tau_d(s,ss(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
-tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-esubdm));
-tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
-
-tau_min(s)$z0(s) = min( 
-	smin( ss$y0(ss), tau_d(ss,s)), 
-	smin(pd$ms0(pd), tau_m(pd,s)) ) + eps;
-display tau_min;
-
-tau_d(ss,s)$z0(s) = tau_d(ss,s)/tau_min(s);
-tau_m(pd,s)$z0(s) = tau_m(pd,s)/tau_min(s);
-tau_x(s,pd(loc))  = tau_x(s,pd)/tau_min(s);
-
-*	Scale productivity:
-
-lamda_m(r,s)$mref(r,s) = sum(pd, tau_m(pd,s)*mpsref(r,pd,s))/mref(r,s);
-lamda(s)$z0(s) = ( sum(ss, tau_d(ss, s)*nref(ss,s)) + 
-		   sum(r,  lamda_m(r,s)*mref(r,s)) ) / z0(s);
-
-*	Incorporate targeting variable for domestic supply:
-
-SY.UP(s) = +inf; SY.LO(s) = 0;
-SY.FX(s)$(not y0(s)) = 0;
-
-bgravity.optfile = 1;
-bgravity.iterlim = 10000;
-
-$ifthen.presolvenew not exist bases\bgravity_%ds%_p.gdx
-
-$include BGRAVITY.GEN
-	solve bgravity using mcp;
-
-	solvelog("b","objval",   "Output") = bgravity.objval;
-	solvelog("b","modelstat","Output") = bgravity.modelstat;
-	solvelog("b","solvestat","Output") = bgravity.solvestat;
-	solvelog("b","modelstat","Output") = bgravity.modelstat;
-	solvelog("b","resusd",   "Output") = bgravity.resusd;
-
-$else.presolvenew
-
-	execute_loadpoint 'bases\bgravity_%ds%_p.gdx';
-
-$endif.presolvenew
-
-*	Include targeting variable for imports:
-
-BM.LO(r,pd) = 0;
-BM.UP(r,pd) = +inf;
-BM.FX(r,pd)$(not md0(r,pd)) = 0;
+i_PY_Z(ss,s) = yes;
+i_PM_Z(r,s) = yes;
+d_PY_X(s,r) = yes;
 
 bgravity.savepoint = 1;
 
+bgravity.iterlim = 0;
+$include bgravity.GEN
+solve bgravity using mcp;
+abort$round(bgravity.objval,4) "Benchmark replication problem";
+
+execute 'mv -f bgravity_p.gdx bmk.gdx';
+
+parameter  epsilon 	Elasticity of trade wrt trade cost/-1/,
+		esubmm	Elasticity across imports
+		esubdn	Elasticity local versus other domestic
+		esubnn	Elasticity among other domestic
+		esubx	Elasticity between exports;
+
+esubmm = 2 * esubdm;
+esubdn = 2 * esubdm;
+esubnn = 4 * esubdm;
+esubx = 2 * esubdm;
+
+
+tau_d(s,ss(loc))$(not sameas(s,ss)) = dist(s,loc)**(epsilon/(1-esubnn));
+tau_d(s,s(loc)) = dist(s,loc)**(epsilon/(1-esubdn));
+tau_m(r,s)$m0(r) = sum(pd(loc), md0(r,pd)/m0(r)*dist(s,loc)**(epsilon/(1-esubmm)));
+tau_x(s,r)$x0(r) = sum(pd(loc), xs0(pd,r)/x0(r)*dist(s,loc)**(epsilon/(1-esubx)));
+
+parameter	cz(s)	Unit cost of Z at current prices,
+		cm(s)	Unit cost of imports in Z,
+		cn(s)	Unit cost of national imports in Z,
+		cx(r)	Unit cost of X at current prices;
+
+parameter	ntot, thetan, thetam, theta_d, theta_n, theta_dn, thetax;
+
+ntot(s) = sum(ss$(not sameas(s,ss)), nref(ss,s));
+
+thetan(ss,s)$ntot(s) = nref(ss,s)/ntot(s);
+thetan(s,s) = 0;
+thetam(r,s) = mref(r,s)/sum(rr,mref(rr,s));
+theta_d(s) = nref(s,s)/sum(ss,nref(ss,s));
+theta_dn(s) = sum(ss,nref(ss,s))/z0(s);
+thetax(s,r)$x0(r) = xref(s,r)/x0(r);
+
+parameter	cn, cm, cdn, cz, cx;
+
+cn(s) = sum(ss$(not sameas(s,ss)), thetan(ss,s)*(tau_d(ss,s)*PY.L(ss))**(1-esubnn))**(1/(1-esubnn));
+
+cm(s) = sum(r, thetam(r,s)*(tau_m(r,s)*PM.L(r))**(1-esubmm))**(1/(1-esubmm));
+
+cdn(s) = ( theta_d(s)*(tau_d(s,s)*PY.L(s))**(1-esubdn) +
+	 (1-theta_d(s))  * cn(s)**(1-esubdn) )**(1/(1-esubdn));
+
+cz(s) = (theta_dn(s)*cdn(s)**(1-esubdm) + (1-theta_dn(s))*cm(s)**(1-esubdm))**(1/(1-esubdm));
+
+cx(r)$x0(r) = sum(s, thetax(s,r) * (tau_x(s,r)*PY.L(s))**(1-esubx))**(1/(1-esubx));
+
+parameter	cindex	Cost indices;
+cindex(s,"cn") = cn(s);
+cindex(s,"cd") = tau_d(s,s)*PY.L(s);
+cindex(s,"cm") = cm(s);
+cindex(s,"cdn") = cdn(s);
+cindex(s,"cz") = cz(s);
+display cindex;
+
+display cz, cn, cm, cdn, cx;
+
+parameter	qd(ss,s)	Uncompensated domestic demand index
+		qm(r,s)		Uncompensated imported demand index
+		qx(s,r)		Uncompensated export demand index; 
+
+qd(ss,s)$nref(ss,s) = 
+	(cn(s)/(tau_d(s,ss)*PY.L(ss)))**esubnn * 
+	(cdn(s)/cn(s))**esubdn * 
+	(cz(s)/cdn(s))**esubdm * 
+	(1/cz(s));
+
+qm(r,s)$mref(r,s) = (cm(s)/(tau_m(r,s)*PM.L(r)))**esubmm * (cz(s)/cm(s))**esubdm;
+
+qx(s,r)$xref(s,r) = (cx(r)/(tau_x(s,r)*PY.L(s)))**esubx * (1/cx(r));
+
+parameter	vd(ss,s)	Value share of domestic demand
+		vm(r,s)		Value share of imported demand
+		vx(s,r)		Value share of export demand;
+
+vd(ss,s) = qd(ss,s) * nref(ss,s)*tau_d(ss,s)*PY.L(ss)  / z0(s);
+vm(r,s)  = qm(r,s) * mref(r,s)*tau_m(r,s)*PM.L(r)      / z0(s);
+vx(s,r)$x0(r) = qx(s,r) * xref(s,r)*tau_x(s,r)*PY.L(s) / x0(r);
+
+display qd, qm, qx, vd, vm, vx;
+
+SY.UP(s) = +inf;
+SY.LO(s) = 0;
+
+SM.UP(r) = +inf;
+SM.LO(r) = 0;
+
+bgravity.savepoint = 1;
+$if exist 'bases\alt_%ds%_p.gdx' execute_loadpoint 'bases\alt_%ds%_p.gdx';
+
+bgravity.iterlim = 10000;
+$include bgravity.gen
+solve bgravity using mcp;
+
+*	Save the solution:
+
+execute 'mv -f bgravity_p.gdx bases\alt_%ds%_p.gdx';
+
+*	Verify benchmark consistency:
+
+nref(ss,s) = PY_Z.L(ss,s)*PY.L(ss)/PFX.L;
+mref(r,s)  = PM_Z.L(r,s)*PM.L(r)/PFX.L;
+xref(s,r)  = PY_X.L(s,r)*PY.L(s)/PFX.L;
+tau_d(ss,s) = 1;
+tau_m(r,s) = 1;
+tau_x(s,r) = 1;
+
+execute_loadpoint 'bmk.gdx';
+
+bgravity.iterlim = 0;
 $include BGRAVITY.GEN
 solve bgravity using mcp;
 
-execute 'mv -f bgravity_p.gdx bases\bgravity_%ds%_p.gdx';
-
-solvelog("b","objval",   "Gravity") = bgravity.objval;
-solvelog("b","modelstat","Gravity") = bgravity.modelstat;
-solvelog("b","solvestat","Gravity") = bgravity.solvestat;
-solvelog("b","modelstat","Gravity") = bgravity.modelstat;
-solvelog("b","resusd","Gravity")    = bgravity.resusd;
-
-*	Verify consistency in the Armington model.
-
-nref(ss,s) = PY_Z.L(ss,s)*PY.L(ss)/PFX.L;
-mref(r,s)  = PMS_Z.L(r,s)*PMS.L(r,s)/PFX.L;
-xref(s,r)  = PY_BX.L(s,r)*PY.L(s)/PFX.L;
-
-execute_loadpoint 'armington_p.gdx';
-ARMINGTON.iterlim = 0;
-$include ARMINGTON.GEN
-solve armington using mcp;
-
-solvelog("b","objval",   "Armington") = Armington.objval;
-solvelog("b","modelstat","Armington") = Armington.modelstat;
-solvelog("b","solvestat","Armington") = Armington.solvestat;
-solvelog("b","modelstat","Armington") = Armington.modelstat;
-
-execute_unload 'datasets\b\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;
-
-option solvelog:3:2:1;
-display solvelog;
-
+execute_unload 'datasets\a\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;

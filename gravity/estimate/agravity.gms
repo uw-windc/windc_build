@@ -1,6 +1,9 @@
-$title	Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+$title	Gravity Estimation Routine -- Aggregate 
+*	Define a single sector to estimate here:
 
-*	Two estimation methods:
+$if not set ds $set ds alt
+
+*	Two estimation methods have been implemented. This is a.
 
 *		a	"Aggregate gravity" model which calibrates to 
 *			aggregate import and export flows by port
@@ -8,9 +11,6 @@ $title	Gravity Estimation Routine -- Single Sector PE Model in MPSGE
 *		b	"Bilateral gravity" model which calibrates to
 *			import and export by port and bilateral trade partner.
 
-*	Define a single sector to estimate here:
-
-$if not set ds $set ds mvh
 
 set	r(*)	Regions (trading partners)
 	s(*)	Subregions (states),
@@ -29,6 +29,8 @@ parameter
 
 $load y0 md0 xs0 z0
 
+
+
 *	Read geographic distances:
 
 set		loc	Locations (states and port districts) /set.s, set.pd/;
@@ -37,12 +39,20 @@ $gdxin 'datasets\geography.gdx'
 $load dist
 $gdxin
 
+dist("dc","dc") = 1;
+
+
 alias (s,ss), (r,rr);
 
 *	Filter tiny values:
 
+display y0, z0;
+display "Before filter:", md0, xs0;
+
 md0(r,pd)$(not round(md0(r,pd),3)) = 0;
 xs0(pd,r)$(not round(xs0(pd,r),3)) = 0;
+
+display "After filter:", md0, xs0;
 
 parameter
 	m0(r)		Import supply
@@ -145,19 +155,6 @@ mdref(pd,s)  = z0(s)  * ms0(pd)/ztot;
 nref(s,ss)   = z0(ss) * y0(s) * (ytot-xtot)/ytot /ztot;
 xsref(s,pd)  = y0(s) *  xtot/ytot * xd0(pd)/xtot;
 				
-set	elast	Elasticities used for iceberg trade cost calculations /"3.0","4.0","5.0"/;
-
-parameter
-	epsilon			Elasticity of trade wrt trade cost /-1/,
-
-	tau(s,*,elast)		Travel cost to closest port;
-
-tau(s,"min",elast) = smin(loc(pd), dist(s,loc)**(epsilon/(1-elast.val)));
-tau(s,"max",elast) = smax(loc(pd), dist(s,loc)**(epsilon/(1-elast.val)));
-tau(s,"ave",elast) = sum(loc(pd),  dist(s,loc)**(epsilon/(1-elast.val)))/card(pd);
-option tau:1:1:2;
-display tau;
-
 $ontext
 $model:agravity
 
@@ -179,10 +176,10 @@ $auxiliary:
 	SY(s)$y0(s)	! Output supply
 	SM(pd)$ms0(pd)	! Import supply
 
-$prod:Z(s)$z0(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
+$prod:Z(s)$z0(s)  s:esubdm mm:(esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
 	o:PZ(s)		q:(lamda(s)*z0(s))
 	i:PY(ss)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
-	i:PMD(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))
+	i:PMD(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))  mm:
 
 $report:
 	v:PY_Z(ss,s)$(z0(s) and nref(ss,s))	i:PY(ss)	prod:Z(s)
@@ -214,7 +211,7 @@ $constraint:SY(s)$y0(s)
 *	Supply of imports:
 
 $constraint:SM(pd)$ms0(pd)
-	PFX =e= SM(pd)*PMD(pd);
+	SM(pd)*PMD(pd) =e= PFX*1.01;
 
 $offtext
 $sysinclude mpsgeset agravity
@@ -227,35 +224,47 @@ lamda(s) = 1;
 tau_d(ss,s) = 1;
 tau_m(pd,s) = 1;
 tau_x(s,pd) = 1;
-pfxendow = sum(s,y0(s));
+pfxendow = 10*sum(s,y0(s));
 
 AGRAVITY.iterlim = 0;
 $include AGRAVITY.GEN
 solve agravity using mcp;
+abort$round(agravity.objval,4) "Benchmark replication problem";
 
 parameter	solvelog	Solution log;
 solvelog("a","objval","Benchmark") = agravity.objval;
 solvelog("a","modelstat","Benchmark") = agravity.modelstat;
 solvelog("a","solvestat","Benchmark") = agravity.solvestat;
 
-tau_d(s,ss(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
-tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-  esubdm));
-tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
 
+$ontext
 parameter	tau_min(s)	Minimum value of tau;
 tau_min(s)$z0(s) = min( 
 	smin( ss$y0(ss), tau_d(ss,s)), 
 	smin(pd$ms0(pd), tau_m(pd,s)) ) + eps;
 display tau_min;
 
-tau_d(ss,s)$z0(s)      = tau_d(ss,s)/tau_min(s);
-tau_m(pd,s)$z0(s)      = tau_m(pd,s)/tau_min(s);
-tau_x(s,pd(loc))$y0(s) = tau_x(s,pd)/tau_min(s);
+tau_d(ss,s)$z0(s)        = tau_d(ss,s)/tau_min(s);
+tau_m(pd,s)$z0(s)        = tau_m(pd,s)/tau_min(s);
+tau_x(s,pd(loc))$ms0(pd) = tau_x(s,pd)/tau_min(s);
 
 *	Scale productivity:
 
 lamda(s)$z0(s) = sum(ss, tau_d(ss, s)*nref(ss,s)/z0(s)) + 
 		 sum(pd, tau_m(pd,s)*mdref(pd,s)/z0(s));
+
+$offtext
+
+*	Incorporate targeting variable for domestic supply:
+
+SY.UP(s) = +inf; SY.LO(s) = 0;
+SY.FX(s)$(y0(s)<mpseps) = 0;
+
+
+*	Include targeting variable for imports:
+
+SM.UP(pd) = +inf; SM.LO(pd) = 0;
+SM.FX(pd)$(ms0(pd)<mpseps) = 0;
 
 $onechov >path.opt
 convergence_tolerance 1e-5
@@ -266,16 +275,23 @@ $offecho
 agravity.optfile = 1;
 agravity.iterlim = 10000;
 
+parameter	epsilon;
 
-*	Incorporate targeting variable for domestic supply:
+set	epsilon_val /"-0.1","-0.2"/;
 
-SY.UP(s) = +inf; SY.LO(s) = 0;
-SY.FX(s)$(not y0(s)) = 0;
-
-$ifthen.presolve not exist bases\agravity_%ds%_p.gdx
+loop(epsilon_val,
+	epsilon = epsilon_val.val;
+	tau_d(s,ss(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
+	tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-  esubdm));
+	tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
 
 $include AGRAVITY.GEN
 	solve agravity using mcp;
+
+);
+$exit
+
+$ifthen.presolve not exist bases\agravity_%ds%_p.gdx
 
 $include AGRAVITY.GEN
 	solve agravity using mcp;
@@ -286,10 +302,16 @@ $else.presolve
 
 $endif.presolve
 
+*	Incorporate targeting variable for domestic supply:
+
+SY.UP(s) = +inf; SY.LO(s) = 0;
+SY.FX(s)$(y0(s)<mpseps) = 0;
+
+
 *	Include targeting variable for imports:
 
 SM.UP(pd) = +inf; SM.LO(pd) = 0;
-SM.FX(pd)$(not ms0(pd)) = 0;
+SM.FX(pd)$(ms0(pd)<mpseps) = 0;
 
 agravity.savepoint = 1;
 
@@ -311,6 +333,8 @@ mref(r,s)  = sum(pd$ms0(pd), PMD_Z.L(pd,s)*PMD.L(pd)/PFX.L*md0(r,pd)/ms0(pd));
 xref(s,r)  = sum(pd$xd0(pd), PY_XD.L(s,pd)*PY.L(s)/PFX.L*xs0(pd,r)/xd0(pd));
 
 execute_loadpoint 'armington_p.gdx';
+
+RA.FX = sum(s,y0(s)) + sum(r,m0(r)-x0(r));
 
 ARMINGTON.iterlim = 0;
 $include ARMINGTON.GEN

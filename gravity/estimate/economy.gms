@@ -142,5 +142,5 @@ loop(itrd(i),
 	x0(pd,ragg) = thetax(i,pd,ragg) * sum(rmap(ragg,r),vxmd(i,"usa",r));
 	z0(s48(s)) = a0(i,"usa",s);
 	put_utility 'gdxout' / 'datasets\',i.tl,'.gdx';
-	execute_unload s48=s,pd,r,y0,z0,m0=md0,x0=xs0;
+	execute_unload s48=s,pd,ragg=r,y0,z0,m0=md0,x0=xs0;
 );
