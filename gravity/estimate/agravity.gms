@@ -1,4 +1,5 @@
 $title	Gravity Estimation Routine -- Aggregate 
+
 *	Define a single sector to estimate here:
 
 $if not set ds $set ds alt
@@ -7,10 +8,6 @@ $if not set ds $set ds alt
 
 *		a	"Aggregate gravity" model which calibrates to 
 *			aggregate import and export flows by port
-
-*		b	"Bilateral gravity" model which calibrates to
-*			import and export by port and bilateral trade partner.
-
 
 set	r(*)	Regions (trading partners)
 	s(*)	Subregions (states),
@@ -25,11 +22,11 @@ parameter
 	y0(s)		Reference output (data)
 	z0(s)		Reference demand (data)
 	md0(r,pd)	Reference aggregate imports (data)
-	xs0(pd,r)	Reference aggregate exports (data);
+	xs0(pd,r)	Reference aggregate exports (data),
+	td0(s)		Domestic tax,
+	tm0(s)		Import tax;
 
-$load y0 md0 xs0 z0
-
-
+$load y0 md0 xs0 z0 td0=td tm0=tm
 
 *	Read geographic distances:
 
@@ -41,17 +38,13 @@ $gdxin
 
 dist("dc","dc") = 1;
 
-
 alias (s,ss), (r,rr);
 
 *	Filter tiny values:
 
-display y0, z0;
 display "Before filter:", md0, xs0;
-
 md0(r,pd)$(not round(md0(r,pd),3)) = 0;
 xs0(pd,r)$(not round(xs0(pd,r),3)) = 0;
-
 display "After filter:", md0, xs0;
 
 parameter
@@ -59,7 +52,9 @@ parameter
 	x0(r)		Export demand
 	nref(s,s)	Intra-national trade
 	mref(r,s)	Imports
-	xref(s,r)	Exports;
+	xref(s,r)	Exports,
+	td(s)		Domestic tax,
+	tm(s)		Import tax;
 
 m0(r) = sum(pd,md0(r,pd));
 x0(r) = sum(pd,xs0(pd,r));
@@ -67,10 +62,19 @@ x0(r) = sum(pd,xs0(pd,r));
 parameter	zscale	Demand scale factor;
 zscale = (sum(s,y0(s)) + sum(r,m0(r)-x0(r)))/sum(s,z0(s));
 display zscale;
-
 z0(s) = z0(s)*zscale;
 
-parameter	esubdm	Elasticity of substitution (domestic versus imports) /4/;
+parameter	
+	esubdm	Elasticity of substitution (domestic versus imports) /4/,
+	esubmm	Elasticity across imports
+	esubdn	Elasticity local versus other domestic
+	esubnn	Elasticity among other domestic
+	esubx	Elasticity between exports;
+
+esubmm = 2 * esubdm;
+esubdn = 2 * esubdm;
+esubnn = 4 * esubdm;
+esubx = 2 * esubdm;
 
 *	Create a template model illustrating what we are trying to estimate
 
@@ -93,10 +97,10 @@ $commodities:
 $consumers:
 	RA		! Representative agent
 
-$prod:Z(s)$z0(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm) nn(dn):(4*esubdm)
+$prod:Z(s)$z0(s)  s:esubdm mm:esubmm  dn:esubdn nn(dn):esubnn
 	o:PZ(s)		q:z0(s)
-	i:PY(ss)	q:nref(ss,s)	dn:$sameas(s,ss) nn:$(not sameas(s,ss))
-	i:PM(r)		q:mref(r,s)	mm:
+	i:PY(ss)	q:nref(ss,s)	dn:$sameas(s,ss) nn:$(not sameas(s,ss))  a:RA t:td(s)
+	i:PM(r)		q:mref(r,s)	mm:  a:RA t:tm(s)
 
 $prod:X(r)$x0(r)
 	o:PX(r)		q:x0(r)
@@ -127,6 +131,8 @@ ztot = sum(s,z0(s));
 nref(ss,s) = z0(s) * y0(ss)*(ytot-xtot)/ytot / ztot;
 mref(r,s)  = z0(s) * m0(r) / ztot;
 xref(s,r)  = x0(r) * y0(s) / ytot;
+td(s) = 0;
+tm(s) = 0;
 
 ARMINGTON.savepoint = 1;
 ARMINGTON.iterlim = 0;
@@ -176,16 +182,16 @@ $auxiliary:
 	SY(s)$y0(s)	! Output supply
 	SM(pd)$ms0(pd)	! Import supply
 
-$prod:Z(s)$z0(s)  s:esubdm mm:(esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
+$prod:Z(s)$z0(s)  s:esubdm mm:esubmm  dn:esubdn  nn(dn):esubnn
 	o:PZ(s)		q:(lamda(s)*z0(s))
-	i:PY(ss)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
-	i:PMD(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))  mm:
+	i:PY(ss)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))  a:RA t:td(s)
+	i:PMD(pd)	q:(tau_m(pd,s)*mdref(pd,s))	p:(1/tau_m(pd,s))  mm:  a:RA t:tm(s)
 
 $report:
 	v:PY_Z(ss,s)$(z0(s) and nref(ss,s))	i:PY(ss)	prod:Z(s)
 	v:PMD_Z(pd,s)$(z0(s) and mdref(pd,s))	i:PMD(pd)	prod:Z(s)
 
-$demand:XD(pd)$xd0(pd)  s:(2*esubdm)
+$demand:XD(pd)$xd0(pd)  s:esubx
 	d:PY(s)		q:(tau_x(s,pd)*xsref(s,pd))	p:(1/tau_x(s,pd))
 	e:PFX		q:xd0(pd)
 
@@ -211,7 +217,7 @@ $constraint:SY(s)$y0(s)
 *	Supply of imports:
 
 $constraint:SM(pd)$ms0(pd)
-	SM(pd)*PMD(pd) =e= PFX*1.01;
+	SM(pd)*PMD(pd) =e= PFX;
 
 $offtext
 $sysinclude mpsgeset agravity
@@ -236,36 +242,6 @@ solvelog("a","objval","Benchmark") = agravity.objval;
 solvelog("a","modelstat","Benchmark") = agravity.modelstat;
 solvelog("a","solvestat","Benchmark") = agravity.solvestat;
 
-
-$ontext
-parameter	tau_min(s)	Minimum value of tau;
-tau_min(s)$z0(s) = min( 
-	smin( ss$y0(ss), tau_d(ss,s)), 
-	smin(pd$ms0(pd), tau_m(pd,s)) ) + eps;
-display tau_min;
-
-tau_d(ss,s)$z0(s)        = tau_d(ss,s)/tau_min(s);
-tau_m(pd,s)$z0(s)        = tau_m(pd,s)/tau_min(s);
-tau_x(s,pd(loc))$ms0(pd) = tau_x(s,pd)/tau_min(s);
-
-*	Scale productivity:
-
-lamda(s)$z0(s) = sum(ss, tau_d(ss, s)*nref(ss,s)/z0(s)) + 
-		 sum(pd, tau_m(pd,s)*mdref(pd,s)/z0(s));
-
-$offtext
-
-*	Incorporate targeting variable for domestic supply:
-
-SY.UP(s) = +inf; SY.LO(s) = 0;
-SY.FX(s)$(y0(s)<mpseps) = 0;
-
-
-*	Include targeting variable for imports:
-
-SM.UP(pd) = +inf; SM.LO(pd) = 0;
-SM.FX(pd)$(ms0(pd)<mpseps) = 0;
-
 $onechov >path.opt
 convergence_tolerance 1e-5
 proximal_perturbation 0
@@ -275,50 +251,84 @@ $offecho
 agravity.optfile = 1;
 agravity.iterlim = 10000;
 
-parameter	epsilon;
+parameter	epsilon / -1 /;
 
-set	epsilon_val /"-0.1","-0.2"/;
+tau_d(s,ss(loc))$(not sameas(s,ss)) = dist(s,loc)**(epsilon/(1-esubnn));
+tau_d(s,s(loc)) = dist(s,loc)**(epsilon/(1-esubdn));
+tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-  esubmm));
+tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-esubx));
+td(s) = td0(s);
+tm(s) = tm0(s);
 
-loop(epsilon_val,
-	epsilon = epsilon_val.val;
-	tau_d(s,ss(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
-	tau_m(pd(loc),s) = dist(s,loc)**(epsilon/(1-  esubdm));
-	tau_x(s,pd(loc)) = dist(s,loc)**(epsilon/(1-2*esubdm));
+parameter	cz(s)	Unit cost of Z at current prices,
+		cm(s)	Unit cost of imports in Z,
+		cn(s)	Unit cost of national imports in Z,
+		cx(pd)	Unit cost of X at current prices;
+
+parameter	ntot, thetan, thetam, theta_d, theta_n, theta_dn, thetax;
+
+ntot(s) = sum(ss$(not sameas(s,ss)), nref(ss,s));
+
+thetan(ss,s)$ntot(s) = nref(ss,s)/ntot(s);
+thetan(s,s) = 0;
+thetam(pd,s) = mdref(pd,s)/sum(pd.local,mdref(pd,s));
+theta_d(s) = nref(s,s)/sum(ss,nref(ss,s));
+theta_dn(s) = sum(ss,nref(ss,s))/z0(s);
+thetax(s,pd)$xsref(s,pd) = xsref(s,pd)/sum(pd.local,xsref(s,pd));
+
+parameter	cn, cm, cdn, cz, cx;
+
+cn(s) = sum(ss$(not sameas(s,ss)), thetan(ss,s)*(tau_d(ss,s)*PY.L(ss)*(1+td(s)))**(1-esubnn))**(1/(1-esubnn));
+
+cm(s) = sum(pd, thetam(pd,s)*(tau_m(pd,s)*PMD.L(pd)*(1+tm(s)))**(1-esubmm))**(1/(1-esubmm));
+
+cdn(s) = ( theta_d(s)*(tau_d(s,s)*PY.L(s))**(1-esubdn) +
+	 (1-theta_d(s))  * cn(s)**(1-esubdn) )**(1/(1-esubdn));
+
+cz(s) = (theta_dn(s)*cdn(s)**(1-esubdm) + (1-theta_dn(s))*cm(s)**(1-esubdm))**(1/(1-esubdm));
+
+cx(pd)$sum(s,xsref(s,pd)) = sum(s, thetax(s,pd) * (tau_x(s,pd)*PY.L(s))**(1-esubx))**(1/(1-esubx));
+
+parameter	cindex	Cost indices;
+cindex(s,"cn") = cn(s);
+cindex(s,"cd") = tau_d(s,s)*PY.L(s);
+cindex(s,"cm") = cm(s);
+cindex(s,"cdn") = cdn(s);
+cindex(s,"cz") = cz(s);
+display cindex;
+
+set	iter	/0*20/;
+
+parameter	itlog	Iteration log;
+
+loop(iter,
+
+	SY.FX(s)  = PFX.L/PY.L(s);
+	SM.FX(pd) = PFX.L/PMD.L(pd);
+
+	itlog(s,iter) = SY.L(s)-1;
+	itlog(pd,iter) = SM.L(pd)-1;
 
 $include AGRAVITY.GEN
 	solve agravity using mcp;
 
 );
+display itlog;
+
+execute_unload 'itlog.gdx',itlog;
+execute 'gdxxrw i=itlog.gdx o=itlog.xlsx par=itlog rng=itlog!a2 cdim=0 intastext=n';
 $exit
 
-$ifthen.presolve not exist bases\agravity_%ds%_p.gdx
 
-$include AGRAVITY.GEN
-	solve agravity using mcp;
-
-$else.presolve
-
-	execute_loadpoint 'bases\agravity_%ds%_p.gdx';
-
-$endif.presolve
-
-*	Incorporate targeting variable for domestic supply:
-
-SY.UP(s) = +inf; SY.LO(s) = 0;
-SY.FX(s)$(y0(s)<mpseps) = 0;
-
-
-*	Include targeting variable for imports:
-
-SM.UP(pd) = +inf; SM.LO(pd) = 0;
-SM.FX(pd)$(ms0(pd)<mpseps) = 0;
-
-agravity.savepoint = 1;
+SY.UP(s) = +inf; SY.LO(s) = -inf;
+SY.L(s) = PFX.L/PY.L(s);
+SM.UP(pd) = +inf; SM.LO(pd) = -inf;
+SM.L(pd) = PFX.L/PMD.L(pd);
 
 $include AGRAVITY.GEN
 solve agravity using mcp;
 
-execute 'mv -f agravity_p.gdx bases\agravity_%ds%_p.gdx';
+$exit
 
 solvelog("a","objval",   "Gravity") = agravity.objval;
 solvelog("a","modelstat","Gravity") = agravity.modelstat;
@@ -330,7 +340,7 @@ solvelog("a","resusd","Gravity") = agravity.resusd;
 
 nref(ss,s) = PY_Z.L(ss,s)*PY.L(ss)/PFX.L;
 mref(r,s)  = sum(pd$ms0(pd), PMD_Z.L(pd,s)*PMD.L(pd)/PFX.L*md0(r,pd)/ms0(pd));
-xref(s,r)  = sum(pd$xd0(pd), PY_XD.L(s,pd)*PY.L(s)/PFX.L*xs0(pd,r)/xd0(pd));
+xref(s,r)  = sum(pd$xd0(pd), PY_XD.L(s,pd)*PY.L(s)/PFX.L  *xs0(pd,r)/xd0(pd));
 
 execute_loadpoint 'armington_p.gdx';
 
@@ -345,8 +355,8 @@ solvelog("a","modelstat","Armington") = Armington.modelstat;
 solvelog("a","solvestat","Armington") = Armington.solvestat;
 solvelog("a","modelstat","Armington") = Armington.modelstat;
 
+$if not dexist datasets\a $call mkdir datasets\a
 execute_unload 'datasets\a\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;
 
 display solvelog;
 
-*.$include gravityb

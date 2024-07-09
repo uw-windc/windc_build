@@ -2,7 +2,7 @@ $title	GAMS Script to Create GTAP-WiNDC Datasets
 
 *	Choose a starting point if desired
 
-$set start agrdisagg
+*.$set start agrdisagg
 
 *---------------------- 
 * run after the core and household builds are complete!! 

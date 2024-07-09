@@ -1,4 +1,5 @@
-$title	Gravity Estimation Routine -- Single Sector PE Model in MPSGE
+$title	Gravity Estimation Routine -- Bilateral
+
 *	Define a single sector to estimate here:
 
 $if not set ds $set ds alt
@@ -47,7 +48,6 @@ alias (s,ss), (r,rr);
 parameter	zscale	Demand scale factor;
 zscale = (sum(s,y0(s)) + sum(r,m0(r)-x0(r)))/sum(s,z0(s));
 display zscale;
-
 z0(s) = z0(s)*zscale;
 
 parameter
@@ -78,8 +78,18 @@ mref(r,s)  = z0(s) * m0(r) / ztot;
 xref(s,r)  = x0(r) * y0(s) / ytot;
 
 parameter
-	esubdm	Elasticity of substitution (domestic versus imports) /4/
+	esubdm		Elasticity of substitution (domestic versus imports) /4/
+	esubmm		Elasticity across imports
+	esubdn		Elasticity local versus other domestic
+	esubnn		Elasticity among other domestic
+	esubx		Elasticity between exports,
 	pfxendow	Foreign exchange endowment -- for PE closure ;
+
+esubmm = 2 * esubdm;
+esubdn = 2 * esubdm;
+esubnn = 4 * esubdm;
+esubx = 2 * esubdm;
+
 
 pfxendow = 10 * (sum(s,y0(s))+sum(r,m0(r)));
 
@@ -110,7 +120,7 @@ $auxiliary:
 
 *	Demand for domestic and imported goods in subregion s:
 
-$prod:Z(s)$z0(s)  s:esubdm mm:(2*esubdm)  dn:(2*esubdm)  nn(dn):(4*esubdm)
+$prod:Z(s)$z0(s)  s:esubdm mm:esubmm  dn:esubdn  nn(dn):esubnn
 	o:PZ(s)			q:z0(s)
 	i:PY(ss)$i_PY_Z(ss,s)	q:(tau_d(ss,s)*nref(ss,s))	p:(1/tau_d(ss,s))  dn:$sameas(s,ss) nn:$(not sameas(s,ss))
 	i:PM(r)$i_PM_Z(r,s)	q:(tau_m(r,s)*mref(r,s))	p:(1/tau_m(r,s))   mm:
@@ -122,7 +132,7 @@ $report:
 
 *	Value of exports through port pd:
 
-$demand:X(r)$x0(r)	s:(2*esubdm)
+$demand:X(r)$x0(r)	s:esubx
 	d:PY(s)$d_PY_X(s,r)	q:(tau_x(s,r)*xref(s,r))	p:(1/tau_x(s,r))
 	e:PFX			q:x0(r)
 
@@ -169,19 +179,9 @@ $include bgravity.GEN
 solve bgravity using mcp;
 abort$round(bgravity.objval,4) "Benchmark replication problem";
 
-execute 'mv -f bgravity_p.gdx bmk.gdx';
+bgravity.savepoint = 0;
 
-parameter  epsilon 	Elasticity of trade wrt trade cost/-1/,
-		esubmm	Elasticity across imports
-		esubdn	Elasticity local versus other domestic
-		esubnn	Elasticity among other domestic
-		esubx	Elasticity between exports;
-
-esubmm = 2 * esubdm;
-esubdn = 2 * esubdm;
-esubnn = 4 * esubdm;
-esubx = 2 * esubdm;
-
+parameter  epsilon 	Elasticity of trade wrt trade cost/-1/;
 
 tau_d(s,ss(loc))$(not sameas(s,ss)) = dist(s,loc)**(epsilon/(1-esubnn));
 tau_d(s,s(loc)) = dist(s,loc)**(epsilon/(1-esubdn));
@@ -251,14 +251,18 @@ vx(s,r)$x0(r) = qx(s,r) * xref(s,r)*tau_x(s,r)*PY.L(s) / x0(r);
 
 display qd, qm, qx, vd, vm, vx;
 
+
+bgravity.iterlim = 10000;
+$include bgravity.gen
+solve bgravity using mcp;
+
 SY.UP(s) = +inf;
 SY.LO(s) = 0;
+SY.L(s)$y0(s) = PFX.L/PY.L(s);
 
 SM.UP(r) = +inf;
 SM.LO(r) = 0;
-
-bgravity.savepoint = 1;
-$if exist 'bases\alt_%ds%_p.gdx' execute_loadpoint 'bases\alt_%ds%_p.gdx';
+SM.L(r)$m0(r) = PFX.L/PM.L(r);
 
 bgravity.iterlim = 10000;
 $include bgravity.gen
@@ -266,7 +270,7 @@ solve bgravity using mcp;
 
 *	Save the solution:
 
-execute 'mv -f bgravity_p.gdx bases\alt_%ds%_p.gdx';
+*.execute 'mv -f bgravity_p.gdx bases\alt_%ds%_p.gdx';
 
 *	Verify benchmark consistency:
 
@@ -277,10 +281,12 @@ tau_d(ss,s) = 1;
 tau_m(r,s) = 1;
 tau_x(s,r) = 1;
 
-execute_loadpoint 'bmk.gdx';
+execute_loadpoint 'bgravity_p.gdx';
 
 bgravity.iterlim = 0;
 $include BGRAVITY.GEN
 solve bgravity using mcp;
 
-execute_unload 'datasets\a\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;
+$if not dexist datasets\b $call mkdir datasets\b
+
+execute_unload 'datasets\b\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;

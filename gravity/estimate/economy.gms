@@ -96,6 +96,8 @@ s_(s) = yes$(not sameas(s,"rest"));
 
 file kput; kput.lw=0; put kput;
 
+$ifthen.aggregate %aggregate%==yes
+
 set	ragg	Aggregate regions (to create smaller model) /
 		CHN  China and Hong Kong
 		CAN  Canada
@@ -113,6 +115,11 @@ set	rmap(ragg,r) /
 	EUR.(FRA, DEU, ITA, GBR, REU)
 	OEC.(JPN,KOR,ANZ,TUR),
 	ROW.(IDN, IND, ARG, BRA, RUS, SAU, ZAF, OEX, LIC, MIC) /;
+
+$else.aggregate
+alias (ragg,r);
+set	rmap(ragg,r); rmap(r,r) = yes;
+$endif.aggregate
 
 parameter	thetam(i,ragg,pd)	Import shares
 		thetax(i,pd,ragg)	Export shares;
@@ -134,13 +141,18 @@ parameter
 
 	m0(ragg,pd)	Reference aggregate imports (data)
 	x0(pd,ragg)	Reference aggregate exports (data)
+	td(s)		Tax rate on domestic inputs
+	tm(s)		Tax rate on imported inputs;
 
+$if not dexist datasets $call mkdir datasets
 loop(itrd(i),
 	y0(s48(s)) = vom(i,"usa",s);
 	m0(ragg,pd) = thetam(i,ragg,pd) * sum(rmap(ragg,r), 
 		  vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa") );
 	x0(pd,ragg) = thetax(i,pd,ragg) * sum(rmap(ragg,r),vxmd(i,"usa",r));
 	z0(s48(s)) = a0(i,"usa",s);
+	td(s) = rtd(i,"usa",s);
+	tm(s) = rtm(i,"usa",s)
 	put_utility 'gdxout' / 'datasets\',i.tl,'.gdx';
-	execute_unload s48=s,pd,ragg=r,y0,z0,m0=md0,x0=xs0;
+	execute_unload s48=s,pd,ragg=r,y0,z0,m0=md0,x0=xs0,td,tm;
 );
