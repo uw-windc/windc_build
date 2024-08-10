@@ -1,0 +1,49 @@
+T001    Total Intermediate
+T005    Total Intermediate
+T007    Total Commodity Output
+T013    Total product supply (basic prices)
+T014    Total trade and transportation margins
+T015    Total tax less subsidies on products
+T016    Total product supply (purchaser prices)
+T017    Total industry supply
+T018    Total industry output (basic prices)
+T019    Total use of products
+VABAS    Value Added (basic prices)
+VAPRO    Value Added (producer prices)
+
+MCIF    Imports
+MADJ    CIF/FOB Adjustments on Imports
+Trade   Trade margins
+Trans   Transport margins
+MDTY    Import duties
+TOP     Tax on products
+SUB     Subsidies on products
+
+V001     Compensation of employees
+V003     Gross operating surplus
+
+OTOP    Other taxes on production
+OSUB    Less: Other subsidies on production
+TOP     Taxes on products and imports
+SUB     Less: Subsidies on products
+
+F010    Personal consumption expenditures
+F02E    Nonresidential private fixed investment in equipment
+F02N    Nonresidential private fixed investment in intellectual property products
+F02R    Residential private fixed investment
+F02S    Nonresidential private fixed investment in structures
+F030    Change in private inventories
+F06C    National defense: Consumption expenditures
+F06E    Federal national defense: Gross investment in equipment
+F06N    Federal national defense: Gross investment in intellectual property products
+F06S    Federal national defense: Gross investment in structures
+F07C    Nondefense: Consumption expenditures
+F07E    Federal nondefense: Gross investment in equipment
+F07N    Federal nondefense: Gross investment in intellectual property products
+F07S    Federal nondefense: Gross investment in structures
+F10C    State and local government consumption expenditures
+F10E    State and local: Gross investment in equipment
+F10N    State and local: Gross investment in intellectual property products
+F10S    State and local: Gross investment in structures
+
+F040    Exports of goods and services
