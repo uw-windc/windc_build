@@ -1,0 +1,1457 @@
+set	item /
+	D	Hourly Demand
+	ID	Actual Net Hourly Interchange 
+	DF	Day-Ahead Demand Forecast -- hourly
+	NG	Net Generation -- hourly
+	TI	Total Hourly Interchange /;
+
+set r	Regions /
+	PJM	PJM 
+	PNM	Public Service Company of New Mexico
+	CISO	California Independent System Operator
+	ERCO	"Electric Reliability Council of Texas, Inc."
+	ISNE	ISO New England
+	MISO	"Midcontinent Independent System Operator, Inc.",
+	NYIS	New York Independent System Operator
+	SWPP	Southwest Power Pool
+	PACW	PacifiCorp West
+	PACE	PacifiCorp East
+	SCEG	"Dominion Energy South Carolina, Inc.",
+	SC	South Carolina Public Service Authority
+	SOCO	South Carolina Public Service Authority
+	FPL	Florida Power & Light Co.
+	GVL	Gainesville Regional Utilities
+	CPLW	Duke Energy Progress West
+	FPC	"Duke Energy Florida, Inc.",
+	TAL	City of Tallahassee
+	BANC	Balancing Authority of Northern California (BANC
+	TIDC	Turlock Irrigation District
+	WALC	Western Area Power Administration - Desert Southwest Region
+	WACM	Western Area Power Administration - Rocky Mountain Region
+	LGEE	Louisville Gas and Electric Company -- Kentucky Utilities Company
+	OVEC	Ohio Valley Electric Corporation
+	SPA	Southwestern Power Administration
+	BPAT	Bonneville Power Administration
+	IPCO	Idaho Power Company
+	NEVP	Nevada Power Company
+	NWMT	NorthWestern Corporation
+	GWA	"NaturEner Power Watch, LLC",
+	AVA	Avista Corporation
+	GCPD	"Public Utility District No. 2 of Grant County, Washington",
+	NSB	Utilities Commission of New Smyrna Beach
+	AZPS	Arizona Public Service Company
+	AVRN	"Avangrid Renewables, LLC ",
+	LDWP	Los Angeles Department of Water and Power
+	PSEI	"Puget Sound Energy, Inc. ",
+	TPWR	"City of Tacoma, Department of Public Utilities, Light Division ",
+	AECI	"Associated Electric Cooperative, Inc.",
+	CHPD	Public Utility District No. 1 of Chelan County
+	GLHB	GridLiance
+	DUK	Duke Energy Carolinas 
+	NE	New England
+	NW	Northwest
+	NY	New York
+	SRP	Salt River Project Agricultural Improvement and Power District
+	TVA	Tennessee Valley Authority
+	EEI	"Electric Energy, Inc.",
+	PGE	Portland General Electric Company
+	TEPC	Tucson Electric Power
+	DOPD	PUD No. 1 of Douglas County
+	SEPA	Southeastern Power Administration
+	SCL	Seattle City Light
+	SEC	Seminole Electric Cooperative
+	TEC	Tampa Electric Company
+	TEN	Tennessee
+	TEX	Texas
+	CENT	Central (region)
+	CPLE	Duke Energy Progress East
+	FMPP	Florida Municipal Power Pool
+	SW	Southwest (region)
+	CAL	California (region)
+	PSCO	Public Service Company of Colorado
+	GRID	"Gridforce Energy Management, LLC",
+	JEA	Northeast Florida's Community Utility
+	AEC	PowerSouth Energy Cooperative
+	SE	Southeast (region)
+	CAR	Carolinas (region)
+	EPE	El Paso Electric Company
+	FLA	Florida (region)
+	HST	City of Homestead
+	IID	Imperial Irrigation District
+	MIDA	Mid-Atlantic (region)
+	MIDW	Midwest (region)
+	US48	United States Lower 48 (region)
+	WAUW	Western Area Power Administration
+	WWA	"NaturEner Wind Watch, LLC",
+	HGMA	"New Harquahala Generating Company, LLC",
+	YAD	"Alcoa Power Generating, Inc. - Yadkin Division",
+	GRIF	"Griffith Energy, LLC",
+	DEAA	"Arlington Valley, LLC ",
+	GRMA	"Gila River Power, LLC" /
+
+
+set	z(*)	Zones /
+	4004  "ISO New England (ISNE), Connecticut",
+	4005  "ISO New England (ISNE), Rhode Island",
+	4006  "ISO New England (ISNE), Southeast Mass.",
+	4007  "ISO New England (ISNE), Western/Central Mass.",
+	4001  "ISO New England (ISNE), Maine",
+	4002  "Demand for ISO New England (ISNE), New Hampshire",
+	4003  "Demand for ISO New England (ISNE), Vermont",
+	4008  "ISO New England (ISNE), Northeast Mass.",
+	8910  "Midcontinent Independent System Operator, Inc. (MISO), Zones 8, 9, and 10",
+	PJM   "PJM",
+	PNM   "Public Service Company of New Mexico",
+	CISO  "California Independent System Operator",
+	ERCO  "Electric Reliability Council of Texas, Inc.",
+	ISNE  "ISO New England",
+	MISO  "Midcontinent Independent System Operator, Inc.",
+	NYIS  "New York Independent System Operator",
+	SWPP  "Southwest Power Pool",
+	PACW  "PacifiCorp West",
+	PACE  "PacifiCorp East",
+	SCEG  "Dominion Energy South Carolina, Inc.",
+	SC    "South Carolina Public Service Authority",
+	SOCO  "South Carolina Public Service Authority",
+	FPL   "Florida Power & Light Co.",
+	GVL   "Gainesville Regional Utilities",
+	CPLW  "Duke Energy Progress West",
+	FPC   "Duke Energy Florida, Inc.",
+	TAL   "City of Tallahassee",
+	BANC  "Balancing Authority of Northern California (BANC",
+	TIDC  "Turlock Irrigation District",
+	WALC  "Western Area Power Administration - Desert Southwest Region",
+	WACM  "Western Area Power Administration - Rocky Mountain Region",
+	LGEE  "Louisville Gas and Electric Company -- Kentucky Utilities Company",
+	OVEC  "Ohio Valley Electric Corporation",
+	SPA   "Southwestern Power Administration",
+	BPAT  "Bonneville Power Administration",
+	IPCO  "Idaho Power Company",
+	NEVP  "Nevada Power Company",
+	NWMT  "NorthWestern Corporation",
+	GWA   "NaturEner Power Watch, LLC",
+	AVA   "Avista Corporation",
+	GCPD  "Public Utility District No. 2 of Grant County, Washington",
+	NSB   "Utilities Commission of New Smyrna Beach",
+	AZPS  "Arizona Public Service Company",
+	AVRN  "Avangrid Renewables, LLC ",
+	LDWP  "Los Angeles Department of Water and Power",
+	PSEI  "Puget Sound Energy, Inc. ",
+	TPWR  "City of Tacoma, Department of Public Utilities, Light Division ",
+	AECI  "Associated Electric Cooperative, Inc.",
+	CHPD  "Public Utility District No. 1 of Chelan County",
+	GLHB  "GridLiance",
+	DUK   "Duke Energy Carolinas",
+	NE    "New England",
+	NW    "Northwest",
+	NY    "New York",
+	SRP   "Salt River Project Agricultural Improvement and Power District",
+	TVA   "Tennessee Valley Authority",
+	EEI   "Electric Energy, Inc.",
+	PGE   "Portland General Electric Company",
+	TEPC  "Tucson Electric Power",
+	DOPD  "PUD No. 1 of Douglas County",
+	SEPA  "Southeastern Power Administration",
+	SCL   "Seattle City Light",
+	SEC   "Seminole Electric Cooperative",
+	TEC   "Tampa Electric Company",
+	TEN   "Tennessee",
+	TEX   "Texas",
+	CENT  "Central (region)",
+	CPLE  "Duke Energy Progress East",
+	FMPP  "Florida Municipal Power Pool",
+	SW    "Southwest (region)",
+	CAL   "California (region)",
+	PSCO  "Public Service Company of Colorado",
+	GRID  "Gridforce Energy Management, LLC",
+	JEA   "Northeast Florida's Community Utility",
+	AEC   "PowerSouth Energy Cooperative",
+	SE    "Southeast (region)",
+	CAR   "Carolinas (region)",
+	EPE   "El Paso Electric Company",
+	FLA   "Florida (region)",
+	HST   "City of Homestead",
+	IID   "Imperial Irrigation District",
+	MIDA  "Mid-Atlantic (region)",
+	MIDW  "Midwest (region)",
+	WAUW  "Western Area Power Administration",
+	WWA   "NaturEner Wind Watch, LLC",
+	HGMA  "New Harquahala Generating Company, LLC",
+	YAD   "Alcoa Power Generating, Inc. - Yadkin Division",
+	GRIF  "Griffith Energy, LLC",
+	DEAA  "Arlington Valley, LLC ",
+	GRMA  "Gila River Power, LLC",
+	AE    "PJM Interconnection, LLC (PJM), Atlantic Electric zone",
+	AP    "PJM Interconnection, LLC (PJM), Allegheny Power zone",
+	BC    "PJM Interconnection, LLC (PJM), Baltimore Gas & Electric zone",
+	CE    "PJM Interconnection, LLC (PJM), Commonwealth Edison zone",
+	JC    "PJM Interconnection, LLC (PJM), Jersey Central Power & Light zone",
+	ME    "PJM Interconnection, LLC (PJM), Metropolitan Edison zone",
+	PE    "PJM Interconnection, LLC (PJM), PECO Energy zone",
+	PL    "PJM Interconnection, LLC (PJM), Pennsylvania Power & Light zone",
+	PN    "PJM Interconnection, LLC (PJM), Pennsylvania Electric zone",
+	PS    "PJM Interconnection, LLC (PJM), Public Service Electric & Gas zone",
+	AEP   "PJM Interconnection, LLC (PJM), American Electric Power zone",
+	DAY   "PJM Interconnection, LLC (PJM), Dayton Power & Light zone",
+	DOM   "PJM Interconnection, LLC (PJM), Dominion Virginia Power zone",
+	DPL   "PJM Interconnection, LLC (PJM), Delmarva Power & Light zone",
+	DUQ   "PJM Interconnection, LLC (PJM), Duquesne Lighting Company zone",
+	PEP   "PJM Interconnection, LLC (PJM), Potomac Electric Power zone",
+	ATSI  "PJM Interconnection, LLC (PJM), American Transmission Systems, Inc. zone",
+	DEOK  "PJM Interconnection, LLC (PJM), Duke Energy Ohio/Kentucky zone",
+	EKPC  "PJM Interconnection, LLC (PJM), East Kentucky Power Cooperative zone",
+	RECO  "PJM Interconnection, LLC (PJM), Rockland Electric (East) zone",
+	LAC   "Public Service Company of New Mexico (PNM), Los Alamos County",
+	ACMA  "Public Service Company of New Mexico (PNM), City of Acoma Pueblo",
+	CYGA  "Public Service Company of New Mexico (PNM), City of Gallup",
+	FREP  "Public Service Company of New Mexico (PNM), FREP",
+	JICA  "Public Service Company of New Mexico (PNM), JICA",
+	KAFB  "Public Service Company of New Mexico (PNM), Kirtland Air Force Base",
+	KCEC  "Public Service Company of New Mexico (PNM), Kit Carson Electric Cooperative",
+	NTUA  "Public Service Company of New Mexico (PNM), Navajo Tribal Utility Authority",
+	TSGT  "Public Service Company of New Mexico (PNM), Tri-State Generation and Transmission",
+	SCE   "California Independent System Operator (CISO), Southern California Edison",
+	VEA   "California Independent System Operator (CISO), Valley Electric Association",
+	PGAE  "California Independent System Operator (CISO), Pacific Gas and Electric",
+	SDGE  "California Independent System Operator (CISO), San Diego Gas and Electric",
+	COAS  "Electric Reliability Council of Texas, Inc. (ERCO), Coast",
+	EAST  "Electric Reliability Council of Texas, Inc. (ERCO), East",
+	FWES  "Electric Reliability Council of Texas, Inc. (ERCO), Far West",
+	NCEN  "Electric Reliability Council of Texas, Inc. (ERCO), North Central",
+	NRTH  "Electric Reliability Council of Texas, Inc. (ERCO), North",
+	SCEN  "Electric Reliability Council of Texas, Inc. (ERCO), South Central",
+	SOUT  "Electric Reliability Council of Texas, Inc. (ERCO), South",
+	WEST  "Demand for Electric Reliability Council of Texas, Inc. (ERCO), West",
+	0001  "Midcontinent Independent System Operator, Inc. (MISO), Zone 1",
+	0004  "Midcontinent Independent System Operator, Inc. (MISO), Zone 4",
+	0006  "Midcontinent Independent System Operator, Inc. (MISO), Zone 6",
+	0027  "Midcontinent Independent System Operator, Inc. (MISO), Zones 2 and 7",
+	0035  "Midcontinent Independent System Operator, Inc. (MISO), Zones 3 and 5",
+	ZONA  "New York Independent System Operator (NYIS), West",
+	ZONB  "New York Independent System Operator (NYIS), Genesee",
+	ZONC  "New York Independent System Operator (NYIS), Central",
+	ZOND  "New York Independent System Operator (NYIS), North",
+	ZONE  "New York Independent System Operator (NYIS), Mohawk Valley",
+	ZONF  "New York Independent System Operator (NYIS), Capital",
+	ZONG  "New York Independent System Operator (NYIS), Hudson Valley",
+	ZONH  "New York Independent System Operator (NYIS), Millwood",
+	ZONI  "New York Independent System Operator (NYIS), Dunwoodie",
+	ZONJ  "New York Independent System Operator (NYIS), New York City",
+	ZONK  "New York Independent System Operator (NYIS), Long Island",
+	WR    "Southwest Power Pool (SWPP), Westar Energy",
+	EDE   "Southwest Power Pool (SWPP), Empire District Electric Company",
+	WFEC  "Southwest Power Pool (SWPP), Western Farmers Electric Cooperative",
+	LES   "Southwest Power Pool (SWPP), Lincoln Electric System",
+	MPS   "Southwest Power Pool (SWPP), KCP&L Greater Missouri Operations",
+	SPS   "Southwest Power Pool (SWPP), Southwestern Public Service Company",
+	CSWS  "Southwest Power Pool (SWPP), AEPW American Electric Power West",
+	GRDA  "Southwest Power Pool (SWPP), Grand River Dam Authority",
+	INDN  "Southwest Power Pool (SWPP), Independence Power & Light",
+	KACY  "Southwest Power Pool (SWPP), Kansas City Board of Public Utilities",
+	KCPL  "Southwest Power Pool (SWPP), Kansas City Power & Light",
+	NPPD  "Southwest Power Pool (SWPP), Nebraska Public Power District",
+	OKGE  "Southwest Power Pool (SWPP), Oklahoma Gas and Electric Co.",
+	OPPD  "Southwest Power Pool (SWPP), Omaha Public Power District",
+	SECI  "Southwest Power Pool (SWPP), Sunflower Electric",
+	SPRM  "Southwest Power Pool (SWPP), City of Springfield",
+	WAUE  "Southwest Power Pool (SWPP), Western Area Power Upper Great Plains East",
+	CEN   "Centro Nacional de Control de Energia (CEN)",
+	HQT   "Hydro-Quebec TransEnergie (HQT)",
+	ALL   "All zones",
+	IESO  "Ontario",
+	BCHA  "British Columbia Hydro and Power Authority ",
+	CFE   "Comision Federal de Electricidad",
+	CAN   "Canada (region)",
+	SPC   "Saskatchewan Power Corporation",
+	MEX   "Mexico (region)",
+	NBSO  "New Brunswick System Operator",
+	AESO  "Alberta Electric System Operator",
+	MHEB  "Manitoba Hydro" /;
+
+set	short(id,r,z,item) /
+	"EBA.PJM-AE.D.H".PJM.AE.D
+	"EBA.PJM-AP.D.H".PJM.AP.D
+	"EBA.PJM-BC.D.H".PJM.BC.D
+	"EBA.PJM-CE.D.H".PJM.CE.D
+	"EBA.PJM-JC.D.H".PJM.JC.D
+	"EBA.PJM-ME.D.H".PJM.ME.D
+	"EBA.PJM-PE.D.H".PJM.PE.D
+	"EBA.PJM-PL.D.H".PJM.PL.D
+	"EBA.PJM-PN.D.H".PJM.PN.D
+	"EBA.PJM-PS.D.H".PJM.PS.D
+	"EBA.PJM-AEP.D.H".PJM.AEP.D
+	"EBA.PJM-DAY.D.H".PJM.DAY.D
+	"EBA.PJM-DOM.D.H".PJM.DOM.D
+	"EBA.PJM-DPL.D.H".PJM.DPL.D
+	"EBA.PJM-DUQ.D.H".PJM.DUQ.D
+	"EBA.PJM-PEP.D.H".PJM.PEP.D
+	"EBA.PJM-ATSI.D.H".PJM.ATSI.D
+	"EBA.PJM-DEOK.D.H".PJM.DEOK.D
+	"EBA.PJM-EKPC.D.H".PJM.EKPC.D
+	"EBA.PJM-RECO.D.H".PJM.RECO.D
+	"EBA.PNM-LAC.D.H".PNM.LAC.D
+	"EBA.PNM-PNM.D.H".PNM.PNM.D
+	"EBA.PNM-ACMA.D.H".PNM.ACMA.D
+	"EBA.PNM-CYGA.D.H".PNM.CYGA.D
+	"EBA.PNM-FREP.D.H".PNM.FREP.D
+	"EBA.PNM-JICA.D.H".PNM.JICA.D
+	"EBA.PNM-KAFB.D.H".PNM.KAFB.D
+	"EBA.PNM-KCEC.D.H".PNM.KCEC.D
+	"EBA.PNM-NTUA.D.H".PNM.NTUA.D
+	"EBA.PNM-TSGT.D.H".PNM.TSGT.D
+	"EBA.CISO-SCE.D.H".CISO.SCE.D
+	"EBA.CISO-VEA.D.H".CISO.VEA.D
+	"EBA.CISO-PGAE.D.H".CISO.PGAE.D
+	"EBA.CISO-SDGE.D.H".CISO.SDGE.D
+	"EBA.ERCO-COAS.D.H".ERCO.COAS.D
+	"EBA.ERCO-EAST.D.H".ERCO.EAST.D
+	"EBA.ERCO-FWES.D.H".ERCO.FWES.D
+	"EBA.ERCO-NCEN.D.H".ERCO.NCEN.D
+	"EBA.ERCO-NRTH.D.H".ERCO.NRTH.D
+	"EBA.ERCO-SCEN.D.H".ERCO.SCEN.D
+	"EBA.ERCO-SOUT.D.H".ERCO.SOUT.D
+	"EBA.ERCO-WEST.D.H".ERCO.WEST.D
+	"EBA.ISNE-4001.D.H".ISNE.4001.D
+	"EBA.ISNE-4002.D.H".ISNE.4002.D
+	"EBA.ISNE-4003.D.H".ISNE.4003.D
+	"EBA.ISNE-4004.D.H".ISNE.4004.D
+	"EBA.ISNE-4005.D.H".ISNE.4005.D
+	"EBA.ISNE-4006.D.H".ISNE.4006.D
+	"EBA.ISNE-4007.D.H".ISNE.4007.D
+	"EBA.ISNE-4008.D.H".ISNE.4008.D
+	"EBA.MISO-0001.D.H".MISO.0001.D
+	"EBA.MISO-0004.D.H".MISO.0004.D
+	"EBA.MISO-0006.D.H".MISO.0006.D
+	"EBA.MISO-0027.D.H".MISO.0027.D
+	"EBA.MISO-0035.D.H".MISO.0035.D
+	"EBA.MISO-8910.D.H".MISO.8910.D
+	"EBA.NYIS-ZONA.D.H".NYIS.ZONA.D
+	"EBA.NYIS-ZONB.D.H".NYIS.ZONB.D
+	"EBA.NYIS-ZONC.D.H".NYIS.ZONC.D
+	"EBA.NYIS-ZOND.D.H".NYIS.ZOND.D
+	"EBA.NYIS-ZONE.D.H".NYIS.ZONE.D
+	"EBA.NYIS-ZONF.D.H".NYIS.ZONF.D
+	"EBA.NYIS-ZONG.D.H".NYIS.ZONG.D
+	"EBA.NYIS-ZONH.D.H".NYIS.ZONH.D
+	"EBA.NYIS-ZONI.D.H".NYIS.ZONI.D
+	"EBA.NYIS-ZONJ.D.H".NYIS.ZONJ.D
+	"EBA.NYIS-ZONK.D.H".NYIS.ZONK.D
+	"EBA.SWPP-WR.D.H".SWPP.WR.D
+	"EBA.SWPP-EDE.D.H".SWPP.EDE.D
+	"EBA.SWPP-WFEC.D.H".SWPP.WFEC.D
+	"EBA.SWPP-LES.D.H".SWPP.LES.D
+	"EBA.SWPP-MPS.D.H".SWPP.MPS.D
+	"EBA.SWPP-SPS.D.H".SWPP.SPS.D
+	"EBA.SWPP-CSWS.D.H".SWPP.CSWS.D
+	"EBA.SWPP-GRDA.D.H".SWPP.GRDA.D
+	"EBA.SWPP-INDN.D.H".SWPP.INDN.D
+	"EBA.SWPP-KACY.D.H".SWPP.KACY.D
+	"EBA.SWPP-KCPL.D.H".SWPP.KCPL.D
+	"EBA.SWPP-NPPD.D.H".SWPP.NPPD.D
+	"EBA.SWPP-OKGE.D.H".SWPP.OKGE.D
+	"EBA.SWPP-OPPD.D.H".SWPP.OPPD.D
+	"EBA.SWPP-SECI.D.H".SWPP.SECI.D
+	"EBA.SWPP-SPRM.D.H".SWPP.SPRM.D
+	"EBA.SWPP-WAUE.D.H".SWPP.WAUE.D
+	"EBA.PACW-PACE.ID.H".PACW.PACE.ID
+	"EBA.SCEG-SC.ID.H".SCEG.SC.ID
+	"EBA.SC-SOCO.ID.H".SC.SOCO.ID
+	"EBA.FPL-GVL.ID.H".FPL.GVL.ID
+	"EBA.CPLW-PJM.ID.H".CPLW.PJM.ID
+	"EBA.FPC-TAL.ID.H".FPC.TAL.ID
+	"EBA.PJM-NYIS.ID.H".PJM.NYIS.ID
+	"EBA.BANC-TIDC.ID.H".BANC.TIDC.ID
+	"EBA.WALC-WACM.ID.H".WALC.WACM.ID
+	"EBA.LGEE-OVEC.ID.H".LGEE.OVEC.ID
+	"EBA.SWPP-SPA.ID.H".SWPP.SPA.ID
+	"EBA.BPAT-IPCO.ID.H".BPAT.IPCO.ID
+	"EBA.CISO-NEVP.ID.H".CISO.NEVP.ID
+	"EBA.IPCO-NEVP.ID.H".IPCO.NEVP.ID
+	"EBA.ERCO-CEN.ID.H".ERCO.CEN.ID
+	"EBA.NWMT-GWA.ID.H".NWMT.GWA.ID
+	"EBA.AVA-GCPD.ID.H".AVA.GCPD.ID
+	"EBA.NSB-FPC.ID.H".NSB.FPC.ID
+	"EBA.AZPS-PNM.ID.H".AZPS.PNM.ID
+	"EBA.BPAT-AVRN.ID.H".BPAT.AVRN.ID
+	"EBA.LDWP-NEVP.ID.H".LDWP.NEVP.ID
+	"EBA.PSEI-TPWR.ID.H".PSEI.TPWR.ID
+	"EBA.AVA-IPCO.ID.H".AVA.IPCO.ID
+	"EBA.PJM-LGEE.ID.H".PJM.LGEE.ID
+	"EBA.MISO-AECI.ID.H".MISO.AECI.ID
+	"EBA.NYIS-HQT.ID.H".NYIS.HQT.ID
+	"EBA.PSEI-CHPD.ID.H".PSEI.CHPD.ID
+	"EBA.PJM-MISO.ID.H".PJM.MISO.ID
+	"EBA.LDWP-PACE.ID.H".LDWP.PACE.ID
+	"EBA.PACE-LDWP.ID.H".PACE.LDWP.ID
+	"EBA.GLHB-MISO.ID.H".GLHB.MISO.ID
+	"EBA.SOCO-DUK.ID.H".SOCO.DUK.ID
+	"EBA.NE-ALL.D.H".NE.ALL.D
+	"EBA.NW-ALL.D.H".NW.ALL.D
+	"EBA.NY-ALL.D.H".NY.ALL.D
+	"EBA.SC-ALL.D.H".SC.ALL.D
+	"EBA.NWMT-PACE.ID.H".NWMT.PACE.ID
+	"EBA.SC-DUK.ID.H".SC.DUK.ID
+	"EBA.SRP-AZPS.ID.H".SRP.AZPS.ID
+	"EBA.TVA-DUK.ID.H".TVA.DUK.ID
+	"EBA.EEI-MISO.ID.H".EEI.MISO.ID
+	"EBA.MISO-GLHB.ID.H".MISO.GLHB.ID
+	"EBA.PACW-CISO.ID.H".PACW.CISO.ID
+	"EBA.TIDC-BANC.ID.H".TIDC.BANC.ID
+	"EBA.PGE-BPAT.ID.H".PGE.BPAT.ID
+	"EBA.AZPS-LDWP.ID.H".AZPS.LDWP.ID
+	"EBA.LGEE-PJM.ID.H".LGEE.PJM.ID
+	"EBA.SWPP-AECI.ID.H".SWPP.AECI.ID
+	"EBA.LGEE-EEI.ID.H".LGEE.EEI.ID
+	"EBA.MISO-TVA.ID.H".MISO.TVA.ID
+	"EBA.NEVP-WALC.ID.H".NEVP.WALC.ID
+	"EBA.PNM-TEPC.ID.H".PNM.TEPC.ID
+	"EBA.DOPD-BPAT.ID.H".DOPD.BPAT.ID
+	"EBA.ISNE-NYIS.ID.H".ISNE.NYIS.ID
+	"EBA.PACE-NWMT.ID.H".PACE.NWMT.ID
+	"EBA.SOCO-SEPA.ID.H".SOCO.SEPA.ID
+	"EBA.SCL-PSEI.ID.H".SCL.PSEI.ID
+	"EBA.AECI-SPA.ID.H".AECI.SPA.ID
+	"EBA.SCL-ALL.D.H".SCL.ALL.D
+	"EBA.SEC-ALL.D.H".SEC.ALL.D
+	"EBA.SPA-ALL.D.H".SPA.ALL.D
+	"EBA.SRP-ALL.D.H".SRP.ALL.D
+	"EBA.TAL-ALL.D.H".TAL.ALL.D
+	"EBA.TEC-ALL.D.H".TEC.ALL.D
+	"EBA.TEN-ALL.D.H".TEN.ALL.D
+	"EBA.TEX-ALL.D.H".TEX.ALL.D
+	"EBA.TVA-ALL.D.H".TVA.ALL.D
+	"EBA.AECI-ALL.D.H".AECI.ALL.D
+	"EBA.AZPS-ALL.D.H".AZPS.ALL.D
+	"EBA.BANC-ALL.D.H".BANC.ALL.D
+	"EBA.BPAT-ALL.D.H".BPAT.ALL.D
+	"EBA.CENT-ALL.D.H".CENT.ALL.D
+	"EBA.CHPD-ALL.D.H".CHPD.ALL.D
+	"EBA.CISO-ALL.D.H".CISO.ALL.D
+	"EBA.CPLE-ALL.D.H".CPLE.ALL.D
+	"EBA.CPLW-ALL.D.H".CPLW.ALL.D
+	"EBA.DOPD-ALL.D.H".DOPD.ALL.D
+	"EBA.ERCO-ALL.D.H".ERCO.ALL.D
+	"EBA.FMPP-ALL.D.H".FMPP.ALL.D
+	"EBA.GCPD-ALL.D.H".GCPD.ALL.D
+	"EBA.LGEE-TVA.ID.H".LGEE.TVA.ID
+	"EBA.SW-NW.ID.H".SW.NW.ID
+	"EBA.CAL-NW.ID.H".CAL.NW.ID
+	"EBA.BANC-BPAT.ID.H".BANC.BPAT.ID
+	"EBA.NYIS-IESO.ID.H".NYIS.IESO.ID
+	"EBA.PJM-CPLW.ID.H".PJM.CPLW.ID
+	"EBA.BPAT-BCHA.ID.H".BPAT.BCHA.ID
+	"EBA.CPLE-DUK.ID.H".CPLE.DUK.ID
+	"EBA.SOCO-TVA.ID.H".SOCO.TVA.ID
+	"EBA.WACM-PSCO.ID.H".WACM.PSCO.ID
+	"EBA.NY-NE.ID.H".NY.NE.ID
+	"EBA.BPAT-SCL.ID.H".BPAT.SCL.ID
+	"EBA.BPAT-GRID.ID.H".BPAT.GRID.ID
+	"EBA.NYIS-PJM.ID.H".NYIS.PJM.ID
+	"EBA.FPL-FMPP.ID.H".FPL.FMPP.ID
+	"EBA.JEA-SEC.ID.H".JEA.SEC.ID
+	"EBA.CISO-CFE.ID.H".CISO.CFE.ID
+	"EBA.MISO-AEC.ID.H".MISO.AEC.ID
+	"EBA.NW-CENT.ID.H".NW.CENT.ID
+	"EBA.IPCO-ALL.D.H".IPCO.ALL.D
+	"EBA.ISNE-ALL.D.H".ISNE.ALL.D
+	"EBA.LDWP-ALL.D.H".LDWP.ALL.D
+	"EBA.SE-ALL.D.H".SE.ALL.D
+	"EBA.SW-ALL.D.H".SW.ALL.D
+	"EBA.AEC-ALL.D.H".AEC.ALL.D
+	"EBA.AVA-ALL.D.H".AVA.ALL.D
+	"EBA.CAL-ALL.D.H".CAL.ALL.D
+	"EBA.CAR-ALL.D.H".CAR.ALL.D
+	"EBA.DUK-ALL.D.H".DUK.ALL.D
+	"EBA.EPE-ALL.D.H".EPE.ALL.D
+	"EBA.FLA-ALL.D.H".FLA.ALL.D
+	"EBA.FPC-ALL.D.H".FPC.ALL.D
+	"EBA.FPL-ALL.D.H".FPL.ALL.D
+	"EBA.GVL-ALL.D.H".GVL.ALL.D
+	"EBA.HST-ALL.D.H".HST.ALL.D
+	"EBA.IID-ALL.D.H".IID.ALL.D
+	"EBA.JEA-ALL.D.H".JEA.ALL.D
+	"EBA.NSB-ALL.D.H".NSB.ALL.D
+	"EBA.PGE-ALL.D.H".PGE.ALL.D
+	"EBA.PJM-ALL.D.H".PJM.ALL.D
+	"EBA.PNM-ALL.D.H".PNM.ALL.D
+	"EBA.LGEE-ALL.D.H".LGEE.ALL.D
+	"EBA.MIDA-ALL.D.H".MIDA.ALL.D
+	"EBA.MIDW-ALL.D.H".MIDW.ALL.D
+	"EBA.MISO-ALL.D.H".MISO.ALL.D
+	"EBA.NEVP-ALL.D.H".NEVP.ALL.D
+	"EBA.NWMT-ALL.D.H".NWMT.ALL.D
+	"EBA.NYIS-ALL.D.H".NYIS.ALL.D
+	"EBA.OVEC-ALL.D.H".OVEC.ALL.D
+	"EBA.PACE-ALL.D.H".PACE.ALL.D
+	"EBA.PACW-ALL.D.H".PACW.ALL.D
+	"EBA.PSCO-ALL.D.H".PSCO.ALL.D
+	"EBA.PSEI-ALL.D.H".PSEI.ALL.D
+	"EBA.SCEG-ALL.D.H".SCEG.ALL.D
+	"EBA.SOCO-ALL.D.H".SOCO.ALL.D
+	"EBA.SWPP-ALL.D.H".SWPP.ALL.D
+	"EBA.TEPC-ALL.D.H".TEPC.ALL.D
+	"EBA.TIDC-ALL.D.H".TIDC.ALL.D
+	"EBA.TPWR-ALL.D.H".TPWR.ALL.D
+	"EBA.US48-ALL.D.H".US48.ALL.D
+	"EBA.TIDC-CISO.ID.H".TIDC.CISO.ID
+	"EBA.NY-MIDA.ID.H".NY.MIDA.ID
+	"EBA.TEC-FPC.ID.H".TEC.FPC.ID
+	"EBA.WACM-ALL.D.H".WACM.ALL.D
+	"EBA.WALC-ALL.D.H".WALC.ALL.D
+	"EBA.WAUW-ALL.D.H".WAUW.ALL.D
+	"EBA.TIDC-ALL.DF.H".TIDC.ALL.DF
+	"EBA.TPWR-ALL.DF.H".TPWR.ALL.DF
+	"EBA.US48-ALL.DF.H".US48.ALL.DF
+	"EBA.WACM-ALL.DF.H".WACM.ALL.DF
+	"EBA.WALC-ALL.DF.H".WALC.ALL.DF
+	"EBA.WAUW-ALL.DF.H".WAUW.ALL.DF
+	"EBA.NE-ALL.DF.H".NE.ALL.DF
+	"EBA.NW-ALL.DF.H".NW.ALL.DF
+	"EBA.NY-ALL.DF.H".NY.ALL.DF
+	"EBA.SC-ALL.DF.H".SC.ALL.DF
+	"EBA.SE-ALL.DF.H".SE.ALL.DF
+	"EBA.SW-ALL.DF.H".SW.ALL.DF
+	"EBA.AEC-ALL.DF.H".AEC.ALL.DF
+	"EBA.AVA-ALL.DF.H".AVA.ALL.DF
+	"EBA.CAL-ALL.DF.H".CAL.ALL.DF
+	"EBA.CAR-ALL.DF.H".CAR.ALL.DF
+	"EBA.DUK-ALL.DF.H".DUK.ALL.DF
+	"EBA.EPE-ALL.DF.H".EPE.ALL.DF
+	"EBA.GRMA-AZPS.ID.H".GRMA.AZPS.ID
+	"EBA.NWMT-WAUW.ID.H".NWMT.WAUW.ID
+	"EBA.SW-CENT.ID.H".SW.CENT.ID
+	"EBA.TVA-CPLW.ID.H".TVA.CPLW.ID
+	"EBA.AZPS-WALC.ID.H".AZPS.WALC.ID
+	"EBA.BPAT-PSEI.ID.H".BPAT.PSEI.ID
+	"EBA.WWA-NWMT.ID.H".WWA.NWMT.ID
+	"EBA.NEVP-CISO.ID.H".NEVP.CISO.ID
+	"EBA.NYIS-ISNE.ID.H".NYIS.ISNE.ID
+	"EBA.DUK-SC.ID.H".DUK.SC.ID
+	"EBA.MIDW-CAN.ID.H".MIDW.CAN.ID
+	"EBA.NWMT-AVA.ID.H".NWMT.AVA.ID
+	"EBA.CAR-SE.ID.H".CAR.SE.ID
+	"EBA.SRP-GRID.ID.H".SRP.GRID.ID
+	"EBA.BPAT-NEVP.ID.H".BPAT.NEVP.ID
+	"EBA.GRID-PNM.ID.H".GRID.PNM.ID
+	"EBA.HGMA-SRP.ID.H".HGMA.SRP.ID
+	"EBA.SRP-HGMA.ID.H".SRP.HGMA.ID
+	"EBA.CHPD-DOPD.ID.H".CHPD.DOPD.ID
+	"EBA.AVRN-PACW.ID.H".AVRN.PACW.ID
+	"EBA.AZPS-CISO.ID.H".AZPS.CISO.ID
+	"EBA.CPLW-TVA.ID.H".CPLW.TVA.ID
+	"EBA.FPC-SOCO.ID.H".FPC.SOCO.ID
+	"EBA.FPL-SOCO.ID.H".FPL.SOCO.ID
+	"EBA.SEC-FPL.ID.H".SEC.FPL.ID
+	"EBA.SPA-AECI.ID.H".SPA.AECI.ID
+	"EBA.AECI-SWPP.ID.H".AECI.SWPP.ID
+	"EBA.BPAT-GCPD.ID.H".BPAT.GCPD.ID
+	"EBA.SOCO-FPC.ID.H".SOCO.FPC.ID
+	"EBA.FPC-FPL.ID.H".FPC.FPL.ID
+	"EBA.MISO-SWPP.ID.H".MISO.SWPP.ID
+	"EBA.NE-CAN.ID.H".NE.CAN.ID
+	"EBA.CAL-SW.ID.H".CAL.SW.ID
+	"EBA.FLA-SE.ID.H".FLA.SE.ID
+	"EBA.SEC-FPC.ID.H".SEC.FPC.ID
+	"EBA.GVL-ALL.DF.H".GVL.ALL.DF
+	"EBA.HST-ALL.DF.H".HST.ALL.DF
+	"EBA.IID-ALL.DF.H".IID.ALL.DF
+	"EBA.JEA-ALL.DF.H".JEA.ALL.DF
+	"EBA.NSB-ALL.DF.H".NSB.ALL.DF
+	"EBA.PGE-ALL.DF.H".PGE.ALL.DF
+	"EBA.PJM-ALL.DF.H".PJM.ALL.DF
+	"EBA.PNM-ALL.DF.H".PNM.ALL.DF
+	"EBA.SCL-ALL.DF.H".SCL.ALL.DF
+	"EBA.SEC-ALL.DF.H".SEC.ALL.DF
+	"EBA.SPA-ALL.DF.H".SPA.ALL.DF
+	"EBA.SRP-ALL.DF.H".SRP.ALL.DF
+	"EBA.TAL-ALL.DF.H".TAL.ALL.DF
+	"EBA.TEC-ALL.DF.H".TEC.ALL.DF
+	"EBA.TEN-ALL.DF.H".TEN.ALL.DF
+	"EBA.TEX-ALL.DF.H".TEX.ALL.DF
+	"EBA.TVA-ALL.DF.H".TVA.ALL.DF
+	"EBA.AECI-ALL.DF.H".AECI.ALL.DF
+	"EBA.CPLE-PJM.ID.H".CPLE.PJM.ID
+	"EBA.LGEE-GLHB.ID.H".LGEE.GLHB.ID
+	"EBA.CISO-AZPS.ID.H".CISO.AZPS.ID
+	"EBA.MISO-EEI.ID.H".MISO.EEI.ID
+	"EBA.SCEG-SOCO.ID.H".SCEG.SOCO.ID
+	"EBA.IID-AZPS.ID.H".IID.AZPS.ID
+	"EBA.NEVP-PACE.ID.H".NEVP.PACE.ID
+	"EBA.WACM-WAUW.ID.H".WACM.WAUW.ID
+	"EBA.EPE-PNM.ID.H".EPE.PNM.ID
+	"EBA.TVA-MISO.ID.H".TVA.MISO.ID
+	"EBA.NEVP-LDWP.ID.H".NEVP.LDWP.ID
+	"EBA.PACW-AVA.ID.H".PACW.AVA.ID
+	"EBA.WACM-AZPS.ID.H".WACM.AZPS.ID
+	"EBA.GCPD-AVA.ID.H".GCPD.AVA.ID
+	"EBA.PACW-IPCO.ID.H".PACW.IPCO.ID
+	"EBA.DUK-SEPA.ID.H".DUK.SEPA.ID
+	"EBA.AZPS-PACE.ID.H".AZPS.PACE.ID
+	"EBA.PACW-GCPD.ID.H".PACW.GCPD.ID
+	"EBA.AZPS-ALL.DF.H".AZPS.ALL.DF
+	"EBA.BANC-ALL.DF.H".BANC.ALL.DF
+	"EBA.BPAT-ALL.DF.H".BPAT.ALL.DF
+	"EBA.CENT-ALL.DF.H".CENT.ALL.DF
+	"EBA.CHPD-ALL.DF.H".CHPD.ALL.DF
+	"EBA.CISO-ALL.DF.H".CISO.ALL.DF
+	"EBA.CPLE-ALL.DF.H".CPLE.ALL.DF
+	"EBA.CPLW-ALL.DF.H".CPLW.ALL.DF
+	"EBA.DOPD-ALL.DF.H".DOPD.ALL.DF
+	"EBA.ERCO-ALL.DF.H".ERCO.ALL.DF
+	"EBA.FMPP-ALL.DF.H".FMPP.ALL.DF
+	"EBA.GCPD-ALL.DF.H".GCPD.ALL.DF
+	"EBA.IPCO-ALL.DF.H".IPCO.ALL.DF
+	"EBA.ISNE-ALL.DF.H".ISNE.ALL.DF
+	"EBA.LDWP-ALL.DF.H".LDWP.ALL.DF
+	"EBA.LGEE-ALL.DF.H".LGEE.ALL.DF
+	"EBA.MIDA-ALL.DF.H".MIDA.ALL.DF
+	"EBA.MIDW-ALL.DF.H".MIDW.ALL.DF
+	"EBA.MISO-ALL.DF.H".MISO.ALL.DF
+	"EBA.NEVP-ALL.DF.H".NEVP.ALL.DF
+	"EBA.NWMT-ALL.DF.H".NWMT.ALL.DF
+	"EBA.PNM-GRID.ID.H".PNM.GRID.ID
+	"EBA.PNM-AZPS.ID.H".PNM.AZPS.ID
+	"EBA.AECI-TVA.ID.H".AECI.TVA.ID
+	"EBA.WACM-PNM.ID.H".WACM.PNM.ID
+	"EBA.TEC-FPL.ID.H".TEC.FPL.ID
+	"EBA.CPLE-YAD.ID.H".CPLE.YAD.ID
+	"EBA.SRP-WALC.ID.H".SRP.WALC.ID
+	"EBA.SPA-MISO.ID.H".SPA.MISO.ID
+	"EBA.TEN-SE.ID.H".TEN.SE.ID
+	"EBA.AZPS-TEPC.ID.H".AZPS.TEPC.ID
+	"EBA.WALC-GRIF.ID.H".WALC.GRIF.ID
+	"EBA.TAL-FPC.ID.H".TAL.FPC.ID
+	"EBA.CISO-SRP.ID.H".CISO.SRP.ID
+	"EBA.MIDA-CAR.ID.H".MIDA.CAR.ID
+	"EBA.NW-CAN.ID.H".NW.CAN.ID
+	"EBA.SPA-SWPP.ID.H".SPA.SWPP.ID
+	"EBA.TVA-PJM.ID.H".TVA.PJM.ID
+	"EBA.MIDW-MIDA.ID.H".MIDW.MIDA.ID
+	"EBA.SWPP-WAUW.ID.H".SWPP.WAUW.ID
+	"EBA.MISO-SOCO.ID.H".MISO.SOCO.ID
+	"EBA.FLA-ALL.DF.H".FLA.ALL.DF
+	"EBA.FPC-ALL.DF.H".FPC.ALL.DF
+	"EBA.FPL-ALL.DF.H".FPL.ALL.DF
+	"EBA.SCEG-DUK.ID.H".SCEG.DUK.ID
+	"EBA.SCEG-CPLE.ID.H".SCEG.CPLE.ID
+	"EBA.SWPP-SPC.ID.H".SWPP.SPC.ID
+	"EBA.IID-CISO.ID.H".IID.CISO.ID
+	"EBA.BPAT-PGE.ID.H".BPAT.PGE.ID
+	"EBA.AZPS-GRMA.ID.H".AZPS.GRMA.ID
+	"EBA.CENT-CAN.ID.H".CENT.CAN.ID
+	"EBA.MIDA-MIDW.ID.H".MIDA.MIDW.ID
+	"EBA.PACE-PACW.ID.H".PACE.PACW.ID
+	"EBA.SOCO-SC.ID.H".SOCO.SC.ID
+	"EBA.WALC-GRID.ID.H".WALC.GRID.ID
+	"EBA.CAL-MEX.ID.H".CAL.MEX.ID
+	"EBA.FMPP-JEA.ID.H".FMPP.JEA.ID
+	"EBA.TEPC-WALC.ID.H".TEPC.WALC.ID
+	"EBA.FPL-NSB.ID.H".FPL.NSB.ID
+	"EBA.PSEI-BPAT.ID.H".PSEI.BPAT.ID
+	"EBA.CAR-TEN.ID.H".CAR.TEN.ID
+	"EBA.FPC-FMPP.ID.H".FPC.FMPP.ID
+	"EBA.NYIS-ALL.DF.H".NYIS.ALL.DF
+	"EBA.OVEC-ALL.DF.H".OVEC.ALL.DF
+	"EBA.PACE-ALL.DF.H".PACE.ALL.DF
+	"EBA.PACW-ALL.DF.H".PACW.ALL.DF
+	"EBA.PSCO-ALL.DF.H".PSCO.ALL.DF
+	"EBA.PSEI-ALL.DF.H".PSEI.ALL.DF
+	"EBA.SCEG-ALL.DF.H".SCEG.ALL.DF
+	"EBA.SOCO-ALL.DF.H".SOCO.ALL.DF
+	"EBA.SWPP-ALL.DF.H".SWPP.ALL.DF
+	"EBA.TEPC-ALL.DF.H".TEPC.ALL.DF
+	"EBA.NWMT-ALL.NG.H".NWMT.ALL.NG
+	"EBA.NYIS-ALL.NG.H".NYIS.ALL.NG
+	"EBA.OVEC-ALL.NG.H".OVEC.ALL.NG
+	"EBA.PACE-ALL.NG.H".PACE.ALL.NG
+	"EBA.PACW-ALL.NG.H".PACW.ALL.NG
+	"EBA.PSCO-ALL.NG.H".PSCO.ALL.NG
+	"EBA.PSEI-ALL.NG.H".PSEI.ALL.NG
+	"EBA.SCEG-ALL.NG.H".SCEG.ALL.NG
+	"EBA.SEPA-ALL.NG.H".SEPA.ALL.NG
+	"EBA.SOCO-ALL.NG.H".SOCO.ALL.NG
+	"EBA.SWPP-ALL.NG.H".SWPP.ALL.NG
+	"EBA.NEVP-BPAT.ID.H".NEVP.BPAT.ID
+	"EBA.DUK-YAD.ID.H".DUK.YAD.ID
+	"EBA.TVA-AECI.ID.H".TVA.AECI.ID
+	"EBA.CENT-TEX.ID.H".CENT.TEX.ID
+	"EBA.WAUW-NWMT.ID.H".WAUW.NWMT.ID
+	"EBA.WAUW-WACM.ID.H".WAUW.WACM.ID
+	"EBA.CENT-NW.ID.H".CENT.NW.ID
+	"EBA.CISO-LDWP.ID.H".CISO.LDWP.ID
+	"EBA.PSEI-GCPD.ID.H".PSEI.GCPD.ID
+	"EBA.SOCO-AEC.ID.H".SOCO.AEC.ID
+	"EBA.BPAT-CHPD.ID.H".BPAT.CHPD.ID
+	"EBA.TEPC-SRP.ID.H".TEPC.SRP.ID
+	"EBA.WALC-AZPS.ID.H".WALC.AZPS.ID
+	"EBA.WALC-CISO.ID.H".WALC.CISO.ID
+	"EBA.FPC-SEC.ID.H".FPC.SEC.ID
+	"EBA.SEC-JEA.ID.H".SEC.JEA.ID
+	"EBA.PACE-NEVP.ID.H".PACE.NEVP.ID
+	"EBA.FPL-TEC.ID.H".FPL.TEC.ID
+	"EBA.TVA-LGEE.ID.H".TVA.LGEE.ID
+	"EBA.PACE-IPCO.ID.H".PACE.IPCO.ID
+	"EBA.DUK-SOCO.ID.H".DUK.SOCO.ID
+	"EBA.EPE-TEPC.ID.H".EPE.TEPC.ID
+	"EBA.PJM-TVA.ID.H".PJM.TVA.ID
+	"EBA.TEN-MIDA.ID.H".TEN.MIDA.ID
+	"EBA.IPCO-NWMT.ID.H".IPCO.NWMT.ID
+	"EBA.IPCO-PACE.ID.H".IPCO.PACE.ID
+	"EBA.SWPP-EPE.ID.H".SWPP.EPE.ID
+	"EBA.BPAT-AVA.ID.H".BPAT.AVA.ID
+	"EBA.CISO-TIDC.ID.H".CISO.TIDC.ID
+	"EBA.DUK-CPLW.ID.H".DUK.CPLW.ID
+	"EBA.FPC-TEC.ID.H".FPC.TEC.ID
+	"EBA.MISO-SPA.ID.H".MISO.SPA.ID
+	"EBA.SEPA-SC.ID.H".SEPA.SC.ID
+	"EBA.TEPC-ALL.NG.H".TEPC.ALL.NG
+	"EBA.TIDC-ALL.NG.H".TIDC.ALL.NG
+	"EBA.TPWR-ALL.NG.H".TPWR.ALL.NG
+	"EBA.US48-ALL.NG.H".US48.ALL.NG
+	"EBA.WACM-ALL.NG.H".WACM.ALL.NG
+	"EBA.WALC-ALL.NG.H".WALC.ALL.NG
+	"EBA.WAUW-ALL.NG.H".WAUW.ALL.NG
+	"EBA.NE-ALL.NG.H".NE.ALL.NG
+	"EBA.NW-ALL.NG.H".NW.ALL.NG
+	"EBA.NY-ALL.NG.H".NY.ALL.NG
+	"EBA.SC-ALL.NG.H".SC.ALL.NG
+	"EBA.SE-ALL.NG.H".SE.ALL.NG
+	"EBA.SW-ALL.NG.H".SW.ALL.NG
+	"EBA.AEC-ALL.NG.H".AEC.ALL.NG
+	"EBA.AVA-ALL.NG.H".AVA.ALL.NG
+	"EBA.CAL-ALL.NG.H".CAL.ALL.NG
+	"EBA.CAR-ALL.NG.H".CAR.ALL.NG
+	"EBA.DUK-ALL.NG.H".DUK.ALL.NG
+	"EBA.EEI-ALL.NG.H".EEI.ALL.NG
+	"EBA.EPE-ALL.NG.H".EPE.ALL.NG
+	"EBA.FLA-ALL.NG.H".FLA.ALL.NG
+	"EBA.FPC-ALL.NG.H".FPC.ALL.NG
+	"EBA.PACW-BPAT.ID.H".PACW.BPAT.ID
+	"EBA.GVL-FPC.ID.H".GVL.FPC.ID
+	"EBA.FPL-ALL.NG.H".FPL.ALL.NG
+	"EBA.GVL-ALL.NG.H".GVL.ALL.NG
+	"EBA.GWA-ALL.NG.H".GWA.ALL.NG
+	"EBA.HST-ALL.NG.H".HST.ALL.NG
+	"EBA.IID-ALL.NG.H".IID.ALL.NG
+	"EBA.JEA-ALL.NG.H".JEA.ALL.NG
+	"EBA.NSB-ALL.NG.H".NSB.ALL.NG
+	"EBA.PGE-ALL.NG.H".PGE.ALL.NG
+	"EBA.PJM-ALL.NG.H".PJM.ALL.NG
+	"EBA.PNM-ALL.NG.H".PNM.ALL.NG
+	"EBA.SCL-ALL.NG.H".SCL.ALL.NG
+	"EBA.SEC-ALL.NG.H".SEC.ALL.NG
+	"EBA.SPA-ALL.NG.H".SPA.ALL.NG
+	"EBA.SRP-ALL.NG.H".SRP.ALL.NG
+	"EBA.TAL-ALL.NG.H".TAL.ALL.NG
+	"EBA.TEC-ALL.NG.H".TEC.ALL.NG
+	"EBA.TEN-ALL.NG.H".TEN.ALL.NG
+	"EBA.TEX-ALL.NG.H".TEX.ALL.NG
+	"EBA.TVA-ALL.NG.H".TVA.ALL.NG
+	"EBA.WWA-ALL.NG.H".WWA.ALL.NG
+	"EBA.YAD-ALL.NG.H".YAD.ALL.NG
+	"EBA.AECI-ALL.NG.H".AECI.ALL.NG
+	"EBA.NSB-FPL.ID.H".NSB.FPL.ID
+	"EBA.CISO-WALC.ID.H".CISO.WALC.ID
+	"EBA.OVEC-LGEE.ID.H".OVEC.LGEE.ID
+	"EBA.SOCO-FPL.ID.H".SOCO.FPL.ID
+	"EBA.TEPC-AZPS.ID.H".TEPC.AZPS.ID
+	"EBA.SWPP-MISO.ID.H".SWPP.MISO.ID
+	"EBA.SWPP-WACM.ID.H".SWPP.WACM.ID
+	"EBA.PJM-OVEC.ID.H".PJM.OVEC.ID
+	"EBA.AECI-MISO.ID.H".AECI.MISO.ID
+	"EBA.AZPS-IID.ID.H".AZPS.IID.ID
+	"EBA.GRID-WALC.ID.H".GRID.WALC.ID
+	"EBA.DUK-TVA.ID.H".DUK.TVA.ID
+	"EBA.FMPP-FPL.ID.H".FMPP.FPL.ID
+	"EBA.IPCO-BPAT.ID.H".IPCO.BPAT.ID
+	"EBA.MIDW-SE.ID.H".MIDW.SE.ID
+	"EBA.SEPA-SOCO.ID.H".SEPA.SOCO.ID
+	"EBA.TEPC-EPE.ID.H".TEPC.EPE.ID
+	"EBA.WAUW-SWPP.ID.H".WAUW.SWPP.ID
+	"EBA.AVRN-ALL.NG.H".AVRN.ALL.NG
+	"EBA.AZPS-ALL.NG.H".AZPS.ALL.NG
+	"EBA.BANC-ALL.NG.H".BANC.ALL.NG
+	"EBA.BPAT-ALL.NG.H".BPAT.ALL.NG
+	"EBA.CENT-ALL.NG.H".CENT.ALL.NG
+	"EBA.CHPD-ALL.NG.H".CHPD.ALL.NG
+	"EBA.CISO-ALL.NG.H".CISO.ALL.NG
+	"EBA.CPLE-ALL.NG.H".CPLE.ALL.NG
+	"EBA.CPLW-ALL.NG.H".CPLW.ALL.NG
+	"EBA.DEAA-ALL.NG.H".DEAA.ALL.NG
+	"EBA.DOPD-ALL.NG.H".DOPD.ALL.NG
+	"EBA.ERCO-ALL.NG.H".ERCO.ALL.NG
+	"EBA.FMPP-ALL.NG.H".FMPP.ALL.NG
+	"EBA.GCPD-ALL.NG.H".GCPD.ALL.NG
+	"EBA.GLHB-ALL.NG.H".GLHB.ALL.NG
+	"EBA.GRID-ALL.NG.H".GRID.ALL.NG
+	"EBA.GRIF-ALL.NG.H".GRIF.ALL.NG
+	"EBA.GRMA-ALL.NG.H".GRMA.ALL.NG
+	"EBA.HGMA-ALL.NG.H".HGMA.ALL.NG
+	"EBA.IPCO-ALL.NG.H".IPCO.ALL.NG
+	"EBA.ISNE-ALL.NG.H".ISNE.ALL.NG
+	"EBA.LDWP-ALL.NG.H".LDWP.ALL.NG
+	"EBA.BANC-CISO.ID.H".BANC.CISO.ID
+	"EBA.LGEE-MISO.ID.H".LGEE.MISO.ID
+	"EBA.SOCO-MISO.ID.H".SOCO.MISO.ID
+	"EBA.EPE-SWPP.ID.H".EPE.SWPP.ID
+	"EBA.OVEC-PJM.ID.H".OVEC.PJM.ID
+	"EBA.MIDW-TEN.ID.H".MIDW.TEN.ID
+	"EBA.FPC-GVL.ID.H".FPC.GVL.ID
+	"EBA.SE-CAR.ID.H".SE.CAR.ID
+	"EBA.PJM-DUK.ID.H".PJM.DUK.ID
+	"EBA.LDWP-AZPS.ID.H".LDWP.AZPS.ID
+	"EBA.BPAT-LDWP.ID.H".BPAT.LDWP.ID
+	"EBA.CHPD-BPAT.ID.H".CHPD.BPAT.ID
+	"EBA.FMPP-TEC.ID.H".FMPP.TEC.ID
+	"EBA.MISO-PJM.ID.H".MISO.PJM.ID
+	"EBA.CHPD-AVA.ID.H".CHPD.AVA.ID
+	"EBA.AEC-MISO.ID.H".AEC.MISO.ID
+	"EBA.AEC-SOCO.ID.H".AEC.SOCO.ID
+	"EBA.AVA-CHPD.ID.H".AVA.CHPD.ID
+	"EBA.AZPS-SRP.ID.H".AZPS.SRP.ID
+	"EBA.AZPS-WACM.ID.H".AZPS.WACM.ID
+	"EBA.JEA-FPL.ID.H".JEA.FPL.ID
+	"EBA.TEC-FMPP.ID.H".TEC.FMPP.ID
+	"EBA.SOCO-TAL.ID.H".SOCO.TAL.ID
+	"EBA.TVA-SOCO.ID.H".TVA.SOCO.ID
+	"EBA.SE-TEN.ID.H".SE.TEN.ID
+	"EBA.AVA-BPAT.ID.H".AVA.BPAT.ID
+	"EBA.CISO-PACW.ID.H".CISO.PACW.ID
+	"EBA.HST-FPL.ID.H".HST.FPL.ID
+	"EBA.BPAT-BANC.ID.H".BPAT.BANC.ID
+	"EBA.ISNE-HQT.ID.H".ISNE.HQT.ID
+	"EBA.EEI-TVA.ID.H".EEI.TVA.ID
+	"EBA.PJM-CPLE.ID.H".PJM.CPLE.ID
+	"EBA.PSCO-WACM.ID.H".PSCO.WACM.ID
+	"EBA.ISNE-NBSO.ID.H".ISNE.NBSO.ID
+	"EBA.LDWP-BPAT.ID.H".LDWP.BPAT.ID
+	"EBA.WALC-NEVP.ID.H".WALC.NEVP.ID
+	"EBA.NY-CAN.ID.H".NY.CAN.ID
+	"EBA.DUK-SCEG.ID.H".DUK.SCEG.ID
+	"EBA.GCPD-PACW.ID.H".GCPD.PACW.ID
+	"EBA.NWMT-AESO.ID.H".NWMT.AESO.ID
+	"EBA.SWPP-ERCO.ID.H".SWPP.ERCO.ID
+	"EBA.FPL-FPC.ID.H".FPL.FPC.ID
+	"EBA.CISO-CEN.ID.H".CISO.CEN.ID
+	"EBA.WALC-IID.ID.H".WALC.IID.ID
+	"EBA.SC-SCEG.ID.H".SC.SCEG.ID
+	"EBA.SW-CAL.ID.H".SW.CAL.ID
+	"EBA.PACW-PGE.ID.H".PACW.PGE.ID
+	"EBA.JEA-FMPP.ID.H".JEA.FMPP.ID
+	"EBA.SC-SEPA.ID.H".SC.SEPA.ID
+	"EBA.TEN-CAR.ID.H".TEN.CAR.ID
+	"EBA.GCPD-PSEI.ID.H".GCPD.PSEI.ID
+	"EBA.MIDA-NY.ID.H".MIDA.NY.ID
+	"EBA.TEN-MIDW.ID.H".TEN.MIDW.ID
+	"EBA.ERCO-SWPP.ID.H".ERCO.SWPP.ID
+	"EBA.DUK-PJM.ID.H".DUK.PJM.ID
+	"EBA.GVL-FPL.ID.H".GVL.FPL.ID
+	"EBA.WALC-ALL.TI.H".WALC.ALL.TI
+	"EBA.WAUW-ALL.TI.H".WAUW.ALL.TI
+	"EBA.NE-ALL.TI.H".NE.ALL.TI
+	"EBA.NW-ALL.TI.H".NW.ALL.TI
+	"EBA.NY-ALL.TI.H".NY.ALL.TI
+	"EBA.SC-ALL.TI.H".SC.ALL.TI
+	"EBA.SE-ALL.TI.H".SE.ALL.TI
+	"EBA.SW-ALL.TI.H".SW.ALL.TI
+	"EBA.AEC-ALL.TI.H".AEC.ALL.TI
+	"EBA.AVA-ALL.TI.H".AVA.ALL.TI
+	"EBA.CAL-ALL.TI.H".CAL.ALL.TI
+	"EBA.CAR-ALL.TI.H".CAR.ALL.TI
+	"EBA.DUK-ALL.TI.H".DUK.ALL.TI
+	"EBA.EEI-ALL.TI.H".EEI.ALL.TI
+	"EBA.EPE-ALL.TI.H".EPE.ALL.TI
+	"EBA.FLA-ALL.TI.H".FLA.ALL.TI
+	"EBA.FPC-ALL.TI.H".FPC.ALL.TI
+	"EBA.FPL-ALL.TI.H".FPL.ALL.TI
+	"EBA.GVL-ALL.TI.H".GVL.ALL.TI
+	"EBA.GWA-ALL.TI.H".GWA.ALL.TI
+	"EBA.HST-ALL.TI.H".HST.ALL.TI
+	"EBA.IID-ALL.TI.H".IID.ALL.TI
+	"EBA.LGEE-ALL.NG.H".LGEE.ALL.NG
+	"EBA.MIDA-ALL.NG.H".MIDA.ALL.NG
+	"EBA.MIDW-ALL.NG.H".MIDW.ALL.NG
+	"EBA.MISO-ALL.NG.H".MISO.ALL.NG
+	"EBA.NEVP-ALL.NG.H".NEVP.ALL.NG
+	"EBA.NWMT-ALL.TI.H".NWMT.ALL.TI
+	"EBA.NYIS-ALL.TI.H".NYIS.ALL.TI
+	"EBA.OVEC-ALL.TI.H".OVEC.ALL.TI
+	"EBA.PACE-ALL.TI.H".PACE.ALL.TI
+	"EBA.PACW-ALL.TI.H".PACW.ALL.TI
+	"EBA.PSCO-ALL.TI.H".PSCO.ALL.TI
+	"EBA.PSEI-ALL.TI.H".PSEI.ALL.TI
+	"EBA.SCEG-ALL.TI.H".SCEG.ALL.TI
+	"EBA.SEPA-ALL.TI.H".SEPA.ALL.TI
+	"EBA.SOCO-ALL.TI.H".SOCO.ALL.TI
+	"EBA.SWPP-ALL.TI.H".SWPP.ALL.TI
+	"EBA.TEPC-ALL.TI.H".TEPC.ALL.TI
+	"EBA.TIDC-ALL.TI.H".TIDC.ALL.TI
+	"EBA.TPWR-ALL.TI.H".TPWR.ALL.TI
+	"EBA.US48-ALL.TI.H".US48.ALL.TI
+	"EBA.WACM-ALL.TI.H".WACM.ALL.TI
+	"EBA.NWMT-BPAT.ID.H".NWMT.BPAT.ID
+	"EBA.WALC-SRP.ID.H".WALC.SRP.ID
+	"EBA.BPAT-CISO.ID.H".BPAT.CISO.ID
+	"EBA.PACE-WACM.ID.H".PACE.WACM.ID
+	"EBA.WACM-SWPP.ID.H".WACM.SWPP.ID
+	"EBA.TEX-CENT.ID.H".TEX.CENT.ID
+	"EBA.YAD-DUK.ID.H".YAD.DUK.ID
+	"EBA.PSEI-SCL.ID.H".PSEI.SCL.ID
+	"EBA.US48-CAN.ID.H".US48.CAN.ID
+	"EBA.SEC-TEC.ID.H".SEC.TEC.ID
+	"EBA.CAR-MIDA.ID.H".CAR.MIDA.ID
+	"EBA.PNM-EPE.ID.H".PNM.EPE.ID
+	"EBA.IPCO-PACW.ID.H".IPCO.PACW.ID
+	"EBA.SEPA-SCEG.ID.H".SEPA.SCEG.ID
+	"EBA.BPAT-PACW.ID.H".BPAT.PACW.ID
+	"EBA.MIDW-CENT.ID.H".MIDW.CENT.ID
+	"EBA.GRIF-WALC.ID.H".GRIF.WALC.ID
+	"EBA.MIDA-TEN.ID.H".MIDA.TEN.ID
+	"EBA.NE-NY.ID.H".NE.NY.ID
+	"EBA.JEA-ALL.TI.H".JEA.ALL.TI
+	"EBA.NSB-ALL.TI.H".NSB.ALL.TI
+	"EBA.PGE-ALL.TI.H".PGE.ALL.TI
+	"EBA.PJM-ALL.TI.H".PJM.ALL.TI
+	"EBA.PNM-ALL.TI.H".PNM.ALL.TI
+	"EBA.SCL-ALL.TI.H".SCL.ALL.TI
+	"EBA.SEC-ALL.TI.H".SEC.ALL.TI
+	"EBA.SPA-ALL.TI.H".SPA.ALL.TI
+	"EBA.SRP-ALL.TI.H".SRP.ALL.TI
+	"EBA.TAL-ALL.TI.H".TAL.ALL.TI
+	"EBA.TEC-ALL.TI.H".TEC.ALL.TI
+	"EBA.TEN-ALL.TI.H".TEN.ALL.TI
+	"EBA.TEX-ALL.TI.H".TEX.ALL.TI
+	"EBA.TVA-ALL.TI.H".TVA.ALL.TI
+	"EBA.WWA-ALL.TI.H".WWA.ALL.TI
+	"EBA.YAD-ALL.TI.H".YAD.ALL.TI
+	"EBA.AECI-ALL.TI.H".AECI.ALL.TI
+	"EBA.AVRN-ALL.TI.H".AVRN.ALL.TI
+	"EBA.AZPS-ALL.TI.H".AZPS.ALL.TI
+	"EBA.BANC-ALL.TI.H".BANC.ALL.TI
+	"EBA.BPAT-ALL.TI.H".BPAT.ALL.TI
+	"EBA.CENT-ALL.TI.H".CENT.ALL.TI
+	"EBA.NW-CAL.ID.H".NW.CAL.ID
+	"EBA.CISO-BPAT.ID.H".CISO.BPAT.ID
+	"EBA.CPLE-SC.ID.H".CPLE.SC.ID
+	"EBA.FMPP-FPC.ID.H".FMPP.FPC.ID
+	"EBA.FPC-NSB.ID.H".FPC.NSB.ID
+	"EBA.TVA-EEI.ID.H".TVA.EEI.ID
+	"EBA.BPAT-DOPD.ID.H".BPAT.DOPD.ID
+	"EBA.PACE-AZPS.ID.H".PACE.AZPS.ID
+	"EBA.SEPA-DUK.ID.H".SEPA.DUK.ID
+	"EBA.NEVP-IPCO.ID.H".NEVP.IPCO.ID
+	"EBA.SRP-CISO.ID.H".SRP.CISO.ID
+	"EBA.MISO-LGEE.ID.H".MISO.LGEE.ID
+	"EBA.TPWR-BPAT.ID.H".TPWR.BPAT.ID
+	"EBA.FPL-HST.ID.H".FPL.HST.ID
+	"EBA.CENT-SW.ID.H".CENT.SW.ID
+	"EBA.SRP-TEPC.ID.H".SRP.TEPC.ID
+	"EBA.LDWP-WALC.ID.H".LDWP.WALC.ID
+	"EBA.SOCO-SCEG.ID.H".SOCO.SCEG.ID
+	"EBA.CHPD-ALL.TI.H".CHPD.ALL.TI
+	"EBA.CISO-ALL.TI.H".CISO.ALL.TI
+	"EBA.CPLE-ALL.TI.H".CPLE.ALL.TI
+	"EBA.CPLW-ALL.TI.H".CPLW.ALL.TI
+	"EBA.DEAA-ALL.TI.H".DEAA.ALL.TI
+	"EBA.DOPD-ALL.TI.H".DOPD.ALL.TI
+	"EBA.ERCO-ALL.TI.H".ERCO.ALL.TI
+	"EBA.FMPP-ALL.TI.H".FMPP.ALL.TI
+	"EBA.GCPD-ALL.TI.H".GCPD.ALL.TI
+	"EBA.GLHB-ALL.TI.H".GLHB.ALL.TI
+	"EBA.GRID-ALL.TI.H".GRID.ALL.TI
+	"EBA.GRIF-ALL.TI.H".GRIF.ALL.TI
+	"EBA.GRMA-ALL.TI.H".GRMA.ALL.TI
+	"EBA.HGMA-ALL.TI.H".HGMA.ALL.TI
+	"EBA.IPCO-ALL.TI.H".IPCO.ALL.TI
+	"EBA.ISNE-ALL.TI.H".ISNE.ALL.TI
+	"EBA.LDWP-ALL.TI.H".LDWP.ALL.TI
+	"EBA.LGEE-ALL.TI.H".LGEE.ALL.TI
+	"EBA.MIDA-ALL.TI.H".MIDA.ALL.TI
+	"EBA.MIDW-ALL.TI.H".MIDW.ALL.TI
+	"EBA.MISO-ALL.TI.H".MISO.ALL.TI
+	"EBA.EEI-LGEE.ID.H".EEI.LGEE.ID
+	"EBA.SRP-PNM.ID.H".SRP.PNM.ID
+	"EBA.WALC-LDWP.ID.H".WALC.LDWP.ID
+	"EBA.DUK-CPLE.ID.H".DUK.CPLE.ID
+	"EBA.IID-WALC.ID.H".IID.WALC.ID
+	"EBA.YAD-CPLE.ID.H".YAD.CPLE.ID
+	"EBA.BPAT-NWMT.ID.H".BPAT.NWMT.ID
+	"EBA.GRID-SRP.ID.H".GRID.SRP.ID
+	"EBA.GRID-BPAT.ID.H".GRID.BPAT.ID
+	"EBA.PSCO-PNM.ID.H".PSCO.PNM.ID
+	"EBA.SCEG-SEPA.ID.H".SCEG.SEPA.ID
+	"EBA.SE-FLA.ID.H".SE.FLA.ID
+	"EBA.GLHB-LGEE.ID.H".GLHB.LGEE.ID
+	"EBA.WALC-TEPC.ID.H".WALC.TEPC.ID
+	"EBA.SCL-BPAT.ID.H".SCL.BPAT.ID
+	"EBA.TPWR-PSEI.ID.H".TPWR.PSEI.ID
+	"EBA.WACM-WALC.ID.H".WACM.WALC.ID
+	"EBA.CPLW-DUK.ID.H".CPLW.DUK.ID
+	"EBA.PACW-AVRN.ID.H".PACW.AVRN.ID
+	"EBA.TEC-SEC.ID.H".TEC.SEC.ID
+	"EBA.NEVP-ALL.TI.H".NEVP.ALL.TI
+	"EBA.CISO-IID.ID.H".CISO.IID.ID
+	"EBA.CISO-BANC.ID.H".CISO.BANC.ID
+	"EBA.LDWP-CISO.ID.H".LDWP.CISO.ID
+	"EBA.IPCO-AVA.ID.H".IPCO.AVA.ID
+	"EBA.NWMT-IPCO.ID.H".NWMT.IPCO.ID
+	"EBA.NWMT-WWA.ID.H".NWMT.WWA.ID
+	"EBA.US48-MEX.ID.H".US48.MEX.ID
+	"EBA.PNM-SWPP.ID.H".PNM.SWPP.ID
+	"EBA.SRP-DEAA.ID.H".SRP.DEAA.ID
+	"EBA.DEAA-SRP.ID.H".DEAA.SRP.ID
+	"EBA.MISO-MHEB.ID.H".MISO.MHEB.ID
+	"EBA.BPAT-TPWR.ID.H".BPAT.TPWR.ID
+	"EBA.GCPD-BPAT.ID.H".GCPD.BPAT.ID
+	"EBA.FPL-JEA.ID.H".FPL.JEA.ID
+	"EBA.FPL-SEC.ID.H".FPL.SEC.ID
+	"EBA.AVRN-BPAT.ID.H".AVRN.BPAT.ID
+	"EBA.MISO-IESO.ID.H".MISO.IESO.ID
+	"EBA.PGE-PACW.ID.H".PGE.PACW.ID
+	"EBA.CPLE-SCEG.ID.H".CPLE.SCEG.ID
+	"EBA.WACM-PACE.ID.H".WACM.PACE.ID
+	"EBA.SC-CPLE.ID.H".SC.CPLE.ID
+	"EBA.SE-MIDW.ID.H".SE.MIDW.ID
+	"EBA.PNM-PSCO.ID.H".PNM.PSCO.ID
+	"EBA.CENT-MIDW.ID.H".CENT.MIDW.ID
+	"EBA.AVA-NWMT.ID.H".AVA.NWMT.ID
+	"EBA.PSCO-SWPP.ID.H".PSCO.SWPP.ID
+	"EBA.SWPP-PNM.ID.H".SWPP.PNM.ID
+	"EBA.TEPC-PNM.ID.H".TEPC.PNM.ID
+	"EBA.NW-SW.ID.H".NW.SW.ID
+	"EBA.CHPD-PSEI.ID.H".CHPD.PSEI.ID
+	"EBA.ERCO-CFE.ID.H".ERCO.CFE.ID
+	"EBA.GWA-NWMT.ID.H".GWA.NWMT.ID
+	"EBA.PNM-WACM.ID.H".PNM.WACM.ID
+	"EBA.TEX-MEX.ID.H".TEX.MEX.ID
+	"EBA.DOPD-CHPD.ID.H".DOPD.CHPD.ID
+	"EBA.SWPP-PSCO.ID.H".SWPP.PSCO.ID
+	"EBA.AVA-PACW.ID.H".AVA.PACW.ID
+	"EBA.TAL-SOCO.ID.H".TAL.SOCO.ID /;
+
+set	js	Sectors /
+	NG	Natural gas,
+	WND	Wind,
+	COL	Coal,
+	NUC	Nuclear,
+	OIL	Oil,
+	OTH	Other,
+	SUN	Solar,
+	WAT	Hydro,
+	UNK	Unknown /;
+
+set ngmap(id,r,js)	Mapping of net generation data /
+	"EBA.MIDA-ALL.NG.WND.H".MIDA.WND
+	"EBA.MIDW-ALL.NG.COL.H".MIDW.COL
+	"EBA.MIDW-ALL.NG.NUC.H".MIDW.NUC
+	"EBA.MIDW-ALL.NG.OIL.H".MIDW.OIL
+	"EBA.MIDW-ALL.NG.OTH.H".MIDW.OTH
+	"EBA.MIDW-ALL.NG.SUN.H".MIDW.SUN
+	"EBA.MIDW-ALL.NG.WAT.H".MIDW.WAT
+	"EBA.MIDW-ALL.NG.WND.H".MIDW.WND
+	"EBA.MISO-ALL.NG.COL.H".MISO.COL
+	"EBA.MISO-ALL.NG.NUC.H".MISO.NUC
+	"EBA.MISO-ALL.NG.OIL.H".MISO.OIL
+	"EBA.MISO-ALL.NG.OTH.H".MISO.OTH
+	"EBA.MISO-ALL.NG.SUN.H".MISO.SUN
+	"EBA.MISO-ALL.NG.WAT.H".MISO.WAT
+	"EBA.MISO-ALL.NG.WND.H".MISO.WND
+	"EBA.NEVP-ALL.NG.COL.H".NEVP.COL
+	"EBA.NEVP-ALL.NG.NUC.H".NEVP.NUC
+	"EBA.NEVP-ALL.NG.OIL.H".NEVP.OIL
+	"EBA.NEVP-ALL.NG.OTH.H".NEVP.OTH
+	"EBA.NEVP-ALL.NG.SUN.H".NEVP.SUN
+	"EBA.NEVP-ALL.NG.WAT.H".NEVP.WAT
+	"EBA.NEVP-ALL.NG.WND.H".NEVP.WND
+	"EBA.NWMT-ALL.NG.COL.H".NWMT.COL
+	"EBA.NWMT-ALL.NG.OIL.H".NWMT.OIL
+	"EBA.NWMT-ALL.NG.SUN.H".NWMT.SUN
+	"EBA.NWMT-ALL.NG.WAT.H".NWMT.WAT
+	"EBA.NWMT-ALL.NG.WND.H".NWMT.WND
+	"EBA.NYIS-ALL.NG.COL.H".NYIS.COL
+	"EBA.NYIS-ALL.NG.NUC.H".NYIS.NUC
+	"EBA.NYIS-ALL.NG.OIL.H".NYIS.OIL
+	"EBA.NYIS-ALL.NG.OTH.H".NYIS.OTH
+	"EBA.NYIS-ALL.NG.SUN.H".NYIS.SUN
+	"EBA.NYIS-ALL.NG.WAT.H".NYIS.WAT
+	"EBA.NYIS-ALL.NG.WND.H".NYIS.WND
+	"EBA.OVEC-ALL.NG.COL.H".OVEC.COL
+	"EBA.PACE-ALL.NG.COL.H".PACE.COL
+	"EBA.PACE-ALL.NG.NUC.H".PACE.NUC
+	"EBA.PACE-ALL.NG.OIL.H".PACE.OIL
+	"EBA.PACE-ALL.NG.OTH.H".PACE.OTH
+	"EBA.PACE-ALL.NG.SUN.H".PACE.SUN
+	"EBA.PACE-ALL.NG.UNK.H".PACE.UNK
+	"EBA.PACE-ALL.NG.WAT.H".PACE.WAT
+	"EBA.PACE-ALL.NG.WND.H".PACE.WND
+	"EBA.PACW-ALL.NG.COL.H".PACW.COL
+	"EBA.PACW-ALL.NG.OTH.H".PACW.OTH
+	"EBA.PACW-ALL.NG.SUN.H".PACW.SUN
+	"EBA.PACW-ALL.NG.WAT.H".PACW.WAT
+	"EBA.PACW-ALL.NG.WND.H".PACW.WND
+	"EBA.PSCO-ALL.NG.COL.H".PSCO.COL
+	"EBA.PSCO-ALL.NG.OIL.H".PSCO.OIL
+	"EBA.PSCO-ALL.NG.OTH.H".PSCO.OTH
+	"EBA.PSCO-ALL.NG.SUN.H".PSCO.SUN
+	"EBA.PSCO-ALL.NG.WAT.H".PSCO.WAT
+	"EBA.PSCO-ALL.NG.WND.H".PSCO.WND
+	"EBA.PSEI-ALL.NG.COL.H".PSEI.COL
+	"EBA.PSEI-ALL.NG.OIL.H".PSEI.OIL
+	"EBA.PSEI-ALL.NG.OTH.H".PSEI.OTH
+	"EBA.PSEI-ALL.NG.SUN.H".PSEI.SUN
+	"EBA.PSEI-ALL.NG.WAT.H".PSEI.WAT
+	"EBA.PSEI-ALL.NG.WND.H".PSEI.WND
+	"EBA.SCEG-ALL.NG.COL.H".SCEG.COL
+	"EBA.SCEG-ALL.NG.NUC.H".SCEG.NUC
+	"EBA.SCEG-ALL.NG.OTH.H".SCEG.OTH
+	"EBA.SCEG-ALL.NG.SUN.H".SCEG.SUN
+	"EBA.SCEG-ALL.NG.WAT.H".SCEG.WAT
+	"EBA.SEPA-ALL.NG.WAT.H".SEPA.WAT
+	"EBA.SOCO-ALL.NG.COL.H".SOCO.COL
+	"EBA.SOCO-ALL.NG.NUC.H".SOCO.NUC
+	"EBA.SOCO-ALL.NG.OIL.H".SOCO.OIL
+	"EBA.SOCO-ALL.NG.OTH.H".SOCO.OTH
+	"EBA.SOCO-ALL.NG.SUN.H".SOCO.SUN
+	"EBA.SOCO-ALL.NG.WAT.H".SOCO.WAT
+	"EBA.SOCO-ALL.NG.WND.H".SOCO.WND
+	"EBA.SWPP-ALL.NG.COL.H".SWPP.COL
+	"EBA.SWPP-ALL.NG.NUC.H".SWPP.NUC
+	"EBA.SWPP-ALL.NG.OIL.H".SWPP.OIL
+	"EBA.SWPP-ALL.NG.OTH.H".SWPP.OTH
+	"EBA.SWPP-ALL.NG.SUN.H".SWPP.SUN
+	"EBA.SWPP-ALL.NG.WAT.H".SWPP.WAT
+	"EBA.SWPP-ALL.NG.WND.H".SWPP.WND
+	"EBA.TEPC-ALL.NG.COL.H".TEPC.COL
+	"EBA.TEPC-ALL.NG.OTH.H".TEPC.OTH
+	"EBA.TEPC-ALL.NG.SUN.H".TEPC.SUN
+	"EBA.TEPC-ALL.NG.WND.H".TEPC.WND
+	"EBA.TIDC-ALL.NG.WAT.H".TIDC.WAT
+	"EBA.TPWR-ALL.NG.WAT.H".TPWR.WAT
+	"EBA.US48-ALL.NG.COL.H".US48.COL
+	"EBA.US48-ALL.NG.NUC.H".US48.NUC
+	"EBA.US48-ALL.NG.OIL.H".US48.OIL
+	"EBA.US48-ALL.NG.OTH.H".US48.OTH
+	"EBA.US48-ALL.NG.SUN.H".US48.SUN
+	"EBA.US48-ALL.NG.UNK.H".US48.UNK
+	"EBA.US48-ALL.NG.WAT.H".US48.WAT
+	"EBA.US48-ALL.NG.WND.H".US48.WND
+	"EBA.WACM-ALL.NG.COL.H".WACM.COL
+	"EBA.WACM-ALL.NG.SUN.H".WACM.SUN
+	"EBA.WACM-ALL.NG.WAT.H".WACM.WAT
+	"EBA.WACM-ALL.NG.WND.H".WACM.WND
+	"EBA.WALC-ALL.NG.COL.H".WALC.COL
+	"EBA.WALC-ALL.NG.SUN.H".WALC.SUN
+	"EBA.WALC-ALL.NG.WAT.H".WALC.WAT
+	"EBA.WALC-ALL.NG.WND.H".WALC.WND
+	"EBA.WAUW-ALL.NG.WAT.H".WAUW.WAT
+	"EBA.AECI-ALL.NG.COL.H".AECI.COL
+	"EBA.AECI-ALL.NG.OIL.H".AECI.OIL
+	"EBA.AECI-ALL.NG.WND.H".AECI.WND
+	"EBA.AVRN-ALL.NG.SUN.H".AVRN.SUN
+	"EBA.AVRN-ALL.NG.WAT.H".AVRN.WAT
+	"EBA.AVRN-ALL.NG.WND.H".AVRN.WND
+	"EBA.AZPS-ALL.NG.COL.H".AZPS.COL
+	"EBA.AZPS-ALL.NG.NUC.H".AZPS.NUC
+	"EBA.AZPS-ALL.NG.OIL.H".AZPS.OIL
+	"EBA.AZPS-ALL.NG.OTH.H".AZPS.OTH
+	"EBA.AZPS-ALL.NG.SUN.H".AZPS.SUN
+	"EBA.AZPS-ALL.NG.WAT.H".AZPS.WAT
+	"EBA.AZPS-ALL.NG.WND.H".AZPS.WND
+	"EBA.BANC-ALL.NG.OTH.H".BANC.OTH
+	"EBA.BANC-ALL.NG.SUN.H".BANC.SUN
+	"EBA.BANC-ALL.NG.WAT.H".BANC.WAT
+	"EBA.BPAT-ALL.NG.NUC.H".BPAT.NUC
+	"EBA.BPAT-ALL.NG.OTH.H".BPAT.OTH
+	"EBA.BPAT-ALL.NG.SUN.H".BPAT.SUN
+	"EBA.BPAT-ALL.NG.WAT.H".BPAT.WAT
+	"EBA.BPAT-ALL.NG.WND.H".BPAT.WND
+	"EBA.CENT-ALL.NG.COL.H".CENT.COL
+	"EBA.CENT-ALL.NG.NUC.H".CENT.NUC
+	"EBA.CENT-ALL.NG.OIL.H".CENT.OIL
+	"EBA.CENT-ALL.NG.OTH.H".CENT.OTH
+	"EBA.CENT-ALL.NG.SUN.H".CENT.SUN
+	"EBA.CISO-ALL.NG.NUC.H".CISO.NUC
+	"EBA.CISO-ALL.NG.OIL.H".CISO.OIL
+	"EBA.CISO-ALL.NG.OTH.H".CISO.OTH
+	"EBA.CISO-ALL.NG.SUN.H".CISO.SUN
+	"EBA.CISO-ALL.NG.WAT.H".CISO.WAT
+	"EBA.CISO-ALL.NG.WND.H".CISO.WND
+	"EBA.CPLE-ALL.NG.COL.H".CPLE.COL
+	"EBA.CPLE-ALL.NG.NUC.H".CPLE.NUC
+	"EBA.CPLE-ALL.NG.OIL.H".CPLE.OIL
+	"EBA.CPLE-ALL.NG.OTH.H".CPLE.OTH
+	"EBA.CPLE-ALL.NG.SUN.H".CPLE.SUN
+	"EBA.CPLE-ALL.NG.WAT.H".CPLE.WAT
+	"EBA.CPLW-ALL.NG.COL.H".CPLW.COL
+	"EBA.CPLW-ALL.NG.OIL.H".CPLW.OIL
+	"EBA.CPLW-ALL.NG.OTH.H".CPLW.OTH
+	"EBA.CPLW-ALL.NG.SUN.H".CPLW.SUN
+	"EBA.CPLW-ALL.NG.WAT.H".CPLW.WAT
+	"EBA.CENT-ALL.NG.WAT.H".CENT.WAT
+	"EBA.CENT-ALL.NG.WND.H".CENT.WND
+	"EBA.CHPD-ALL.NG.WAT.H".CHPD.WAT
+	"EBA.CHPD-ALL.NG.WND.H".CHPD.WND
+	"EBA.CISO-ALL.NG.COL.H".CISO.COL
+	"EBA.GCPD-ALL.NG.WAT.H".GCPD.WAT
+	"EBA.GLHB-ALL.NG.COL.H".GLHB.COL
+	"EBA.GRID-ALL.NG.COL.H".GRID.COL
+	"EBA.GRID-ALL.NG.SUN.H".GRID.SUN
+	"EBA.GRID-ALL.NG.WND.H".GRID.WND
+	"EBA.IPCO-ALL.NG.OIL.H".IPCO.OIL
+	"EBA.IPCO-ALL.NG.OTH.H".IPCO.OTH
+	"EBA.IPCO-ALL.NG.SUN.H".IPCO.SUN
+	"EBA.IPCO-ALL.NG.WAT.H".IPCO.WAT
+	"EBA.IPCO-ALL.NG.WND.H".IPCO.WND
+	"EBA.ISNE-ALL.NG.COL.H".ISNE.COL
+	"EBA.ISNE-ALL.NG.NUC.H".ISNE.NUC
+	"EBA.ISNE-ALL.NG.OIL.H".ISNE.OIL
+	"EBA.ISNE-ALL.NG.OTH.H".ISNE.OTH
+	"EBA.ISNE-ALL.NG.SUN.H".ISNE.SUN
+	"EBA.ISNE-ALL.NG.WAT.H".ISNE.WAT
+	"EBA.ISNE-ALL.NG.WND.H".ISNE.WND
+	"EBA.LDWP-ALL.NG.COL.H".LDWP.COL
+	"EBA.LDWP-ALL.NG.OTH.H".LDWP.OTH
+	"EBA.DOPD-ALL.NG.WAT.H".DOPD.WAT
+	"EBA.ERCO-ALL.NG.COL.H".ERCO.COL
+	"EBA.ERCO-ALL.NG.NUC.H".ERCO.NUC
+	"EBA.ERCO-ALL.NG.OTH.H".ERCO.OTH
+	"EBA.ERCO-ALL.NG.SUN.H".ERCO.SUN
+	"EBA.ERCO-ALL.NG.WAT.H".ERCO.WAT
+	"EBA.ERCO-ALL.NG.WND.H".ERCO.WND
+	"EBA.FMPP-ALL.NG.COL.H".FMPP.COL
+	"EBA.FMPP-ALL.NG.NUC.H".FMPP.NUC
+	"EBA.FMPP-ALL.NG.OIL.H".FMPP.OIL
+	"EBA.FMPP-ALL.NG.OTH.H".FMPP.OTH
+	"EBA.FMPP-ALL.NG.SUN.H".FMPP.SUN
+	"EBA.LDWP-ALL.NG.SUN.H".LDWP.SUN
+	"EBA.LDWP-ALL.NG.WAT.H".LDWP.WAT
+	"EBA.LDWP-ALL.NG.WND.H".LDWP.WND
+	"EBA.LGEE-ALL.NG.COL.H".LGEE.COL
+	"EBA.LGEE-ALL.NG.OIL.H".LGEE.OIL
+	"EBA.LGEE-ALL.NG.SUN.H".LGEE.SUN
+	"EBA.LGEE-ALL.NG.WAT.H".LGEE.WAT
+	"EBA.MIDA-ALL.NG.COL.H".MIDA.COL
+	"EBA.MIDA-ALL.NG.NUC.H".MIDA.NUC
+	"EBA.MIDA-ALL.NG.OIL.H".MIDA.OIL
+	"EBA.MIDA-ALL.NG.OTH.H".MIDA.OTH
+	"EBA.MIDA-ALL.NG.SUN.H".MIDA.SUN
+	"EBA.MIDA-ALL.NG.WAT.H".MIDA.WAT
+	"EBA.MIDW-ALL.NG.NG.H".MIDW.NG
+	"EBA.MISO-ALL.NG.NG.H".MISO.NG
+	"EBA.NEVP-ALL.NG.NG.H".NEVP.NG
+	"EBA.NWMT-ALL.NG.NG.H".NWMT.NG
+	"EBA.NYIS-ALL.NG.NG.H".NYIS.NG
+	"EBA.PACE-ALL.NG.NG.H".PACE.NG
+	"EBA.PACW-ALL.NG.NG.H".PACW.NG
+	"EBA.PSCO-ALL.NG.NG.H".PSCO.NG
+	"EBA.PSEI-ALL.NG.NG.H".PSEI.NG
+	"EBA.SCEG-ALL.NG.NG.H".SCEG.NG
+	"EBA.SOCO-ALL.NG.NG.H".SOCO.NG
+	"EBA.AVA-ALL.NG.WAT.H".AVA.WAT
+	"EBA.AVA-ALL.NG.WND.H".AVA.WND
+	"EBA.CAL-ALL.NG.COL.H".CAL.COL
+	"EBA.CAL-ALL.NG.NUC.H".CAL.NUC
+	"EBA.CAL-ALL.NG.OIL.H".CAL.OIL
+	"EBA.CAL-ALL.NG.OTH.H".CAL.OTH
+	"EBA.CAL-ALL.NG.SUN.H".CAL.SUN
+	"EBA.CAL-ALL.NG.WAT.H".CAL.WAT
+	"EBA.CAL-ALL.NG.WND.H".CAL.WND
+	"EBA.CAR-ALL.NG.COL.H".CAR.COL
+	"EBA.CAR-ALL.NG.NUC.H".CAR.NUC
+	"EBA.CAR-ALL.NG.OIL.H".CAR.OIL
+	"EBA.CAR-ALL.NG.OTH.H".CAR.OTH
+	"EBA.SWPP-ALL.NG.NG.H".SWPP.NG
+	"EBA.TEPC-ALL.NG.NG.H".TEPC.NG
+	"EBA.TIDC-ALL.NG.NG.H".TIDC.NG
+	"EBA.US48-ALL.NG.NG.H".US48.NG
+	"EBA.CAR-ALL.NG.SUN.H".CAR.SUN
+	"EBA.CAR-ALL.NG.WAT.H".CAR.WAT
+	"EBA.DUK-ALL.NG.COL.H".DUK.COL
+	"EBA.DUK-ALL.NG.NUC.H".DUK.NUC
+	"EBA.DUK-ALL.NG.OTH.H".DUK.OTH
+	"EBA.DUK-ALL.NG.SUN.H".DUK.SUN
+	"EBA.DUK-ALL.NG.WAT.H".DUK.WAT
+	"EBA.EEI-ALL.NG.COL.H".EEI.COL
+	"EBA.EPE-ALL.NG.SUN.H".EPE.SUN
+	"EBA.FLA-ALL.NG.COL.H".FLA.COL
+	"EBA.FLA-ALL.NG.NUC.H".FLA.NUC
+	"EBA.FLA-ALL.NG.OIL.H".FLA.OIL
+	"EBA.FLA-ALL.NG.OTH.H".FLA.OTH
+	"EBA.FLA-ALL.NG.SUN.H".FLA.SUN
+	"EBA.FLA-ALL.NG.WAT.H".FLA.WAT
+	"EBA.FPC-ALL.NG.COL.H".FPC.COL
+	"EBA.AEC-ALL.NG.COL.H".AEC.COL
+	"EBA.AEC-ALL.NG.OTH.H".AEC.OTH
+	"EBA.AEC-ALL.NG.WAT.H".AEC.WAT
+	"EBA.AVA-ALL.NG.OTH.H".AVA.OTH
+	"EBA.AVA-ALL.NG.SUN.H".AVA.SUN
+	"EBA.FPC-ALL.NG.OIL.H".FPC.OIL
+	"EBA.FPC-ALL.NG.OTH.H".FPC.OTH
+	"EBA.FPC-ALL.NG.SUN.H".FPC.SUN
+	"EBA.FPC-ALL.NG.WAT.H".FPC.WAT
+	"EBA.FPL-ALL.NG.NUC.H".FPL.NUC
+	"EBA.FPL-ALL.NG.OIL.H".FPL.OIL
+	"EBA.FPL-ALL.NG.OTH.H".FPL.OTH
+	"EBA.FPL-ALL.NG.SUN.H".FPL.SUN
+	"EBA.GVL-ALL.NG.COL.H".GVL.COL
+	"EBA.GVL-ALL.NG.OTH.H".GVL.OTH
+	"EBA.GWA-ALL.NG.WND.H".GWA.WND
+	"EBA.IID-ALL.NG.OTH.H".IID.OTH
+	"EBA.IID-ALL.NG.SUN.H".IID.SUN
+	"EBA.IID-ALL.NG.WAT.H".IID.WAT
+	"EBA.JEA-ALL.NG.COL.H".JEA.COL
+	"EBA.JEA-ALL.NG.OIL.H".JEA.OIL
+	"EBA.JEA-ALL.NG.OTH.H".JEA.OTH
+	"EBA.JEA-ALL.NG.SUN.H".JEA.SUN
+	"EBA.NSB-ALL.NG.OIL.H".NSB.OIL
+	"EBA.PGE-ALL.NG.COL.H".PGE.COL
+	"EBA.PGE-ALL.NG.OTH.H".PGE.OTH
+	"EBA.PGE-ALL.NG.WAT.H".PGE.WAT
+	"EBA.PGE-ALL.NG.WND.H".PGE.WND
+	"EBA.PJM-ALL.NG.COL.H".PJM.COL
+	"EBA.PJM-ALL.NG.NUC.H".PJM.NUC
+	"EBA.PJM-ALL.NG.OIL.H".PJM.OIL
+	"EBA.PJM-ALL.NG.OTH.H".PJM.OTH
+	"EBA.PJM-ALL.NG.SUN.H".PJM.SUN
+	"EBA.PJM-ALL.NG.WAT.H".PJM.WAT
+	"EBA.PJM-ALL.NG.WND.H".PJM.WND
+	"EBA.PNM-ALL.NG.COL.H".PNM.COL
+	"EBA.PNM-ALL.NG.OTH.H".PNM.OTH
+	"EBA.PNM-ALL.NG.SUN.H".PNM.SUN
+	"EBA.WACM-ALL.NG.NG.H".WACM.NG
+	"EBA.WALC-ALL.NG.NG.H".WALC.NG
+	"EBA.PNM-ALL.NG.WAT.H".PNM.WAT
+	"EBA.PNM-ALL.NG.WND.H".PNM.WND
+	"EBA.SCL-ALL.NG.WAT.H".SCL.WAT
+	"EBA.SEC-ALL.NG.COL.H".SEC.COL
+	"EBA.TEC-ALL.NG.COL.H".TEC.COL
+	"EBA.TEC-ALL.NG.OIL.H".TEC.OIL
+	"EBA.TEC-ALL.NG.OTH.H".TEC.OTH
+	"EBA.TEC-ALL.NG.SUN.H".TEC.SUN
+	"EBA.TEN-ALL.NG.COL.H".TEN.COL
+	"EBA.TEN-ALL.NG.NUC.H".TEN.NUC
+	"EBA.TEN-ALL.NG.OIL.H".TEN.OIL
+	"EBA.TEN-ALL.NG.OTH.H".TEN.OTH
+	"EBA.TEN-ALL.NG.SUN.H".TEN.SUN
+	"EBA.TEN-ALL.NG.WAT.H".TEN.WAT
+	"EBA.TEN-ALL.NG.WND.H".TEN.WND
+	"EBA.TEX-ALL.NG.COL.H".TEX.COL
+	"EBA.TEX-ALL.NG.NUC.H".TEX.NUC
+	"EBA.TEX-ALL.NG.OTH.H".TEX.OTH
+	"EBA.TEX-ALL.NG.SUN.H".TEX.SUN
+	"EBA.TEX-ALL.NG.WAT.H".TEX.WAT
+	"EBA.TEX-ALL.NG.WND.H".TEX.WND
+	"EBA.TVA-ALL.NG.COL.H".TVA.COL
+	"EBA.SEC-ALL.NG.SUN.H".SEC.SUN
+	"EBA.SPA-ALL.NG.OTH.H".SPA.OTH
+	"EBA.SPA-ALL.NG.WAT.H".SPA.WAT
+	"EBA.SRP-ALL.NG.COL.H".SRP.COL
+	"EBA.SRP-ALL.NG.NUC.H".SRP.NUC
+	"EBA.SRP-ALL.NG.OIL.H".SRP.OIL
+	"EBA.SRP-ALL.NG.OTH.H".SRP.OTH
+	"EBA.SRP-ALL.NG.SUN.H".SRP.SUN
+	"EBA.SRP-ALL.NG.WAT.H".SRP.WAT
+	"EBA.SRP-ALL.NG.WND.H".SRP.WND
+	"EBA.TAL-ALL.NG.SUN.H".TAL.SUN
+	"EBA.TAL-ALL.NG.WAT.H".TAL.WAT
+	"EBA.TVA-ALL.NG.NUC.H".TVA.NUC
+	"EBA.TVA-ALL.NG.OIL.H".TVA.OIL
+	"EBA.TVA-ALL.NG.OTH.H".TVA.OTH
+	"EBA.TVA-ALL.NG.SUN.H".TVA.SUN
+	"EBA.TVA-ALL.NG.WAT.H".TVA.WAT
+	"EBA.TVA-ALL.NG.WND.H".TVA.WND
+	"EBA.WWA-ALL.NG.WND.H".WWA.WND
+	"EBA.YAD-ALL.NG.WAT.H".YAD.WAT
+	"EBA.AECI-ALL.NG.NG.H".AECI.NG
+	"EBA.AVRN-ALL.NG.NG.H".AVRN.NG
+	"EBA.AZPS-ALL.NG.NG.H".AZPS.NG
+	"EBA.BANC-ALL.NG.NG.H".BANC.NG
+	"EBA.BPAT-ALL.NG.NG.H".BPAT.NG
+	"EBA.CENT-ALL.NG.NG.H".CENT.NG
+	"EBA.CPLE-ALL.NG.NG.H".CPLE.NG
+	"EBA.CPLW-ALL.NG.NG.H".CPLW.NG
+	"EBA.DEAA-ALL.NG.NG.H".DEAA.NG
+	"EBA.CISO-ALL.NG.NG.H".CISO.NG
+	"EBA.GRID-ALL.NG.NG.H".GRID.NG
+	"EBA.GRIF-ALL.NG.NG.H".GRIF.NG
+	"EBA.HGMA-ALL.NG.NG.H".HGMA.NG
+	"EBA.IPCO-ALL.NG.NG.H".IPCO.NG
+	"EBA.ISNE-ALL.NG.NG.H".ISNE.NG
+	"EBA.LDWP-ALL.NG.NG.H".LDWP.NG
+	"EBA.ERCO-ALL.NG.NG.H".ERCO.NG
+	"EBA.FMPP-ALL.NG.NG.H".FMPP.NG
+	"EBA.LGEE-ALL.NG.NG.H".LGEE.NG
+	"EBA.MIDA-ALL.NG.NG.H".MIDA.NG
+	"EBA.NE-ALL.NG.COL.H".NE.COL
+	"EBA.NE-ALL.NG.NUC.H".NE.NUC
+	"EBA.NE-ALL.NG.OIL.H".NE.OIL
+	"EBA.NE-ALL.NG.OTH.H".NE.OTH
+	"EBA.NE-ALL.NG.SUN.H".NE.SUN
+	"EBA.NE-ALL.NG.WAT.H".NE.WAT
+	"EBA.NE-ALL.NG.WND.H".NE.WND
+	"EBA.NW-ALL.NG.COL.H".NW.COL
+	"EBA.NW-ALL.NG.NUC.H".NW.NUC
+	"EBA.NW-ALL.NG.OIL.H".NW.OIL
+	"EBA.NW-ALL.NG.OTH.H".NW.OTH
+	"EBA.NW-ALL.NG.SUN.H".NW.SUN
+	"EBA.NW-ALL.NG.UNK.H".NW.UNK
+	"EBA.NW-ALL.NG.WAT.H".NW.WAT
+	"EBA.NW-ALL.NG.WND.H".NW.WND
+	"EBA.NY-ALL.NG.COL.H".NY.COL
+	"EBA.NY-ALL.NG.NUC.H".NY.NUC
+	"EBA.NY-ALL.NG.OIL.H".NY.OIL
+	"EBA.NY-ALL.NG.OTH.H".NY.OTH
+	"EBA.NY-ALL.NG.SUN.H".NY.SUN
+	"EBA.NY-ALL.NG.WAT.H".NY.WAT
+	"EBA.NY-ALL.NG.WND.H".NY.WND
+	"EBA.SC-ALL.NG.COL.H".SC.COL
+	"EBA.SC-ALL.NG.OIL.H".SC.OIL
+	"EBA.SC-ALL.NG.OTH.H".SC.OTH
+	"EBA.SC-ALL.NG.SUN.H".SC.SUN
+	"EBA.SC-ALL.NG.WAT.H".SC.WAT
+	"EBA.SE-ALL.NG.COL.H".SE.COL
+	"EBA.SE-ALL.NG.NUC.H".SE.NUC
+	"EBA.SE-ALL.NG.OIL.H".SE.OIL
+	"EBA.SE-ALL.NG.OTH.H".SE.OTH
+	"EBA.SE-ALL.NG.SUN.H".SE.SUN
+	"EBA.SE-ALL.NG.WAT.H".SE.WAT
+	"EBA.SE-ALL.NG.WND.H".SE.WND
+	"EBA.SW-ALL.NG.COL.H".SW.COL
+	"EBA.SW-ALL.NG.NUC.H".SW.NUC
+	"EBA.SW-ALL.NG.OIL.H".SW.OIL
+	"EBA.SW-ALL.NG.OTH.H".SW.OTH
+	"EBA.SW-ALL.NG.SUN.H".SW.SUN
+	"EBA.SW-ALL.NG.WAT.H".SW.WAT
+	"EBA.SW-ALL.NG.WND.H".SW.WND
+	"EBA.AEC-ALL.NG.NG.H".AEC.NG
+	"EBA.CAL-ALL.NG.NG.H".CAL.NG
+	"EBA.CAR-ALL.NG.NG.H".CAR.NG
+	"EBA.DUK-ALL.NG.NG.H".DUK.NG
+	"EBA.EEI-ALL.NG.NG.H".EEI.NG
+	"EBA.EPE-ALL.NG.NG.H".EPE.NG
+	"EBA.FLA-ALL.NG.NG.H".FLA.NG
+	"EBA.FPC-ALL.NG.NG.H".FPC.NG
+	"EBA.AVA-ALL.NG.NG.H".AVA.NG
+	"EBA.FPL-ALL.NG.NG.H".FPL.NG
+	"EBA.GVL-ALL.NG.NG.H".GVL.NG
+	"EBA.HST-ALL.NG.NG.H".HST.NG
+	"EBA.IID-ALL.NG.NG.H".IID.NG
+	"EBA.JEA-ALL.NG.NG.H".JEA.NG
+	"EBA.PGE-ALL.NG.NG.H".PGE.NG
+	"EBA.PJM-ALL.NG.NG.H".PJM.NG
+	"EBA.PNM-ALL.NG.NG.H".PNM.NG
+	"EBA.SEC-ALL.NG.NG.H".SEC.NG
+	"EBA.TEN-ALL.NG.NG.H".TEN.NG
+	"EBA.TEX-ALL.NG.NG.H".TEX.NG
+	"EBA.TVA-ALL.NG.NG.H".TVA.NG
+	"EBA.SRP-ALL.NG.NG.H".SRP.NG
+	"EBA.TAL-ALL.NG.NG.H".TAL.NG
+	"EBA.TEC-ALL.NG.NG.H".TEC.NG
+	"EBA.NE-ALL.NG.NG.H".NE.NG
+	"EBA.NW-ALL.NG.NG.H".NW.NG
+	"EBA.NY-ALL.NG.NG.H".NY.NG
+	"EBA.SC-ALL.NG.NG.H".SC.NG
+	"EBA.SE-ALL.NG.NG.H".SE.NG
+	"EBA.SW-ALL.NG.NG.H".SW.NG /;
+
+
