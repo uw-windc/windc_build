@@ -1,4 +1,9 @@
-$title	General Equilibrium Models based on the BEA Input-Output Data
+$title	Canonical Template GTAP-WINDC Model (MGE format)
+
+*	Alternative: gdp
+
+$if not set metric $set metric output
+
 
 $if not set ds $set ds data\gebalanced
 
@@ -29,7 +34,10 @@ set	yr(*)	Years with summary tables
 $gdxin %ds%.gdx
 $load yr s r
 
-alias (s,ss,g,gg);
+alias (s,g,ss,gg);
+
+option s:0:0:1;
+display s;
 
 parameter	
 	ld0(yr,r,s)	Labor demand
@@ -97,7 +105,6 @@ profit(yr,r,s,"chk") = profit(yr,r,s,"PY") - profit(yr,r,s,"PA") - profit(yr,r,s
 option profit:3:1:1;
 *.display profit;
 
-
 parameter	market	Check on market clearance;
 market(yr,r,g,"Y") = sum(s,ys0(yr,r,s,g));
 market(yr,r,g,"ES") = x0(yr,r,g) - rx0(yr,r,g);
@@ -114,7 +121,6 @@ display profit;
 
 market(yr,r,g,u)$(not round(market(yr,r,g,"chk"),6)) = 0;
 display market;
-
 
 parameter	yd0(yr,r,g)	Local demand, 
 		vb(yr,r)	Current account balance, 
@@ -142,98 +148,16 @@ parameter	theta(yr,r,s,g)		Sector s share of good g supply,
 
 *	Sector s share of commodity g supply in region r:
 
+theta(yb,r,s,g)$ys0(yb,r,s,g) = ys0(yb,r,s,g)/sum(ss,ys0(yb,r,ss,g));
+
 ys0_(yb,r,g) = sum(s,ys0(yb,r,s,g));
-theta(yb,r,s,g)$ys0(yb,r,s,g) = ys0(yb,r,s,g)/sum(gg,ys0(yb,r,s,gg));
 y_(yb,r,s) = ys0_(yb,r,s);
 
-option ys0_:3:0:1, y_:0:0:1;
-display ys0_, y_;
- 
-ty_(yb,r,g)$ys0_(yb,r,g) = sum(s,theta(yb,r,s,g)*ty(yb,r,s)*sum(gg,ys0(yb,r,s,gg)))/
-				ys0_(yb,r,g);
+ty_(yb,r,g)$ys0_(yb,r,g) = sum(s,ty(yb,r,s)*ys0(yb,r,s,g))/ys0_(yb,r,g);
 ty0_(yb,r,g) = ty_(yb,r,g);
-id0_(yb,r,gg,g) = sum(s,theta(yb,r,s,g)*id0(yb,r,gg,s));
+id0_(yb,r,gg,g) = sum(s,theta(yb,r,s,g)*id0(yb,r,g,s));
 ld0_(yb,r,g)    = sum(s,theta(yb,r,s,g)*ld0(yb,r,s));
 kd0_(yb,r,g)    = sum(s,theta(yb,r,s,g)*kd0(yb,r,s));
-
-$ontext
-$model:symmetric
-
-$sectors:
-	Y(r,s)$y_(yb,r,s)	! Production
-	A(r,g)$a0(yb,r,g)	! Absorption
-	ES(g)$vx0(yb,g)		! Export supply
-	N(g)$n0(yb,g)		! National market supply
-	MS(mrg)			! Margin supply
-
-$commodities:
-	PA(r,g)$pa_(yb,r,g)	! Regional market (input)
-	PY(r,g)$y0(yb,r,g)	! Regional market (output)
-	PX(g)$vx0(yb,g)		! Export market
-	PN(g)$n0(yb,g)		! National market
-	PK(r,s)$kd0_(yb,r,s)	! Rental rate of capital
-	PI(mrg)			! Margin price
-	PL(r)			! Wage rate
-	PFX			! Foreign exchange
-
-$consumer:
-	RA(r)			! Representative agent
-	ROW			! Rest of world (export demand)
-
-$auxiliary:
-	ED(g)$vx0(yb,g)		! Export demand
-
-$prod:Y(r,s)$y_(yb,r,s)  s:0 va:1
-	o:PY(r,s)	q:(ys0_(yb,r,s)) a:RA(r) t:(ty_(yb,r,s)) p:(1-ty0_(yb,r,s))
-	i:PA(r,g)	q:(id0_(yb,r,g,s))
-	i:PL(r)		q:(ld0_(yb,r,s))	va:
-	i:PK(r,s)	q:(kd0_(yb,r,s))	va:
-
-$prod:ES(g)$vx0(yb,g)  s:0.5  y:4
-	o:PX(g)		q:(sum(r,x0(yb,r,g)))
-	i:PY(r,g)	q:(x0(yb,r,g)-rx0(yb,r,g))   y:
-	i:PFX		q:(sum(r,rx0(yb,r,g)))
-
-$prod:N(g)$n0(yb,g)  t:4
-	o:PN(g)		q:(n0(yb,g))
-	i:PY(r,g)	q:(ns0(yb,r,g))
-
-$prod:MS(mrg)  s:0.5
-	o:PI(mrg)	q:(sum((r,g),ms0(yb,r,g,mrg)))
-	i:PY(r,g)	q:(ms0(yb,r,g,mrg))
-
-$prod:A(r,g)$a0(yb,r,g)  s:0 dm:2  d(dm):4
-	o:PA(r,g)	q:(a0(yb,r,g))	a:RA(r)	t:(ta(yb,r,g)) p:(1-ta0(yb,r,g))
-	i:PN(g)		q:(nd0(yb,r,g))		d:
-	i:PY(r,g)	q:(yd0(yb,r,g))		d:
-	i:PFX		q:(m0(yb,r,g)-rx0(yb,r,g))	dm:  a:RA(r)  t:(tm(yb,r,g)) p:(1+tm0(yb,r,g))
-	i:PI(mrg)	q:(md0(yb,r,mrg,g))
-
-$demand:RA(r)  s:1
-	d:PA(r,g)	q:(cd0(yb,r,g))
-	e:PFX		q:(vb(yb,r))
-	e:PA(r,g)	q:(-sum(xd,fd0(yb,r,g,xd)))
-	e:PL(r)		q:(sum(s,ld0(yb,r,s)))
-	e:PK(r,s)	q:(kd0_(yb,r,s))
-
-$demand:ROW
-	e:PFX		q:(2*sum(g,vx0(yb,g)))
-	e:PX(g)		q:(-vx0(yb,g))	r:ED(g)
-	d:PFX		
-
-$constraint:ED(g)$vx0(yb,g)
-	ED(g) =e= (PX(g)/PFX)**(-epsilonx(g));
-
-$offtext
-$sysinclude mpsgeset symmetric -mt=1
-
-symmetric.workspace=64;
-symmetric.iterlim = 0;
-
-ED.L(g)$vx0(yb,g) = 1;
-
-$include %gams.scrdir%symmetric.gen
-solve symmetric using mcp;
 
 set	ags(s)  Agricultural sectors/ 
 		osd_agr  "Oilseed farming (1111A0)",
@@ -253,10 +177,8 @@ parameter	iterlog(iter,*)	Iteration log
 		dev		Deviation,
 		content(r,g)	Sectoral content (output or VA);
 
-$if not set metric $set metric output
-
-$if %metric%==gdp	content(r,ags(s)) = ys0_(yb,r,s)*ty_(yb,r,s)+ld0_(yb,r,s)+kd0_(yb,r,s)
-$if %metric%==output	content(r,ags(s)) = ys0_(yb,r,s)
+$if %metric%==gdp	content(r,ags(s)) = sum(g,ys0_(yb,r,s,g))*ty(yb,r,s)+ld0(yb,r,s)+kd0(yb,r,s)
+$if %metric%==output	content(r,ags(s)) = sum(g,ys0(yb,r,s,g))
 
 parameter	v_PY(r,s)	Agricultural content - state output
 		v_PX(g)		Agricultural content - exports
@@ -269,18 +191,23 @@ parameter	v_PY(r,s)	Agricultural content - state output
 
 
 v_PY(r,s)$y_(yb,r,s) = content(r,s)/ys0_(yb,r,s);
-option v_PY:3:0:1;
-display v_PY;
 
 file kcon /con:/; put kcon; kcon.lw=0;
 dev = 1;
 loop(iter$round(dev,2),
-	v_PX(g)$vx0(yb,g) = sum(r,v_PY(r,g)*(x0(yb,r,g)-rx0(yb,r,g)))/ sum(r,x0(yb,r,g));
+	v_PX(g)$vx0(yb,g) = sum(r,v_PY(r,g)*(x0(yb,r,g)-rx0(yb,r,g)))/
+					sum(r,x0(yb,r,g));
+
 	v_PN(g)$n0(yb,g) = sum(r,v_PY(r,g)*ns0(yb,r,g))/n0(yb,g);
+
 	v_PI(mrg) = sum((r,g),v_PY(r,g)*ms0(yb,r,g,mrg))/sum((r,g),ms0(yb,r,g,mrg));
+
 	v_PA(r,g)$a0(yb,r,g) = ( v_PN(g)*nd0(yb,r,g) + v_PY(r,g)*yd0(yb,r,g) +
 		sum(mrg,v_PI(mrg)*md0(yb,r,mrg,g))) / a0(yb,r,g);
-	v_PYn(r,s)$y_(yb,r,s) = ( sum(g,v_PA(r,g)*id0_(yb,r,g,s))+content(r,s) ) / ys0_(yb,r,s);
+
+	v_PYn(r,s)$y_(yb,r,s) = 
+		( sum(g,v_PA(r,g)*id0_(yb,r,g,s))+content(r,s) ) / ys0_(yb,r,s);
+
 	dev = sum((r,s)$y_(yb,r,s), abs(v_PYn(r,s)-v_PY(r,s)));
 	v_PY(r,s)$y_(yb,r,s) = v_PYn(r,s);
 	iterlog(iter,"dev") = dev;
@@ -288,91 +215,33 @@ loop(iter$round(dev,2),
 );
 display iterlog, v_PX;
 
+$exit
 
-$ontext
-$model:supplyuse
+$label bilateral
 
-$sectors:
-	Y(r,s)$y_(yb,r,s)	! Production
-	A(r,g)$a0(yb,r,g)	! Absorption
-	ES(g)$vx0(yb,g)		! Export supply
-	N(g)$n0(yb,g)		! National market supply
-	MS(mrg)			! Margin supply
+loop(re(r),
 
-$commodities:
-	PA(r,g)$pa_(yb,r,g)	! Regional market (input)
-	PY(r,g)$y0(yb,r,g)	! Regional market (output)
-	PX(g)$vx0(yb,g)		! Export market
-	PN(g)$n0(yb,g)		! National market
-	PK(r,s)$kd0(yb,r,s)	! Rental rate of capital
-	PI(mrg)			! Margin price
-	PL(r)			! Wage rate
-	PFX			! Foreign exchange
+*	Track content of all sectors which have nonzero production:
 
-$consumer:
-	RA(r)			! Representative agent
-	ROW			! Rest of world (export demand)
+	is(i,s) = yes$content(i,re,s);
+	samesector(is,is) = yes;
 
-$auxiliary:
-	ED(g)$vx0(yb,g)		! Export demand
+*	Initial assigment -- based on pooled model content:
 
-$prod:Y(r,s)$y_(yb,r,s)  s:0 va:1
-	o:PY(r,g)	q:(ys0(yb,r,s,g)) a:RA(r) t:(ty(yb,r,s)) p:(1-ty0(yb,r,s))
-	i:PA(r,g)	q:(id0(yb,r,g,s))
-	i:PL(r)		q:(ld0(yb,r,s))	va:
-	i:PK(r,s)	q:(kd0(yb,r,s))	va:
+	v_PY(i,s,is)$y_(i,r,s) = content(i,r,s)$samesector(i,s,is)/vom(i,r,s);
 
-$prod:ES(g)$vx0(yb,g)  s:0.5  y:4
-	o:PX(g)		q:(sum(r,x0(yb,r,g)))
-	i:PY(r,g)	q:(x0(yb,r,g)-rx0(yb,r,g))   y:
-	i:PFX		q:(sum(r,rx0(yb,r,g)))
+	dev = 1;
+	loop(iter,
+		v_P(i,is)$x_(i,r)  = sum(s,xref(i,s)*v_PY(i,s,is))/vxm(i,r);
+		v_PZ(i,s,is)$z_(i,r,s) = sum(ss,v_PY(i,ss,is)*vdfm(i,r,ss,s))/a0(i,r,s);
+		v_PYn(i,s,is)$y_(i,r,s) = (sum(j, vafm(j,i,r,s)*v_PZ(j,s,is)) + 
+				content(i,r,s)$samesector(i,s,is) )/vom(i,r,s);
+		dev = sum((i,s,is)$y_(i,r,s), abs(v_PYn(i,s,is)-v_PY(i,s,is)));
+		v_PY(i,s,is)$y_(i,r,s) = v_PYn(i,s,is)$y_(i,r,s);
+		iterlog(iter,"dev") = dev;
+		putclose iter.tl,dev/;
+	);
 
-$prod:N(g)$n0(yb,g)  t:4
-	o:PN(g)		q:(n0(yb,g))
-	i:PY(r,g)	q:(ns0(yb,r,g))
-
-$prod:MS(mrg)  s:0.5
-	o:PI(mrg)	q:(sum((r,g),ms0(yb,r,g,mrg)))
-	i:PY(r,g)	q:(ms0(yb,r,g,mrg))
-
-$prod:A(r,g)$a0(yb,r,g)  s:0 dm:2  d(dm):4
-	o:PA(r,g)	q:(a0(yb,r,g))	a:RA(r)	t:(ta(yb,r,g)) p:(1-ta0(yb,r,g))
-	i:PN(g)		q:(nd0(yb,r,g))		d:
-	i:PY(r,g)	q:(yd0(yb,r,g))		d:
-	i:PFX		q:(m0(yb,r,g)-rx0(yb,r,g))	dm:  a:RA(r)  t:(tm(yb,r,g)) p:(1+tm0(yb,r,g))
-	i:PI(mrg)	q:(md0(yb,r,mrg,g))
-
-$demand:RA(r)  s:1
-	d:PA(r,g)	q:(cd0(yb,r,g))
-	e:PFX		q:(vb(yb,r))
-	e:PA(r,g)	q:(-sum(xd,fd0(yb,r,g,xd)))
-	e:PL(r)		q:(sum(s,ld0(yb,r,s)))
-	e:PK(r,s)	q:(kd0(yb,r,s))
-
-$demand:ROW
-	e:PFX		q:(2*sum(g,vx0(yb,g)))
-	e:PX(g)		q:(-vx0(yb,g))	r:ED(g)
-	d:PFX		
-
-$constraint:ED(g)$vx0(yb,g)
-	ED(g) =e= (PX(g)/PFX)**(-epsilonx(g));
-
-$offtext
-$sysinclude mpsgeset supplyuse -mt=1
-
-supplyuse.workspace=64;
-supplyuse.iterlim = 0;
-
-file kput; kput.lw=0; 
-kput.nr=2; kput.nw=8; kput.nd=2; put kput;
-option limrow=0, limcol=0, solprint=off;
-loop(yr,
-	yb(yr) = yes;
-	ED.L(g)$vx0(yb,g) = 1;
-
-$include %gams.scrdir%supplyuse.gen
-	solve supplyuse using mcp;
-
-	put_utility kput, 'title'/ yr.tl,' tolerance = ',supplyuse.objval;
-
+        atm(is(i,s),iag) = v_P(iag,is);
 );
+display iterlog;

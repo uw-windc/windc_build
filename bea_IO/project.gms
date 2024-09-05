@@ -231,7 +231,6 @@ market_d(g,yrd,"balance") = market_d(g,yrd,"produc") +
 option market_d:3:2:1;
 display market_d;
 
-
 parameter	utotchk(yrs,i,*,utotal)	Cross check on projected USE table totals;
 
 utotchk(yrs,i(ru),"diff","T001") = use(yrs,ru,"T001") - sum(cu(j),use(yrs,ru,cu));

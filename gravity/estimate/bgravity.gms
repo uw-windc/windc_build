@@ -2,13 +2,12 @@ $title	Gravity Estimation Routine -- Bilateral
 
 *	Define a single sector to estimate here:
 
-$if not set ds $set ds alt
+$if not set ds $set ds wol
 
 *	Two estimation methods have been implemented.  This is b:
 
 *		b	"Bilateral gravity" model which calibrates to
 *			import and export by port and bilateral trade partner.
-
 
 set	r(*)	Regions (trading partners)
 	s(*)	Subregions (states),
@@ -22,13 +21,13 @@ $load r s pd
 parameter
 	y0(s)		Reference output (data)
 	z0(s)		Reference demand (data)
-	md0(r,pd)	Reference aggregate imports (data)
-	xs0(pd,r)	Reference aggregate exports (data);
+	md0(r,pd)	Reference aggregate bilateral imports (data)
+	xs0(pd,r)	Reference aggregate bilateral exports (data);
 
 $load y0 md0 xs0 z0
 
-parameter	x0(r)	Export
-		m0(r)	Import;
+parameter	x0(r)	Aggregate exports
+		m0(r)	Aggregate imports;
 
 m0(r) = sum(pd,md0(r,pd));
 x0(r) = sum(pd,xs0(pd,r));
@@ -89,8 +88,6 @@ esubmm = 2 * esubdm;
 esubdn = 2 * esubdm;
 esubnn = 4 * esubdm;
 esubx = 2 * esubdm;
-
-
 pfxendow = 10 * (sum(s,y0(s))+sum(r,m0(r)));
 
 set	i_PY_Z(ss,s)	Domestic demand
@@ -129,8 +126,7 @@ $report:
 	v:PY_Z(ss,s)$(z0(s) and nref(ss,s))	i:PY(ss)	prod:Z(s)
 	v:PM_Z(r,s)$(z0(s) and mref(r,s))	i:PM(r)		prod:Z(s)
 
-
-*	Value of exports through port pd:
+*	Value of exports to region s:
 
 $demand:X(r)$x0(r)	s:esubx
 	d:PY(s)$d_PY_X(s,r)	q:(tau_x(s,r)*xref(s,r))	p:(1/tau_x(s,r))
@@ -139,13 +135,15 @@ $demand:X(r)$x0(r)	s:esubx
 $report:
 	v:PY_X(s,r)$(x0(r) and xref(s,r))	d:PY(s)		demand:X(r)
 
+*	Partial equilibrium closure with supply by state and trade partner:
+
 $demand:RA
 	d:PFX
 	e:PFX		q:pfxendow
 	e:PY(s)		q:y0(s)		r:SY(s)
 	e:PM(r)		q:m0(r)		r:SM(r)
 
-*	Final demand:
+*	Final demand is fixed:
 
 $demand:FD(s)$z0(s)
 	  d:PZ(s)	
@@ -173,7 +171,6 @@ i_PM_Z(r,s) = yes;
 d_PY_X(s,r) = yes;
 
 bgravity.savepoint = 1;
-
 bgravity.iterlim = 0;
 $include bgravity.GEN
 solve bgravity using mcp;
@@ -183,8 +180,10 @@ bgravity.savepoint = 0;
 
 parameter  epsilon 	Elasticity of trade wrt trade cost/-1/;
 
+*	Transportation impedance:
+
 tau_d(s,ss(loc))$(not sameas(s,ss)) = dist(s,loc)**(epsilon/(1-esubnn));
-tau_d(s,s(loc)) = dist(s,loc)**(epsilon/(1-esubdn));
+tau_d(s,s(loc))  = dist(s,loc)**(epsilon/(1-esubdn));
 tau_m(r,s)$m0(r) = sum(pd(loc), md0(r,pd)/m0(r)*dist(s,loc)**(epsilon/(1-esubmm)));
 tau_x(s,r)$x0(r) = sum(pd(loc), xs0(pd,r)/x0(r)*dist(s,loc)**(epsilon/(1-esubx)));
 
@@ -193,10 +192,14 @@ parameter	cz(s)	Unit cost of Z at current prices,
 		cn(s)	Unit cost of national imports in Z,
 		cx(r)	Unit cost of X at current prices;
 
-parameter	ntot, thetan, thetam, theta_d, theta_n, theta_dn, thetax;
+parameter	ntot		Total intra-national imports, 
+		thetan		Intra-state trade shares, 
+		thetam		Import share, 
+		theta_d		Local share, 
+		theta_dn	Domestic share of absorption, 
+		thetax		Port s share of export demand for region r;
 
 ntot(s) = sum(ss$(not sameas(s,ss)), nref(ss,s));
-
 thetan(ss,s)$ntot(s) = nref(ss,s)/ntot(s);
 thetan(s,s) = 0;
 thetam(r,s) = mref(r,s)/sum(rr,mref(rr,s));
@@ -204,9 +207,14 @@ theta_d(s) = nref(s,s)/sum(ss,nref(ss,s));
 theta_dn(s) = sum(ss,nref(ss,s))/z0(s);
 thetax(s,r)$x0(r) = xref(s,r)/x0(r);
 
-parameter	cn, cm, cdn, cz, cx;
+parameter	cn	Intra-national cost, 
+		cm	Import cost,
+		cdn	Cost of local and intra-national shares, 
+		cz	Cost index for region s absorption,
+		cx	Cost index for exports to region r;
 
-cn(s) = sum(ss$(not sameas(s,ss)), thetan(ss,s)*(tau_d(ss,s)*PY.L(ss))**(1-esubnn))**(1/(1-esubnn));
+cn(s) = sum(ss$(not sameas(s,ss)), 
+		thetan(ss,s)*(tau_d(ss,s)*PY.L(ss))**(1-esubnn))**(1/(1-esubnn));
 
 cm(s) = sum(r, thetam(r,s)*(tau_m(r,s)*PM.L(r))**(1-esubmm))**(1/(1-esubmm));
 
@@ -223,9 +231,7 @@ cindex(s,"cd") = tau_d(s,s)*PY.L(s);
 cindex(s,"cm") = cm(s);
 cindex(s,"cdn") = cdn(s);
 cindex(s,"cz") = cz(s);
-display cindex;
-
-display cz, cn, cm, cdn, cx;
+display cindex, cx;
 
 parameter	qd(ss,s)	Uncompensated domestic demand index
 		qm(r,s)		Uncompensated imported demand index
@@ -250,7 +256,6 @@ vm(r,s)  = qm(r,s) * mref(r,s)*tau_m(r,s)*PM.L(r)      / z0(s);
 vx(s,r)$x0(r) = qx(s,r) * xref(s,r)*tau_x(s,r)*PY.L(s) / x0(r);
 
 display qd, qm, qx, vd, vm, vx;
-
 
 bgravity.iterlim = 10000;
 $include bgravity.gen
