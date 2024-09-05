@@ -1,9 +1,4 @@
-$title	Canonical Template GTAP-WINDC Model (MGE format)
-
-*	Alternative: gdp
-
-$if not set metric $set metric output
-
+$stitle	Read the BEA Dataset
 
 $if not set ds $set ds data\gebalanced
 
@@ -34,10 +29,7 @@ set	yr(*)	Years with summary tables
 $gdxin %ds%.gdx
 $load yr s r
 
-alias (s,g,ss,gg);
-
-option s:0:0:1;
-display s;
+alias (s,ss,g,gg);
 
 parameter	
 	ld0(yr,r,s)	Labor demand
@@ -105,6 +97,7 @@ profit(yr,r,s,"chk") = profit(yr,r,s,"PY") - profit(yr,r,s,"PA") - profit(yr,r,s
 option profit:3:1:1;
 *.display profit;
 
+
 parameter	market	Check on market clearance;
 market(yr,r,g,"Y") = sum(s,ys0(yr,r,s,g));
 market(yr,r,g,"ES") = x0(yr,r,g) - rx0(yr,r,g);
@@ -121,6 +114,7 @@ display profit;
 
 market(yr,r,g,u)$(not round(market(yr,r,g,"chk"),6)) = 0;
 display market;
+
 
 parameter	yd0(yr,r,g)	Local demand, 
 		vb(yr,r)	Current account balance, 
@@ -148,100 +142,16 @@ parameter	theta(yr,r,s,g)		Sector s share of good g supply,
 
 *	Sector s share of commodity g supply in region r:
 
-theta(yb,r,s,g)$ys0(yb,r,s,g) = ys0(yb,r,s,g)/sum(ss,ys0(yb,r,ss,g));
+ys0_(yr,r,g) = sum(s,ys0(yr,r,s,g));
+theta(yr,r,s,g)$ys0(yr,r,s,g) = ys0(yr,r,s,g)/sum(gg,ys0(yr,r,s,gg));
+y_(yr,r,s) = ys0_(yr,r,s);
 
-ys0_(yb,r,g) = sum(s,ys0(yb,r,s,g));
-y_(yb,r,s) = ys0_(yb,r,s);
-
-ty_(yb,r,g)$ys0_(yb,r,g) = sum(s,ty(yb,r,s)*ys0(yb,r,s,g))/ys0_(yb,r,g);
-ty0_(yb,r,g) = ty_(yb,r,g);
-id0_(yb,r,gg,g) = sum(s,theta(yb,r,s,g)*id0(yb,r,g,s));
-ld0_(yb,r,g)    = sum(s,theta(yb,r,s,g)*ld0(yb,r,s));
-kd0_(yb,r,g)    = sum(s,theta(yb,r,s,g)*kd0(yb,r,s));
-
-set	ags(s)  Agricultural sectors/ 
-		osd_agr  "Oilseed farming (1111A0)",
-		grn_agr  "Grain farming (1111B0)",
-		veg_agr  "Vegetable and melon farming (111200)",
-		nut_agr  "Fruit and tree nut farming (111300)",
-		flo_agr  "Greenhouse, nursery, and floriculture production (111400)",
-		oth_agr  "Other crop farming (111900)",
-		dry_agr  "Dairy cattle and milk production (112120)",
-		bef_agr  "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
-		egg_agr  "Poultry and egg production (112300)",
-		ota_agr  "Animal production, except cattle and poultry and eggs (112A00)" /;
-
-set		iter /iter1*iter10/;
-
-parameter	iterlog(iter,*)	Iteration log
-		dev		Deviation,
-		content(r,g)	Sectoral content (output or VA);
-
-$if %metric%==gdp	content(r,ags(s)) = sum(g,ys0_(yb,r,s,g))*ty(yb,r,s)+ld0(yb,r,s)+kd0(yb,r,s)
-$if %metric%==output	content(r,ags(s)) = sum(g,ys0(yb,r,s,g))
-
-parameter	v_PY(r,s)	Agricultural content - state output
-		v_PX(g)		Agricultural content - exports
-		v_PN(g)		Agricultural content - national market
-		v_PI(mrg)	Agricultural content - margin
-		v_PA(r,g)	Agricultural content - absorption
-		v_PYn(r,g)	Updated agricultural content - state output;
-
-*	Initial assigment -- direct content:
-
-
-v_PY(r,s)$y_(yb,r,s) = content(r,s)/ys0_(yb,r,s);
-
-file kcon /con:/; put kcon; kcon.lw=0;
-dev = 1;
-loop(iter$round(dev,2),
-	v_PX(g)$vx0(yb,g) = sum(r,v_PY(r,g)*(x0(yb,r,g)-rx0(yb,r,g)))/
-					sum(r,x0(yb,r,g));
-
-	v_PN(g)$n0(yb,g) = sum(r,v_PY(r,g)*ns0(yb,r,g))/n0(yb,g);
-
-	v_PI(mrg) = sum((r,g),v_PY(r,g)*ms0(yb,r,g,mrg))/sum((r,g),ms0(yb,r,g,mrg));
-
-	v_PA(r,g)$a0(yb,r,g) = ( v_PN(g)*nd0(yb,r,g) + v_PY(r,g)*yd0(yb,r,g) +
-		sum(mrg,v_PI(mrg)*md0(yb,r,mrg,g))) / a0(yb,r,g);
-
-	v_PYn(r,s)$y_(yb,r,s) = 
-		( sum(g,v_PA(r,g)*id0_(yb,r,g,s))+content(r,s) ) / ys0_(yb,r,s);
-
-	dev = sum((r,s)$y_(yb,r,s), abs(v_PYn(r,s)-v_PY(r,s)));
-	v_PY(r,s)$y_(yb,r,s) = v_PYn(r,s);
-	iterlog(iter,"dev") = dev;
-	putclose iter.tl,dev/;
-);
-display iterlog, v_PX;
-
-$exit
-
-$label bilateral
-
-loop(re(r),
-
-*	Track content of all sectors which have nonzero production:
-
-	is(i,s) = yes$content(i,re,s);
-	samesector(is,is) = yes;
-
-*	Initial assigment -- based on pooled model content:
-
-	v_PY(i,s,is)$y_(i,r,s) = content(i,r,s)$samesector(i,s,is)/vom(i,r,s);
-
-	dev = 1;
-	loop(iter,
-		v_P(i,is)$x_(i,r)  = sum(s,xref(i,s)*v_PY(i,s,is))/vxm(i,r);
-		v_PZ(i,s,is)$z_(i,r,s) = sum(ss,v_PY(i,ss,is)*vdfm(i,r,ss,s))/a0(i,r,s);
-		v_PYn(i,s,is)$y_(i,r,s) = (sum(j, vafm(j,i,r,s)*v_PZ(j,s,is)) + 
-				content(i,r,s)$samesector(i,s,is) )/vom(i,r,s);
-		dev = sum((i,s,is)$y_(i,r,s), abs(v_PYn(i,s,is)-v_PY(i,s,is)));
-		v_PY(i,s,is)$y_(i,r,s) = v_PYn(i,s,is)$y_(i,r,s);
-		iterlog(iter,"dev") = dev;
-		putclose iter.tl,dev/;
-	);
-
-        atm(is(i,s),iag) = v_P(iag,is);
-);
-display iterlog;
+option ys0_:3:0:1, y_:0:0:1;
+display ys0_, y_;
+ 
+ty_(yr,r,g)$ys0_(yr,r,g) = sum(s,theta(yr,r,s,g)*ty(yr,r,s)*sum(gg,ys0(yr,r,s,gg)))/
+				ys0_(yr,r,g);
+ty0_(yr,r,g) = ty_(yr,r,g);
+id0_(yr,r,gg,g) = sum(s,theta(yr,r,s,g)*id0(yr,r,gg,s));
+ld0_(yr,r,g)    = sum(s,theta(yr,r,s,g)*ld0(yr,r,s));
+kd0_(yr,r,g)    = sum(s,theta(yr,r,s,g)*kd0(yr,r,s));

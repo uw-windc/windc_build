@@ -332,8 +332,11 @@ set		snz(rs_d,cs_d), unz(ru_d,cu_d), yb(yrs);
 variables	OBJ, USE_(ru_d,cu_d), SUPPLY_(rs_d,cs_d);
 equations	objdef, profitbal, marketbal,netsupply;
 
-objdef..	OBJ =e= sum((yb,snz(rs_d,cs_d)), abs(supply(yb,snz)) * sqr(SUPPLY_(snz)/supply(yb,snz) - 1)) +
-			sum((yb,unz(ru_d,cu_d)), abs(use(yb,unz))    * sqr(USE_(unz)/use(yb,unz)       - 1));
+objdef..	OBJ =e= sum((yb,snz(rs_d,cs_d)), 
+				abs(supply(yb,snz)) * sqr(SUPPLY_(snz)/supply(yb,snz) - 1)) +
+
+			sum((yb,unz(ru_d,cu_d)), 
+				abs(use(yb,unz))    * sqr(USE_(unz)/use(yb,unz)       - 1));
 
 profitbal(d)..
 	sum(unz(ru_d(gg),cu_d(d)),   USE_(ru_d,cu_d)) + 
