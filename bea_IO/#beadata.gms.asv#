@@ -27,9 +27,6 @@ set	s(*)	Sectors
 $gdxin %ds%.gdx
 $load s 
 
-option s:0:0:1;
-display s;
-$exit
 
 $if not declared yr	set	yr(*)	Years with summary tables;
 $if not defined yr $load yr

@@ -8,3 +8,4 @@ $call gams gebalance
 $label write
 $call gams writexlsx --yr=2022
 $call gams model
+$call gams atmcalc

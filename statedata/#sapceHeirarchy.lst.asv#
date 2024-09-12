@@ -1,0 +1,864 @@
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 09/10/24 10:18:21 Page 1
+Determine Row Hierarchy for the SAPCE Dataset
+C o m p i l a t i o n
+
+
+   2   
+   3  set     seq /0*1000/;
+   4   
+   5  *       Which dataset?  (1, 2, 3 or 4)
+   6   
+   8   
+   9  *       Where do we read the set of sector
+  10   
+  15   
+  19   
+  21   
+  25   
+  26  set     s(*);
+GDXIN   d:\GitHub\windc_build\statedata\225a\s.gdx
+--- LOAD  s = 1:s
+  29   
+  30  set     lno(*)  Line numbers;
+GDXIN   d:\GitHub\windc_build\statedata\225a\lno.gdx
+--- LOAD  lno = 1:lno
+  33   
+  34  option lno:0:0:1;
+  35  display lno;
+  36   
+  37   
+  38  set     lno_s(lno,s) Line number-sector mapping;
+GDXIN   d:\GitHub\windc_build\statedata\225a\lno_s.gdx
+--- LOAD  lno_s = 1:lno_s
+  41   
+  42   
+  43  set     L /0*6/;
+  44  set     k /1*10/;
+  45  alias (k,kk);
+  46   
+  47   
+  48  set     a(s,L)  Number of leading blanks;
+  49  a(s,L)$(ord(s.tl,1)=ord(" ",1))
+  50    = yes$(L.val = smax(k$(sum(kk$(kk.val<=k.val),1$(ord(s.tl,kk.val)=ord(" ",1)))=k.val),k.val));
+  51  a(s,"0") = yes$(ord(s.tl,1)<>ord(" ",1));
+  52   
+  53  alias (i,j,s);
+  54   
+  55  set     lvl(L)  Level /1/
+  56          iL(i,L) Level mapping id,
+  57          m(i,j)  Mapping;
+  58   
+  59  iL(i,"0") = yes$(ord(i)=1);
+  60   
+  61  m(i,j) = no;
+  62  loop(lno,
+  63    loop(lno_s(lno,i),
+  64          loop(a(i,L),
+  65            loop(iL(j,L-1), m(j,i) = s(i););
+  66            iL(j,L) = yes$sameas(i,j);
+  67          );
+  68  ));
+  69  option m:0:0:1;
+  70  display m;
+  71   
+  72  parameter       cardm   Number of elements in m /0/;
+  73   
+  74  while (cardm<card(m),
+  75          cardm=card(m);
+  76          display cardm;
+  77          loop((i,j)$m(i,j),
+  78            m(i,s)$m(j,s) = yes;
+  79          );
+  80  );
+  81  set g(i);
+  82  g(i) = s(i)$(not sum(m(i,j),1));
+  83  option g:0:0:1;
+  84  display g;
+  85   
+  86  *       Drop the intermediates:
+  87   
+  88  m(i,j)$(not g(j)) = no;
+  89   
+  90  alias (lno,Li,Lj), (lno_s,imap,jmap);
+  91   
+  92  set     Lm(Li,Lj);
+  93  loop((imap(Li,i),jmap(Lj,j)), Lm(Li,Lj)$m(i,j) = lno(Lj); );
+  94  option Lm:0:0:1;
+  95  display Lm;
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 09/10/24 10:18:21 Page 2
+Determine Row Hierarchy for the SAPCE Dataset
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  d:\GitHub\windc_build\statedata\sapceHeirarchy.gms
+     2       22 CALL           1      22  gdxxrw i=sapce\SAPCE4__ALL_AREAS_1997_2022.csv o=d:\GitHub\windc_build\statedata\225a\s.gdx     set=s     rng=g2..g135     rdim=1 cdim=0 trimleft=n
+     3       23 CALL           1      23  gdxxrw i=sapce\SAPCE4__ALL_AREAS_1997_2022.csv o=d:\GitHub\windc_build\statedata\225a\lno.gdx   set=lno   rng=e2..e135   ignorecolumns=f  rdim=1 cdim=0 trimleft=n
+     4       24 CALL           1      24  gdxxrw i=sapce\SAPCE4__ALL_AREAS_1997_2022.csv o=d:\GitHub\windc_build\statedata\225a\lno_s.gdx set=lno_s rng=e2..g135 ignorecolumns=f  rdim=2 cdim=0 trimleft=n
+     5       27 GDXIN          1      27  d:\GitHub\windc_build\statedata\225a\s.gdx
+     6       31 GDXIN          1      31  d:\GitHub\windc_build\statedata\225a\lno.gdx
+     7       39 GDXIN          1      39  d:\GitHub\windc_build\statedata\225a\lno_s.gdx
+
+
+COMPILATION TIME     =        3.391 SECONDS      3 MB  47.2.0 54a8429d WEX-WEI
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 09/10/24 10:18:21 Page 3
+Determine Row Hierarchy for the SAPCE Dataset
+E x e c u t i o n
+
+
+----     35 SET lno  Line numbers
+
+1    Personal consumption expenditures
+2    Household consumption expenditures
+3    Food and beverages purchased for off-premises consumption
+4    Food and nonalcoholic beverages purchased for off-premises consumption
+5    Alcoholic beverages purchased for off-premises consumption
+6    Food produced and consumed on farms
+7    Clothing, footwear, and related services
+8    Clothing
+9    Garments
+10   Women's and girls' clothing
+11   Men's and boys' clothing
+12   Children's and infants' clothing
+13   Other clothing materials
+14   Cleaning, repair, and rental of clothing
+15   Laundry and dry cleaning services
+16   Clothing repair, rental, and alterations
+17   Footwear
+18   Housing, utilities, and fuels
+19   Housing
+20   Rental of tenant-occupied nonfarm housing
+21   Imputed rental of owner-occupied nonfarm housing
+22   Rental value of farm dwellings
+23   Group housing
+24   Household utilities and fuels
+25   Water supply and sanitation
+26   Electricity, gas, and other fuels
+27   Electricity
+28   Natural gas
+29   Fuel oil and other fuels
+30   Furnishings, household equipment, and routine household maintenance
+31   Furniture, furnishings, and floor coverings
+32   Household textiles
+33   Household appliances
+34   Glassware, tableware, and household utensils
+35   Tools and equipment for house and garden
+36   Other household goods and services
+37   Health
+38   Medical products, appliances, and equipment
+39   Pharmaceutical and other medical products
+40   Pharmaceutical products
+41   Other medical products
+42   Therapeutic appliances and equipment
+43   Outpatient services
+44   Physician services
+45   Dental services
+46   Paramedical services
+47   Home health care
+48   Medical laboratories
+49   Other professional medical services
+50   Hospital and nursing home services
+51   Hospitals
+52   Nursing homes
+53   Transportation
+54   Motor vehicles
+55   New motor vehicles
+56   Net purchases of used motor vehicles
+57   Motor vehicle operation
+58   Motor vehicle parts and accessories
+59   Motor vehicle fuels, lubricants, and fluids
+60   Motor vehicle maintenance and repair
+61   Other motor vehicle services
+62   Public transportation
+63   Ground transportation
+64   Air transportation
+65   Water transportation
+66   Communication
+67   Telephone and related communication equipment
+68   Postal and delivery services
+69   First-class postal service by U.S. Postal Service (USPS)
+70   Other delivery services (by non-USPS facilities)
+71   Telecommunication services
+72   Internet access
+73   Recreation
+74   Video and audio equipment, computers, and related services
+75   Video and audio equipment
+76   Information processing equipment
+77   Services related to video and audio goods and computers
+78   Sports and recreational goods and related services
+79   Sports and recreational vehicles
+80   Other sporting and recreational goods
+81   Maintenance and repair of recreational vehicles and sports equipment
+82   Membership clubs, sports centers, parks, theaters, and museums
+83   Membership clubs and participant sports centers
+84   Amusements parks, campgrounds, and related recreational services
+85   Admissions to specified spectator amusements
+86   Motion picture theaters
+87   Live entertainment, excluding sports
+88   Spectator sports
+89   Museums and libraries
+90   Magazines, newspapers, books, and stationery
+91   Gambling
+92   Pets, pet products, and related services
+93   Photographic goods and services
+94   Package tours
+95   Education
+96   Educational books
+97   Higher education
+98   Nursery, elementary, and secondary schools
+99   Commercial and vocational schools
+100  Food services and accommodations
+101  Food services
+102  Purchased meals and beverages
+103  Food furnished to employees (including military)
+104  Accommodations
+105  Financial services and insurance
+106  Financial services
+107  Financial services furnished without payment
+108  Financial service charges, fees, and commissions
+109  Insurance
+110  Life insurance
+111  Net household insurance
+112  Net health insurance
+113  Medical care and hospitalization
+114  Income loss
+115  Workers' compensation
+116  Net motor vehicle and other transportation insurance
+117  Other goods and services
+118  Personal care
+119  Personal items
+120  Social services and religious activities
+121  Professional and other services
+122  Legal services
+123  Accounting and other business services
+124  Labor organization dues
+125  Professional association dues
+126  Funeral and burial services
+127  Tobacco
+128  Net foreign travel and expenditures abroad by U.S. residents
+129  Foreign travel by U.S. residents
+130  Less: Expenditures in the United States by nonresidents
+131  Net expenditures abroad by U.S. residents
+132  Final consumption expenditures of nonprofit institutions serving households (NPISHs)
+133  Gross output of nonprofit institutions
+134  Less: Receipts from sales of goods and services by nonprofit institutions
+
+
+----     70 SET m  Mapping
+
+Personal consumption expenditures                              . Household consumption expenditures                              Millions of current dollars
+Personal consumption expenditures                              . Final consumption expenditures of nonprofit institutions servi  Millions of current dollars
+ Household consumption expenditures                            .  Food and beverages purchased for off-premises consumption      Millions of current dollars
+ Household consumption expenditures                            .  Clothing, footwear, and related services                       Millions of current dollars
+ Household consumption expenditures                            .  Housing, utilities, and fuels                                  Millions of current dollars
+ Household consumption expenditures                            .  Health                                                         Millions of current dollars
+ Household consumption expenditures                            .  Transportation                                                 Millions of current dollars
+ Household consumption expenditures                            .  Communication                                                  Millions of current dollars
+ Household consumption expenditures                            .  Recreation                                                     Millions of current dollars
+ Household consumption expenditures                            .  Education                                                      Millions of current dollars
+ Household consumption expenditures                            .  Food services and accommodations                               Millions of current dollars
+ Household consumption expenditures                            .  Financial services and insurance                               Millions of current dollars
+ Household consumption expenditures                            .  Other goods and services                                       Millions of current dollars
+ Household consumption expenditures                            .  Net foreign travel and expenditures abroad by U.S. residents   Millions of current dollars
+ Household consumption expenditures                            .  Furnishings, household equipment, and routine household maint  Millions of current dollars
+  Food and beverages purchased for off-premises consumption    .   Alcoholic beverages purchased for off-premises consumption    Millions of current dollars
+  Food and beverages purchased for off-premises consumption    .   Food produced and consumed on farms                           Millions of current dollars
+  Food and beverages purchased for off-premises consumption    .   Food and nonalcoholic beverages purchased for off-premises c  Millions of current dollars
+  Clothing, footwear, and related services                     .   Clothing                                                      Millions of current dollars
+  Clothing, footwear, and related services                     .   Footwear                                                      Millions of current dollars
+   Clothing                                                    .    Garments                                                     Millions of current dollars
+   Clothing                                                    .    Other clothing materials                                     Millions of current dollars
+   Clothing                                                    .    Cleaning, repair, and rental of clothing                     Millions of current dollars
+    Garments                                                   .     Women's and girls' clothing                                 Millions of current dollars
+    Garments                                                   .     Men's and boys' clothing                                    Millions of current dollars
+    Garments                                                   .     Children's and infants' clothing                            Millions of current dollars
+    Cleaning, repair, and rental of clothing                   .     Laundry and dry cleaning services                           Millions of current dollars
+    Cleaning, repair, and rental of clothing                   .     Clothing repair, rental, and alterations                    Millions of current dollars
+  Housing, utilities, and fuels                                .   Housing                                                       Millions of current dollars
+  Housing, utilities, and fuels                                .   Household utilities and fuels                                 Millions of current dollars
+   Housing                                                     .    Rental of tenant-occupied nonfarm housing                    Millions of current dollars
+   Housing                                                     .    Imputed rental of owner-occupied nonfarm housing             Millions of current dollars
+   Housing                                                     .    Rental value of farm dwellings                               Millions of current dollars
+   Housing                                                     .    Group housing                                                Millions of current dollars
+   Household utilities and fuels                               .    Water supply and sanitation                                  Millions of current dollars
+   Household utilities and fuels                               .    Electricity, gas, and other fuels                            Millions of current dollars
+    Electricity, gas, and other fuels                          .     Electricity                                                 Millions of current dollars
+    Electricity, gas, and other fuels                          .     Natural gas                                                 Millions of current dollars
+    Electricity, gas, and other fuels                          .     Fuel oil and other fuels                                    Millions of current dollars
+  Health                                                       .   Medical products, appliances, and equipment                   Millions of current dollars
+  Health                                                       .   Outpatient services                                           Millions of current dollars
+  Health                                                       .   Hospital and nursing home services                            Millions of current dollars
+   Medical products, appliances, and equipment                 .    Pharmaceutical and other medical products                    Millions of current dollars
+   Medical products, appliances, and equipment                 .    Therapeutic appliances and equipment                         Millions of current dollars
+    Pharmaceutical and other medical products                  .     Pharmaceutical products                                     Millions of current dollars
+    Pharmaceutical and other medical products                  .     Other medical products                                      Millions of current dollars
+   Outpatient services                                         .    Physician services                                           Millions of current dollars
+   Outpatient services                                         .    Dental services                                              Millions of current dollars
+   Outpatient services                                         .    Paramedical services                                         Millions of current dollars
+    Paramedical services                                       .     Home health care                                            Millions of current dollars
+    Paramedical services                                       .     Medical laboratories                                        Millions of current dollars
+    Paramedical services                                       .     Other professional medical services                         Millions of current dollars
+   Hospital and nursing home services                          .    Hospitals                                                    Millions of current dollars
+   Hospital and nursing home services                          .    Nursing homes                                                Millions of current dollars
+  Transportation                                               .   Motor vehicles                                                Millions of current dollars
+  Transportation                                               .   Motor vehicle operation                                       Millions of current dollars
+  Transportation                                               .   Public transportation                                         Millions of current dollars
+   Motor vehicles                                              .    New motor vehicles                                           Millions of current dollars
+   Motor vehicles                                              .    Net purchases of used motor vehicles                         Millions of current dollars
+   Motor vehicle operation                                     .    Motor vehicle parts and accessories                          Millions of current dollars
+   Motor vehicle operation                                     .    Motor vehicle fuels, lubricants, and fluids                  Millions of current dollars
+   Motor vehicle operation                                     .    Motor vehicle maintenance and repair                         Millions of current dollars
+   Motor vehicle operation                                     .    Other motor vehicle services                                 Millions of current dollars
+   Public transportation                                       .    Ground transportation                                        Millions of current dollars
+   Public transportation                                       .    Air transportation                                           Millions of current dollars
+   Public transportation                                       .    Water transportation                                         Millions of current dollars
+  Communication                                                .   Telephone and related communication equipment                 Millions of current dollars
+  Communication                                                .   Postal and delivery services                                  Millions of current dollars
+  Communication                                                .   Telecommunication services                                    Millions of current dollars
+  Communication                                                .   Internet access                                               Millions of current dollars
+   Postal and delivery services                                .    First-class postal service by U.S. Postal Service (USPS)     Millions of current dollars
+   Postal and delivery services                                .    Other delivery services (by non-USPS facilities)             Millions of current dollars
+  Recreation                                                   .   Video and audio equipment, computers, and related services    Millions of current dollars
+  Recreation                                                   .   Sports and recreational goods and related services            Millions of current dollars
+  Recreation                                                   .   Magazines, newspapers, books, and stationery                  Millions of current dollars
+  Recreation                                                   .   Gambling                                                      Millions of current dollars
+  Recreation                                                   .   Pets, pet products, and related services                      Millions of current dollars
+  Recreation                                                   .   Photographic goods and services                               Millions of current dollars
+  Recreation                                                   .   Package tours                                                 Millions of current dollars
+  Recreation                                                   .   Membership clubs, sports centers, parks, theaters, and museu  Millions of current dollars
+   Video and audio equipment, computers, and related services  .    Video and audio equipment                                    Millions of current dollars
+   Video and audio equipment, computers, and related services  .    Information processing equipment                             Millions of current dollars
+   Video and audio equipment, computers, and related services  .    Services related to video and audio goods and computers      Millions of current dollars
+   Sports and recreational goods and related services          .    Sports and recreational vehicles                             Millions of current dollars
+   Sports and recreational goods and related services          .    Other sporting and recreational goods                        Millions of current dollars
+   Sports and recreational goods and related services          .    Maintenance and repair of recreational vehicles and sports   Millions of current dollars
+    Admissions to specified spectator amusements               .     Motion picture theaters                                     Millions of current dollars
+    Admissions to specified spectator amusements               .     Live entertainment, excluding sports                        Millions of current dollars
+    Admissions to specified spectator amusements               .     Spectator sports                                            Millions of current dollars
+  Education                                                    .   Educational books                                             Millions of current dollars
+  Education                                                    .   Higher education                                              Millions of current dollars
+  Education                                                    .   Nursery, elementary, and secondary schools                    Millions of current dollars
+  Education                                                    .   Commercial and vocational schools                             Millions of current dollars
+  Food services and accommodations                             .   Food services                                                 Millions of current dollars
+  Food services and accommodations                             .   Accommodations                                                Millions of current dollars
+   Food services                                               .    Purchased meals and beverages                                Millions of current dollars
+   Food services                                               .    Food furnished to employees (including military)             Millions of current dollars
+  Financial services and insurance                             .   Financial services                                            Millions of current dollars
+  Financial services and insurance                             .   Insurance                                                     Millions of current dollars
+   Financial services                                          .    Financial services furnished without payment                 Millions of current dollars
+   Financial services                                          .    Financial service charges, fees, and commissions             Millions of current dollars
+   Insurance                                                   .    Life insurance                                               Millions of current dollars
+   Insurance                                                   .    Net household insurance                                      Millions of current dollars
+   Insurance                                                   .    Net health insurance                                         Millions of current dollars
+   Insurance                                                   .    Net motor vehicle and other transportation insurance         Millions of current dollars
+    Net health insurance                                       .     Medical care and hospitalization                            Millions of current dollars
+    Net health insurance                                       .     Income loss                                                 Millions of current dollars
+    Net health insurance                                       .     Workers' compensation                                       Millions of current dollars
+  Other goods and services                                     .   Personal care                                                 Millions of current dollars
+  Other goods and services                                     .   Personal items                                                Millions of current dollars
+  Other goods and services                                     .   Social services and religious activities                      Millions of current dollars
+  Other goods and services                                     .   Professional and other services                               Millions of current dollars
+  Other goods and services                                     .   Tobacco                                                       Millions of current dollars
+   Professional and other services                             .    Legal services                                               Millions of current dollars
+   Professional and other services                             .    Accounting and other business services                       Millions of current dollars
+   Professional and other services                             .    Labor organization dues                                      Millions of current dollars
+   Professional and other services                             .    Professional association dues                                Millions of current dollars
+   Professional and other services                             .    Funeral and burial services                                  Millions of current dollars
+  Net foreign travel and expenditures abroad by U.S. residents .   Foreign travel by U.S. residents                              Millions of current dollars
+  Net foreign travel and expenditures abroad by U.S. residents .   Less: Expenditures in the United States by nonresidents       Millions of current dollars
+  Net foreign travel and expenditures abroad by U.S. residents .   Net expenditures abroad by U.S. residents                     Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Furniture, furnishings, and floor coverings                   Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Household textiles                                            Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Household appliances                                          Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Glassware, tableware, and household utensils                  Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Tools and equipment for house and garden                      Millions of current dollars
+  Furnishings, household equipment, and routine household maint.   Other household goods and services                            Millions of current dollars
+   Membership clubs, sports centers, parks, theaters, and museu.    Membership clubs and participant sports centers              Millions of current dollars
+   Membership clubs, sports centers, parks, theaters, and museu.    Admissions to specified spectator amusements                 Millions of current dollars
+   Membership clubs, sports centers, parks, theaters, and museu.    Museums and libraries                                        Millions of current dollars
+   Membership clubs, sports centers, parks, theaters, and museu.    Amusements parks, campgrounds, and related recreational ser  Millions of current dollars
+ Final consumption expenditures of nonprofit institutions servi.  Gross output of nonprofit institutions                         Millions of current dollars
+ Final consumption expenditures of nonprofit institutions servi.  Less: Receipts from sales of goods and services by nonprofit   Millions of current dollars
+
+
+----     76 PARAMETER cardm                =      133.000  Number of elements in m
+
+----     76 PARAMETER cardm                =      459.000  Number of elements in m
+
+----     76 PARAMETER cardm                =      468.000  Number of elements in m
+
+----     84 SET g  
+
+   Alcoholic beverages purchased for off-premises consumption    Millions of current dollars
+   Food produced and consumed on farms                           Millions of current dollars
+     Women's and girls' clothing                                 Millions of current dollars
+     Men's and boys' clothing                                    Millions of current dollars
+     Children's and infants' clothing                            Millions of current dollars
+    Other clothing materials                                     Millions of current dollars
+     Laundry and dry cleaning services                           Millions of current dollars
+     Clothing repair, rental, and alterations                    Millions of current dollars
+   Footwear                                                      Millions of current dollars
+    Rental of tenant-occupied nonfarm housing                    Millions of current dollars
+    Imputed rental of owner-occupied nonfarm housing             Millions of current dollars
+    Rental value of farm dwellings                               Millions of current dollars
+    Group housing                                                Millions of current dollars
+    Water supply and sanitation                                  Millions of current dollars
+     Electricity                                                 Millions of current dollars
+     Natural gas                                                 Millions of current dollars
+     Fuel oil and other fuels                                    Millions of current dollars
+   Furniture, furnishings, and floor coverings                   Millions of current dollars
+   Household textiles                                            Millions of current dollars
+   Household appliances                                          Millions of current dollars
+   Glassware, tableware, and household utensils                  Millions of current dollars
+   Tools and equipment for house and garden                      Millions of current dollars
+   Other household goods and services                            Millions of current dollars
+     Pharmaceutical products                                     Millions of current dollars
+     Other medical products                                      Millions of current dollars
+    Therapeutic appliances and equipment                         Millions of current dollars
+    Physician services                                           Millions of current dollars
+    Dental services                                              Millions of current dollars
+     Home health care                                            Millions of current dollars
+     Medical laboratories                                        Millions of current dollars
+     Other professional medical services                         Millions of current dollars
+    Hospitals                                                    Millions of current dollars
+    Nursing homes                                                Millions of current dollars
+    New motor vehicles                                           Millions of current dollars
+    Net purchases of used motor vehicles                         Millions of current dollars
+    Motor vehicle parts and accessories                          Millions of current dollars
+    Motor vehicle fuels, lubricants, and fluids                  Millions of current dollars
+    Motor vehicle maintenance and repair                         Millions of current dollars
+    Other motor vehicle services                                 Millions of current dollars
+    Ground transportation                                        Millions of current dollars
+    Air transportation                                           Millions of current dollars
+    Water transportation                                         Millions of current dollars
+   Telephone and related communication equipment                 Millions of current dollars
+    First-class postal service by U.S. Postal Service (USPS)     Millions of current dollars
+    Other delivery services (by non-USPS facilities)             Millions of current dollars
+   Telecommunication services                                    Millions of current dollars
+   Internet access                                               Millions of current dollars
+    Video and audio equipment                                    Millions of current dollars
+    Information processing equipment                             Millions of current dollars
+    Services related to video and audio goods and computers      Millions of current dollars
+    Sports and recreational vehicles                             Millions of current dollars
+    Other sporting and recreational goods                        Millions of current dollars
+    Membership clubs and participant sports centers              Millions of current dollars
+     Motion picture theaters                                     Millions of current dollars
+     Live entertainment, excluding sports                        Millions of current dollars
+     Spectator sports                                            Millions of current dollars
+    Museums and libraries                                        Millions of current dollars
+   Magazines, newspapers, books, and stationery                  Millions of current dollars
+   Gambling                                                      Millions of current dollars
+   Pets, pet products, and related services                      Millions of current dollars
+   Photographic goods and services                               Millions of current dollars
+   Package tours                                                 Millions of current dollars
+   Educational books                                             Millions of current dollars
+   Higher education                                              Millions of current dollars
+   Nursery, elementary, and secondary schools                    Millions of current dollars
+   Commercial and vocational schools                             Millions of current dollars
+    Purchased meals and beverages                                Millions of current dollars
+    Food furnished to employees (including military)             Millions of current dollars
+   Accommodations                                                Millions of current dollars
+    Financial services furnished without payment                 Millions of current dollars
+    Financial service charges, fees, and commissions             Millions of current dollars
+    Life insurance                                               Millions of current dollars
+    Net household insurance                                      Millions of current dollars
+     Medical care and hospitalization                            Millions of current dollars
+     Income loss                                                 Millions of current dollars
+     Workers' compensation                                       Millions of current dollars
+    Net motor vehicle and other transportation insurance         Millions of current dollars
+   Personal care                                                 Millions of current dollars
+   Personal items                                                Millions of current dollars
+   Social services and religious activities                      Millions of current dollars
+    Legal services                                               Millions of current dollars
+    Accounting and other business services                       Millions of current dollars
+    Labor organization dues                                      Millions of current dollars
+    Professional association dues                                Millions of current dollars
+    Funeral and burial services                                  Millions of current dollars
+   Tobacco                                                       Millions of current dollars
+   Foreign travel by U.S. residents                              Millions of current dollars
+   Less: Expenditures in the United States by nonresidents       Millions of current dollars
+   Net expenditures abroad by U.S. residents                     Millions of current dollars
+  Gross output of nonprofit institutions                         Millions of current dollars
+   Food and nonalcoholic beverages purchased for off-premises c  Millions of current dollars
+    Maintenance and repair of recreational vehicles and sports   Millions of current dollars
+    Amusements parks, campgrounds, and related recreational ser  Millions of current dollars
+  Less: Receipts from sales of goods and services by nonprofit   Millions of current dollars
+
+
+----     95 SET Lm  
+
+1  .4    Food and nonalcoholic beverages purchased for off-premises consumption
+1  .5    Alcoholic beverages purchased for off-premises consumption
+1  .6    Food produced and consumed on farms
+1  .10   Women's and girls' clothing
+1  .11   Men's and boys' clothing
+1  .12   Children's and infants' clothing
+1  .13   Other clothing materials
+1  .15   Laundry and dry cleaning services
+1  .16   Clothing repair, rental, and alterations
+1  .17   Footwear
+1  .20   Rental of tenant-occupied nonfarm housing
+1  .21   Imputed rental of owner-occupied nonfarm housing
+1  .22   Rental value of farm dwellings
+1  .23   Group housing
+1  .25   Water supply and sanitation
+1  .27   Electricity
+1  .28   Natural gas
+1  .29   Fuel oil and other fuels
+1  .31   Furniture, furnishings, and floor coverings
+1  .32   Household textiles
+1  .33   Household appliances
+1  .34   Glassware, tableware, and household utensils
+1  .35   Tools and equipment for house and garden
+1  .36   Other household goods and services
+1  .40   Pharmaceutical products
+1  .41   Other medical products
+1  .42   Therapeutic appliances and equipment
+1  .44   Physician services
+1  .45   Dental services
+1  .47   Home health care
+1  .48   Medical laboratories
+1  .49   Other professional medical services
+1  .51   Hospitals
+1  .52   Nursing homes
+1  .55   New motor vehicles
+1  .56   Net purchases of used motor vehicles
+1  .58   Motor vehicle parts and accessories
+1  .59   Motor vehicle fuels, lubricants, and fluids
+1  .60   Motor vehicle maintenance and repair
+1  .61   Other motor vehicle services
+1  .63   Ground transportation
+1  .64   Air transportation
+1  .65   Water transportation
+1  .67   Telephone and related communication equipment
+1  .69   First-class postal service by U.S. Postal Service (USPS)
+1  .70   Other delivery services (by non-USPS facilities)
+1  .71   Telecommunication services
+1  .72   Internet access
+1  .75   Video and audio equipment
+1  .76   Information processing equipment
+1  .77   Services related to video and audio goods and computers
+1  .79   Sports and recreational vehicles
+1  .80   Other sporting and recreational goods
+1  .81   Maintenance and repair of recreational vehicles and sports equipment
+1  .83   Membership clubs and participant sports centers
+1  .84   Amusements parks, campgrounds, and related recreational services
+1  .86   Motion picture theaters
+1  .87   Live entertainment, excluding sports
+1  .88   Spectator sports
+1  .89   Museums and libraries
+1  .90   Magazines, newspapers, books, and stationery
+1  .91   Gambling
+1  .92   Pets, pet products, and related services
+1  .93   Photographic goods and services
+1  .94   Package tours
+1  .96   Educational books
+1  .97   Higher education
+1  .98   Nursery, elementary, and secondary schools
+1  .99   Commercial and vocational schools
+1  .102  Purchased meals and beverages
+1  .103  Food furnished to employees (including military)
+1  .104  Accommodations
+1  .107  Financial services furnished without payment
+1  .108  Financial service charges, fees, and commissions
+1  .110  Life insurance
+1  .111  Net household insurance
+1  .113  Medical care and hospitalization
+1  .114  Income loss
+1  .115  Workers' compensation
+1  .116  Net motor vehicle and other transportation insurance
+1  .118  Personal care
+1  .119  Personal items
+1  .120  Social services and religious activities
+1  .122  Legal services
+1  .123  Accounting and other business services
+1  .124  Labor organization dues
+1  .125  Professional association dues
+1  .126  Funeral and burial services
+1  .127  Tobacco
+1  .129  Foreign travel by U.S. residents
+1  .130  Less: Expenditures in the United States by nonresidents
+1  .131  Net expenditures abroad by U.S. residents
+1  .133  Gross output of nonprofit institutions
+1  .134  Less: Receipts from sales of goods and services by nonprofit institutions
+
+2  .4    Food and nonalcoholic beverages purchased for off-premises consumption
+2  .5    Alcoholic beverages purchased for off-premises consumption
+2  .6    Food produced and consumed on farms
+2  .10   Women's and girls' clothing
+2  .11   Men's and boys' clothing
+2  .12   Children's and infants' clothing
+2  .13   Other clothing materials
+2  .15   Laundry and dry cleaning services
+2  .16   Clothing repair, rental, and alterations
+2  .17   Footwear
+2  .20   Rental of tenant-occupied nonfarm housing
+2  .21   Imputed rental of owner-occupied nonfarm housing
+2  .22   Rental value of farm dwellings
+2  .23   Group housing
+2  .25   Water supply and sanitation
+2  .27   Electricity
+2  .28   Natural gas
+2  .29   Fuel oil and other fuels
+2  .31   Furniture, furnishings, and floor coverings
+2  .32   Household textiles
+2  .33   Household appliances
+2  .34   Glassware, tableware, and household utensils
+2  .35   Tools and equipment for house and garden
+2  .36   Other household goods and services
+2  .40   Pharmaceutical products
+2  .41   Other medical products
+2  .42   Therapeutic appliances and equipment
+2  .44   Physician services
+2  .45   Dental services
+2  .47   Home health care
+2  .48   Medical laboratories
+2  .49   Other professional medical services
+2  .51   Hospitals
+2  .52   Nursing homes
+2  .55   New motor vehicles
+2  .56   Net purchases of used motor vehicles
+2  .58   Motor vehicle parts and accessories
+2  .59   Motor vehicle fuels, lubricants, and fluids
+2  .60   Motor vehicle maintenance and repair
+2  .61   Other motor vehicle services
+2  .63   Ground transportation
+2  .64   Air transportation
+2  .65   Water transportation
+2  .67   Telephone and related communication equipment
+2  .69   First-class postal service by U.S. Postal Service (USPS)
+2  .70   Other delivery services (by non-USPS facilities)
+2  .71   Telecommunication services
+2  .72   Internet access
+2  .75   Video and audio equipment
+2  .76   Information processing equipment
+2  .77   Services related to video and audio goods and computers
+2  .79   Sports and recreational vehicles
+2  .80   Other sporting and recreational goods
+2  .81   Maintenance and repair of recreational vehicles and sports equipment
+2  .83   Membership clubs and participant sports centers
+2  .84   Amusements parks, campgrounds, and related recreational services
+2  .86   Motion picture theaters
+2  .87   Live entertainment, excluding sports
+2  .88   Spectator sports
+2  .89   Museums and libraries
+2  .90   Magazines, newspapers, books, and stationery
+2  .91   Gambling
+2  .92   Pets, pet products, and related services
+2  .93   Photographic goods and services
+2  .94   Package tours
+2  .96   Educational books
+2  .97   Higher education
+2  .98   Nursery, elementary, and secondary schools
+2  .99   Commercial and vocational schools
+2  .102  Purchased meals and beverages
+2  .103  Food furnished to employees (including military)
+2  .104  Accommodations
+2  .107  Financial services furnished without payment
+2  .108  Financial service charges, fees, and commissions
+2  .110  Life insurance
+2  .111  Net household insurance
+2  .113  Medical care and hospitalization
+2  .114  Income loss
+2  .115  Workers' compensation
+2  .116  Net motor vehicle and other transportation insurance
+2  .118  Personal care
+2  .119  Personal items
+2  .120  Social services and religious activities
+2  .122  Legal services
+2  .123  Accounting and other business services
+2  .124  Labor organization dues
+2  .125  Professional association dues
+2  .126  Funeral and burial services
+2  .127  Tobacco
+2  .129  Foreign travel by U.S. residents
+2  .130  Less: Expenditures in the United States by nonresidents
+2  .131  Net expenditures abroad by U.S. residents
+3  .4    Food and nonalcoholic beverages purchased for off-premises consumption
+3  .5    Alcoholic beverages purchased for off-premises consumption
+3  .6    Food produced and consumed on farms
+7  .10   Women's and girls' clothing
+7  .11   Men's and boys' clothing
+7  .12   Children's and infants' clothing
+7  .13   Other clothing materials
+7  .15   Laundry and dry cleaning services
+7  .16   Clothing repair, rental, and alterations
+7  .17   Footwear
+8  .10   Women's and girls' clothing
+8  .11   Men's and boys' clothing
+8  .12   Children's and infants' clothing
+8  .13   Other clothing materials
+8  .15   Laundry and dry cleaning services
+8  .16   Clothing repair, rental, and alterations
+9  .10   Women's and girls' clothing
+9  .11   Men's and boys' clothing
+9  .12   Children's and infants' clothing
+14 .15   Laundry and dry cleaning services
+14 .16   Clothing repair, rental, and alterations
+18 .20   Rental of tenant-occupied nonfarm housing
+18 .21   Imputed rental of owner-occupied nonfarm housing
+18 .22   Rental value of farm dwellings
+18 .23   Group housing
+18 .25   Water supply and sanitation
+18 .27   Electricity
+18 .28   Natural gas
+18 .29   Fuel oil and other fuels
+19 .20   Rental of tenant-occupied nonfarm housing
+19 .21   Imputed rental of owner-occupied nonfarm housing
+19 .22   Rental value of farm dwellings
+19 .23   Group housing
+24 .25   Water supply and sanitation
+24 .27   Electricity
+24 .28   Natural gas
+24 .29   Fuel oil and other fuels
+26 .27   Electricity
+26 .28   Natural gas
+26 .29   Fuel oil and other fuels
+30 .31   Furniture, furnishings, and floor coverings
+30 .32   Household textiles
+30 .33   Household appliances
+30 .34   Glassware, tableware, and household utensils
+30 .35   Tools and equipment for house and garden
+30 .36   Other household goods and services
+37 .40   Pharmaceutical products
+37 .41   Other medical products
+37 .42   Therapeutic appliances and equipment
+37 .44   Physician services
+37 .45   Dental services
+37 .47   Home health care
+37 .48   Medical laboratories
+37 .49   Other professional medical services
+37 .51   Hospitals
+37 .52   Nursing homes
+38 .40   Pharmaceutical products
+38 .41   Other medical products
+38 .42   Therapeutic appliances and equipment
+39 .40   Pharmaceutical products
+39 .41   Other medical products
+43 .44   Physician services
+43 .45   Dental services
+43 .47   Home health care
+43 .48   Medical laboratories
+43 .49   Other professional medical services
+46 .47   Home health care
+46 .48   Medical laboratories
+46 .49   Other professional medical services
+50 .51   Hospitals
+50 .52   Nursing homes
+53 .55   New motor vehicles
+53 .56   Net purchases of used motor vehicles
+53 .58   Motor vehicle parts and accessories
+53 .59   Motor vehicle fuels, lubricants, and fluids
+53 .60   Motor vehicle maintenance and repair
+53 .61   Other motor vehicle services
+53 .63   Ground transportation
+53 .64   Air transportation
+53 .65   Water transportation
+54 .55   New motor vehicles
+54 .56   Net purchases of used motor vehicles
+57 .58   Motor vehicle parts and accessories
+57 .59   Motor vehicle fuels, lubricants, and fluids
+57 .60   Motor vehicle maintenance and repair
+57 .61   Other motor vehicle services
+62 .63   Ground transportation
+62 .64   Air transportation
+62 .65   Water transportation
+66 .67   Telephone and related communication equipment
+66 .69   First-class postal service by U.S. Postal Service (USPS)
+66 .70   Other delivery services (by non-USPS facilities)
+66 .71   Telecommunication services
+66 .72   Internet access
+68 .69   First-class postal service by U.S. Postal Service (USPS)
+68 .70   Other delivery services (by non-USPS facilities)
+73 .75   Video and audio equipment
+73 .76   Information processing equipment
+73 .77   Services related to video and audio goods and computers
+73 .79   Sports and recreational vehicles
+73 .80   Other sporting and recreational goods
+73 .81   Maintenance and repair of recreational vehicles and sports equipment
+73 .83   Membership clubs and participant sports centers
+73 .84   Amusements parks, campgrounds, and related recreational services
+73 .86   Motion picture theaters
+73 .87   Live entertainment, excluding sports
+73 .88   Spectator sports
+73 .89   Museums and libraries
+73 .90   Magazines, newspapers, books, and stationery
+73 .91   Gambling
+73 .92   Pets, pet products, and related services
+73 .93   Photographic goods and services
+73 .94   Package tours
+74 .75   Video and audio equipment
+74 .76   Information processing equipment
+74 .77   Services related to video and audio goods and computers
+78 .79   Sports and recreational vehicles
+78 .80   Other sporting and recreational goods
+78 .81   Maintenance and repair of recreational vehicles and sports equipment
+82 .83   Membership clubs and participant sports centers
+82 .84   Amusements parks, campgrounds, and related recreational services
+82 .86   Motion picture theaters
+82 .87   Live entertainment, excluding sports
+82 .88   Spectator sports
+82 .89   Museums and libraries
+85 .86   Motion picture theaters
+85 .87   Live entertainment, excluding sports
+85 .88   Spectator sports
+95 .96   Educational books
+95 .97   Higher education
+95 .98   Nursery, elementary, and secondary schools
+95 .99   Commercial and vocational schools
+100.102  Purchased meals and beverages
+100.103  Food furnished to employees (including military)
+100.104  Accommodations
+101.102  Purchased meals and beverages
+101.103  Food furnished to employees (including military)
+105.107  Financial services furnished without payment
+105.108  Financial service charges, fees, and commissions
+105.110  Life insurance
+105.111  Net household insurance
+105.113  Medical care and hospitalization
+105.114  Income loss
+105.115  Workers' compensation
+105.116  Net motor vehicle and other transportation insurance
+106.107  Financial services furnished without payment
+106.108  Financial service charges, fees, and commissions
+109.110  Life insurance
+109.111  Net household insurance
+109.113  Medical care and hospitalization
+109.114  Income loss
+109.115  Workers' compensation
+109.116  Net motor vehicle and other transportation insurance
+112.113  Medical care and hospitalization
+112.114  Income loss
+112.115  Workers' compensation
+117.118  Personal care
+117.119  Personal items
+117.120  Social services and religious activities
+117.122  Legal services
+117.123  Accounting and other business services
+117.124  Labor organization dues
+117.125  Professional association dues
+117.126  Funeral and burial services
+117.127  Tobacco
+121.122  Legal services
+121.123  Accounting and other business services
+121.124  Labor organization dues
+121.125  Professional association dues
+121.126  Funeral and burial services
+128.129  Foreign travel by U.S. residents
+128.130  Less: Expenditures in the United States by nonresidents
+128.131  Net expenditures abroad by U.S. residents
+132.133  Gross output of nonprofit institutions
+132.134  Less: Receipts from sales of goods and services by nonprofit institutions
+
+
+
+USER: Small MUD - 5 User License                     G240611|0002AO-GEN
+      University of Wisconsin-Madison, Agricultural & Applied EconDC289
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      d:\GitHub\windc_build\statedata\sapceHeirarchy.gms
+Output     d:\GitHub\windc_build\statedata\sapceHeirarchy.lst

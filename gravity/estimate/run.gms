@@ -5,8 +5,8 @@ $if not dexist datasets\b   $call mkdir datasets\b
 $if not dexist datasets\lst $call mkdir lst
 $if not dexist datasets\a\bases $call mkdir bases
 
-*.$call gams economy	o=lst\economy.lst
-*.$call gams geography	o=lst\geography.lst
+$call gams economy	o=lst\economy.lst
+$call gams geography	o=lst\geography.lst
 
 $log	Running a_alt
 $call gams agravity --ds=alt o=lst\a_alt.lst

@@ -1,0 +1,283 @@
+$title	Read the GDP Data
+
+$if not exist t1.gdx $call csv2gdx i=sagdp\SAGDP1__ALL_AREAS_1997_2023  o=t1.gdx id=v index=2,5 values=9..35 useheader=y >t1.log
+$if not exist t2.gdx $call csv2gdx i=sagdp\SAGDP2N__ALL_AREAS_1997_2023 o=t2.gdx id=v index=2,5 values=9..35 useheader=y >t2.log
+$if not exist t3.gdx $call csv2gdx i=sagdp\SAGDP3N__ALL_AREAS_1997_2022 o=t3.gdx id=v index=2,5 values=9..34 useheader=y >t3.log
+$if not exist t4.gdx $call csv2gdx i=sagdp\SAGDP4N__ALL_AREAS_1997_2022 o=t4.gdx id=v index=2,5 values=9..34 useheader=y >t4.log
+$if not exist t5.gdx $call csv2gdx i=sagdp\SAGDP5N__ALL_AREAS_1997_2022 o=t5.gdx id=v index=2,5 values=9..34 useheader=y >t5.log
+$if not exist t6.gdx $call csv2gdx i=sagdp\SAGDP6N__ALL_AREAS_1997_2022 o=t6.gdx id=v index=2,5 values=9..34 useheader=y >t6.log
+$if not exist t7.gdx $call csv2gdx i=sagdp\SAGDP7N__ALL_AREAS_1997_2022 o=t7.gdx id=v index=2,5 values=9..34 useheader=y >t7.log
+$if not exist t8.gdx $call csv2gdx i=sagdp\SAGDP8N__ALL_AREAS_1997_2023 o=t8.gdx id=v index=2,5 values=9..35 useheader=y >t8.log
+$if not exist t9.gdx $call csv2gdx i=sagdp\SAGDP9N__ALL_AREAS_1997_2023 o=t9.gdx id=v index=2,5 values=9..35 useheader=y >t9.log
+$if not exist t11.gdx $call csv2gdx i=sagdp\SAGDP11N__ALL_AREAS_1998_2023 o=t11.gdx id=v index=2,5 values=9..34 useheader=y >t11.log
+
+$call gdxmerge t*.gdx output=sagdp.gdx
+
+set	tbl /
+	t1	State annual gross domestic product (GDP) summary
+	t2	Gross domestic product (GDP) by state
+	t3	Taxes on production and imports less subsidies
+	t4	Compensation of employees
+	t5	Subsidies
+	t6	Taxes on production and imports
+	t7	Gross operating surplus
+	t8	Chain-type quantity indexes for real GDP by state (2017=100.0)
+	t9	Real GDP by state
+	t11	Contributions to percent change in real GDP /
+set	r(*)	Regions;
+set	i/
+	1	"All industry total",
+	2	"Private industries",
+	3	 "Agriculture, forestry, fishing and hunting (11)",
+	4	  "Farms (111-112)",
+	5	  "Forestry, fishing, and related activities (113-115)",
+	6	 "Mining, quarrying, and oil and gas extraction (21)",
+	7	 "Oil and gas extraction (211)",
+	8	 "Mining (except oil and gas) (212)",
+	9	 "Support activities for mining (213)",
+	10	"Utilities (22)",
+	11	"Construction  (23)",
+	12	"Manufacturing (31-33)",
+	13	 "Durable goods manufacturing (321,327-339)",
+	14	 "Wood product manufacturing (321)",
+	15	 "Nonmetallic mineral product manufacturing (327)",
+	16	 "Primary metal manufacturing (331)",
+	17	 "Fabricated metal product manufacturing (332)",
+	18	 "Machinery manufacturing (333)",
+	19	 "Computer and electronic product manufacturing (334)",
+	20	"Electrical equipment, appliance, and component manufacturing (335)",
+	21	"Motor vehicles, bodies and trailers, and parts manufacturing (3361-3363)",
+	22	"Other transportation equipment manufacturing (3364-3466,3369)",
+	23	"Furniture and related product manufacturing (337)",
+	24	"Miscellaneous manufacturing (339)",
+	25	"Nondurable goods manufacturing (311-316,322-326)",
+	26	"Food and beverage and tobacco product manufacturing (311-312)",
+	27	"Textile mills and textile product mills (313-314)",
+	28	"Apparel, leather, and allied product manufacturing (315-316)",
+	29	"Paper manufacturing (322)",
+	30	"Printing and related support activities (323)",
+	31	"Petroleum and coal products manufacturing (324)",
+	32	"Chemical manufacturing (325)",
+	33	"Plastics and rubber products manufacturing (326)",
+	34	"Wholesale trade (42)",
+	35	"Retail trade (44-45)",
+	36	"Transportation and warehousing (48-49)",
+	37	 "Air transportation (481)",
+	38	 "Rail transportation (482)",
+	39	 "Water transportation (483)",
+	40	 "Truck transportation (484)",
+	41	 "Transit and ground passenger transportation (485)",
+	42	 "Pipeline transportation (486)",
+	43	 "Other transportation and support activities  (487-488,492)",
+	44	 "Warehousing and storage (493)",
+	45	"Information (51)",
+	46	 "Publishing industries (except Internet) (511)",
+	47	 "Motion picture and sound recording industries (512)",
+	48	 "Broadcasting (except Internet) and telecommunications (515, 517)",
+	49	 "Data processing, hosting, and other information services (518-519)",
+	50	"Finance, insurance, real estate, rental, and leasing (52,53)",
+	51	 "Finance and insurance 52",
+	52	  "Monetary Authorities- central bank, credit intermediation, and related services (521-522)",
+	53	  "Securities, commodity contracts, and other financial investments and related activities (523)",
+	54	  "Insurance carriers and related activities (524)",
+	55	  "Funds, trusts, and other financial vehicles (525)",
+	56	 "Real estate and rental and leasing (53)",
+	57	  "Real estate (531)",
+	58	"Rental and leasing services and lessors of nonfinancial intangible assets (532-533)",
+	59	"Professional and business services (54,55,56)",
+	60	"Professional, scientific, and technical services (54)",
+	61	 "Legal services (5411)",
+	62	 "Computer systems design and related services (5415)",
+	63	 "Miscellaneous professional, scientific, and technical services (5412-5414,5416-5419)",
+	64	"Management of companies and enterprises (55)",
+	65	"Administrative and support and waste management and remediation services (56)",
+	66	 "Administrative and support services (561)",
+	67	 "Waste management and remediation services (562)",
+	68	"Educational services, health care, and social assistance (61,62)",
+	69	 "Educational services (61)",
+	70	 "Health care and social assistance (62)",
+	71	  "Ambulatory health care services (621)",
+	72	  "Hospitals (622)",
+	73	  "Nursing and residential care facilities (623)",
+	74	  "Social assistance (624)",
+	75	"Arts, entertainment, recreation, accommodation, and food services (71,72)",
+	76	 "Arts, entertainment, and recreation (71)",
+	77	  "Performing arts, spectator sports, museums, and related activities (711-712)",
+	78	  "Amusement, gambling, and recreation industries (713)",
+	79	 "Accommodation and food services (72)",
+	80	  "Accommodation (721)",
+	81	  "Food services and drinking places (722)",
+	82	"Other services (except government and government enterprises) (81)",
+	83	"Government and government enterprises (92)",
+	84	"Federal civilian",
+	85	"Military",
+	86	"State and local",
+	87	"Natural resources and mining (11,21)",
+	88	"Trade (42,44-45)",
+	89	"Transportation and utilities (22,48-49)",
+	90	"Manufacturing and information (31-33,51)",
+	91	"Private goods-producing industries",
+
+*	The private goods-producing industries consist of agriculture,
+*	forestry, fishing, and hunting; mining, quarrying, and oil and gas
+*	extraction; construction; and manufacturing.
+
+	92	"Private services-providing industries",
+
+*	The private services-producing industries consist of utilities;
+*	wholesale trade; retail trade; transportation and warehousing,
+*	excluding Postal Service; information; finance and insurance; real
+*	estate, rental, and leasing; professional, scientific, and technical
+*	services; management of companies; administrative and support and
+*	waste management and remediation services; educational services;
+*	health care and social assistance; arts, entertainment, and
+*	recreation; accommodation and food services; and other services
+*	(except government and government enterprises).
+
+	100	  "All industry total, overseas activity "
+	101	  "Government and government enterprises, overseas activity"
+	102	  "Federal civilian, overseas activity ",
+	103	  "Military, overseas activity " /
+
+
+1*92,100*103/, yr/1997*2023/;
+
+parameter	v(tbl,r<,i,yr);
+$gdxin 'sagdp.gdx'
+$onUNDF
+$loaddc v
+
+option r:0:0:1;
+display r;
+
+set	tbl_i(tbl,i);
+option tbl_i<v
+option tbl_i:0:0:1;
+display tbl_i;
+
+$exit
+
+
+
+
+set	s	States  /
+		AL, US, AK, AR, AZ, CA, CO, CT, DC, DE, FL, GA, HI, IA, ID, IL, IN,
+		KS, KY, LA, MA, MD, ME, MI, MN, MO, MS, MT, NC, ND, NE, NH, NJ, NM,
+		NV, NY, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WV /;
+
+$exit
+
+
+file kput; kput.lw=0; put kput;
+
+loop(s,
+	put_utility 'shell' /	
+
+	  'gdxxrw i=sagdp\sagdp\sagdp\SAGDP2N_',s.tl,'_1997_2023.csv Nain="(NA)" o=gdp.gdx par=gdp rng=e1..ai93 ignorecolumns=f,g,h';
+	execute_load 'gdp.gdx', v;
+	gdp(s,i,yr) = v(i,yr);
+);
+
+
+$exit
+
+(D) Not shown to avoid disclosure of confidential information; estimates are included in higher-level totals.
+(L) Less than $50,000.
+(NM) Not meaningful.
+(NA) Not available.
+
+
+
+
+1	...	All industry total 
+2	...	 Private industries 
+3	11	  Agriculture, forestry, fishing and hunting 
+4	111-112	   Farms 
+5	113-115	   Forestry, fishing, and related activities 
+6	21	  Mining, quarrying, and oil and gas extraction 
+7	211	   Oil and gas extraction 
+8	212	   Mining (except oil and gas) 
+9	213	   Support activities for mining 
+10	22	  Utilities 
+11	23	  Construction 
+12	31-33	  Manufacturing 
+13	321,327-339	   Durable goods manufacturing 
+14	321	    Wood product manufacturing 
+15	327	    Nonmetallic mineral product manufacturing 
+16	331	    Primary metal manufacturing 
+17	332	    Fabricated metal product manufacturing 
+18	333	    Machinery manufacturing 
+19	334	    Computer and electronic product manufacturing 
+20	335	    Electrical equipment, appliance, and component manufacturing 
+21	3361-3363	    Motor vehicles, bodies and trailers, and parts manufacturing 
+22	3364-3466,3369	    Other transportation equipment manufacturing 
+23	337	    
+24	339	    
+25	311-316,322-326	   Nondurable goods manufacturing 
+26	311-312	    Food and beverage and tobacco product manufacturing 
+27	313-314	    Textile mills and textile product mills 
+28	315-316	    Apparel, leather, and allied product manufacturing 
+29	322	    Paper manufacturing 
+30	323	    Printing and related support activities 
+31	324	    Petroleum and coal products manufacturing 
+32	325	    Chemical manufacturing 
+33	326	    Plastics and rubber products manufacturing 
+34	42	  Wholesale trade 
+35	44-45	  Retail trade 
+36	48-49	  Transportation and warehousing 
+37	481	   Air transportation 
+38	482	   Rail transportation 
+39	483	   Water transportation 
+40	484	   Truck transportation 
+41	485	   Transit and ground passenger transportation 
+42	486	   Pipeline transportation 
+43	487-488,492	   Other transportation and support activities 
+44	493	   Warehousing and storage 
+45	51	  Information 
+46	511	   Publishing industries (except Internet) 
+47	512	   Motion picture and sound recording industries 
+48	515,517	   Broadcasting (except Internet) and telecommunications 
+49	518-519	   Data processing, hosting, and other information services 
+50	52,53	  Finance, insurance, real estate, rental, and leasing 
+51	52	   Finance and insurance 
+52	521-522	    Monetary Authorities- central bank, credit intermediation, and related services 
+53	523	    Securities, commodity contracts, and other financial investments and related activities 
+54	524	    Insurance carriers and related activities 
+55	525	    Funds, trusts, and other financial vehicles 
+56	53	   Real estate and rental and leasing 
+57	531	    Real estate 
+58	532-533	    Rental and leasing services and lessors of nonfinancial intangible assets 
+59	54,55,56	  Professional and business services 
+60	54	   Professional, scientific, and technical services 
+61	5411	    Legal services 
+62	5415	    Computer systems design and related services 
+63	5412-5414,5416-5419	    Miscellaneous professional, scientific, and technical services 
+64	55	   Management of companies and enterprises 
+65	56	   Administrative and support and waste management and remediation services 
+66	561	    Administrative and support services 
+67	562	    Waste management and remediation services 
+68	61,62	  Educational services, health care, and social assistance 
+69	61	   Educational services 
+70	62	   Health care and social assistance 
+71	621	    Ambulatory health care services 
+72	622	    Hospitals 
+73	623	    Nursing and residential care facilities 
+74	624	    Social assistance 
+75	71,72	  Arts, entertainment, recreation, accommodation, and food services 
+76	71	   Arts, entertainment, and recreation 
+77	711-712	    Performing arts, spectator sports, museums, and related activities 
+78	713	    Amusement, gambling, and recreation industries 
+79	72	   Accommodation and food services 
+80	721	    Accommodation 
+81	722	    Food services and drinking places 
+82	81	  Other services (except government and government enterprises) 
+83	92	 Government and government enterprises 
+84	...	  Federal civilian 
+85	...	  Military 
+86	...	  State and local 
+87	11,21	Natural resources and mining 
+88	42,44-45	Trade 
+89	22,48-49	Transportation and utilities 
+90	31-33,51	Manufacturing and information 
+91	...	Private goods-producing industries 2/
+92	...	Private services-providing industries 3/
