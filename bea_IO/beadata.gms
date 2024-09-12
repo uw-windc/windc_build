@@ -27,15 +27,12 @@ set	s(*)	Sectors
 $gdxin %ds%.gdx
 $load s 
 
-option s:0:0:1;
-display s;
-$exit
 
 $if not declared yr	set	yr(*)	Years with summary tables;
 $if not defined yr $load yr
 
 $if not declared r	set	r(*)	Regions;
-$if not defined r $load r
+$if not defined  r $load r
 
 alias (s,ss,g,gg);
 
