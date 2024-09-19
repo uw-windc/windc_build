@@ -1,0 +1,1 @@
+start "https://www2.census.gov/programs-surveys/state/tables/2022/2022%20ASFIN%20State%20Totals.xlsx"

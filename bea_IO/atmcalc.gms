@@ -63,7 +63,4 @@ loop(yr,
 ));
 
 execute_unload 'atm.gdx',atm;
-execute 'gdxxrw i=atm.gdx o=atm.xlsx par=atm rng=PivotData!a2 cdim=0';
-
-
-
+execute 'gdxxrw i=atm.gdx o=atm.xlsx par=atm rng=PivotData!a2 cdim=0 intastext=n';

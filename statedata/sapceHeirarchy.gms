@@ -35,11 +35,9 @@ set	lno_s(lno,s) Line number-sector mapping;
 $gdxin %gams.scrdir%lno_s.gdx
 $load lno_s
 
-
 set	L /0*6/;
 set	k /1*10/;  
 alias (k,kk);
-
 
 set	a(s,L)	Number of leading blanks;
 a(s,L)$(ord(s.tl,1)=ord(" ",1))

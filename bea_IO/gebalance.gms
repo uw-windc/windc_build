@@ -2,9 +2,12 @@ $title	Partition the Supply and Use Tables to Create a GE Dataset
 
 set	yr	Years with summary tables /1997*2022/,
 	s(*)	Sectors
+
 	mrg	Margins /trd,trn/,
+
 	s_row(*) Summary table rows (in addition to commodities) 
 	s_col(*) Summary table columns (in addition to sectors) 
+
 	u_row(*) Use table rows (in addition to commodities) 
 	u_col(*) Use table columns (in addition to sectors) 
 
@@ -132,12 +135,13 @@ parameter investinfo;
 investinfo(g(ru),inv(cu)) = use("2006",ru,cu);
 display investinfo;
 
-
 alias (u,*);
 
 profit(s,yr,u)$(not round(profit(s,yr,"balance"),0)) = 0;
 market(g,yr,u)$(not round(market(g,yr,"balance"),0)) = 0;
 display "Egregious violations of adding-up:", profit, market;
+
+*	Partition the supply and use tables:
 
 set	r	Regions (singleton for now)   / usa	National data /;
 
@@ -332,5 +336,3 @@ display iterlog;
 execute_unload 'data\gebalanced.gdx', yr, r, s, mrg, ys0, ld0, kd0,
 	id0, rx0, x0, ms0, ns0, nd0, fd0, cd0, a0, 
 	m0, ty0, tm0, ta0, md0;
-
-
