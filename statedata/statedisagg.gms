@@ -5,17 +5,17 @@ set	yr	/1997*2023/;
 set	r	Regions /	
 	USA	Nation
 	AL	"Alabama",
-	AK	"Alaska",
+*.	AK	"Alaska",
 	AR	"Arizona",
 	AZ	"Arkansas",
 	CA	"California",
 	CO	"Colorado",
 	CT	"Connecticut",
-	DC	"District of Columbia",
+*.	DC	"District of Columbia",
 	DE	"Delaware",
 	FL	"Florida",
 	GA	"Georgia",
-	HI	"Hawaii",
+*.	HI	"Hawaii",
 	IA	"Iowa",
 	ID	"Idaho",
 	IL	"Illinois",
@@ -62,6 +62,95 @@ set	r	Regions /
 
 $include ..\bea_IO\beadata
 
+parameter	ke0(yr,r)	Regional capital endowment;
+ke0(yr,"usa") = sum(s,kd0_(yr,"usa",s));
+
+set	ra_(r) /usa/;
+
+$ontext
+$model:symmetric
+
+$sectors:
+	Y(r,s)$y_(yb,r,s)	! Production
+	A(r,g)$pa_(yb,r,g)	! Absorption
+	ES(g)$vx0(yb,g)		! Export supply
+	N(g)$n0(yb,g)		! National market supply
+	MS(mrg)			! Margin supply
+	KS			! Capital stock
+
+$commodities:
+	PA(r,g)$pa_(yb,r,g)	! Regional market (input)
+	PY(r,g)$y_(yb,r,g)	! Regional market (output)
+	PX(g)$vx0(yb,g)		! Export market
+	PN(g)$n0(yb,g)		! National market
+	PK(r,s)$kd0_(yb,r,s)	! Rental rate of capital
+	PI(mrg)			! Margin price
+	PNYSE			! Aggregate return to capital
+	PL(r)$ra_(r)		! Wage rate
+	PFX			! Foreign exchange
+
+$consumer:
+	RA(r)$ra_(r)		! Representative agent
+	ROW			! Rest of world (export demand)
+
+$auxiliary:
+	ED(g)$vx0(yb,g)		! Export demand
+
+$prod:Y(r,s)$y_(yb,r,s)  s:0 va:1
+	o:PY(r,s)	q:(ys0_(yb,r,s)) a:RA(r) t:(ty_(yb,r,s)) p:(1-ty0_(yb,r,s))
+	i:PA(r,g)	q:(id0_(yb,r,g,s))
+	i:PL(r)		q:(ld0_(yb,r,s))	va:
+	i:PK(r,s)	q:(kd0_(yb,r,s))	va:
+
+$prod:ES(g)$vx0(yb,g)  s:0.5  y:4
+	o:PX(g)		q:(sum(r,x0(yb,r,g)))
+	i:PY(r,g)	q:(x0(yb,r,g)-rx0(yb,r,g))   y:
+	i:PFX		q:(sum(r,rx0(yb,r,g)))
+
+$prod:N(g)$n0(yb,g)  t:4
+	o:PN(g)		q:(n0(yb,g))
+	i:PY(r,g)	q:(ns0(yb,r,g))
+
+$prod:MS(mrg)  s:0.5
+	o:PI(mrg)	q:(sum((r,g),ms0(yb,r,g,mrg)))
+	i:PY(r,g)	q:(ms0(yb,r,g,mrg))
+
+$prod:A(r,g)$pa_(yb,r,g)  s:0 dm:2  d(dm):4
+	o:PA(r,g)	q:(a0(yb,r,g))	a:RA(r)	t:(ta(yb,r,g)) p:(1-ta0(yb,r,g))
+	i:PN(g)		q:(nd0(yb,r,g))		d:
+	i:PY(r,g)	q:(yd0(yb,r,g))		d:
+	i:PFX		q:(m0(yb,r,g)-rx0(yb,r,g))	dm:  a:RA(r)  t:(tm(yb,r,g)) p:(1+tm0(yb,r,g))
+	i:PI(mrg)	q:(md0(yb,r,mrg,g))
+
+$prod:KS
+	o:PK(r,s)	q:(kd0_(yb,r,s))
+	i:PNYSE		q:(sum(r,ke0(yb,r)))
+
+$demand:RA(r)$ra_(r)  s:1
+	d:PA(r,g)	q:(cd0(yb,r,g))
+	e:PFX		q:(vb(yb,r))
+	e:PA(r,g)	q:(-sum(xd,fd0(yb,r,g,xd)))
+	e:PL(r)		q:(sum(s,ld0(yb,r,s)))
+	e:PNYSE		q:(ke0(yb,r))
+
+$demand:ROW
+	e:PFX		q:(2*sum(g,vx0(yb,g)))
+	e:PX(g)		q:(-vx0(yb,g))	r:ED(g)
+	d:PFX		
+
+$constraint:ED(g)$vx0(yb,g)
+	ED(g) =e= (PX(g)/PFX)**(-epsilonx(g));
+
+$offtext
+$sysinclude mpsgeset symmetric -mt=1
+
+ED.L(g)$vx0(yb,g) = 1;
+
+symmetric.workspace = 1024;
+symmetric.iterlim = 0;
+*.$include %gams.scrdir%symmetric.gen
+*.solve symmetric using mcp;
+
 * ------------------------------------------------------------------------------
 * Read in shares generated using state level gross product, pce, faf,
 * and government expenditures:
@@ -83,7 +172,7 @@ parameter	sagdp(r,s,yr,sagdptbl)	State Annual GDP dataset;
 $gdxin 'sagdp.gdx'
 
 $onUNDF
-$loaddc sagdp
+$load sagdp
 
 sagdp(r,s,yr,sagdptbl)$(sagdp(r,s,yr,sagdptbl) = undf) = 0;
 
@@ -106,7 +195,7 @@ set	sarow	Data rows in the summary table /
 
 parameter	sasummary(r,sarow,yr)	Summary data;
 $gdxin 'sasummary.gdx'
-$loaddc sasummary
+$load sasummary
 
 set i_40 /  
 	90  "Dividends, interest, and rent (thousands of dollars)"
@@ -124,14 +213,11 @@ $load d_40
 
 parameter	d_40tot(yr,i_40)	Income Totals;
 d_40tot(yr,i_40) = sum(r,d_40(r,i_40,yr))/1e9;
-display d_40tot; 
+*.display d_40tot; 
 
 parameter	cr(yr,r,s)	Cash receipts for agricultural sectors;
 $gdxin 'fiws.gdx'
-$loaddc cr
-
-parameter	crtot(yr,s)	Aggregate cash receipts;
-crtot(yr,s) = sum(r,cr(yr,r,s));
+$load cr
 
 *	State Government Finances
 
@@ -572,7 +658,7 @@ parameter	sgfcat(yr,r,cat)	State and local government totals by category,
 		sgf(yr,r,sgfi)		State and local government totals by item;
 
 $gdxin 'sgf.gdx'
-$loaddc sgfcat sgf
+$load sgfcat sgf
 
 set	asfi(*)		ASF items /
         "Total revenue"
@@ -660,139 +746,196 @@ $load asfin
 *	------------------------------------------------------------------
 
 set	yc(yr)	Years to calibrate /2017,2022/;
+
+set	rs(r)	Regions which are states;
+rs(r) = yes$(not sameas(r,"usa"));
+
+
+parameter	crtot(yr,s)	Aggregate cash receipts;
+crtot(yr,s) = sum(rs(r),cr(yr,r,s));
+
 parameter	totgdp(s,yr)		Total GDP;
-totgdp(s,yc(yr)) = sum(r,sagdp(r,s,yr,"t2"));
-display totgdp;
+totgdp(s,yc(yr)) = sum(rs(r),sagdp(r,s,yr,"t2"));
+*.display totgdp;
 
 parameter    region_shr(yr,r,*)		Regional shares based on GSP or consumption;
 
-region_shr(yc(yr),r,s)$totgdp(s,yr) = sagdp(r,s,yr,"t2")/totgdp(s,yr);
-region_shr(yc(yr),r,s)$crtot(yr,s) = cr(yr,r,s)/crtot(yr,s);
-region_shr(yc(yr),r,"c") = sasummary(r,"7",yr)/sum(r.local,sasummary(r,"7",yr));
-region_shr(yc(yr),r,"k") = d_40(r,"90",yr)/sum(r.local,d_40(r,"90",yr));
-region_shr(yc(yr),r,"gdp") = sasummary(r,"1",yr)/sum(r.local,sasummary(r,"1",yr));
+region_shr(yc(yr),rs(r),s)$totgdp(s,yr) = sagdp(r,s,yr,"t2")/totgdp(s,yr);
+region_shr(yc(yr),rs(r),s)$crtot(yr,s) = cr(yr,r,s)/crtot(yr,s);
+
+region_shr(yc(yr),rs(r),"c") = sasummary(r,"7",yr)/sum(r.local,sasummary(r,"7",yr));
+region_shr(yc(yr),rs(r),"k") = d_40(r,"90",yr)/sum(r.local,d_40(r,"90",yr));
+region_shr(yc(yr),rs(r),"gdp") = sasummary(r,"1",yr)/sum(r.local,sasummary(r,"1",yr));
 
 parameter	ke0(yr,r)	Regional capital endowment;
-ke0(yc(yr),r) = region_shr(yr,r,"k") * sum(s,kd0_(yr,"usa",s));
+ke0(yc(yr),rs(r)) = region_shr(yr,r,"k") * sum(s,kd0_(yr,"usa",s));
 
-*	Regional shares of GDP determin shares of production.  Assume
-*	common technology in all states:
+*	Regional shares of GDP determine shares of production.  
+*	Assume common technology in all states:
 
-ys0_(yc(yr),r,s)   = region_shr(yr,r,s) * ys0_(yr,"usa",s);
-id0_(yc(yr),r,g,s) = region_shr(yr,r,s) * id0_(yr,"usa",g,s);
-ld0_(yc(yr),r,s)   = region_shr(yr,r,s) * ld0_(yr,"usa",s);
-kd0_(yc(yr),r,s)   = region_shr(yr,r,s) * kd0_(yr,"usa",s);
-ty0_(yc(yr),r,s)   = ty0_(yr,"usa",s);
+ys0_(yc(yr),rs(r),s)   = region_shr(yr,r,s) * ys0_(yr,"usa",s); 
+id0_(yc(yr),rs(r),g,s) = region_shr(yr,r,s) * id0_(yr,"usa",g,s); 
+ld0_(yc(yr),rs(r),s)   = region_shr(yr,r,s) * ld0_(yr,"usa",s); 
+kd0_(yc(yr),rs(r),s)   = region_shr(yr,r,s) * kd0_(yr,"usa",s); 
+ty0_(yc(yr),rs(r),s)   = ty0_(yr,"usa",s); 
 
-fd0(yr,r,g,xd) = region_shr(yr,r,"gdp")*fd0(yr,"usa",g,xd);
-x0(yc(yr),r,g) = x0(yr,"usa",g) * region_shr(yr,r,g);
+*	Flag for production in individual states:
+
+y_(yc(yr),rs(r),s) = yes$ys0_(yb,r,s);
+
+fd0(yr,rs(r),g,xd) = region_shr(yr,r,"gdp")*fd0(yr,"usa",g,xd); 
 
 *	Note to self: need to be sure we are dropping values for USA, 
 *	and make sure the aggregate value does not affect shares.
 
 *	Regional shares of consumption:
 
-cd0(yc(yr),r,g) = cd0(yr,"usa",g)*region_shr(yr,r,"c");
+cd0(yc(yr),rs(r),g) = region_shr(yr,r,"c") * cd0(yr,"usa",g); 
 
+ta(yc(yr),rs(r),g)  = ta(yr,"usa",g); 
+ta0(yc(yr),rs(r),g) = ta0(yr,"usa",g); 
+tm(yc(yr),rs(r),g)  = tm(yr,"usa",g); 
+tm0(yc(yr),rs(r),g) = tm0(yr,"usa",g); 
+
+*	Use market clearance to determine absorption:
+
+a0(yc(yr),rs(r),g) = max(0,sum(s,id0_(yr,r,g,s)) + cd0(yr,r,g) + sum(xd,fd0(yr,r,g,xd)));
+pa_(yr,rs(r),g) = a0(yr,r,g);
+
+parameter	ashr(yr,r,g)	Regional share of absorption;
+
+ashr(yc(yr),rs(r),g)$sum(r.local$rs(r),a0(yr,r,g)) = a0(yr,r,g)/sum(r.local$rs(r),a0(yr,r,g));
+option ashr:3:0:1;
+display ashr;
+
+md0(yc(yr),rs(r),mrg,g) = ashr(yr,r,g) * md0(yr,"usa",mrg,g); 
+m0(yc(yr),rs(r),g)      = ashr(yr,r,g) * m0(yr,"usa",g);	  
+ms0(yc(yr),rs(r),g,mrg) = ms0(yr,"usa",g,mrg)/sum(g.local,ms0(yr,"usa",g,mrg)) * md0(yr,r,mrg,g);
+ns0(yc(yr),rs(r),g) = 0.5 * (ys0_(yr,r,g)-x0(yr,r,g));
+yd0(yc(yr),rs(r),g) = 0.5 * (ys0_(yr,r,g)-x0(yr,r,g));
+rx0(yc(yr),rs(r),g)     = ashr(yr,r,g) * rx0(yr,"usa",g);     
+x0(yc(yr),rs(r),g)      = region_shr(yr,r,g) * (x0(yr,"usa",g) - rx0(yr,"usa",g)) + rx0(yr,r,g);
+display md0, m0, ms0, ns0, yd0, rx0, x0;
+
+*	Code for calibration:
+
+variables	OBJ		Objective (targetting);
+
+nonnegative
+variables	x0_b(r,g)	Exports
+		rx0_b(r,g)	Re-exports
+		m0_b(r,g)	Imports
+		ms0_b(r,g,mrg)	Margin supply
+		ns0_b(r,g)	Supply to the national market
+		nd0_b(r,g)	Demand from the national market
+		yd0_b(r,g)	Domestic supply;
+
+equations	objdef, margins, supply, national, demand, imports, exports, reexports;
+
+objdef..	OBJ =E=   sum(rs(r),
+		  sum(g$x0(yb,r,g),		x0(yb,r,g) *      (sqr(x0_b(r,g)/x0(yb,r,g)-1)))
+		+ sum(g$rx0(yb,r,g),		rx0(yb,r,g) *     (sqr(rx0_b(r,g)/rx0(yb,r,g)-1)))
+		+ sum((g,mrg)$ms0(yb,r,g,mrg),	ms0(yb,r,g,mrg) * (sqr(ms0_b(r,g,mrg)/ms0(yb,r,g,mrg))-1))
+		+ sum(g$ns0(yb,r,g),		ns0(yb,r,g) *     (sqr(ns0_b(r,g)/ns0(yb,r,g))-1))
+		+ sum(g$yd0(yb,r,g),		yd0(yb,r,g) *     (sqr(yd0_b(r,g)/yd0(yb,r,g))-1)) ) 
+
+		+ 10 * sum(rs(r),
+		  sum(g$(not x0(yb,r,g)),		x0_b(r,g))
+		+ sum(g$(not rx0(yb,r,g)),		rx0_b(r,g))
+		+ sum((g,mrg)$(not ms0(yb,r,g,mrg)),	ms0_b(r,g,mrg))
+		+ sum(g$(not ns0(yb,r,g)),		ns0_b(r,g))
+		+ sum(g$(not yd0(yb,r,g)),		yd0_b(r,g)));
+
+margins(rs(r),mrg)..	sum(g,ms0_b(r,g,mrg)) =e= sum(g,md0(yb,r,mrg,g));
+
+supply(rs(r),g)..	ys0_(yb,r,g) =e= x0_b(r,g) - rx0_b(r,g) + 
+						sum(mrg,ms0_b(r,g,mrg)) +
+						ns0_b(r,g) + yd0_b(r,g);
+
+national(g)..		sum(rs(r),ns0_b(r,g)) =e= sum(rs(r),nd0_b(r,g));
+
+demand(rs(r),g)..	nd0_b(r,g) + yd0_b(r,g) =e= a0(yb,r,g)*(1-ta(yb,r,g)) 
+					- (m0_b(r,g)-rx0_b(r,g))*(1+tm(yb,r,g)) 
+					- sum(mrg,md0(yb,r,mrg,g));
+
+imports(g)..		sum(rs(r),m0_b(r,g)) =e= m0(yb,"usa",g); 
+
+exports(g)..		sum(rs(r),x0_b(r,g)) =e= x0(yb,"usa",g);
+
+*	We have to permit some degree of freedom in the output market, as we 
+*	have fixed ys0, m0 and x0:
+
+reexports(g)$no..	sum(rs(r),rx0_b(r,g)) =e= rx0(yb,"usa",g);
+
+
+model calib /objdef, margins, supply, national, demand, imports, exports, reexports/;
+
+loop(yc,
+	yb(yc) = yes;
+
+	x0_b.UP(rs(r),g)      = inf;
+	m0_b.UP(rs(r),g)      = inf;
+	rx0_b.UP(rs(r),g)     = inf;
+	ms0_b.UP(rs(r),g,mrg) = inf;
+	ns0_b.UP(rs(r),g)     = inf;
+	nd0_b.UP(rs(r),g)     = inf;
+	yd0_b.UP(rs(r),g)     = inf;
+
+	x0_b.L(rs(r),g) = x0(yb,r,g);
+	rx0_b.L(rs(r),g) = rx0(yb,r,g);
+	ms0_b.L(rs(r),g,mrg) = ms0(yb,r,g,mrg);
+	ns0_b.L(rs(r),g) = ns0(yb,r,g);
+	yd0_b.L(rs(r),g) = yd0(yb,r,g);
+
+	option qcp = cplex;
+	solve calib using qcp minimizing OBJ;
+
+	x0(yb,rs(r),g) = x0_b.L(r,g);
+	vx0(yc(yr),g) = sum(r,x0(yr,r,g));
+	rx0(yb,rs(r),g) = rx0_b.L(r,g);
+	ms0(yb,rs(r),g,mrg) = ms0_b.L(r,g,mrg);
+	ns0(yb,rs(r),g) = ns0_b.L(r,g);
+	yd0(yb,rs(r),g) = yd0_b.L(r,g);
+	vb(yc(yr),r) = sum(g,cd0(yr,r,g)) + sum((g,xd),fd0(yr,r,g,xd)) 
+	- sum(s,ld0(yr,r,s)+kd0(yr,r,s))
+	- sum(g$a0(yr,r,g), 
+		(m0(yr,r,g)-rx0(yr,r,g))*tm(yr,r,g) 
+		+ a0(yr,r,g)*ta(yr,r,g))
+	- sum(y_(yr,r,s),sum(g,ys0(yr,r,s,g))*ty(yr,r,s));
+);
+
+loop(yc,
+	yb(yc) = yes;
+	ED.L(g)$vx0(yb,g) = 1;
+	y_(yc,r,s) = yes$ys0_(yc,r,s)$rs(r);
+	pa_(yc,r,g) = a0(yc,r,g)$rs(r);
+	ra_(r) = rs(r);
+
+$include %gams.scrdir%symmetric.gen
+	solve symmetric using mcp;
+);
+
+		
 $exit
 
-ta(yc(yr),r,g) = ta(yr,"usa",g);
-ta0(yc(yr),r,g) = ta0(yr,"usa",g);
-tm(yc(yr),r,g) = tm(yr,r,g);
-tm0(yc(yr),r,g) = tm0(yr,r,g);
+*	We shouldn't need to delete the single region dataset, but here is
+*	what would do it.
 
-a0(yc(yr),r,g) = sum(s,id0_(yr,r,g,s)) + cd0(yr,r,g) + sum(xd,fd0(yr,r,g,xd));
-md0(yc(yr),r,mrg,g) = md0(yr,"usa",mrg,g) * a0(yr,r,g)/sum(r.local,a0(yr,r,g));
-m0(yc(yr),r,g) = m0(yr,"usa",g)*a0(yr,r,g)/sum(r.local,a0(yr,r,g));
-rx0(yc(yr),r,g) = rx0(yr,"usa",g)*a0(yr,r,g)/sum(r.local,a0(yr,r,g));
-yd0(yr,r,g) = 0;
-nd0(yc(yr),r,g) = a0(yr,r,g)*(1-ta(yr,r,g)) - (m0(yr,r,g)-rx0(yr,r,g))*(1+tm(yr,r,g)) - sum(mrg,md0(yr,r,mrg,g));
-n0(yc(yr),g) = sum(r,nd0(yr,r,g));
+ys0_(yr,"usa",s) = 0;
+id0_(yr,"usa",g,s) = 0;
+a0(yr,"usa",g) = 0;
+ld0_(yr,"usa",s) = 0;
+kd0_(yr,"usa",s) = 0;
+ty0_(yr,"usa",s) = 0;
+fd0(yr,"usa",g,xd) = 0;
+cd0(yr,"usa",g) = 0;
+ta(yr,"usa",g) = 0;
+ta0(yr,"usa",g) = 0;
+tm(yr,"usa",g) = 0;
+tm0(yr,"usa",g) = 0;
+md0(yr,"usa",mrg,g) = 0;
+m0(yr,"usa",g) = 0;
+rx0(yr,"usa",g) = 0;
+x0(yr,"usa",g) = 0;
+vb(yr,"usa") = 0;
 
-$exit
-
-* Verify zero profit condition
-
-parameter	z
-
-zprof(yc(yr),r,s) = sum(g, ys0_(yr,r,s,g)) * (1-ty0_(yr,r,s)) -
-    (ld0_(yr,r,s) + kd0_(yr,r,s) + sum(g, id0_(yr,r,g,s)));
-
-abort$(smax((yr,r,s), abs(zprof(yr,r,s))) > 1e-5) "Error in zero profit check in regionalization.";
-
-$ontext
-$model:symmetric
-
-$sectors:
-	Y(r,s)$y_(yb,r,s)	! Production
-	A(r,g)$a0(yb,r,g)	! Absorption
-	ES(g)$vx0(yb,g)		! Export supply
-	N(g)$n0(yb,g)		! National market supply
-	MS(mrg)			! Margin supply
-	KS			! Capital stock
-
-$commodities:
-	PA(r,g)$pa_(yb,r,g)	! Regional market (input)
-	PY(r,g)$y0(yb,r,g)	! Regional market (output)
-	PX(g)$vx0(yb,g)		! Export market
-	PN(g)$n0(yb,g)		! National market
-	PK(r,s)$kd0_(yb,r,s)	! Rental rate of capital
-	PI(mrg)			! Margin price
-	PNYSE			! Aggregate return to capital
-	PL(r)			! Wage rate
-	PFX			! Foreign exchange
-
-$consumer:
-	RA(r)			! Representative agent
-	ROW			! Rest of world (export demand)
-
-$auxiliary:
-	ED(g)$vx0(yb,g)		! Export demand
-
-$prod:Y(r,s)$y_(yb,r,s)  s:0 va:1
-	o:PY(r,s)	q:(ys0_(yb,r,s)) a:RA(r) t:(ty_(yb,r,s)) p:(1-ty0_(yb,r,s))
-	i:PA(r,g)	q:(id0_(yb,r,g,s))
-	i:PL(r)		q:(ld0_(yb,r,s))	va:
-	i:PK(r,s)	q:(kd0_(yb,r,s))	va:
-
-$prod:ES(g)$vx0(yb,g)  s:0.5  y:4
-	o:PX(g)		q:(sum(r,x0(yb,r,g)))
-	i:PY(r,g)	q:(x0(yb,r,g)-rx0(yb,r,g))   y:
-	i:PFX		q:(sum(r,rx0(yb,r,g)))
-
-$prod:N(g)$n0(yb,g)  t:4
-	o:PN(g)		q:(n0(yb,g))
-	i:PY(r,g)	q:(ns0(yb,r,g))
-
-$prod:MS(mrg)  s:0.5
-	o:PI(mrg)	q:(sum((r,g),ms0(yb,r,g,mrg)))
-	i:PY(r,g)	q:(ms0(yb,r,g,mrg))
-
-$prod:A(r,g)$a0(yb,r,g)  s:0 dm:2  d(dm):4
-	o:PA(r,g)	q:(a0(yb,r,g))	a:RA(r)	t:(ta(yb,r,g)) p:(1-ta0(yb,r,g))
-	i:PN(g)		q:(nd0(yb,r,g))		d:
-	i:PY(r,g)	q:(yd0(yb,r,g))		d:
-	i:PFX		q:(m0(yb,r,g)-rx0(yb,r,g))	dm:  a:RA(r)  t:(tm(yb,r,g)) p:(1+tm0(yb,r,g))
-	i:PI(mrg)	q:(md0(yb,r,mrg,g))
-
-$prod:KS
-	o:PK(r,s)	q:(kd0_(yb,r,s))
-	i:PNYSE		q:(sum(r,ke0(yb,r)))
-
-$demand:RA(r)  s:1
-	d:PA(r,g)	q:(cd0(yb,r,g))
-	e:PFX		q:(vb(yb,r))
-	e:PA(r,g)	q:(-sum(xd,fd0(yb,r,g,xd)))
-	e:PL(r)		q:(sum(s,ld0(yb,r,s)))
-	e:PNYSE		q:ke0(yb,r)
-
-$demand:ROW
-	e:PFX		q:(2*sum(g,vx0(yb,g)))
-	e:PX(g)		q:(-vx0(yb,g))	r:ED(g)
-	d:PFX		
-
-$constraint:ED(g)$vx0(yb,g)
-	ED(g) =e= (PX(g)/PFX)**(-epsilonx(g));
-
-$offtext
-$sysinclude mpsgeset symmetric -mt=1
