@@ -171,14 +171,8 @@ set	lm(tbl,i,j)	Subtotals definitions,
 $gdxin sapceh.gdx
 $loaddc lm lno
 
-set	g(tbl,j)	Goods;
-option g<lm;
-
-*	Add descriptive text:
-
-g(g) = lno(g);
-option g:0:0:1;
-display g;
+option lm:0:0:1;
+display lm;
 
 set	k(*)	Commodity labels;
 
@@ -379,14 +373,19 @@ $eolcom !
 	134.nps  ! Less: Receipts from sales of goods and services by nonprofit institutions
   ) /;
 
-set	h(tbl,row); option h<smap;
+*	Add descriptive text:
 
-set	bug(tbl,row);
-bug(tbl,row) = g(tbl,row) xor h(tbl,row);
-option bug:0:0:1;
-display bug;
+smap(tbl,row,k)$smap(tbl,row,k) = lno(tbl,row);
+option smap:0:0:1;
+display smap;
+
+set	g(tbl,j)	Goods;
+option g<lm;
 
 parameter	sapce(s,k,yr,tbl)	State Annual GDP dataset;
+
+*	Convert to USPS state labels s:
+
 loop(smap(g(tbl,row),k),
   sapce(s,k,yr,tbl) = sum(s_r(s,r),v(tbl,r,row,yr));
 );
@@ -394,9 +393,14 @@ option sapce:1:3:1;
 display sapce;
 
 parameter	chk	Totals which do not add up;
+
 chk(tbl,s,yr,k,"$") = sum((s_r(s,r),smap(tbl,row,k)),v(tbl,r,row,yr)) - sapce(s,k,yr,tbl);
+
 chk(tbl,s,yr,k,"%")$sapce(s,k,yr,tbl) = 
     100 * (1 - sum((s_r(s,r),smap(tbl,row,k)),v(tbl,r,row,yr)) / sapce(s,k,yr,tbl));
+
+option chk:1:4:1;
+display chk;
 
 set drop(tbl,s,yr,row);
 drop(tbl,s,yr,row) = (	(not round(chk(tbl,s,yr,row,"%"))) or
@@ -407,4 +411,4 @@ chk(drop,"%") = 0;
 option chk:1:4:1;
 display chk;
 
-execute_unload 'sapce.gdx',sapce, lm, lno;
+execute_unload 'sapce.gdx',sapce, smap, lm;

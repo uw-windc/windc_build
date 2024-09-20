@@ -440,7 +440,7 @@ option keymap:0:0:1;
 display keymap;
 
 set	io	Sectors from the input-output table /
-	oil_agr	"Oilseed farming (1111A0)"
+	osd_agr	"Oilseed farming (1111A0)"
 	grn_agr	"Grain farming (1111B0)"
 	veg_agr	"Vegetable and melon farming (111200)"
 	nut_agr	"Fruit and tree nut farming (111300)"
@@ -457,7 +457,7 @@ set	io	Sectors from the input-output table /
 $eolcom !
 
 set	iomap(io,cat,acct)	Mapping of sectors  /
-	oil_agr.		! "Oilseed farming",
+	osd_agr.		! "Oilseed farming",
 	"CRA"."OC--VAP",	! "Cash receipts value, oil crops , all",
 
 	grn_agr.		! "Grain farming",
@@ -503,12 +503,12 @@ set	iomap(io,cat,acct)	Mapping of sectors  /
 set	yrs(yr) /1997*2023/;
 
 alias (s,ss);
-parameter	agshare(s,yr,io)		State shares of agricultural output;
-agshare(s,yrs(yr),io)$sum((keymap(key,cat,acct),iomap(io,cat,acct),ss),fiws(yr,ss,key))
-	 = sum((keymap(key,cat,acct),iomap(io,cat,acct)),fiws(yr,s,key)) /
-	   sum((keymap(key,cat,acct),iomap(io,cat,acct),ss),fiws(yr,ss,key));
 
-option agshare:3:2:1;
-display agshare;
 
-execute_unload 'fiws.gdx',agshare;
+parameter	cr(yr,s,io)	Cash receipts;
+
+set	yd(yr)	Years to save /1997*2024/;
+cr(yd(yr),s,io)$(not sameas(s,"us")) = 
+	sum((keymap(key,cat,acct),iomap(io,cat,acct)), fiws(yr,s,key));
+
+execute_unload 'fiws.gdx',cr;
