@@ -81,6 +81,7 @@ ED.L(g)$vx0(yb,g) = 1;
 $include %gams.scrdir%symmetric.gen
 solve symmetric using mcp;
 
+$exit
 
 $ontext
 $model:supplyuse

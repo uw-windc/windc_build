@@ -72,7 +72,7 @@ $model:symmetric
 
 $sectors:
 	Y(r,s)$y_(yb,r,s)	! Production
-	A(r,g)$pa_(yb,r,g)	! Absorption
+	A(r,g)$a0(yb,r,g)	! Absorption
 	ES(g)$vx0(yb,g)		! Export supply
 	N(g)$n0(yb,g)		! National market supply
 	MS(mrg)			! Margin supply
@@ -80,7 +80,7 @@ $sectors:
 
 $commodities:
 	PA(r,g)$pa_(yb,r,g)	! Regional market (input)
-	PY(r,g)$y_(yb,r,g)	! Regional market (output)
+	PY(r,g)$y0(yb,r,g)	! Regional market (output)
 	PX(g)$vx0(yb,g)		! Export market
 	PN(g)$n0(yb,g)		! National market
 	PK(r,s)$kd0_(yb,r,s)	! Rental rate of capital
@@ -115,7 +115,7 @@ $prod:MS(mrg)  s:0.5
 	o:PI(mrg)	q:(sum((r,g),ms0(yb,r,g,mrg)))
 	i:PY(r,g)	q:(ms0(yb,r,g,mrg))
 
-$prod:A(r,g)$pa_(yb,r,g)  s:0 dm:2  d(dm):4
+$prod:A(r,g)$a0(yb,r,g)  s:0 dm:2  d(dm):4
 	o:PA(r,g)	q:(a0(yb,r,g))	a:RA(r)	t:(ta(yb,r,g)) p:(1-ta0(yb,r,g))
 	i:PN(g)		q:(nd0(yb,r,g))		d:
 	i:PY(r,g)	q:(yd0(yb,r,g))		d:
@@ -142,14 +142,15 @@ $constraint:ED(g)$vx0(yb,g)
 	ED(g) =e= (PX(g)/PFX)**(-epsilonx(g));
 
 $offtext
-$sysinclude mpsgeset symmetric -mt=1
+$sysinclude mpsgeset symmetric 
+*$sysinclude mpsgeset symmetric -mt=1
 
 ED.L(g)$vx0(yb,g) = 1;
 
 symmetric.workspace = 1024;
 symmetric.iterlim = 0;
-*.$include %gams.scrdir%symmetric.gen
-*.solve symmetric using mcp;
+$include symmetric.gen
+solve symmetric using mcp;
 
 * ------------------------------------------------------------------------------
 * Read in shares generated using state level gross product, pce, faf,
@@ -904,14 +905,17 @@ loop(yc,
 	- sum(y_(yr,r,s),sum(g,ys0(yr,r,s,g))*ty(yr,r,s));
 );
 
+$exit
+
 loop(yc,
 	yb(yc) = yes;
 	ED.L(g)$vx0(yb,g) = 1;
 	y_(yc,r,s) = yes$ys0_(yc,r,s)$rs(r);
 	pa_(yc,r,g) = a0(yc,r,g)$rs(r);
 	ra_(r) = rs(r);
+	id0_(yc,r,g)$(not pa_(yc,r,g)) = 0;
 
-$include %gams.scrdir%symmetric.gen
+$include symmetric.gen
 	solve symmetric using mcp;
 );
 
