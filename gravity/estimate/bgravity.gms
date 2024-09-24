@@ -2,7 +2,7 @@ $title	Gravity Estimation Routine -- Bilateral
 
 *	Define a single sector to estimate here:
 
-$if not set ds $set ds wol
+$if not set ds $set ds alt
 
 *	Two estimation methods have been implemented.  This is b:
 
@@ -184,8 +184,12 @@ parameter  epsilon 	Elasticity of trade wrt trade cost/-1/;
 
 tau_d(s,ss(loc))$(not sameas(s,ss)) = dist(s,loc)**(epsilon/(1-esubnn));
 tau_d(s,s(loc))  = dist(s,loc)**(epsilon/(1-esubdn));
-tau_m(r,s)$m0(r) = sum(pd(loc), md0(r,pd)/m0(r)*dist(s,loc)**(epsilon/(1-esubmm)));
-tau_x(s,r)$x0(r) = sum(pd(loc), xs0(pd,r)/x0(r)*dist(s,loc)**(epsilon/(1-esubx)));
+
+*	md0(r,pd)/m0(r) = share of imports from r entering port pd
+*	xs0(pd,r)/x0(r) = share of exports to r going through port pd
+
+tau_m(r,s)$m0(r) = sum(pd(loc), md0(r,pd)/m0(r) * dist(s,loc)**(epsilon/(1-esubmm)));
+tau_x(s,r)$x0(r) = sum(pd(loc), xs0(pd,r)/x0(r) * dist(s,loc)**(epsilon/(1-esubx)));
 
 parameter	cz(s)	Unit cost of Z at current prices,
 		cm(s)	Unit cost of imports in Z,

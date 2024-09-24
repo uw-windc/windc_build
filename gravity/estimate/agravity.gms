@@ -317,8 +317,6 @@ display itlog;
 
 execute_unload 'itlog.gdx',itlog;
 execute 'gdxxrw i=itlog.gdx o=itlog.xlsx par=itlog rng=itlog!a2 cdim=0 intastext=n';
-$exit
-
 
 SY.UP(s) = +inf; SY.LO(s) = -inf;
 SY.L(s) = PFX.L/PY.L(s);
@@ -327,8 +325,6 @@ SM.L(pd) = PFX.L/PMD.L(pd);
 
 $include AGRAVITY.GEN
 solve agravity using mcp;
-
-$exit
 
 solvelog("a","objval",   "Gravity") = agravity.objval;
 solvelog("a","modelstat","Gravity") = agravity.modelstat;

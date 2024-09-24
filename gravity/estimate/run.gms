@@ -1,12 +1,15 @@
+$goto bgravity
 
 $if not dexist datasets     $call mkdir datasets
 $if not dexist datasets\a   $call mkdir datasets\a
 $if not dexist datasets\b   $call mkdir datasets\b
 $if not dexist datasets\lst $call mkdir lst
-$if not dexist datasets\a\bases $call mkdir bases
+*.$if not dexist datasets\a\bases $call mkdir bases
 
 $call gams economy	o=lst\economy.lst
 $call gams geography	o=lst\geography.lst
+
+$label agravity
 
 $log	Running a_alt
 $call gams agravity --ds=alt o=lst\a_alt.lst
@@ -71,6 +74,8 @@ $call gams agravity --ds=wht o=lst\a_wht.lst
 $log	Running a_wol
 $call gams agravity --ds=wol o=lst\a_wol.lst
 
+
+$label bgravity
 
 $log	Running b_alt
 $call gams bgravity --ds=alt o=lst\b_alt.lst

@@ -2,9 +2,10 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 *	Read the data:
 
-$if not set ds $set ds 43_filtered
+*.$if not set ds $set ds 43_filtered
+$if not set ds $set ds 43_stub
 
-$include ..\GTAPWiNDC\gtapwindc_data
+$if not defined y_ $include %system.fp%gtapwindc_data
 
 $ontext
 $model:gtapwindc
@@ -40,9 +41,16 @@ $consumers:
 
 $prod:Y(g,r,s)$y_(g,r,s) s:0  va:esubva(g) 
 	o:PY(g,r,s)	q:vom(g,r,s)	a:GOVT(r) t:rto(g,r)
-	i:PZ(i,r,s)	q:vafm(i,g,r,s)	
 	i:PS(sf,g,r,s)	q:vfm(sf,g,r,s)  p:(1+rtf0(sf,g,r))  va: a:GOVT(r) t:rtf(sf,g,r)
 	i:PL(mf,r,s)	q:vfm(mf,g,r,s)  p:(1+rtf0(mf,g,r))  va: a:GOVT(r) t:rtf(mf,g,r)
+	i:PZ(i,r,s)	q:vafm(i,g,r,s)	
+
+*	If we follow the GTAP structure, we need to replace input PZ by inputs 
+*	of PD and PM:
+
+	i:PM(i,r,s)	q:vifm(i,g,r,s)	
+	i:PD(i,g,r,s)	q:vdfm(i,g,r,s)
+
 
 *	Export:
 
@@ -73,14 +81,6 @@ $prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  dn:(2*esubdm(i))  nn(dn):esubn(i)
 $prod:N(i,mkt,r)$n_(i,mkt,r)  s:esubn(i)
 	o:PN(i,mkt,r)	q:vnm(i,mkt,r)
 	i:PY(i,r,s)	q:ns0(i,mkt,r,s)
-
-* $prod:B(i,r,rr)$b_(i,r,rr)  s:esubm(i)  rr.tl:0
-* 	o:PB(i,r,rr)	q:vbm(i,r,rr)
-* 	i:P(i,rr)	q:vxmd(i,rr,r)	p:pvxmd(i,rr,r) rr.tl:
-* +		a:GOVT(rr) t:(-rtxs(i,rr,r))	
-* +		a:GOVT(r)  t:(rtms(i,rr,r)*(1-rtxs(i,rr,r)))
-* 	i:PT(j)#(rr)	q:vtwr_(j,i,rr,r) p:pvtwr(i,rr,r) rr.tl: 
-* +		a:GOVT(r)  t:rtms(i,rr,r)
 
 *	-----------------------------------------------------------------------------
 
