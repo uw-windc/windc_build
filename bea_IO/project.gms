@@ -33,10 +33,11 @@ sets	rs_d(*) / (set.d), (set.s_row) /,
 	cu_s(*) / (set.s), (set.u_col) /;
 
 parameter
-	use_d(yrd,ru_d,cu_d)	The BEA Domestic Use of Commodities by Industries - (Millions of dollars),
-	supply_d(yrd,rs_d,cs_d)	The BEA Domestic Supply of Commodities by Industries - (Millions of dollars),
-	use_s(yrs,ru_s,cu_s)	The BEA Domestic Use of Commodities by Industries - (Millions of dollars),
-	supply_s(yrs,rs_s,cs_s)	The BEA Domestic Supply of Commodities by Industries - (Millions of dollars) ;
+	use_d(yrd,ru_d,cu_d)	The BEA Domestic Use of Commodities by Detailed Industries - (Millions of dollars),
+	supply_d(yrd,rs_d,cs_d)	The BEA Domestic Supply of Commodities by Detailed Industries - (Millions of dollars),
+
+	use_s(yrs,ru_s,cu_s)	The BEA Domestic Use of Commodities by Summary Industries - (Millions of dollars),
+	supply_s(yrs,rs_s,cs_s)	The BEA Domestic Supply of Commodities by Summary Industries - (Millions of dollars) ;
 
 $gdxin 'data\bea_summary.gdx'
 $loaddc use_s=use supply_s=supply

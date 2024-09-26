@@ -118,16 +118,23 @@ display profit;
 parameter	market	Aggregate market balance;
 market(g(rs),yr,"produc")  = sum(cs(s),supply(yr,rs,cs));
 market(g(rs),yr,"import")  = sum(imp,supply(yr,rs,imp));
-market(g(rs),yr,"margins") = sum(mgn,supply(yr,rs,mgn));
 market(g(rs),yr,"taxes")   = sum(txs,supply(yr,rs,txs));
+market(g(rs),yr,"margins") = sum(mgn,supply(yr,rs,mgn));
 market(g(ru),yr,"interm")  = sum(cu(s),use(yr,ru,cu));
 market(g(ru),yr,"export")  = use(yr,ru,"F040");
-market(g(ru),yr,"consum") = use(yr,ru,"F010");
-market(g(ru),yr,"invest")   = sum(inv(cu),use(yr,ru,cu));
-market(g(ru),yr,"govt")   = sum(gov(cu),use(yr,ru,cu));
-market(g,yr,"balance") = market(g,yr,"produc") + market(g,yr,"import") + market(g,yr,"taxes") 
-	+ market(g,yr,"margins") - market(g,yr,"interm") - market(g,yr,"export") - market(g,yr,"consum") 
-	- market(g,yr,"invest") - market(g,yr,"govt");
+market(g(ru),yr,"consum")  = use(yr,ru,"F010");
+market(g(ru),yr,"invest")  = sum(inv(cu),use(yr,ru,cu));
+market(g(ru),yr,"govt")    = sum(gov(cu),use(yr,ru,cu));
+market(g,yr,"balance") = 
+	market(g,yr,"produc") 
+	+ market(g,yr,"import") 
+	+ market(g,yr,"taxes") 
+	- market(g,yr,"margins") 
+	- market(g,yr,"interm") 
+	- market(g,yr,"export") 
+	- market(g,yr,"consum") 
+	- market(g,yr,"invest") 
+	- market(g,yr,"govt");
 option market:3:2:1;
 display market;
 
@@ -140,6 +147,8 @@ alias (u,*);
 profit(s,yr,u)$(not round(profit(s,yr,"balance"),0)) = 0;
 market(g,yr,u)$(not round(market(g,yr,"balance"),0)) = 0;
 display "Egregious violations of adding-up:", profit, market;
+
+$exit
 
 *	Partition the supply and use tables:
 

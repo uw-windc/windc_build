@@ -41,9 +41,15 @@ set	utotal	Use totals /
 	T001    Total Intermediate
 	T019    Total use of products/
 
+*	ru	Rows in the use table
+*	rs	Rows in the supply table
+*	cu	Columns in the use table
+*	cs	Columns in the summary table
+
 alias (i,j,d), (ru,ru_d), (cu,cu_d), (rs,rs_d), (cs,cs_d);
 
-set vabas(*) /v001,v003,t00otop, t00osub/, kl(*)/v001,v003/;
+set	vabas(*)	Value-added accounts /v001,v003,t00otop, t00osub/, 
+	kl(*)		Capital and labor accounts /v001,v003/;
 
 parameter	profit_s	Cross check on identities in the original data;
 profit_s(cu_s(s),yrs,"interm")  = sum(ru_s(g), use_s(yrs,ru_s,cu_s));
@@ -82,6 +88,7 @@ market_s(g,yrs,"balance") = market_s(g,yrs,"produc") +
 option market_s:3:2:1;
 display market_s;
 
+
 parameter	profit_d	Cross check on identities in the original data;
 profit_d(cu_d(d),yrd,"interm")  = sum(ru_d(gg), use_d(yrd,ru_d,cu_d));
 profit_d(cu_d(d),yrd,vabas(ru_d)) = use_d(yrd,ru_d,cu_d);
@@ -116,7 +123,6 @@ display market_d;
 
 
 parameter	utotchk(yrs,i,*,utotal)	Cross check on projected USE table totals;
-
 utotchk(yrs,i(ru),"diff","T001") = use(yrs,ru,"T001") - sum(cu(j),use(yrs,ru,cu));
 utotchk(yrs,i(ru),"diff","T019") = use(yrs,ru,"T019") - (use(yrs,ru,"T001") + sum(cu(fd),use(yrs,ru,cu)));
 utotchk(yrs,j(cu),"diff","T005") = use(yrs,"T005",cu) - sum(ru(i),use(yrs,ru,cu));
@@ -186,9 +192,24 @@ market(gg,yrs,"balance") = market(gg,yrs,"produc") +
 option market:3:2:1;
 display market;
 
+set	mrg(cs_d)	/trade,trans/;
+
+parameter	mrgchk	Cross check on market for margins;
+mrgchk(yrs,mrg,"supply") = sum(gg(rs_d),max(0,supply(yrs,rs_d,mrg)));
+mrgchk(yrs,mrg,"use")    = sum(gg(rs_d),min(0,supply(yrs,rs_d,mrg)));
+mrgchk(yrs,mrg,"chk")    = mrgchk(yrs,mrg,"supply") + mrgchk(yrs,mrg,"use");
+option mrgchk:1:1:2;
+display mrgchk;
+
+parameter	mrgcol	Margin columns;
+mrgcol(yrs,rs_d,mrg)$(not gg(rs_d)) = supply(yrs,rs_d,mrg);
+mrgcol(yrs,"goods",mrg) = sum(gg(rs_d),supply(yrs,rs_d,mrg));
+option mrgcol:1:2:1;
+display mrgcol;
+
 set		snz(rs_d,cs_d), unz(ru_d,cu_d), yb(yrs);
 variables	OBJ, USE_(ru_d,cu_d), SUPPLY_(rs_d,cs_d);
-equations	objdef, profitbal, marketbal,netsupply;
+equations	objdef, profitbal, marketbal,netsupply,margins;
 
 objdef..	OBJ =e= sum((yb,snz(rs_d,cs_d)), 
 				abs(supply(yb,snz)) * sqr(SUPPLY_(snz)/supply(yb,snz) - 1)) +
@@ -197,13 +218,15 @@ objdef..	OBJ =e= sum((yb,snz(rs_d,cs_d)),
 				abs(use(yb,unz))    * sqr(USE_(unz)/use(yb,unz)       - 1));
 
 profitbal(d)..
+
 	sum(unz(ru_d(gg),cu_d(d)),   USE_(ru_d,cu_d)) + 
 
 	sum(unz(ru_d(vabas),cu_d(d)),USE_(ru_d,cu_d)) =e= 
 
 		sum(snz(rs_d(gg),cs_d(d)), SUPPLY_(rs_d,cs_d));
 
-set	mrg(cs_d)/trade,trans/, imp(cs_d) /mcif,madj/, txs(cs_d)/mdty,top,sub/;
+set	imp(cs_d)	/mcif,madj/, 
+	txs(cs_d)	/mdty,top,sub/;
 
 marketbal(gg)..
 
@@ -238,7 +261,10 @@ netsupply(gg)..
 *	Exports:
 	sum(unz(ru_d(gg),"F040"), USE_(ru_d,"F040"));
 
-model lsqcalib /objdef, profitbal, marketbal, netsupply/;
+margins(mrg)..
+	sum(snz(rs_d(gg),CS_D(MRG)),SUPPLY_(snz)) =e= 0;
+
+model lsqcalib /objdef, profitbal, marketbal, netsupply, margins/;
 
 set snz_yrs(yrs,rs_d,cs_d), unz_yrs(yrs,ru_d,cu_d)
 
