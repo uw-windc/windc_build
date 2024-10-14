@@ -19,6 +19,14 @@ $if not set sequence $set sequence mgemcp
 * Read the dataset
 $include windc_coredata
 
+parameter	pivotdata	Margin data;
+pivotdata("dm0",r,gm,m) = dm0(r,gm,m);
+pivotdata("md0",r,m,g) = md0(r,m,g);
+pivotdata("nm0",r,gm,m) = nm0(r,gm,m);
+execute_unload 'margins.gdx',pivotdata;
+execute 'gdxxrw i=margins.gdx o=margins.xlsx par=pivotdata rng=PivotData!a2 cdim=0';
+
+$exit
 * Read the MGE model
 $include mgemodel
 

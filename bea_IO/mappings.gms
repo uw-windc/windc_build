@@ -542,7 +542,7 @@ set	j	Commodities and sectors in detailed table /
 	424700	"Petroleum and petroleum products",
 	424A00	"Other nondurable goods merchant wholesalers",
 	425000	"Wholesale electronic markets and agents and brokers",
-	4200ID	"Customs duties",
+*.	4200ID	"Customs duties",
 	441000	"Motor vehicle and parts dealers",
 	445000	"Food and beverage stores",
 	452000	"General merchandise stores",
@@ -669,14 +669,15 @@ set	j	Commodities and sectors in detailed table /
 	S00401	"Scrap",
 	S00402	"Used and secondhand goods",
 	S00300	"Noncomparable imports",
-	S00900	"Rest of the world adjustment",
+	S00900	"Rest of the world adjustment"
 
 *	These are sectors without corresponding commodities:
 
-	331314  "Secondary smelting and alloying of aluminum",
-	S00101  "Federal electric utilities",
-	S00201	"State and local government passenger transit",
-	S00202	"State and local government electric utilities"/;
+*.	331314  "Secondary smelting and alloying of aluminum",
+*.	S00101  "Federal electric utilities",
+*.	S00201	"State and local government passenger transit",
+*.	S00202	"State and local government electric utilities"/;
+/;
 
 set	ij(i,j)		Correspondence between summary and detailed sectors  /
 
@@ -737,7 +738,7 @@ set	ij(i,j)		Correspondence between summary and detailed sectors  /
 	331.331110
 	331.331200
 	331.331313
-	331.331314
+*.	331.331314
 	331.33131B
 	331.331410
 	331.331420
@@ -960,7 +961,7 @@ set	ij(i,j)		Correspondence between summary and detailed sectors  /
 	42.424700
 	42.424A00
 	42.425000
-	42.4200ID
+*.	42.4200ID
 	441.441000
 	445.445000
 	452.452000
@@ -1077,11 +1078,11 @@ set	ij(i,j)		Correspondence between summary and detailed sectors  /
 	GFGN.S00600
 
 	GFE.491000
-	GFE.S00101
+*	GFE.S00101
 	GFE.S00102
 
-	GSLE.S00201
-	GSLE.S00202
+*.	GSLE.S00201
+*.	GSLE.S00202
 	GSLE.S00203
 
 	GSLG.GSLGE
@@ -1395,7 +1396,7 @@ set  d(*)	Detailed table sectors (and commodities) -- WiNDC labels /
 	pet_wht  "Petroleum and petroleum products (424700)",
 	ndg_wht  "Other nondurable goods merchant wholesalers (424A00)",
 	ele_wht  "Wholesale electronic markets and agents and brokers (425000)",
-	dut_wht  "Customs duties (4200ID)",
+*.	dut_wht  "Customs duties (4200ID)",
 	mvt      "Motor vehicle and parts dealers (441000)",
 	fbt      "Food and beverage stores (445000)",
 	gmt      "General merchandise stores (452000)",
@@ -1519,11 +1520,11 @@ set  d(*)	Detailed table sectors (and commodities) -- WiNDC labels /
 	srp_usd  "Scrap (S00401)",
 	sec_usd  "Used and secondhand goods (S00402)",
 	imp_oth  "Noncomparable imports (S00300)",
-	rwa_oth  "Rest of the world adjustment (S00900)",
-	sme_pmt  "Secondary smelting and alloying of aluminum (331314)",
-	ele_fen  "Federal electric utilities (S00101)",
-	trn_sle  "State and local government passenger transit",
-	ele_sle  "State and local government electric utilities" 
+	rwa_oth  "Rest of the world adjustment (S00900)"
+*.	sme_pmt  "Secondary smelting and alloying of aluminum (331314)",
+*.	ele_fen  "Federal electric utilities (S00101)",
+*.	trn_sle  "State and local government passenger transit",
+*.	ele_sle  "State and local government electric utilities" 
 /;
 
 set jd(j,d)	Correspondence between j and d /
@@ -1804,7 +1805,7 @@ set jd(j,d)	Correspondence between j and d /
 	424700.pet_wht  "Petroleum and petroleum products (424700)",
 	424A00.ndg_wht  "Other nondurable goods merchant wholesalers (424A00)",
 	425000.ele_wht  "Wholesale electronic markets and agents and brokers (425000)",
-	4200ID.dut_wht  "Customs duties (4200ID)",
+*.	4200ID.dut_wht  "Customs duties (4200ID)",
 	441000.mvt      "Motor vehicle and parts dealers (441000)",
 	445000.fbt      "Food and beverage stores (445000)",
 	452000.gmt      "General merchandise stores (452000)",
@@ -1928,11 +1929,11 @@ set jd(j,d)	Correspondence between j and d /
 	S00401.srp_usd  "Scrap (S00401)",
 	S00402.sec_usd  "Used and secondhand goods (S00402)",
 	S00300.imp_oth  "Noncomparable imports (S00300)",
-	S00900.rwa_oth  "Rest of the world adjustment (S00900)",
-	331314.sme_pmt  "Secondary smelting and alloying of aluminum (331314)",
-	S00101.ele_fen  "Federal electric utilities (S00101)",
-	S00201.trn_sle  "State and local government passenger transit",
-	S00202.ele_sle  "State and local government electric utilities" 
+	S00900.rwa_oth  "Rest of the world adjustment (S00900)"
+*.	331314.sme_pmt  "Secondary smelting and alloying of aluminum (331314)",
+*.	S00101.ele_fen  "Federal electric utilities (S00101)",
+*.	S00201.trn_sle  "State and local government passenger transit",
+*.	S00202.ele_sle  "State and local government electric utilities" 
 /;
 
 
@@ -1970,10 +1971,10 @@ abort$(card(sd)<>card(d))	"Dimension error: card(sd)<>card(d)";
 option sd:0:0:1;
 display sd;
 
-set	s_row	Summary table rows (in addition to commodities) /
+set	s_row	Supply table rows (in addition to commodities) /
 		T017	"Total industry supply" /,
 
-	s_col	Summary table columns (in addition to sectors) /
+	s_col	Supply table columns (in addition to sectors) /
 		T007	"Total Commodity Output",
 		MCIF	"Imports",
 		MADJ	"CIF/FOB Adjustments on Imports",
@@ -2484,7 +2485,7 @@ set naicsmap(j,naics) /
 	331200.( 3312 ),
 
 	331313.( 331313 ),
-	331314.( 331314 ),
+*.	331314.( 331314 ),
 	33131B.( 331315, 331318 ),
 	331410.( 331410 ),
 	331420.( 33142 ),

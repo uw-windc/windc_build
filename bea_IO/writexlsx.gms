@@ -33,7 +33,7 @@ parameter
 	use(yr,ru_d,cu_d)	The BEA Domestic Use of Commodities by Industries - (Millions of dollars),
 	supply(yr,rs_d,cs_d)	The BEA Domestic Supply of Commodities by Industries - (Millions of dollars);
 
-$gdxin 'data\projected.gdx'
+$gdxin 'data\iobalanced.gdx'
 $loaddc use supply
 $gdxin
 

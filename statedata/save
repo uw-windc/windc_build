@@ -1,0 +1,76 @@
+$ontext
+
+parameter	profitchk(yr,s,r,*)	Profit check
+		marginchk(yr,mrg,r,*)	Margin check
+		marketchk(yr,*,*,*)	Market check,
+		netchk(yr,g,*)		Net supply check;
+
+set		unz(ru,cu,r)		Use table nonzeros,
+		snz(rs,cs,r)		Supply table nonzeros
+		unz_(yr,ru,cu,r)	Use table nonzeros (all years and states)
+		snz_(yr,rs,cs,r)	Supply table nonzeros (all years and states);
+
+option snz_<supply, unz_<use;
+
+set	run(yr) /2022/;
+
+loop(run(yr),
+
+	snz(rs,cs,r) = snz_(yr,rs,cs,r);
+	unz(ru,cu,r) = unz_(yr,ru,cu,r);
+
+	profitchk(yr,s,r,"ID") = sum(unz(ru(g),cu(s),r),use(yr,unz));
+	profitchk(yr,s,r,"VA") = sum(unz(ru(vabas),cu(s),r), use(yr,unz));
+	profitchk(yr,s,r,"SUPPLY") = sum(snz(rs(g),cs(s),r),supply(yr,snz));
+	profitchk(yr,s,r,"chk") = profitchk(yr,s,r,"SUPPLY") - profitchk(yr,s,r,"VA") - profitchk(yr,s,r,"ID");
+	profitchk(yr,s,r,"chk%")$profitchk(yr,s,r,"SUPPLY")
+		= 100 * profitchk(yr,s,r,"chk")/profitchk(yr,s,r,"SUPPLY");
+
+	marginchk(yr,mrg,r,"supply") = sum(snz(rs(g),mrg,r),max(0,-supply(yr,snz)));
+	marginchk(yr,mrg,r,"demand") = sum(snz(rs(g),mrg,r),max(0, supply(yr,snz)));
+	marginchk(yr,mrg,r,"chk") = marginchk(yr,mrg,r,"supply") - marginchk(yr,mrg,r,"demand");
+
+	marketchk(yr,"r",g,"production") = sum(snz(rs(g),cs(s),r), supply(yr,snz));
+	marketchk(yr,"r",g,"import") = sum(snz(rs(g),imp,r), supply(yr,snz));
+	marketchk(yr,"r",g,"taxes") = sum(snz(rs(g),txs,r),supply(yr,snz));
+	marketchk(yr,"r",g,"margins") = sum(snz(rs(g),mrg,r),supply(yr,snz));
+	marketchk(yr,"r",g,"intermediate") = sum(unz(ru(g),cu(s),r),use(yr,unz));
+	marketchk(yr,"r",g,"final") = sum(unz(ru(g),fd,r),use(yr,unz));
+	marketchk(yr,"r",g,"export") = sum(unz(ru(g),export,r),use(yr,unz));
+
+	marketchk(yr,"r",g,"chk") = marketchk(yr,"r",g,"production") +
+				marketchk(yr,"r",g,"import") +
+				marketchk(yr,"r",g,"taxes") +
+				marketchk(yr,"r",g,"margins") -
+				marketchk(yr,"r",g,"intermediate") - 
+				marketchk(yr,"r",g,"final") -
+				marketchk(yr,"r",g,"export");
+
+	marketchk(yr,"n",g,"production") = sum(snz_yr(yr,rs(g),cs(s)), supply_n(snz_yr));
+	marketchk(yr,"n",g,"import") = sum(snz_yr(yr,rs(g),imp), supply_n(snz_yr));
+	marketchk(yr,"n",g,"taxes") = sum(snz_yr(yr,rs(g),txs),supply_n(snz_yr));
+	marketchk(yr,"n",g,"margins") = sum(snz_yr(yr,rs(g),mrg),supply_n(snz_yr));
+	marketchk(yr,"n",g,"intermediate") = sum(unz_yr(yr,ru(g),cu(s)),use_n(unz_yr));
+	marketchk(yr,"n",g,"final") = sum(unz_yr(yr,ru(g),fd),use_n(unz_yr));
+	marketchk(yr,"n",g,"export") = sum(unz_yr(yr,ru(g),export),use_n(unz_yr));
+
+	netchk(yr,g,"production") = sum(snz(rs(g),cs(s),r), supply(yr,snz));
+	netchk(yr,g,"margins") = sum(snz(rs(g),cs(mrg),r), max(0, -supply(yr,snz)));
+	netchk(yr,g,"export") = sum(unz(ru(g),export,r),use(yr,unz));
+	netchk(yr,g,"chk") = min(0, netchk(yr,g,"production")-netchk(yr,g,"margins")-netchk(yr,g,"export"));
+);
+
+set	chkcol	Columns to check /
+		production, supply, import, taxes, margins, intermediate, final, export, demand, chk/,
+
+	rn	Datasets/
+		r	Regional,
+		n	National /;
+
+marketchk(yr,rn,g,chkcol)$(not round(marketchk(yr,"r",g,chkcol)-marketchk(yr,"n",g,chkcol),3)) = 0;
+
+option marketchk:3:1:1, profitchk:3:3:1, marginchk:3:2:1, netchk:3:2:1;
+display marketchk, profitchk, marginchk, netchk;
+
+$offtext
+

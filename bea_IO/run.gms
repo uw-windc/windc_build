@@ -1,6 +1,3 @@
-
-
-
 $call gams readsummary
 $call pause
 $call gams readdetailed

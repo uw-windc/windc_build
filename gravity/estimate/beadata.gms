@@ -6,6 +6,10 @@ $set gtapwindc_datafile ..\..\GTAPWiNDC\2017\gtapwindc\43_filtered.gdx
 
 $include ..\..\GTAPWiNDC\gtapwindc_data
 
+option r:0:0:1;
+display r;
+$exit
+
 *	More defensive -- verify that the dataset is balanced:
 *.$include ..\..\GTAPWiNDC\gtapwindc_mge
 
@@ -80,21 +84,23 @@ itrd(itrd) = i(itrd);
 option itrd:0:0:1;
 display itrd;
 
-parameter	tradecompare	Comparison of US trade;
-loop(itrd(i),
-	tradecompare(i,r,"e","gtap") = round(vxmd(i,"usa",r),1);
-	tradecompare(i,r,"e","cenus") = round(sum(pd,trade(i,r,pd,"export")),1);
-	tradecompare(i,r,"m","gtap") = round(
-		vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa"),1);
-	tradecompare(i,r,"m","census") = round(sum(pd,trade(i,r,pd,"import")),1);
-);
-option tradecompare:1:2:2;
-display tradecompare;
+set	gdata /	e0	Exports (total)
+		m0	Imports (total)
+		y0	Production (state)
+		d0	Demand (state) /,
 
-set	s_(s)	States (excluding rest);
-s_(s) = yes$(not sameas(s,"rest"));
+	yr(*)	Years with BEA data
+	gb(*)	BEA goods;
 
-file kput; kput.lw=0; put kput;
+parameter	gravitydata(yr<,gb<,*,gdata)	Benchmark data for the gravity estimation;
+
+$gdxin 'd:\GitHub\windc_build\statedata\gravitydata.gdx'
+$load gravitydata
+
+set	trdmap(gb,i)	Trade map;
+$load trdmap
+option trdmap:0:0:1;
+display trdmap;
 
 $ifthen.aggregate %aggregate%==yes
 
@@ -122,45 +128,43 @@ set	rmap(ragg,r); rmap(r,r) = yes;
 $endif.aggregate
 
 parameter	thetam(i,ragg,pd)	Import shares
-		thetax(i,pd,ragg)	Export shares;
+		thetax(i,pd,ragg)	Export shares
+		tottrade(i,*)	Total trade;
 
-thetam(itrd(i),ragg,pd)$sum(rmap(ragg,r),trade(i,r,pd,"import"))
-	= sum(rmap(ragg,r),trade(i,r,pd,"import"))/
-	    sum((rmap(ragg,r),pd.local),trade(i,r,pd,"import"));
+tottrade(itrd(i),"import") = sum((rmap(ragg,r),pd),trade(i,r,pd,"import"));
 
-thetax(itrd(i),pd,ragg)$sum(rmap(ragg,r),trade(i,r,pd,"export"))
-	= sum(rmap(ragg,r),trade(i,r,pd,"export"))/
-	    sum((rmap(ragg,r),pd.local),trade(i,r,pd,"export"));
+thetam(itrd(i),ragg,pd)$tottrade(i,"import") = 
+	sum(rmap(ragg,r),trade(i,r,pd,"import")) / tottrade(i,"import");
 
+tottrade(itrd(i),"export") = sum((rmap(ragg,r),pd),trade(i,r,pd,"export"));
+
+thetax(itrd(i),pd,ragg)$tottrade(i,"export") = 
+	sum(rmap(ragg,r),trade(i,r,pd,"export")) / tottrade(i,"export");
+
+set	i_ragg(i,ragg);
+
+parameter	thetachk;
+option i_ragg<thetam;
+thetachk(itrd(i),"m") = sum((i_ragg(i,ragg),pd),thetam(i,ragg,pd)) - 1;
+option i_ragg<thetax;
+thetachk(itrd(i),"x") = sum((pd,i_ragg(i,ragg)),thetax(i,pd,ragg)) - 1;
+option thetachk:3:1:1;
+display thetachk;
 
 parameter
-	y0(s)		Reference output (data)
-	z0(s)		Reference absorption (data)
+	y0(yr,gb,s)		Reference output (data)
+	z0(yr,gb,s)		Reference absorption (data)
+	m0(yr,gb,ragg,pd)	Reference aggregate imports (data)
+	x0(yr,gb,pd,ragg)	Reference aggregate exports (data);
 
-*	Use m0,x0 here, but rename to md0,xs0 as input to gravity.gms:
+loop((yr,trdmap(gb,itrd(i))),
+	y0(yr,gb,s48(s)) = gravitydata(yr,gb,s,"y0");
+	m0(yr,gb,ragg,pd) = thetam(i,ragg,pd) * gravitydata(yr,gb,"total","m0");
+	x0(yr,gb,pd,ragg) = thetax(i,pd,ragg) * gravitydata(yr,gb,"total","e0");
+	z0(yr,gb,s48(s)) = gravitydata(yr,gb,s,"d0");
+);
 
-	m0(ragg,pd)	Reference aggregate imports (data)
-	x0(pd,ragg)	Reference aggregate exports (data)
-	td(s)		Tax rate on domestic inputs
-	tm(s)		Tax rate on imported inputs
-
-	bmkdata		Benchmark dataset;
 
 $if not dexist datasets $call mkdir datasets
-loop(itrd(i),
-	y0(s48(s)) = vom(i,"usa",s);
-	m0(ragg,pd) = thetam(i,ragg,pd) * sum(rmap(ragg,r), 
-		  vxmd(i,r,"usa")*pvxmd(i,r,"usa")+sum(j,vtwr(j,i,r,"usa"))*pvtwr(i,r,"usa") );
-	x0(pd,ragg) = thetax(i,pd,ragg) * sum(rmap(ragg,r),vxmd(i,"usa",r));
-	z0(s48(s)) = a0(i,"usa",s);
-	td(s) = rtd(i,"usa",s);
-	tm(s) = rtm(i,"usa",s)
-	put_utility 'gdxout' / 'datasets\',i.tl,'.gdx';
-	execute_unload s48=s,pd,ragg=r,y0,z0,m0=md0,x0=xs0,td,tm;
+execute_unload 'datasets\bea.gdx',ragg=r,s48=s,pd,yr,gb=g,y0,m0=md0,x0=xs0,z0;
 
-	bmkdata(i,pd,"thetam") = sum(ragg,m0(ragg,pd))/sum((ragg.local,pd.local),m0(ragg,pd));
-	bmkdata(i,pd,"thetae") = sum(ragg,x0(pd,ragg))/sum((ragg.local,pd.local),x0(pd,ragg));
-	bmkdata(i,s48(s),"thetay") = y0(s)/sum(s48.local,y0(s48));
-	bmkdata(i,s48(s),"thetaz") = z0(s)/sum(s48.local,z0(s48));
-);
-execute_unload 'bmkdata.gdx',bmkdata, i, pd, s48=s;

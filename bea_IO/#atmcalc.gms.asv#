@@ -27,7 +27,6 @@ file kcon /con:/; put kcon; kcon.lw=0;
 
 set	metric /gdp, output/
 
-
 parameter	iterlog(yr,metric,iter,*)	Iteration log,
 		content(r,g)			Sectoral content (output or VA),
 		atm(yr,s,metric)		Agricultural trade multipliers,

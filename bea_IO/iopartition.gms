@@ -148,8 +148,6 @@ profit(s,yr,u)$(not round(profit(s,yr,"balance"),0)) = 0;
 market(g,yr,u)$(not round(market(g,yr,"balance"),0)) = 0;
 display "Egregious violations of adding-up:", profit, market;
 
-$exit
-
 *	Partition the supply and use tables:
 
 set	r	Regions (singleton for now)   / usa	National data /;

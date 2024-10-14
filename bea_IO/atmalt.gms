@@ -21,17 +21,48 @@ parameter	v_PY(r,s)	Agricultural content - state output
 		v_PN(g)		Agricultural content - national market
 		v_PI(mrg)	Agricultural content - margin
 		v_PA(r,g)	Agricultural content - absorption
-		v_PYn(r,g)	Updated agricultural content - state output;
+		v_PYn(r,g)	Updated agricultural content - state output,
+		content(r,g)	Sectoral content (output or VA),
+		dev		Deviation
+		iter_log	Iteration log
+		atmval(g,*)	Trade multiplier values;
+
+content(r,ags(s)) = ys0_(yb,r,s);
+dev = 1;
+v_PY(r,s)$y_(yb,r,s) = content(r,s)/ys0_(yb,r,s);
+loop(iter$round(dev,2),
+	v_PX(g)$vx0(yb,g) = sum(r,v_PY(r,g)*(x0(yb,r,g)-rx0(yb,r,g)))/ vx0(yr,g);
+
+
+	v_PN(g)$n0(yb,g) = sum(r,v_PY(r,g)*ns0(yb,r,g))/n0(yb,g);
+
+	v_PI(mrg) = sum((r,g),v_PY(r,g)*ms0(yb,r,g,mrg))/sum((r,g),ms0(yb,r,g,mrg));
+
+	v_PA(r,g)$a0(yb,r,g) = ( v_PN(g)*nd0(yb,r,g) + v_PY(r,g)*yd0(yb,r,g) +
+		sum(mrg,v_PI(mrg)*md0(yb,r,mrg,g))) / a0(yb,r,g);
+
+	v_PYn(r,s)$y_(yb,r,s) = ( sum(g,v_PA(r,g)*id0_(yb,r,g,s))+content(r,s) ) / ys0_(yb,r,s);
+
+	dev = sum((r,s)$y_(yb,r,s), abs(v_PYn(r,s)-v_PY(r,s)));
+	v_PY(r,s)$y_(yb,r,s) = v_PYn(r,s);
+	iter_log(iter,"dev") = dev;
+	atmval(g,"symm_iter") = 1000 * (v_PX(g) - 1$ags(g));
+	atmval(g,"v_PY") = 1000 * (v_PY("usa",g) - 1$ags(g));
+);
+display iter_log;
+
+option atmval:3;
+display atmval;
+
+$exit
 
 file kcon /con:/; put kcon; kcon.lw=0;
 
 set	metric /gdp, output/
 
-
 parameter	iterlog(yr,metric,iter,*)	Iteration log,
-		content(r,g)			Sectoral content (output or VA),
-		atm(yr,s,metric)		Agricultural trade multipliers,
-		dev				Deviation;
+		atm(yr,s,metric)		Agricultural trade multipliers;
+
 
 loop(yr,
   yb(yr) = yes;

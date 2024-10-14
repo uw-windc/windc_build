@@ -296,21 +296,15 @@ set	r	Regions /
 alias (r,rr);
 
 parameter
-	use(ru,cu,r)		Target use table,
-	supply(rs,cs,r)		Target supply table;
+	use(yr,ru,cu,r)		Target use table,
+	supply(yr,rs,cs,r)	Target supply table,
+	dx(yr,g,r)		Domestic exports
+	dm(yr,g,r)		Domestic imports;
 
 set	snz_yr(yr,rs,cs)	Supply table nonzeros, 
-	unz_yr(yr,ru,cu)	Use table nonzeros,
-	snz_n(rs,cs)		Supply nonzeros in the national table, 
-	unz_n(ru,cu)		Use nonzeros in the national table,
-	unz(ru,cu,r)		Use table nonzeros - MRIO,
-	snz(rs,cs,r)		Supply table nonzeros - MRIO;
+	unz_yr(yr,ru,cu)	Use table nonzeros;
 
 option	snz_yr<supply_n,   unz_yr<use_n;
-snz_n(rs,cs) = snz_yr(yb,rs,cs);
-unz_n(ru,cu) = unz_yr(yb,ru,cu);
-unz(ru,cu,r) = unz_yr(yb,ru,cu);
-snz(rs,cs,r) = snz_yr(yb,rs,cs);
 
 *	================================================================================
 *	Next, read state-level data used to target the calibration:
@@ -395,112 +389,119 @@ display sayr;
 
 *	================================================================================
 
-parameter	theta(u,r)		State shares of economic activity;
+parameter	theta(yr,u,r)		State shares of economic activity;
 
 *	Shares of sectoral GDP:
 
-theta(s,r)$sagdp(r,s,yb,"t2") = sagdp(r,s,yb,"t2")/totgdp(yb,s);
+theta(yr,s,r)$sagdp(r,s,yr,"t2") = sagdp(r,s,yr,"t2")/totgdp(yr,s);
 
 *	Use cash receipts to target agricultural sectors:
 
-theta(ags(s),r) = 0;
-theta(ags(s),r)$cr(yb,r,s) = cr(yb,r,s)/crtot(yb,s);
+theta(yr,ags(s),r) = 0;
+theta(yr,ags(s),r)$cr(yr,r,s) = cr(yr,r,s)/crtot(yr,s);
 
-theta("pce",r) = sasummary(r,"7",yb)/sum(r.local,sasummary(r,"7",yb));
-theta("gdp",r) = sasummary(r,"4",yb)/sum(r.local,sasummary(r,"4",yb));
+theta(yr,"pce",r) = sasummary(r,"7",yr)/sum(r.local,sasummary(r,"7",yr));
+theta(yr,"gdp",r) = sasummary(r,"4",yr)/sum(r.local,sasummary(r,"4",yr));
 
 parameter	gdpshr;
-gdpshr(r,yr) = sasummary(r,"4",yb)/sum(r.local,sasummary(r,"4",yb));
+gdpshr(r,yr) = sasummary(r,"4",yr)/sum(r.local,sasummary(r,"4",yr));
 display gdpshr;
 
 *	At a later point we will find data sources for slg, fed and inv:
 
-theta("slg",r) = theta("gdp",r);
-theta("fed",r) = theta("gdp",r);
-theta("inv",r) = theta("gdp",r);
+theta(yr,"slg",r) = theta(yr,"gdp",r);
+theta(yr,"fed",r) = theta(yr,"gdp",r);
+theta(yr,"inv",r) = theta(yr,"gdp",r);
+
+set	snz_n(rs,cs)	Supply nonzeros in the national table, 
+	unz_n(ru,cu)	Use nonzeros in the national table;
 
 parameter	scaling		Report on nonzero scale factors;
-scaling("nonzeros","snz") = card(snz_n);
-scaling("nonzeros","unz") = card(unz_n);
-scaling("aveabs","snz") = sum(snz_n,abs(supply_n(yb,snz_n)))/card(snz_n);;
-scaling("aveabs","unz") = sum(unz_n,abs(use_n(yb,unz_n)))/card(unz_n);;
+loop(yr,
+  snz_n(rs,cs) = snz_yr(yr,rs,cs);
+  unz_n(ru,cu) = unz_yr(yr,ru,cu);
+  scaling("nonzeros",yr,"snz") = card(snz_n);
+  scaling("nonzeros",yr,"unz") = card(unz_n);
+  scaling("aveabs",yr,"snz") = sum(snz_n,abs(supply_n(yr,snz_n)))/card(snz_n);;
+  scaling("aveabs",yr,"unz") = sum(unz_n,abs(use_n(yr,unz_n)))/card(unz_n);;
+);
 option scaling:1:1:1;
 display scaling;
 
 *	Insert values which permit us to find coefficients which 
 *	have been ignored:
 
-use(unz(ru,cu,r)) = UNDF;
-supply(snz(rs,cs,r)) = UNDF;
+use(unz_yr(yr,ru,cu),r)		= UNDF;
+supply(snz_yr(yr,rs,cs),r)	= UNDF;
 
 *	Sectoral activity projected with sagdp and cr data:
 
-use(unz(unz_n(ru,cu(s)),r))     = theta(s,r)*use_n(yb,unz_n);
-supply(snz(snz_n(rs,cs(s)),r))	= theta(s,r)*supply_n(yb,snz_n);
+use(unz_yr(yr,ru,cu(s)),r)	= theta(yr,s,r)*use_n(unz_yr);
+supply(snz_yr(yr,rs,cs(s)),r)	= theta(yr,s,r)*supply_n(snz_yr);
 
 *	Components of final demand:
 
-use(unz(unz_n(ru,pce),r))	= theta("pce",r)*use_n(yb,unz_n);
-use(unz(unz_n(ru,inv),r))	= theta("inv",r)*use_n(yb,unz_n);
-use(unz(unz_n(ru,fed),r))	= theta("fed",r)*use_n(yb,unz_n);
-use(unz(unz_n(ru,slg),r))	= theta("slg",r)*use_n(yb,unz_n);
+use(unz_yr(yr,ru,pce),r)	= theta(yr,"pce",r)*use_n(unz_yr);
+use(unz_yr(yr,ru,inv),r)	= theta(yr,"inv",r)*use_n(unz_yr);
+use(unz_yr(yr,ru,fed),r)	= theta(yr,"fed",r)*use_n(unz_yr);
+use(unz_yr(yr,ru,slg),r)	= theta(yr,"slg",r)*use_n(unz_yr);
 
-parameter	sshare(g,r)	Regional shares of good supply,
-		dshare(g,r)	Regional shares of demand
-		mshare(mrg,r)	Margin shares,
-		totd(g)		Total demand
-		tots(g)		Total supply,
-		totm(mrg)	Total margin demand;
+parameter	sshare(yr,g,r)		Regional shares of good supply,
+		dshare(yr,g,r)		Regional shares of demand
+		mshare(yr,mrg,r)	Margin shares,
+		totd(yr,g)		Total demand
+		tots(yr,g)		Total supply,
+		totm(yr,mrg)		Total margin demand;
 
 *	Share of supply:
 
-tots(g(rs)) = sum((cs(s),r), supply(rs,cs,r));
-sshare(g,r)$tots(g) = sum(snz(rs(g),cs(s),r),supply(snz))/tots(g);
+tots(yr,g(rs)) = sum((cs(s),r), supply(yr,rs,cs,r));
+sshare(yr,g,r)$tots(yr,g) = sum(snz_yr(yr,rs(g),cs(s)),supply(snz_yr,r))/tots(yr,g);
 
 *	Starting point assumption: exports are proportional to production:
 
-use(unz(unz_n(ru(g),export),r)) = sshare(g,r) * use_n(yb,unz_n);
+use(unz_yr(yr,ru(g),export),r) = sshare(yr,g,r) * use_n(unz_yr);
 
 *	Share of demand:
 
-totd(g(ru)) = sum((unz(ru,cu(s),r)), use(unz)) +
-	      sum((unz(ru,fd,r)),    use(unz)); 
+totd(yr,g(ru)) = sum((unz_yr(yr,ru,cu(s)),r), use(unz_yr,r)) +
+		 sum((unz_yr(yr,ru,fd),r),    use(unz_yr,r)); 
 
 *	Region r share of good g demand:
 
-dshare(g(ru),r)$totd(g) = 
+dshare(yr,g(ru),r)$totd(yr,g) = 
 
 *		Intermediate demand:
-		( sum(unz(ru,cu(s),r), use(unz)) +
+		( sum(unz_yr(yr,ru,cu(s)), use(unz_yr,r)) +
 
 *		Final demand:
-		  sum(unz(ru,fd,r),  use(unz)) ) / totd(g);
+		  sum(unz_yr(yr,ru,fd),    use(unz_yr,r)) ) / totd(yr,g);
 
 *	Demand share scales all elements of demacct (which include imports and taxes):
 
-supply(snz(snz_n(rs(g),demacct),r)) = dshare(g,r) * supply_n(yb,snz_n);
+supply(snz_yr(yr,rs(g),demacct),r) = dshare(yr,g,r) * supply_n(snz_yr);
 
 *	Margin demand follows absorption:
 
-supply(snz(snz_n(rs(g),mrg),r))$(supply_n(yb,snz_n)>0) = dshare(g,r) * supply_n(yb,snz_n);
+supply(snz_yr(yr,rs(g),mrg),r)$(supply_n(snz_yr)>0) = dshare(yr,g,r) * supply_n(snz_yr);
 
 *	Total margin use from the national table:
 
-totm(mrg) = sum(snz_n(rs(g),mrg),max(0,supply_n(yb,snz_n)));
+totm(yr,mrg) = sum(snz_yr(yr,rs(g),mrg),max(0,supply_n(snz_yr)));
 
 *	Region r share of margin demand:
 
-mshare(mrg,r)$totm(mrg) = 
-	sum(snz_n(rs(g),mrg), dshare(g,r)*max(0,supply_n(yb,snz_n))) / totm(mrg);
+mshare(yr,mrg,r)$totm(yr,mrg) = 
+	sum(snz_yr(yr,rs(g),mrg), dshare(yr,g,r)*max(0,supply_n(snz_yr))) / totm(yr,mrg);
 
 *	Margin demand or supply:
 
-supply(snz_n(rs(g),mrg),r) = dshare(g,r) * max(0,supply_n(yb,snz_n)) +
-		mshare(mrg,r) * min(0,supply_n(yb,snz_n));
+supply(snz_yr(yr,rs(g),mrg),r) = dshare(yr,g,r)   * max(0,supply_n(snz_yr)) +
+			         mshare(yr,mrg,r) * min(0,supply_n(snz_yr));
 
 set	missing		Coefficients which are not targetted;
-missing("use",unz(ru,cu,r)) = yes$(use(unz)=UNDF);
-missing("supply",snz(rs,cs,r)) = yes$(supply(snz)=UNDF);
+missing("use",unz_yr(yr,ru,cu),r) = yes$(use(unz_yr,r)=UNDF);
+missing("supply",snz_yr(yr,rs,cs),r) = yes$(supply(snz_yr,r)=UNDF);
 
 set	cu_totals(cu) /
 		T001	"Total intermediate",
@@ -513,8 +514,8 @@ set	cu_totals(cu) /
                 T015    "Total tax less subsidies on products",
 		T016	"Total product supply (purchaser prices)" /;
 
-missing("use",   unz(ru,cu_totals,r)) = no;
-missing("supply",snz(rs,cs_totals,r)) = no;
+missing("use",   unz_yr(yr,ru,cu_totals),r) = no;
+missing("supply",snz_yr(yr,rs,cs_totals),r) = no;
 
 option missing:0:0:1;
 display missing;
@@ -545,44 +546,42 @@ variable
 equations objdef, output, demand, national, imports, exports, MDdef, YDdef;
 
 objdef..		OBJ =e= sum(gb(g),THETAD(g));
-
 output(gb(g),r)..	YD(g,r) + YN(g,r) + YX(g,r) =e= asupply(g,r);
-
 demand(gb(g),r)..	YD(g,r) + ND(g,r) + MD(g,r) =e= ademand(g,r);
-
 national(gb(g))..	sum(r,YN(g,r))  =e= sum(r,ND(g,r));
-
 imports(gb(g))..	sum(r, MD(g,r)) =e= aimport(g);
-
 exports(gb(g))..	sum(r, YX(g,r)) =e= aexport(g);
-
 MDdef(gb(g),r)..	MD(g,r)         =e= THETAM(g) * ademand(g,r);
-	
 YDdef(gb(g),r)..	YD(g,r)         =e= THETAD(g) * asupply(g,r);
-
 model calibrate /objdef, output, demand, national, imports, exports, MDdef, YDdef/;
 
-option snz<supply, unz<use;
+set	unz(ru,cu,r)		Use table nonzeros,
+	snz(rs,cs,r)		Supply table nonzeros,
+
+	unz_(yr,ru,cu,r)	Use table nonzeros (all years and states)
+	snz_(yr,rs,cs,r)	Supply table nonzeros (all years and states);
+
+option snz_<supply, unz_<use;
+snz(rs,cs,r) = snz_(yb,rs,cs,r);
+unz(ru,cu,r) = unz_(yb,ru,cu,r);
+option snz_yr<snz_,   unz_yr<unz_;
 
 parameter	inventory	Negative investment treated as inventory release;
-inventory(g,r) = -sum(unz(ru(g),inv,r),   min(0,use(unz)));
+inventory(g,r) = -sum(unz(ru(g),inv,r),   min(0,use(yb,unz)));
 display inventory;
 
-aimport(g) = round(sum(snz_n(rs(g),imp), supply_n(yb,snz_n)),6);
+aimport(g) = round(sum(snz_yr(yr,rs(g),imp), supply_n(snz_yr)),6);
 
 THETAM.LO(g)$(aimport(g)<0) = -inf;
 MD.LO(g,r)$(aimport(g)<0) = -inf;
 
-aexport(g)   =	sum(unz_n(ru(g),export), use_n(yb,unz_n));
-
-asupply(g,r) =	sum(snz(rs(g),cs(s),r), supply(snz)) + inventory(g,r);
-
-ademand(g,r) =  sum(unz(ru(g),cu(s),r),	use(unz)) +
-		sum(unz(ru(g),fd,r),    use(unz))  -
-		sum(snz(rs(g),mrg,r), supply(snz)) -
-		sum(snz(rs(g),txs,r), supply(snz)) +
+aexport(g)   =	sum(unz_yr(yr,ru(g),export), use_n(unz_yr));
+asupply(g,r) =	sum(snz(rs(g),cs(s),r), supply(yb,snz)) + inventory(g,r);
+ademand(g,r) =  sum(unz(ru(g),cu(s),r),	use(yb,unz)) +
+		sum(unz(ru(g),fd,r),    use(yb,unz))  -
+		sum(snz(rs(g),mrg,  r), supply(yb,snz)) -
+		sum(snz(rs(g),txs,  r), supply(yb,snz)) +
 		inventory(g,r);
-
 
 THETAD.UP(g) = 1;
 THETAM.UP(g) = 1;
@@ -605,31 +604,27 @@ display caliblog;
 *	Introduce inter-state trade flows into the MRIO accounts.  For the present
 *	this only include shipments to and from the merged national market.
 
-parameter	alpham(g,r)	Regional share of imports;
+parameter	alpham(yr,g,r)	Regional share of imports;
+alpham(yb,g(rs),r)$sum(imp,supply_n(yb,rs,imp)) = MD.L(g,r)/sum(imp,supply_n(yb,rs,imp));
 
-set	iimp(cs)	International imports /
-		MDTY	"Import duties",
-		MCIF	"Imports",
-		MADJ	"CIF/FOB Adjustments on Imports" /;
-
-alpham(g(rs),r)$sum(snz_n(rs,iimp),1) = MD.L(g,r)/sum(iimp,supply_n(yb,rs,iimp));
-
-supply(snz_n(rs(g),iimp),r) = alpham(g,r) * supply_n(yb,snz_n);
-supply(rs(g),"MCIF_N",r) = ND.L(g,r);
-
-use(ru(g),"F040",r)   = YX.L(g,r);
-use(ru(g),"F040_N",r) = YN.L(g,r);
-
-option snz<supply, unz<use;
+supply(yb,rs(g),imp,r) = alpham(yb,g,r) * supply_n(yb,rs,imp);
+supply(yb,rs(g),"MCIF_N",r) = ND.L(g,r);
+use(yb,ru(g),"F040",r)   = YX.L(g,r);
+use(yb,ru(g),"F040_N",r) = YN.L(g,r);
+option snz_<supply, unz_<use;
+loop(yb(yr),
+	snz(rs,cs,r) = snz_(yr,rs,cs,r);
+	unz(ru,cu,r) = unz_(yr,ru,cu,r);
+);
 
 parameter	rmarket	Regional market;
-rmarket(r,g,"supply") = sum(snz(rs(g),cs(s),r),supply(snz)) + 
-			sum(snz(rs(g),txs,r),supply(snz)) +
-			sum(snz(rs(g),mrg,r),supply(snz)) + inventory(g,r);
-rmarket(r,g,"import") = sum(snz(rs(g),imp,r), supply(snz));
-rmarket(r,g,"export") = sum(unz(ru(g),export,r),use(unz));
-rmarket(r,g,"demand") =   sum(unz(ru(g),cu(s),r),use(unz))
-			+ sum(unz(ru(g),fd,r),use(unz))+inventory(g,r);
+rmarket(r,g,"supply") = sum(snz(rs(g),cs(s),r), supply(yb,snz)) + 
+			sum(snz(rs(g),txs,r),supply(yb,snz)) +
+			sum(snz(rs(g),mrg,r),supply(yb,snz)) + inventory(g,r);
+rmarket(r,g,"import") = sum(snz(rs(g),imp,r), supply(yb,snz));
+rmarket(r,g,"export") = sum(unz(ru(g),export,r),use(yb,unz));
+rmarket(r,g,"demand") =   sum(unz(ru(g),cu(s),r),use(yb,unz))
+			+ sum(unz(ru(g),fd,r),use(yb,unz))+inventory(g,r);
 rmarket(r,g,"chk") =	rmarket(r,g,"supply") +
 			rmarket(r,g,"import") -
 			rmarket(r,g,"export") - 
@@ -638,16 +633,16 @@ option rmarket:3:2:1;
 display rmarket;
 
 parameter	details		Market details;
-details(r,g,"product") = sum(snz(rs(g),cs(s),r), supply(snz));
-details(r,g,"import") = sum(snz(rs(g),imp,r), supply(snz));
-details(r,g,"export") = sum(unz(ru(g),export,r),use(unz));
-details(r,g,"taxes")  = sum(snz(rs(g),txs,r),supply(snz));
-details(r,g,"margin") = sum(snz(rs(g),mrg,r),supply(snz));
-details(r,g,"intdmd") = sum(unz(ru(g),cu(s),r),use(unz));
-details(r,g,"gov") = sum(unz(ru(g),gov,r),use(unz));
+details(r,g,"product") = sum(snz(rs(g),cs(s),r), supply(yb,snz));
+details(r,g,"import") = sum(snz(rs(g),imp,r), supply(yb,snz));
+details(r,g,"export") = sum(unz(ru(g),export,r),use(yb,unz));
+details(r,g,"taxes")  = sum(snz(rs(g),txs,r),supply(yb,snz));
+details(r,g,"margin") = sum(snz(rs(g),mrg,r),supply(yb,snz));
+details(r,g,"intdmd") = sum(unz(ru(g),cu(s),r),use(yb,unz));
+details(r,g,"gov") = sum(unz(ru(g),gov,r),use(yb,unz));
 details(r,g,"inventory") = inventory(g,r);
-details(r,g,"inv") = sum(unz(ru(g),inv,r),use(unz)) + inventory(g,r);
-details(r,g,"pce") = sum(unz(ru(g),pce,r),use(unz));
+details(r,g,"inv") = sum(unz(ru(g),inv,r),use(yb,unz)) + inventory(g,r);
+details(r,g,"pce") = sum(unz(ru(g),pce,r),use(yb,unz));
 option details:1:2:1;
 display details;
 
@@ -957,43 +952,29 @@ set	gt(g)	Goods selected for gravity estimation;
 *	Select goods with non-negligible international and interstate
 *	imports.
 
-gt(g) = g(g)$((THETAM.L(g)>0.1) and (THETAD.L(g)<0.75) and gtmap(g));
-
-*	Always include the agricultural products:
- 
-set	agr(g) /
-	osd_agr	     "Oilseed farming (1111A0)",
-	grn_agr	     "Grain farming (1111B0)",
-	veg_agr	     "Vegetable and melon farming (111200)",
-	nut_agr	     "Fruit and tree nut farming (111300)",
-	flo_agr	     "Greenhouse, nursery, and floriculture production (111400)",
-	oth_agr	     "Other crop farming (111900)",
-	bef_agr	     "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
-	egg_agr	     "Poultry and egg production (112300)",
-	ota_agr	     "Animal production, except cattle and poultry and eggs (112A00)"/;
-
-gt(agr) = yes;
-
-*	Generate a dictionary:
-
-gt(gt) = g(gt);
-option gt:0:0:1;
-display gt;
+gt(g) = (THETAM.L(g)>0.1) and (THETAD.L(g)<0.75) and gtmap(g);
 
 *	Only include the selected goods:
 
 g_gtrd(g,gtrd)$(not gt(g)) = no;
 
 parameter	gravitydata(g,*,*)	Benchmark data for the gravity estimation;
-gravitydata(gt(g),"total","x0") = sum(unz(ru(g),"F040",r),use(unz));
-gravitydata(gt(g),"total","m0") = sum(snz(rs(g),iimp,r),supply(snz));
-gravitydata(gt(g),r,"y0") = sum(snz(rs(g),cs(s),r), supply(snz)) + 
-			sum(snz(rs(g),txs,r),supply(snz)) +
-			sum(snz(rs(g),mrg,r),supply(snz)) + inventory(g,r);
-gravitydata(gt(g),r,"a0") = sum(unz(ru(g),cu(s),r),use(unz))
-		      + sum(unz(ru(g),fd,r),use(unz))+inventory(g,r);
 
-execute_unload 'gravitydata_%yr%.gdx', gt=g,g_gtrd=g_i,gravitydata;
+set	iimp(cs)	International imports /
+		MDTY	"Import duties",
+		MCIF	"Imports",
+		MADJ	"CIF/FOB Adjustments on Imports" /;
+
+loop(gt(g),
+	gravitydata(g,"total",    "e0") = sum(unz(ru(g),"F040",r),use(yb,unz));
+	gravitydata(g,"total","m0") = round(sum(snz_n(rs(g),iimp),supply_n(yb,snz_n)),3);
+	gravitydata(g,r,"y0") = sum(snz(rs(g),cs(s),r), supply(yb,snz)) + 
+				sum(snz(rs(g),txs,r),supply(yb,snz)) +
+				sum(snz(rs(g),mrg,r),supply(yb,snz)) + inventory(g,r);
+	gravitydata(g,r,"d0") = sum(unz(ru(g),cu(s),r),use(yb,unz))
+			      + sum(unz(ru(g),fd,r),use(yb,unz))+inventory(g,r);
+);
+execute_unload 'gravitydata_%yr%.gdx', gt,gtrd,g_gtrd,gravitydata;
 execute_unload 'supplyuse_%yr%.gdx', supply, use;
 
 $exit

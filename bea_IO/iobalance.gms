@@ -236,11 +236,11 @@ marketbal(gg)..
 *	Imports:
 	sum(snz(rs_d(gg),imp),     SUPPLY_(rs_d,imp)) +
 
+*	Margins (net supply to margins):
+	sum(snz(rs_d(gg),mrg), SUPPLY_(snz)) + 
+
 *	Taxes on imports and domestic:
 	sum((rs_d(gg),txs), SUPPLY_(rs_d,txs)) =e=
-
-*	Supply to margins:
-	sum(snz(rs_d(gg),mrg), SUPPLY_(snz)) + 
 
 *	Intermediate demand:
 	sum(unz(ru_d(gg),cu_d( d)), USE_(ru_d,cu_d)) + 
@@ -334,7 +334,7 @@ loop(run(yrs),
 	marketcal(gg(ru_d),yrs,"interm")  = sum(cu_d(d),use(yrs,ru_d,cu_d));
 	marketcal(gg(ru_d),yrs,"export")  = use(yrs,ru_d,"F040");
 	marketcal(gg(ru_d),yrs,"consum")   = use(yrs,ru_d,"F010");
-	marketcal(gg(ru_d),yrs,"G+I") = sum(fd(cu_d),use(yrs,ru_d,cu_d)) - use(yrs,ru_d,"F040") - use(yrs,ru_d,"F010");
+  	marketcal(gg(ru_d),yrs,"G+I") = sum(fd(cu_d),use(yrs,ru_d,cu_d)) - use(yrs,ru_d,"F040") - use(yrs,ru_d,"F010");
 	marketcal(gg,yrs,"balance") = 
 		marketcal(gg,yrs,"produc") + marketcal(gg,yrs,"import") + marketcal(gg,yrs,"taxes") 
 		- marketcal(gg,yrs,"margins") - marketcal(gg,yrs,"interm") 

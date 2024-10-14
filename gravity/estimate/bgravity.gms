@@ -298,4 +298,17 @@ solve bgravity using mcp;
 
 $if not dexist datasets\b $call mkdir datasets\b
 
-execute_unload 'datasets\b\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0;
+parameter	yref(s), dref(s);
+yref(s) = sum(ss,nref(s,ss))+sum(r,xref(s,r));
+dref(s) = sum(ss,nref(ss,s))+sum(r,mref(r,s));
+
+parameter	bmkdata(s,*)	Benchmark data;
+bmkdata(s,"d/Y")$yref(s) = nref(s,s)/yref(s);
+bmkdata(s,"n/Y")$yref(s) = (sum(ss,nref(s,ss))-nref(s,s))/yref(s);
+bmkdata(s,"x/Y")$yref(s) = sum(r,xref(s,r))/yref(s);
+bmkdata(s,"d/D")$dref(s) = nref(s,s)/dref(s);
+bmkdata(s,"n/D")$dref(s) = (sum(ss,nref(ss,s))-nref(s,s))/dref(s);
+bmkdata(s,"m/D")$dref(s) = sum(r,mref(r,s))/dref(s);
+display bmkdata;
+
+execute_unload 'datasets\b\%ds%.gdx',z0,nref,mref,x0,xref,y0,m0,bmkdata;
