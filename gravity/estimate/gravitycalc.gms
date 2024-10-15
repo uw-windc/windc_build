@@ -436,10 +436,16 @@ display echop;
 option x0chk:3:0:1, m0chk:3:0:1, y0chk:3:0:1, a0chk:3:0:1;
 display x0chk, m0chk, y0chk, a0chk;
 
-gravitydata(g,st(s),"yn0") = yn0(g,s);
-gravitydata(g,st(s),"yx0") = sum(r,yx0(g,s,r));
-gravitydata(g,st(s),"md0") = sum(r,md0(g,r,s));
-gravitydata(g,st(s),"yd0") = yd0(g,s);
-gravitydata(g,st(s),"nd0") = nd0(g,s);
+parameter	gravitycalc(g,*,*)	Gravity estimates,
+		gravitytrade(g,*,*)	Travity trade flows;
 
-execute_unload '%output%', g, g_i, gravitydata, yx0, md0, dx0;
+gravitycalc(g,st(s),"yn0") = yn0(g,s);
+gravitycalc(g,st(s),"yx0") = sum(r,yx0(g,s,r));
+gravitycalc(g,st(s),"md0") = sum(r,md0(g,r,s));
+gravitycalc(g,st(s),"yd0") = yd0(g,s);
+gravitycalc(g,st(s),"nd0") = nd0(g,s);
+gravitytrade(g,st(s),r) = yx0(g,s,r);
+gravitytrade(g,r,st(s)) = md0(g,r,s);
+gravitytrade(g,s,ss)$(st(s) and st(ss)) = dx0(g,s,ss);
+
+execute_unload '%output%', g, g_i, r, gravitycalc, gravitytrade;

@@ -1,6 +1,6 @@
 $title	Create a Symmetric Table and Calculate ATMs
 
-$set suffix _
+$set suffix 
 
 $if not set ds $set ds supplyusegravity_2022
 $gdxin '%ds%.gdx'
@@ -226,12 +226,41 @@ set	totacct(*)	Totals accounts /
 		T001	"Total Intermediate",
 		T019	"Total use of products" /;
 
+set	census      Census divisions /
+		neg     "New England" 
+		mid     "Mid Atlantic" 
+		enc     "East North Central" 
+		wnc     "West North Central" 
+		sac     "South Atlantic" 
+		esc     "East South Central" 
+		wsc     "West South Central" 
+		mtn     "Mountain" 
+		pac     "Pacific" /;
+
+$if not set mkt $set mkt state
+$if %mkt%==national $set mktdomain national
+$if %mkt%==census   $set mktdomain set.census
+$if %mkt%==state    $set mktdomain set.r
+
+set	mkt	Markets /%mktdomain%/;
+
+set	tp(*)			Trade partner; 
+
 parameter
 	use(ru,cu,r)		Projected Use of Commodities by Industries - (Millions of dollars),
-	supply(rs,cs,r)		Projected Supply of Commodities by Industries - (Millions of dollars);
+	supply(rs,cs,r)		Projected Supply of Commodities by Industries - (Millions of dollars),
+	ys0(g,r,mkt)		Market supply,
+	d0(g,mkt,r)		Market demand,
+	bx0(g,r,tp)		Bilateral exports by commodity-state-trade partner;
 
 $onundf
-$loaddc use=use%suffix% supply=supply%suffix%
+$loaddc use=use%suffix% supply=supply%suffix% 
+$load ys0=ys0%suffix% d0=d0%suffix% bx0=bx0%suffix%
+
+*	Drop the tiny numbers:
+
+use(ru,cu,r)$(not round(use(ru,cu,r),6)) = 0;
+supply(rs,cs,r)$(not round(supply(rs,cs,r),6)) = 0;
 
 set	unz(ru,cu,r), snz(rs,cs,r);
 option unz<use, snz<supply;
@@ -249,8 +278,8 @@ balance(r,s(cs),"revenue") = sum(snz(rs,cs,r), supply(snz));
 option balance:3:2:1;
 display balance;
 
-parameter	theta(*,*,*)		Fraction of good g provided by sector s
-		aggsupply(g,r)	Aggregate supply;
+parameter	aggsupply(g,r)	Aggregate supply by sector s in state r
+		theta(*,*,r)	Fraction of sector s in state r is good g;
 
 aggsupply(s,r) = sum(snz(rs(g),cs(s),r), supply(snz));
 theta(snz(rs(g),cs(s),r))$aggsupply(s,r) = supply(snz) / aggsupply(s,r);
@@ -265,9 +294,11 @@ iot(unz(ru(g),cu,r))$(not g(cu)) = use(unz);
 iot(snz(rs(g),cs,r))$(not g(cs)) = -supply(snz);
 
 set	c(*)		Columns in the IOT;
-c(s) = s(s);
-c(cu) = cu(cu);
-c(cs) = cs(cs);
+c(s) = s(s); c(cu) = cu(cu); c(cs) = cs(cs);
+
+*	Filter the tiny numbers:
+
+iot(ru,c,r)$(not round(iot(ru,c,r),6)) = 0;
 
 balance(r,g(c), "iorow") = sum(ru,iot(ru,c,r));
 balance(r,g(ru),"iocol") = sum(c,iot(ru,c,r));
@@ -297,9 +328,7 @@ set	xd(*)	Exogenous demand /
 parameter
 	y0(r,g)		Aggregate supply,
 	yd0(r,g)	Domestic supply,
-	yn0(r,g)	National market supply,
-	n0(g)		Aggregate national supply,
-	dn0(r,g)	National market demand,
+	s0(g,mkt)	Aggregate supply to market
 	va0(r,s)	Value-added,
 	id0(r,g,s)	Intermediate demand,
 	x0(r,g)		Regional exports,
@@ -312,13 +341,12 @@ parameter
 	m0(r,g)		Imports;
 
 y0(r,g) = sum(ru,iot(ru,g,r));
-yn0(r,g(ru)) = iot(ru,"F040_N",r);
-dn0(r,g(ru)) = -iot(ru,"MCIF_N",r);
-n0(g) = sum(r,yn0(r,g));
+s0(g,mkt) = sum(r,ys0(g,r,mkt));
+
 x0(r,g(ru)) = iot(ru,"f040",r);
 x0n(g) = sum(r,x0(r,g));
 ms0(r,g(ru),mrg(c)) = max(0,iot(ru,c,r));
-yd0(r,g) = y0(r,g) - x0(r,g) - yn0(r,g) - sum(mrg,ms0(r,g,mrg));
+yd0(r,g) = y0(r,g) - x0(r,g) - sum(mkt,ys0(g,r,mkt)) - sum(mrg,ms0(r,g,mrg));
 va0(r,g(cu)) = sum(ru$(not g(ru)), use(ru,cu,r));
 m0(r,g(ru)) = iot(ru,"mcif",r) + iot(ru,"madj",r) + iot(ru,"mdty",r);
 md0(r,g(ru),mrg(c)) = max(0,-iot(ru,c,r));
@@ -339,51 +367,184 @@ set	ags(*)  Agricultural sectors/
 		egg_agr  "Poultry and egg production (112300)",
 		ota_agr  "Animal production, except cattle and poultry and eggs (112A00)" /;
 
-variables
-		v_PY(r,g)	Content of domestic commodity,
-		v_PN(g)		Content of national market commodity,
+variables	v_PY(r,g)	Content of domestic commodity,
+		v_P(g,mkt)	Content of market commodity,
 		v_PA(r,g)	Content of absorption,
-		v_PI(r,mrg)	Content of margin,
-		DC(r,s)		Direct content;
-
+		v_PI(r,mrg)	Content of margin;
 $ondotl
 
-equations	objdef, def_PY, def_PI, def_PN, def_PA;
+*	First solve the model iteratively:
 
-variable	obj	Dummy objective;
+parameter	v_PYn(r,g)	Lagged content
+		dev		Deviation /1/
+		iter_log	Iteration log;
 
-objdef..		OBJ =e= 0;
+set	iter /iter1*iter25/;
 
-def_PY(r,s)$y0(r,s)..	v_PY(r,s) * y0(r,s) =e= sum(g,v_PA(r,g)*id0(r,g,s)) + DC(r,s)$DC.UP(r,s);
-def_PI(r,mrg)..		v_PI(r,mrg)*sum(g,ms0(r,g,mrg))  =e= sum(g,v_PY(r,g)*ms0(r,g,mrg));
-def_PN(g)$n0(g)..	v_PN(g)*n0(g) =e= sum(r,v_PY(r,g)*yn0(r,g));
-def_PA(r,g)$a0(r,g)..	v_PA(r,g)*a0(r,g) =e= v_PY(r,g)*yd0(r,g) + v_PN(g)*dn0(r,g) + 
-					sum(mrg,v_PI(r,mrg)*md0(r,g,mrg));
+v_PY(r,s) = 1$ags(s);
+dev = 1;
+loop(iter$round(dev,2),
+	v_PI(r,mrg) =  sum(g,v_PY(r,g)*ms0(r,g,mrg))/sum(g,ms0(r,g,mrg));
+	v_P(g,mkt)$s0(g,mkt) = sum(r,v_PY(r,g)*ys0(g,r,mkt))/s0(g,mkt);
+	v_PA(r,g)$a0(r,g) = (v_PY(r,g)*yd0(r,g) + 
+			sum(mkt,v_P(g,mkt)*d0(g,mkt,r)) +
+			sum(mrg,v_PI(r,mrg)*md0(r,g,mrg))) / a0(r,g);
+	v_PYn(r,s)$y0(r,s) = ( sum(g,v_PA(r,g)*id0(r,g,s)) +  y0(r,s)$ags(s) ) / y0(r,s);
+	dev = sum((r,s)$y0(r,s), abs(v_PYn(r,s)-v_PY(r,s)));
+	v_PY(r,s) = v_PYn(r,s);
+	iter_log(iter,"dev") = dev;
+);
+display iter_log;
 
-v_PY.FX(r,g)$(not y0(r,g)) = 0;
-v_PA.FX(r,g)$(not a0(r,g)) = 0;
-v_PN.FX(g)$(not n0(g)) = 0;
+$ifthen.agg "%suffix%"=="_"
+	alias (i,g);
+	i_s(g,g) = yes;
+$else.agg
+	set i(*)	Aggregated sectors
+	set	i_s(i<,s) /
+	agr.osd_agr, agr.grn_agr, agr.veg_agr, agr.nut_agr, agr.flo_agr,
+	agr.oth_agr, agr.dry_agr, agr.bef_agr, agr.egg_agr, agr.ota_agr,
+	agr.log_fof, agr.fht_fof, agr.saf_fof, min.oil, min.col_min,
+	min.led_min, min.ore_min, min.stn_min, min.oth_min, min.drl_smn,
+	min.oth_smn, con.hcs_con, con.edu_con, con.nmr_con, con.rmr_con,
+	con.off_con, con.mrs_con, con.ors_con, con.mfs_con, con.ons_con,
+	con.pwr_con, con.srs_con, con.trn_con, trn.air, trn.trn, trn.wtt,
+	trn.trk, trn.grd, trn.pip, trn.wrh, trn.sce_otr, trn.mes_otr,
+	fin.fin, fin.cre_bnk, fin.mon_bnk, fin.ofi_sec, fin.com_sec,
+	fin.dir_ins, fin.car_ins, fin.agn_ins, adm.wst, adm.emp_adm,
+	adm.dwe_adm, adm.off_adm, adm.fac_adm, adm.bsp_adm, adm.trv_adm,
+	adm.inv_adm, adm.oss_adm, edu.sec_edu, edu.uni_edu, edu.oes_edu,
+	rec.pfm_art, rec.spr_art, rec.ind_art, rec.agt_art, rec.mus_art,
+	rec.amu_rec, rec.cas_rec, rec.ori_rec, usd.srp_usd, usd.sec_usd,
+	oth.imp_oth, oth.rwa_oth, utl.ele_uti, utl.gas_uti, utl.wat_uti,
+	drg.saw_wpd, drg.ven_wpd, drg.mil_wpd, drg.owp_wpd, drg.cly_nmp,
+	drg.gla_nmp, drg.cmt_nmp, drg.cnc_nmp, drg.cpb_nmp, drg.ocp_nmp,
+	drg.lme_nmp, drg.abr_nmp, drg.cut_nmp, drg.tmn_nmp, drg.wol_nmp,
+	drg.mnm_nmp, drg.irn_pmt, drg.stl_pmt, drg.ala_pmt, drg.alu_pmt,
+	drg.nms_pmt, drg.cop_pmt, drg.nfm_pmt, drg.fmf_pmt, drg.nff_pmt,
+	drg.rol_fmt, drg.fss_fmt, drg.crn_fmt, drg.cut_fmt, drg.plt_fmt,
+	drg.orn_fmt, drg.pwr_fmt, drg.mtt_fmt, drg.mtc_fmt, drg.hdw_fmt,
+	drg.spr_fmt, drg.mch_fmt, drg.tps_fmt, drg.ceh_fmt, drg.plb_fmt,
+	drg.vlv_fmt, drg.bbr_fmt, drg.fab_fmt, drg.amn_fmt, drg.omf_fmt,
+	drg.frm_mch, drg.lwn_mch, drg.con_mch, drg.min_mch, drg.smc_mch,
+	drg.oti_mch, drg.opt_mch, drg.pht_mch, drg.oci_mch, drg.hea_mch,
+	drg.acn_mch, drg.air_mch, drg.imm_mch, drg.spt_mch, drg.mct_mch,
+	drg.cut_mch, drg.tbn_mch, drg.spd_mch, drg.mch_mch, drg.oee_mch,
+	drg.agc_mch, drg.ppe_mch, drg.mat_mch, drg.pwr_mch, drg.pkg_mch,
+	drg.ipf_mch, drg.ogp_mch, drg.fld_mch, drg.ecm_cep, drg.csd_cep,
+	drg.ctm_cep, drg.tel_cep, drg.brd_cep, drg.oce_cep, drg.sem_cep,
+	drg.prc_cep, drg.oec_cep, drg.eea_cep, drg.sdn_cep, drg.aec_cep,
+	drg.ipv_cep, drg.tfl_cep, drg.els_cep, drg.ali_cep, drg.irr_cep,
+	drg.wcm_cep, drg.aud_cep, drg.mmo_cep, drg.elb_eec, drg.ltf_eec,
+	drg.sea_eec, drg.ham_eec, drg.pwr_eec, drg.mtg_eec, drg.swt_eec,
+	drg.ric_eec, drg.sbt_eec, drg.pbt_eec, drg.cme_eec, drg.wdv_eec,
+	drg.cbn_eec, drg.oee_eec, drg.atm_mot, drg.ltr_mot, drg.htr_mot,
+	drg.mbd_mot, drg.trl_mot, drg.hom_mot, drg.cam_mot, drg.gas_mot,
+	drg.eee_mot, drg.tpw_mot, drg.trm_mot, drg.stm_mot, drg.omv_mot,
+	drg.brk_mot, drg.air_ote, drg.aen_ote, drg.oar_ote, drg.mis_ote,
+	drg.pro_ote, drg.rrd_ote, drg.shp_ote, drg.bot_ote, drg.mcl_ote,
+	drg.mlt_ote, drg.otm_ote, drg.cab_fpd, drg.uph_fpd, drg.nup_fpd,
+	drg.ifm_fpd, drg.ohn_fpd, drg.shv_fpd, drg.off_fpd, drg.ofp_fpd,
+	drg.smi_mmf, drg.sas_mmf, drg.dnt_mmf, drg.oph_mmf, drg.dlb_mmf,
+	drg.jwl_mmf, drg.ath_mmf, drg.toy_mmf, drg.ofm_mmf, drg.sgn_mmf,
+	drg.omm_mmf, ndg.dog_fbp, ndg.oaf_fbp, ndg.flr_fbp, ndg.wet_fbp,
+	ndg.fat_fbp, ndg.soy_fbp, ndg.brk_fbp, ndg.sug_fbp, ndg.fzn_fbp,
+	ndg.can_fbp, ndg.chs_fbp, ndg.dry_fbp, ndg.mlk_fbp, ndg.ice_fbp,
+	ndg.chk_fbp, ndg.asp_fbp, ndg.sea_fbp, ndg.brd_fbp, ndg.cok_fbp,
+	ndg.snk_fbp, ndg.tea_fbp, ndg.syr_fbp, ndg.spc_fbp, ndg.ofm_fbp,
+	ndg.pop_fbp, ndg.ber_fbp, ndg.wne_fbp, ndg.why_fbp, ndg.cig_fbp,
+	ndg.fyt_tex, ndg.fml_tex, ndg.txf_tex, ndg.rug_tex, ndg.lin_tex,
+	ndg.otp_tex, ndg.app_alt, ndg.lea_alt, ndg.plp_ppd, ndg.ppm_ppd,
+	ndg.pbm_ppd, ndg.pbc_ppd, ndg.ppb_ppd, ndg.sta_ppd, ndg.toi_ppd,
+	ndg.opp_ppd, ndg.pri_pri, ndg.sap_pri, ndg.ref_pet, ndg.pav_pet,
+	ndg.shn_pet, ndg.oth_pet, ndg.ptr_che, ndg.igm_che, ndg.sdp_che,
+	ndg.obi_che, ndg.obo_che, ndg.pmr_che, ndg.srf_che, ndg.mbm_che,
+	ndg.phm_che, ndg.inv_che, ndg.bio_che, ndg.fmf_che, ndg.pag_che,
+	ndg.pnt_che, ndg.adh_che, ndg.sop_che, ndg.toi_che, ndg.pri_che,
+	ndg.och_che, ndg.plm_pla, ndg.ppp_pla, ndg.lam_pla, ndg.fom_pla,
+	ndg.ure_pla, ndg.bot_pla, ndg.opm_pla, ndg.tir_pla, ndg.rbr_pla,
+	ndg.orb_pla, whl.mtv_wht, whl.pce_wht, whl.hha_wht, whl.mch_wht,
+	whl.odg_wht, whl.dru_wht, whl.gro_wht, whl.pet_wht, whl.ndg_wht,
+	whl.ele_wht, rtl.mvt, rtl.fbt, rtl.gmt, rtl.bui_ott, rtl.hea_ott,
+	rtl.gas_ott, rtl.clo_ott, rtl.non_ott, rtl.oth_ott, inf.new_pub,
+	inf.pdl_pub, inf.bok_pub, inf.mal_pub, inf.sfw_pub, inf.pic_mov,
+	inf.snd_mov, inf.rad_brd, inf.cbl_brd, inf.wtl_brd, inf.wls_brd,
+	inf.sat_brd, inf.dpr_dat, inf.int_dat, inf.new_dat, rst.ORE,
+	rst.own_hou, rst.rnt_hou, rst.aut_rnt, rst.com_rnt, rst.cmg_rnt,
+	rst.int_rnt, pts.leg, pts.cus_com, pts.sys_com, pts.ocs_com,
+	pts.acc_tsv, pts.arc_tsv, pts.mgt_tsv, pts.env_tsv, pts.sci_tsv,
+	pts.adv_tsv, pts.des_tsv, pts.pht_tsv, pts.vet_tsv, pts.mkt_tsv,
+	mgr.man, hea.hos, hea.phy_amb, hea.dnt_amb, hea.ohp_amb,
+	hea.out_amb, hea.lab_amb, hea.hom_amb, hea.oas_amb, hea.ncc_nrs,
+	hea.res_nrs, hea.ifs_soc, hea.day_soc, hea.cmf_soc, acc.amd,
+	acc.ful_res, acc.lim_res, acc.ofd_res, ots.atr_osv, ots.eqr_osv,
+	ots.imr_osv, ots.hgr_osv, ots.pcs_osv, ots.fun_osv, ots.dry_osv,
+	ots.ops_osv, ots.rel_osv, ots.grt_osv, ots.civ_osv, ots.prv_osv,
+	gov.fdd, gov.fnd, gov.pst_fen, gov.ofg_fen, gov.edu_slg,
+	gov.hea_slg, gov.oth_slg, gov.osl_sle /;
+$endif.agg
 
-model atmMCP /def_PY.v_PY, def_PN.v_PN, def_PI.v_PI, def_PA.v_PA /;
+parameter	thetax(g,r,tp)	Fraction of g exports destine to r,
+		thetay(g,r,i)	Output fraction,
+		atm(*,r,tp)	Agricultural trade multipliers;
 
-DC.FX(r,s) = y0(r,s)$ags(s);
+thetay(g,r,i) = y0(r,g) / sum(i_g(i,g),y0(r,g));
+
+thetax(g,r,tp)$bx0(g,r,tp) = bx0(g,r,tp) / sum(rr,bx0(g,rr,tp));
+
+atm(i,r,tp) = sum(i_g(i,g), thetax(g,r,tp) * thetay(g,r,i) * (V_PY.L(r,g) - 1$ags(g)))
+atm("total",r,tp) = sum(ags(s),y0(r,s)) / sum(s,y0(r,s));
+atm_(g,r,tp) = thetax(g,r,tp) * (V_PY.L(r,g) - 1$ags(g));
+
+$exit
+
+
 
 parameter	compare		Comparison of results;
+compare(mkt,g,"P","iTER")  = v_P.L(g,mkt);
+compare(r,mrg,"PI","Iter") = v_PI.L(r,mrg);
+compare(r,s,"PY","Iter")$y0(r,s) = v_PY.L(r,s);
+compare(r,g,"PA","Iter")$a0(r,g) = v_PA.L(r,g);
+
+equations	def_PY, def_PI, def_P, def_PA;
+
+def_PY(r,s)$y0(r,s)..	v_PY(r,s) * y0(r,s) =e= sum(g,v_PA(r,g)*id0(r,g,s)) + y0(r,s)$ags(s);
+
+def_PI(r,mrg)..		v_PI(r,mrg)*sum(g,ms0(r,g,mrg))  =e= sum(g,v_PY(r,g)*ms0(r,g,mrg));
+
+def_P(g,mkt)$s0(g,mkt)..	v_P(g,mkt)*s0(g,mkt) =e= sum(r,v_PY(r,g)*ys0(g,r,mkt));
+
+def_PA(r,g)$a0(r,g)..	v_PA(r,g)*a0(r,g) =e= v_PY(r,g)*yd0(r,g) + 
+					sum(mkt,v_P(g,mkt)*d0(g,mkt,r)) + 
+					sum(mrg,v_PI(r,mrg)*md0(r,g,mrg));
+
+
+v_PY.FX(r,g)$(not y0(r,g)) = 0;
+v_P.FX(g,mkt)$(not s0(g,mkt)) = 0;
+v_PA.FX(r,g)$(not a0(r,g)) = 0;
+v_P.FX(g,mkt)$(not s0(g,mkt)) = 0;
+
+model atmMCP /def_PY.v_PY, def_PI.v_PI, def_P.v_P, def_PA.v_PA /;
 
 $ifthen.mcpsolve "%suffix%"=="_"
 
 solve atmMCP using mcp;
-compare("_",g,"PN","MCP")$n0(g) = v_PN.L(g);
+compare(mkt,g,"P","MCP")  = v_P.L(g,mkt);
 compare(r,mrg,"PI","MCP") = v_PI.L(r,mrg);
 compare(r,s,"PY","MCP")$y0(r,s) = v_PY.L(r,s);
 compare(r,g,"PA","MCP")$a0(r,g) = v_PA.L(r,g);
+
 $endif.mcpsolve
 
-model atmLP /objdef, def_PY, def_PN, def_PI, def_PA /;
+variable	obj	Dummy objective;
+equation	objdef;
+objdef..		OBJ =e= 0;
+model atmLP /objdef, def_PY, def_P, def_PI, def_PA /;
+
 option lp=ipopt;
 solve atmLP using LP minimizing obj;
 
-compare("_",g,"PN","LP")$n0(g) = v_PN.L(g);
+compare(mkt,g,"P","LP")  = v_P.L(g,mkt);
 compare(r,mrg,"PI","LP") = v_PI.L(r,mrg);
 compare(r,s,"PY","LP")$y0(r,s) = v_PY.L(r,s);
 compare(r,g,"PA","LP")$a0(r,g) = v_PA.L(r,g);
@@ -392,11 +553,5 @@ display compare;
 
 $exit
 
-parameter	pivotdata;
-
-alias	(r,rloop), (s,sloop),
-loop((rloop,sloop)$ags(sloop),
-	DC.FX(r,s) = y0(rloop(r),sloop(r));
-	solve atmLP using LP minimizing obj;
-	pivotdata(rloop,sloop,r,s) = v_PY.L(r,s);
-);
+parameter	atm(s,r,g,tp)	Agricultural trade multipliers;
+atm(s,r,g,tp) = thetax(s,r,tp) * (V_PY.L(r,g) - 1$ags(g));

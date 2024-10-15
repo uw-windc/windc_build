@@ -119,10 +119,29 @@ parameter
 	use(ru,cu,r)		Projected Use of Commodities by Industries - (Millions of dollars),
 	supply(rs,cs,r)		Projected Supply of Commodities by Industries - (Millions of dollars);
 
+set		tp(*)		Trade partners;
+
+set	census      Census divisions /
+		neg     "New England" 
+		mid     "Mid Atlantic" 
+		enc     "East North Central" 
+		wnc     "West North Central" 
+		sac     "South Atlantic" 
+		esc     "East South Central" 
+		wsc     "West South Central" 
+		mtn     "Mountain" 
+		pac     "Pacific" /;
+
+set	mkt /national, (set.census), (set.r)/;
+
+parameter	ys0(g,r,mkt)	Market supply,
+		d0(g,mkt,r)	Market demand,
+		bx0(g,r,tp)	Bilateral exports by commodity-state-trade partner;
+
 $if not set ds $set ds supplyusegravity_2022
 $gdxin '%ds%.gdx'
 $onundf
-$loaddc use supply
+$loaddc use supply tp ys0 d0 bx0
 $gdxin 
 
 set	i	Aggregated sectors -- WiNDC labels /
@@ -218,6 +237,11 @@ set	is(*,*)	Mapping from aggregate sectors to detailed sectors;
 $gdxin %gams.scrdir%mappings.gdx
 $load is=sd
 $gdxin
+option is:0:0:1;
+display is;
+$exit
+
+
 
 set	agr(s)	Agricultural sectors;
 agr(s) = s(s)$is("agr",s);
@@ -331,11 +355,14 @@ abort$card(bugmap) "Bug in rs:", missingmap;
 missingmap(cs_) = not sum(csmap(cs_,cs),1);
 abort$card(bugmap) "Bug in cs:", missingmap;
 
-
-
-
-
 use_(ru_,cu_,r)	 = sum((rumap(ru_,ru),cumap(cu_,cu)),use(ru,cu,r));
 supply_(rs_,cs_,r) = sum((rsmap(rs_,rs),csmap(cs_,cs)),supply(rs,cs,r));
 
-execute_unload '%ds%.gdx', supply, use, supply_, use_,  s, i=s_;
+parameter	ys0_(i,r,mkt)	Market supply,
+		d0_(i,mkt,r)	Market demand,
+		bx0_(i,r,tp)	Bilateral exports by commodity-state-trade partner;
+ys0_(i,r,mkt) = sum(is(i,s),ys0(s,r,mkt));
+d0_(i,mkt,r) = sum(is(i,s),d0(s,mkt,r));
+bx0_(i,r,tp) = sum(is(i,s),bx0(s,r,tp));
+
+execute_unload '%ds%.gdx', supply, use, bx0, ys0, d0, supply_, use_,  tp, bx0_, ys0_, d0_, s, i=s_;
