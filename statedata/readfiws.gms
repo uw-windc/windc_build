@@ -465,7 +465,7 @@ set	iomap(io,cat,acct)	Mapping of sectors  /
 
 	veg_agr.		! "Vegetable and melon farming",
 	("CRA"."VG--VAP",	! "Cash receipts value, vegetables , all",
-	"CRA"."WM--VAP")	! "Cash receipts value, watermelons , all",
+	 "CRA"."WM--VAP")	! "Cash receipts value, watermelons , all",
 
 	nut_agr.		! "Fruit and tree nut farming",
 	"CRA"."FN--VAP",	! "Cash receipts value, fruits/nuts , all",
@@ -479,14 +479,17 @@ set	iomap(io,cat,acct)	Mapping of sectors  /
 	dry_agr.		! "Dairy cattle and milk production",
 	"CRA"."DY--VAP",	! "Cash receipts value, dairy products, all",
 
-	bef_agr.		! "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming",
-	"CRA"."CL--VAP",	! "Cash receipts value, cattle and calves , all",
-
 	egg_agr.		! "Poultry and egg production",
 	"CRA"."PG--VAP",	! "Cash receipts value, poultry/eggs , all",
 
+	bef_agr.		! "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming",
+	"CRA"."CL--VAP",	! "Cash receipts value, cattle and calves , all",
+
 	ota_agr.		! "Animal production, except cattle and poultry and eggs",
-	"CRA"."MA--VAP",	! "Cash receipts value, meat animals, all",
+	("CRA".HG--VAP		! "Cash receipts value, hogs , all",
+	 "CRA".LVMIVAP)		! "Cash receipts value, livestock and products , miscellaneous livestock",
+
+*.	"CRA"."MA--VAP",	! "Cash receipts value, meat animals, all",
 
 	log_fof.		! "Forestry and logging",
 	"CRA"."FP--VAP",	! "Cash receipts value, forest products , all",

@@ -239,9 +239,6 @@ $load is=sd
 $gdxin
 option is:0:0:1;
 display is;
-$exit
-
-
 
 set	agr(s)	Agricultural sectors;
 agr(s) = s(s)$is("agr",s);

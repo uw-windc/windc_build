@@ -1,4 +1,4 @@
-$title	Check Mappings between Summary and Detailed Sectors and Commodities
+$title	Set up Mappings between Summary and Detailed Sectors and Commodities
 
 $ontext
 

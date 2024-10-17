@@ -696,7 +696,9 @@ set g_gtrd(g,gtrd) /
 	oil.ogs      "Oil and gas extraction (211000)",
 	osd_agr.osd  "Oilseed farming (1111A0)",
 	grn_agr.gro  "Grain farming (1111B0)",
+
 	veg_agr.v_f  "Vegetable and melon farming (111200)",
+
 	nut_agr.v_f  "Fruit and tree nut farming (111300)",
 	flo_agr.v_f  "Greenhouse, nursery, and floriculture production (111400)",
 	oth_agr.ocr  "Other crop farming (111900)",

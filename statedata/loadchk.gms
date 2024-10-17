@@ -171,8 +171,6 @@ d0(gt,mkt(rr),r) =  gravitytrade(gt,rr,r);
 bx0(gt,r,tp) = gravitytrade(gt,r,tp);
 execute_unload 'supplyusegravity_%yr%.gdx', supply, use, ys0, d0, tp, bx0;
 
-$exit
-
 *	Generate data for visualization:
 
 set	st(*)	State identifiers;
@@ -290,10 +288,9 @@ loop(r_st(rr,st),
 	gravitycalc(gt,r,"yn0")*gravitycalc(gt,rr,"nd0")/nd0tot(gt);
 );
 
-execute_unload 'dx0.gdx',dx0,r,af;
-execute 'gdxxrw i=dx0.gdx o=dx0.xlsx par=dx0 rng=PivotData!a2 cdim=0';
-*.execute 'gdxxrw i=dx0.gdx o=dx0.xlsx set=r rng=States!a1 values=string rdim=1 cdim=0';
-*.execute 'gdxxrw i=dx0.gdx o=dx0.xlsx set=af rng=Goods!a1 values=string rdim=1 cdim=0';
+execute_unload 'dexport.gdx',dx0,r,af;
+execute 'gdxxrw i=dexport.gdx o=dexport.xlsx par=dx0 rng=PivotData!a2 cdim=0';
+*.execute 'gdxxrw i=dexport.gdx o=dexport.xlsx set=r rng=States!a1 values=string rdim=1 cdim=0';
 
 parameter	ftrade		Foreign trade
 		maxtrade	Maximum value of foreign trade;

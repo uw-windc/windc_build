@@ -205,6 +205,8 @@ set	r	Regions /
 	WI	"Wisconsin",
 	WY	"Wyoming"/;
 
+alias (r,rr);
+
 set	totacct(*)	Totals accounts /
 *S_ROW
 		T017	"Total industry supply" 
@@ -254,7 +256,7 @@ parameter
 	bx0(g,r,tp)		Bilateral exports by commodity-state-trade partner;
 
 $onundf
-$loaddc use=use%suffix% supply=supply%suffix% 
+$loaddc use=use%suffix% supply=supply%suffix% tp
 $load ys0=ys0%suffix% d0=d0%suffix% bx0=bx0%suffix%
 
 *	Drop the tiny numbers:
@@ -385,12 +387,17 @@ v_PY(r,s) = 1$ags(s);
 dev = 1;
 loop(iter$round(dev,2),
 	v_PI(r,mrg) =  sum(g,v_PY(r,g)*ms0(r,g,mrg))/sum(g,ms0(r,g,mrg));
+
 	v_P(g,mkt)$s0(g,mkt) = sum(r,v_PY(r,g)*ys0(g,r,mkt))/s0(g,mkt);
+
 	v_PA(r,g)$a0(r,g) = (v_PY(r,g)*yd0(r,g) + 
 			sum(mkt,v_P(g,mkt)*d0(g,mkt,r)) +
 			sum(mrg,v_PI(r,mrg)*md0(r,g,mrg))) / a0(r,g);
+
 	v_PYn(r,s)$y0(r,s) = ( sum(g,v_PA(r,g)*id0(r,g,s)) +  y0(r,s)$ags(s) ) / y0(r,s);
+
 	dev = sum((r,s)$y0(r,s), abs(v_PYn(r,s)-v_PY(r,s)));
+
 	v_PY(r,s) = v_PYn(r,s);
 	iter_log(iter,"dev") = dev;
 );
@@ -398,10 +405,11 @@ display iter_log;
 
 $ifthen.agg "%suffix%"=="_"
 	alias (i,g);
-	i_s(g,g) = yes;
+	set i_g(g,g);
+	i_g(g,g) = yes;
 $else.agg
 	set i(*)	Aggregated sectors
-	set	i_s(i<,s) /
+	set	i_g(i<,g) /
 	agr.osd_agr, agr.grn_agr, agr.veg_agr, agr.nut_agr, agr.flo_agr,
 	agr.oth_agr, agr.dry_agr, agr.bef_agr, agr.egg_agr, agr.ota_agr,
 	agr.log_fof, agr.fht_fof, agr.saf_fof, min.oil, min.col_min,
@@ -484,21 +492,22 @@ $else.agg
 	gov.hea_slg, gov.oth_slg, gov.osl_sle /;
 $endif.agg
 
-parameter	thetax(g,r,tp)	Fraction of g exports destine to r,
+parameter	thetax(g,r,tp)	Region r fraction of g exports to tp,
 		thetay(g,r,i)	Output fraction,
-		atm(*,r,tp)	Agricultural trade multipliers;
+		atm(i,*)	Agricultural trade multipliers (summary)
+		atmd(g,r)	Agricultural trade multipliers (detailed);
 
-thetay(g,r,i) = y0(r,g) / sum(i_g(i,g),y0(r,g));
-
+thetay(g,r,i)$y0(r,g) = y0(r,g) / sum(i_g(i,gg),y0(r,gg));
 thetax(g,r,tp)$bx0(g,r,tp) = bx0(g,r,tp) / sum(rr,bx0(g,rr,tp));
 
-atm(i,r,tp) = sum(i_g(i,g), thetax(g,r,tp) * thetay(g,r,i) * (V_PY.L(r,g) - 1$ags(g)))
-atm("total",r,tp) = sum(ags(s),y0(r,s)) / sum(s,y0(r,s));
-atm_(g,r,tp) = thetax(g,r,tp) * (V_PY.L(r,g) - 1$ags(g));
+atm(i,tp) = sum((r,i_g(i,g)), thetax(g,r,tp) * thetay(g,r,i) * (V_PY.L(r,g) - 1$ags(g)));
+atm(i,r) = sum(i_g(i,g), thetay(g,r,i) * (V_PY.L(r,g) - 1$ags(g)));
+atmd(g,r) = (V_PY.L(r,g) - 1$ags(g));
 
 $exit
 
-
+*	Save results from the iterative calculation and verify consistency 
+*	with the direct calculation:
 
 parameter	compare		Comparison of results;
 compare(mkt,g,"P","iTER")  = v_P.L(g,mkt);
@@ -512,12 +521,11 @@ def_PY(r,s)$y0(r,s)..	v_PY(r,s) * y0(r,s) =e= sum(g,v_PA(r,g)*id0(r,g,s)) + y0(r
 
 def_PI(r,mrg)..		v_PI(r,mrg)*sum(g,ms0(r,g,mrg))  =e= sum(g,v_PY(r,g)*ms0(r,g,mrg));
 
-def_P(g,mkt)$s0(g,mkt)..	v_P(g,mkt)*s0(g,mkt) =e= sum(r,v_PY(r,g)*ys0(g,r,mkt));
+def_P(g,mkt)$s0(g,mkt).. v_P(g,mkt)*s0(g,mkt) =e= sum(r,v_PY(r,g)*ys0(g,r,mkt));
 
 def_PA(r,g)$a0(r,g)..	v_PA(r,g)*a0(r,g) =e= v_PY(r,g)*yd0(r,g) + 
 					sum(mkt,v_P(g,mkt)*d0(g,mkt,r)) + 
 					sum(mrg,v_PI(r,mrg)*md0(r,g,mrg));
-
 
 v_PY.FX(r,g)$(not y0(r,g)) = 0;
 v_P.FX(g,mkt)$(not s0(g,mkt)) = 0;

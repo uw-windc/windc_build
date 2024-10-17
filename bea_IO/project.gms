@@ -1,4 +1,4 @@
-$title	Read Summary and Detailed SU Tables and Compare
+$title	Product the Detailed SU Tables using Summary Tables 
 
 set	yrs	 Years with summary tables /1997*2022/,
 	yrd(yrs) Years with detailed tables /2007,2012,2017/;
@@ -87,7 +87,6 @@ chk_u(yrd,unz_s,"%")$use_s(yrd,unz_s)
 	= 100 * chk_u(yrd,unz_s,"dif")/use_s(yrd,unz_s);
 chk_s(yrd,snz_s,"%")$supply_s(yrd,snz_s) 
 	= 100 * chk_s(yrd,snz_s,"dif") /supply_s(yrd,snz_s);
-
 option	chk_u:3:2:1, 
 	chk_s:3:2:1;
 display chk_u, chk_s;
@@ -104,7 +103,6 @@ loop((um(unz_d,unz_s),yrd)$use_s(yrd,unz_s),
 loop((sm(snz_d,snz_s),yrd)$supply_s(yrd,snz_s),
   theta_s(yrd,snz_d)  = supply_d(yrd,snz_d) /supply_s(yrd,snz_s);
 );
-
 
 parameter	weight(yrd,yrs)		Weighting applied to the yrd table when interpolating yrs;
 set		w(yrd,yrs)		Years affecting projection to ys;

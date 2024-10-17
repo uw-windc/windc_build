@@ -1,3 +1,4 @@
+*.json
 *.opt
 *.lst
 *.gen
