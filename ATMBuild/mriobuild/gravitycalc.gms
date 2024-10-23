@@ -446,6 +446,7 @@ gravitycalc(g,st(s),"yx0") = sum(r,yx0(g,s,r));
 gravitycalc(g,st(s),"md0") = sum(r,md0(g,r,s));
 gravitycalc(g,st(s),"yd0") = yd0(g,s);
 gravitycalc(g,st(s),"nd0") = nd0(g,s);
+
 gravitytrade(g,st(s),r) = yx0(g,s,r);
 gravitytrade(g,r,st(s)) = md0(g,r,s);
 gravitytrade(g,s,ss)$(st(s) and st(ss)) = dx0(g,s,ss);

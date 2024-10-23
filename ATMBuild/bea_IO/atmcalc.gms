@@ -26,28 +26,6 @@ sets	rs(*) / (set.s), (set.s_row) /,
 	g_u(ru) / (set.s) /,
 	s_u(cu) / (set.s) /;
 
-set	debug(*,*)	Unique labels
-	u(*)		Temporary set;
-
-u(g_s) = yes;
-debug("g_u",g_u) = not u(g_u);
-u(g_s) = no;
-
-u(g_u) = yes;
-debug("g_s",g_s) = not u(g_s);
-u(g_u) = no;
-
-u(s_s) = yes;
-debug("s_u",s_u) = not u(s_u);
-u(s_s) = no;
-
-u(s_u) = yes;
-debug("s_s",s_s) = not u(s_s);
-u(s_u) = no;
-
-option debug:0:0:1;
-display debug;
-
 set	totacct(*)	Totals accounts /
 *S_ROW
 		T017	"Total industry supply" 
@@ -77,8 +55,12 @@ $gdxin '%system.fp%data\iobalanced.gdx'
 $load yrs<use.dim1
 $loaddc use supply
 
-set	unz(yrs,ru,cu), snz(yrs,rs,cs);
+set	unz(yrs,ru,cu)	Nonzero coefficients in the USE tables,
+	snz(yrs,rs,cs)	Nonzero coefficients in the SUPPLY tables; 
+
 option unz<use, snz<supply;
+
+*	Drop data for totals and subtotals:
 
 use(unz(yrs,ru,cu))$(totacct(ru) or totacct(cu)) = 0;
 supply(snz(yrs,rs,cs))$(totacct(rs) or totacct(cs)) = 0;
@@ -137,6 +119,8 @@ set	xd(*)	Exogenous demand /
 
 set	mrg	/trade, trans/;
 
+*	Partition the supply-use tables to obtain coeffient arrays which defined
+*	ATMs:
 
 parameter
 	y0(g)		Aggregate supply,
@@ -180,6 +164,8 @@ set	ags(s)  Agricultural sectors/
 
 parameter	atmval(g,*)	Trade multiplier for comparison;
 
+*	1. Set up a least squares model to compute the ATMs.
+
 variables	v_PY(g)		Content of domestic commodity,
 		v_PA(g)		Content of absorption,
 		v_PI(mrg)	Content of margin;
@@ -194,18 +180,19 @@ v_PY.FX(g)$(not y0(g)) = 0;
 v_PA.FX(g)$(not a0(g)) = 0;
 
 model atmsys /def_PY.v_PY, def_PI.v_PI, def_PA.v_PA /;
+
 solve atmsys using mcp;
 
 $ondotl
 atmval(g,"mcp")$x0(g) = (v_PY(g) - 1$ags(g));
+
+*	2. Compute ATM values iteratively.
 
 parameter	v_PYn(g)	Lagged content
 		dev		Deviation /1/
 		iter_log	Iteration log;
 
 set	iter /iter1*iter25/;
-
-*	First solve the model iteratively:
 
 v_PY(ags(s)) = 1$y0(s);
 loop(iter$round(dev,2),
@@ -223,7 +210,7 @@ atmval(g,"iter")$x0(g) = (v_PY(g) - 1$ags(g));
 option atmval:0:1:1;
 display atmval;
 
-set	r	States (inserted for compatibility) /
+set	r	States (inserted to produce output data compatible with the state model) /
 	AL, AR, AZ, CA, CO, CT, DE, FL, GA, IA, ID, IL, IN, KS, KY, LA, MA,
 	MD, ME, MI, MN, MO, MS, MT, NC, ND, NE, NH, NJ, NM, NV, NY, OH, OK,
 	OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WV, WI, WY /;

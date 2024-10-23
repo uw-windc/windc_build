@@ -156,7 +156,8 @@ set	mkt /national, (set.census), (set.r)/;
 
 parameter	ys0(g,r,mkt)	Market supply,
 		d0(g,mkt,r)	Market demand,
-		bx0(g,r,tp)	Bilateral exports;
+		bx0(g,r,tp)	Bilateral exports,
+		bm0(g,tp,r)	Bilateral imports;
 
 *	Provide three alternative market structures: national, census or state:
 
@@ -170,8 +171,9 @@ ys0(gt,r,mkt(rr)) = gravitytrade(gt,r,rr);
 d0(gt,mkt(rr),r) =  gravitytrade(gt,rr,r);
 
 bx0(gt,r,tp) = gravitytrade(gt,r,tp);
+bm0(gt,tp,r) = gravitytrade(gt,tp,r);
 
-execute_unload 'supplyusegravity_%yr%.gdx', supply, use, ys0, d0, s, tp, bx0, gt;
+execute_unload 'supplyusegravity_%yr%.gdx', supply, use, ys0, d0, s, tp, bx0, bm0, gt;
 
 $exit
 

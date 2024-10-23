@@ -1,6 +1,10 @@
-$title	Add and Aggregate Dataset
+$title	Create an Aggregate Data Set
 
-$if not set yr $set yr 2022
+*	This is an optional program which can be used during database
+*	development to produce a lower-dimensional dataset and thereby
+*	improve cycle time (during debugging).
+
+$If not set yr $set yr 2022
 $if not set ds $set ds supplyusegravity_%yr%
 
 set	s(*)	Detailed sectors;
@@ -234,7 +238,6 @@ set	i	Aggregated sectors -- WiNDC labels /
 	oth  "Noncomparable imports and rest-of-the-world adjustment" /;
 
 set	is(*,*)	Mapping from aggregate sectors to detailed sectors;
-
 $gdxin %gams.scrdir%mappings.gdx
 $load is=sd
 $gdxin

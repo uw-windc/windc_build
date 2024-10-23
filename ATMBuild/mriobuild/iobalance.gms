@@ -390,8 +390,10 @@ option sayr<sasummary;
 sayr(yr) = not sayr(yr);
 option sayr:0:0:1;
 display sayr;
-
 *	================================================================================
+
+*	N.B. Here is where the state-level data are used to target disaggregation of
+*	the national table.  More work is warranted to reflect on the state data targets.
 
 parameter	theta(u,r)		State shares of economic activity;
 
@@ -430,6 +432,9 @@ display scaling;
 
 use(unz(ru,cu,r))    = UNDF;
 supply(snz(rs,cs,r)) = UNDF;
+
+*	National tables are use_n and supply_n.  State tables are
+*	use and supply.
 
 *	Sectoral activity projected with sagdp and cr data:
 
@@ -527,6 +532,11 @@ parameter	asupply(g,r)	Aggregate supply
 		aexport(g)	Aggregate exports;
 
 set		gb(g)	Market to balance;	
+
+*	At this point we have production and absoprtion by commodity and
+*	state, and we have imports and exports for the nation.  We set up 
+*	a linear program to identify a feasible set of state-level imports
+*	and exports.
 
 nonnegative
 variables
@@ -1019,4 +1029,8 @@ gravitydata(gt(g),r,"a0") = sum(unz(ru(g),cu(s),r),use(unz))
 		      + sum(unz(ru(g),fd,r),use(unz))+inventory(g,r);
 
 execute_unload 'gravityinput_%yr%.gdx', gt=g,g_gtrd=g_i,gravitydata;
+
+*	Unload the multi-regional dataset with uniform domestic and import
+*	shares across all states:
+
 execute_unload 'supplyuse_%yr%.gdx', supply, use, s;

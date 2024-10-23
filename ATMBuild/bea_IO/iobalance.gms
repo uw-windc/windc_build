@@ -207,8 +207,14 @@ mrgcol(yrs,"goods",mrg) = sum(gg(rs_d),supply(yrs,rs_d,mrg));
 option mrgcol:1:2:1;
 display mrgcol;
 
+*	N.B.  We should add a few constraints which hold tax rates constant.  As
+*	implemented here we permit tax revenue and tax base cells to be balanced
+*	independently, so that tax rates may change.
+
 set		snz(rs_d,cs_d), unz(ru_d,cu_d), yb(yrs);
+
 variables	OBJ, USE_(ru_d,cu_d), SUPPLY_(rs_d,cs_d);
+
 equations	objdef, profitbal, marketbal,netsupply,margins;
 
 objdef..	OBJ =e= sum((yb,snz(rs_d,cs_d)), 
