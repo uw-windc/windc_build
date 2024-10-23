@@ -225,7 +225,6 @@ mktchk(yr,g,"y0") = market(g,yr,"produc")
 
 mktchk(yr,g,"m0-x0") = market(g,yr,"import")  - market(g,yr,"export");
 
-
 mktchk(yr,g,"z0") = market(g,yr,"interm") 
 	+ market(g,yr,"consum") 
 	+ market(g,yr,"invest") 
@@ -310,8 +309,6 @@ set	snz_yr(yr,rs,cs)	Supply table nonzeros,
 option	snz_yr<supply_n,   unz_yr<use_n;
 snz_n(rs,cs) = snz_yr(yb,rs,cs);
 unz_n(ru,cu) = unz_yr(yb,ru,cu);
-unz(ru,cu,r) = unz_yr(yb,ru,cu);
-snz(rs,cs,r) = snz_yr(yb,rs,cs);
 
 *	================================================================================
 *	Next, read state-level data used to target the calibration:
@@ -431,7 +428,7 @@ display scaling;
 *	Insert values which permit us to find coefficients which 
 *	have been ignored:
 
-use(unz(ru,cu,r)) = UNDF;
+use(unz(ru,cu,r))    = UNDF;
 supply(snz(rs,cs,r)) = UNDF;
 
 *	Sectoral activity projected with sagdp and cr data:

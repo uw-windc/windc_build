@@ -440,10 +440,69 @@ loop(iter$round(dev,2),
 );
 display iter_log;
 
+set	agr(g)	Agricultural and food products /
+
+	osd_agr	     "Oilseed farming (1111A0)",
+	grn_agr	     "Grain farming (1111B0)",
+	veg_agr	     "Vegetable and melon farming (111200)",
+	nut_agr	     "Fruit and tree nut farming (111300)",
+	flo_agr	     "Greenhouse, nursery, and floriculture production (111400)",
+	oth_agr	     "Other crop farming (111900)",
+	bef_agr	     "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
+	egg_agr	     "Poultry and egg production (112300)",
+	ota_agr	     "Animal production, except cattle and poultry and eggs (112A00)",
+
+	dog_fbp	     "Dog and cat food manufacturing (311111)",
+	oaf_fbp	     "Other animal food manufacturing (311119)",
+	flr_fbp	     "Flour milling and malt manufacturing (311210)",
+	wet_fbp	     "Wet corn milling (311221)",
+	fat_fbp	     "Fats and oils refining and blending (311225)",
+	soy_fbp	     "Soybean and other oilseed processing (311224)",
+	brk_fbp	     "Breakfast cereal manufacturing (311230)",
+	sug_fbp	     "Sugar and confectionery product manufacturing (311300)",
+	fzn_fbp	     "Frozen food manufacturing (311410)",
+	can_fbp	     "Fruit and vegetable canning, pickling, and drying (311420)",
+	chs_fbp	     "Cheese manufacturing (311513)",
+	dry_fbp	     "Dry, condensed, and evaporated dairy product manufacturing (311514)",
+	mlk_fbp	     "Fluid milk and butter manufacturing (31151A)",
+	ice_fbp	     "Ice cream and frozen dessert manufacturing (311520)",
+	chk_fbp	     "Poultry processing (311615)",
+	asp_fbp	     "Animal (except poultry) slaughtering, rendering, and processing (31161A)",
+	sea_fbp	     "Seafood product preparation and packaging (311700)",
+	brd_fbp	     "Bread and bakery product manufacturing (311810)",
+	cok_fbp	     "Cookie, cracker, pasta, and tortilla manufacturing (3118A0)",
+	snk_fbp	     "Snack food manufacturing (311910)",
+	tea_fbp	     "Coffee and tea manufacturing (311920)",
+	syr_fbp	     "Flavoring syrup and concentrate manufacturing (311930)",
+	spc_fbp	     "Seasoning and dressing manufacturing (311940)",
+	ofm_fbp	     "All other food manufacturing (311990)",
+	pop_fbp	     "Soft drink and ice manufacturing (312110)",
+	ber_fbp	     "Breweries (312120)",
+	wne_fbp	     "Wineries (312130)",
+	why_fbp	     "Distilleries (312140)",
+	cig_fbp	     "Tobacco manufacturing (312200)" /;
+
 parameter	atm(*,g,*)	Agricultural trade multipliers (summary);
 
-atm("market",g,tp) = sum(r, thetax(g,r,tp) * (V_PY.L(r,g) - 1$ags(g)));
-atm("state",g,r) = (V_PY.L(r,g) - 1$ags(g));
+atm("y0",agr(g),tp) = y0(r,g);
+atm("y0%",agr(g),tp) = y0(r,g)/sum(gg,y0(r,gg));
+atm("atm_trade",agr(g),tp) = sum(r, thetax(g,r,tp) * (V_PY.L(r,g) - 1$ags(g)));
+atm("atm_output",agr(g),r) = (V_PY.L(r,g) - 1$ags(g));
+
+parameter	v_D(r,s)	Locally sourced agricultural content
+		v_M(r,s)	Interstate sourced agricultural content;
+
+	v_D(r,s) = sum(g$a0(r,g), id0(r,g,s)/y0(r,s) * v_PY(r,g)*yd0(r,g)/a0(r,g));
+
+	v_M(r,s) = sum(g$a0(r,g), id0(r,g,s)/y0(r,s) * 
+			sum(mkt, v_P(g,mkt)*d0(g,mkt,r)/a0(r,g));
+
+
+
+
+
+atm("atm_agr",agr(g),tp) = sum(ags(g),v_PA(r,g)*id0(r,g,s) 
+atm("atm_fbp",agr(g),r) = (V_PY.L(r,g) - 1$ags(g));
 
 *	Save the results:
 
