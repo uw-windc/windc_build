@@ -75,6 +75,134 @@ balance(yrs,s(cs),"revenue") = sum(snz(yrs,rs,cs), supply(snz));
 option balance:3:2:1;
 display balance;
 
+set	ags(s)  Agricultural sectors/ 
+		osd_agr  "Oilseed farming (1111A0)",
+		grn_agr  "Grain farming (1111B0)",
+		veg_agr  "Vegetable and melon farming (111200)",
+		nut_agr  "Fruit and tree nut farming (111300)",
+		flo_agr  "Greenhouse, nursery, and floriculture production (111400)",
+		oth_agr  "Other crop farming (111900)",
+		dry_agr  "Dairy cattle and milk production (112120)",
+		bef_agr  "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
+		egg_agr  "Poultry and egg production (112300)",
+		ota_agr  "Animal production, except cattle and poultry and eggs (112A00)" /;
+
+set	agg(g)  Agricultural goods/ 
+		osd_agr  "Oilseed farming (1111A0)",
+		grn_agr  "Grain farming (1111B0)",
+		veg_agr  "Vegetable and melon farming (111200)",
+		nut_agr  "Fruit and tree nut farming (111300)",
+		flo_agr  "Greenhouse, nursery, and floriculture production (111400)",
+		oth_agr  "Other crop farming (111900)",
+		dry_agr  "Dairy cattle and milk production (112120)",
+		bef_agr  "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
+		egg_agr  "Poultry and egg production (112300)",
+		ota_agr  "Animal production, except cattle and poultry and eggs (112A00)" /;
+
+set	mrg	/trade, trans/;
+
+
+parameter
+	io(s)		"Industry output",
+	co(g)		"Commodity demand",
+	mo(mrg)		"Margin output"
+
+	id0(g,s)	"Intermediate demand"
+	md0(mrg,g)	"Margin demand"
+	ms0(g,mrg)	"Margin supply"
+	ys0(s,g)	"Sectoral supply"
+	mu(g,mrg)	"Fraction of output directed to margin supply"
+	yd0(s,g)	"Domestic supply excluding margin supply",
+	ym0(s,mrg)	"Margin supply";
+
+*	Commodity-based:
+
+variables	X(g)	Commodity content
+		Y(s)	Sectoral content;
+
+equations	xdef_1, ydef_1;
+
+xdef_1(g)..	co(g)*X(g) =e= sum(s,Y(s)*id0(g,s)) + co(g)$agg(g);
+ydef_1(s)..	io(s)*Y(s) =e= sum(g, ys0(s,g)*X(g));
+
+model atm1 /xdef_1.X, ydef_1.Y/;
+
+equations	xdef_2, ydef_2;
+
+xdef_2(g)..	co(g)*X(g) =e= sum(s, ys0(s,g)*Y(s));
+ydef_2(s)..	io(s)*Y(s) =e= sum(g, id0(g,s)*X(g)) + io(s)$ags(s);
+
+model atm2 /xdef_2.X, ydef_2.Y/;
+
+variable	Z(mrg)		Content of margins;
+
+equations	xdef_3, ydef_3, zdef_3;
+
+ydef_3(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g));
+xdef_3(g)..	co(g)*X(g) =e= sum(s, yd0(s,g)*Y(s)) + sum(mrg, md0(mrg,g)*Z(mrg)) + co(g)$agg(g);
+zdef_3(mrg)..	Z(mrg)*sum(g,md0(mrg,g)) =e= sum(s, ym0(s,mrg)*Y(s));
+
+model atm3 /xdef_3.X, ydef_3.Y, zdef_3.Z/;
+
+equations	xdef_4, ydef_4, zdef_4;
+
+ydef_4(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
+xdef_4(g)..	co(g)*X(g) =e= sum(s, yd0(s,g)*Y(s)) + sum(mrg, md0(mrg,g)*Z(mrg));
+zdef_4(mrg)..	Z(mrg)*sum(g,md0(mrg,g)) =e= sum(s,ym0(s,mrg)*Y(s));
+
+model atm4 /xdef_4.X, ydef_4.Y, zdef_4.Z/;
+
+singleton set yb(yrs) /%yr%/;
+
+parameter	atmval(*,*,*)	Trade multiplier for comparison;
+
+loop(yb(yrs),
+	io(s(cs))       = sum(rs(g), supply(yrs,rs,cs));
+	co(g(ru))       = sum(cu, use(yrs,ru,cu));
+	mo(mrg(cs))     = sum(rs(g),max(0,supply(yrs,rs,cs)));
+
+	X.UP(g) = +inf; X.LO(g) = -inf;
+	Y.UP(s) = +inf; Y.LO(s) = -inf;
+	Z.UP(mrg) = +inf; Z.LO(mrg) = -inf;
+	X.FX(g)$(not co(g)) = 0;
+	Y.FX(s)$(not io(s)) = 0;
+	Z.FX(mrg)$(not mo(mrg)) = 0;
+
+	id0(g(ru),s(cu)) = use(yrs,ru,cu);
+	md0(mrg(cs),g(rs)) = max(0,-supply(yrs,rs,cs));
+	ms0(g(rs),mrg(cs)) = max(0, supply(yrs,rs,cs));
+	ys0(s(cs),g(rs)) = supply(yrs,rs,cs);
+	mu(g,mrg) = (ms0(g,mrg)/sum(s,ys0(s,g)))$sum(s,ys0(s,g));
+
+	yd0(s,g) = ys0(s,g) * (1 - sum(mrg,mu(g,mrg)));
+	ym0(s,mrg) = sum(g, ys0(s,g) * mu(g,mrg));
+
+
+	solve atm1 using mcp;
+	atmval("X",g,"atm1") = X.L(g)-1$agg(g);
+	atmval("Y",s,"atm1") = Y.L(s);
+
+	solve atm2 using mcp;
+	atmval("X",g,"atm2") = X.L(g);
+	atmval("Y",s,"atm2") = Y.L(s)-1$ags(s);
+
+	solve atm3 using mcp;
+	atmval("X",g,"atm3") = X.L(g)-1$agg(g);
+	atmval("Y",s,"atm3") = Y.L(s);
+	atmval("Z",mrg,"atm3") = Z.L(mrg);
+
+	solve atm4 using mcp;
+	atmval("X",g,"atm4") = X.L(g);
+	atmval("Y",s,"atm4") = Y.L(s)-1$ags(s);
+	atmval("Z",mrg,"atm4") = Z.L(mrg);
+
+);
+option atmval:3:2:1;
+display atmval; 
+
+*	Create a diagonal production dataset -- commodity by commodity:
+
+
 parameter	theta(yrs,*,*)		Fraction of good g provided by sector s
 		aggsupply(yrs,g)	Aggregate supply;
 
@@ -117,98 +245,62 @@ set	xd(*)	Exogenous demand /
 		F10N  	"State and local: Gross investment in intellectual property products",
 		F10S  	"State and local: Gross investment in structures" /;
 
-set	mrg	/trade, trans/;
-
 *	Partition the supply-use tables to obtain coeffient arrays which defined
 *	ATMs:
 
 parameter
-	y0(g)		Aggregate supply,
-	yd0(g)		Domestic supply,
-	va0(s)		Value-added,
 	id0(g,s)	Intermediate demand,
 	x0(g)		Regional exports
-	ms0(g,mrg)	Margin supply,
-	md0(g,mrg)	Margin demand,
+	m0(g)		Imports
 	fd0(g,xd)	Final demand,
-	cd0(g)		Consumer demand,
-	a0(g)		Absorption,
-	m0(g)		Imports;
+	cd0(g)		Consumer demand;
 
-singleton set yb(yrs) /%yr%/;
-
-va0(g(cu)) = sum(ru$(not g(ru)), use(yb,ru,cu));
-y0(g) = sum(ru,iot(yb,ru,g));
 x0(g(ru)) = iot(yb,ru,"f040");
 m0(g(ru)) = iot(yb,ru,"mcif") + iot(yb,ru,"madj") + iot(yb,ru,"mdty");
-md0(g(ru),mrg(c)) = max(0,-iot(yb,ru,c));
+md0(mrg(c),g(ru)) = max(0,-iot(yb,ru,c));
 ms0(g(ru),mrg(c)) = max(0,iot(yb,ru,c));
-yd0(g) = y0(g) - x0(g);
 cd0(g(ru)) = iot(yb,ru,"F010");
 fd0(g(ru),xd(cu)) = iot(yb,ru,cu);
 id0(g(ru),s(cu)) = iot(yb,ru,cu);
-a0(g) = sum(s,id0(g,s)) + cd0(g) + sum(xd,fd0(g,xd));
-display md0, ms0;
 
-set	ags(s)  Agricultural sectors/ 
-		osd_agr  "Oilseed farming (1111A0)",
-		grn_agr  "Grain farming (1111B0)",
-		veg_agr  "Vegetable and melon farming (111200)",
-		nut_agr  "Fruit and tree nut farming (111300)",
-		flo_agr  "Greenhouse, nursery, and floriculture production (111400)",
-		oth_agr  "Other crop farming (111900)",
-		dry_agr  "Dairy cattle and milk production (112120)",
-		bef_agr  "Beef cattle ranching and farming, including feedlots and dual-purpose ranching and farming (1121A0)",
-		egg_agr  "Poultry and egg production (112300)",
-		ota_agr  "Animal production, except cattle and poultry and eggs (112A00)" /;
+io(s) = sum(ru,iot(yb,ru,s));
+co(g) = sum(s,id0(g,s)) + cd0(g) + sum(xd,fd0(g,xd)) + x0(g);
+mo(mrg(c))     = sum(ru(g),max(0,-iot(yb,ru,c)));
 
-parameter	atmval(g,*)	Trade multiplier for comparison;
+equations	xdef_5, ydef_5, zdef_5;
 
-*	1. Set up a least squares model to compute the ATMs.
+ydef_5(s)..	Y(s)*io(s) =e= sum(g,X(g)*id0(g,s)) + io(s)$ags(s);
 
-variables	v_PY(g)		Content of domestic commodity,
-		v_PA(g)		Content of absorption,
-		v_PI(mrg)	Content of margin;
+xdef_5(g)..	X(g)*co(g) =e= Y(g)*(io(g)-sum(mrg,ms0(g,mrg))) + 
+			sum(mrg,Z(mrg)*md0(mrg,g));
 
-equations	def_PY, def_PI, def_PA;
+zdef_5(mrg)..	Z(mrg)*sum(g,ms0(g,mrg))  =e= sum(g,Y(g)*ms0(g,mrg));
 
-def_PY(s)$y0(s)..	v_PY(s) * y0(s) =e= sum(g,v_PA(g)*id0(g,s)) + y0(s)$ags(s);
-def_PI(mrg)..		v_PI(mrg)*sum(g,ms0(g,mrg))  =e= sum(g,v_PY(g)*ms0(g,mrg));
-def_PA(g)$a0(g)..	v_PA(g)*a0(g) =e= v_PY(g)*(y0(g)-x0(g)) + sum(mrg,v_PI(mrg)*md0(g,mrg));
+model atm5 /xdef_5.X, ydef_5.Y, zdef_5.Z/;
 
-v_PY.FX(g)$(not y0(g)) = 0;
-v_PA.FX(g)$(not a0(g)) = 0;
+X.UP(g) = +inf; X.LO(g) = -inf;
+Y.UP(s) = +inf; Y.LO(s) = -inf;
+Z.UP(mrg) = +inf; Z.LO(mrg) = -inf;
+X.FX(g)$(not co(g)) = 0;
+Y.FX(s)$(not io(s)) = 0;
+Z.FX(mrg)$(not mo(mrg)) = 0;
 
-model atmsys /def_PY.v_PY, def_PI.v_PI, def_PA.v_PA /;
+solve atm5 using mcp;
 
-solve atmsys using mcp;
-
-$ondotl
-atmval(g,"mcp")$x0(g) = (v_PY(g) - 1$ags(g));
-
-*	2. Compute ATM values iteratively.
-
-parameter	v_PYn(g)	Lagged content
-		dev		Deviation /1/
-		iter_log	Iteration log;
-
-set	iter /iter1*iter25/;
-
-v_PY(ags(s)) = 1$y0(s);
-loop(iter$round(dev,2),
-	v_PI(mrg) =  sum(g,v_PY(g)*ms0(g,mrg))/sum(g,ms0(g,mrg));
-	v_PA(g)$a0(g) = ( v_PY(g)*yd0(g) + sum(mrg,v_PI(mrg)*md0(g,mrg))) / a0(g);
-	v_PYn(s)$y0(s) = ( sum(g,v_PA(g)*id0(g,s)) + y0(s)$ags(s) ) / y0(s);
-	dev = sum(s, abs(v_PYn(s)-v_PY(s)));
-	v_PY(s) = v_PYn(s);
-	iter_log(iter,"dev") = dev;
-);
-display iter_log;
-
-atmval(g,"iter")$x0(g) = (v_PY(g) - 1$ags(g));
+atmval("X",g,"atm5") = X.L(g);
+atmval("Y",s,"atm5") = Y.L(s)-1$ags(s);
+atmval("Z",mrg,"atm5") = Z.L(mrg);
 
 option atmval:0:1:1;
 display atmval;
+
+execute_unload 'atmval.gdx',atmval;
+execute 'gdxxrw i=atmval.gdx o=atmval.xlsx par=atmval rng=PivotData!a2 cdim=0';
+
+
+
+$exit
+
 
 set	r	States (inserted to produce output data compatible with the state model) /
 	AL, AR, AZ, CA, CO, CT, DE, FL, GA, IA, ID, IL, IN, KS, KY, LA, MA,

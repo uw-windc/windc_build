@@ -1,0 +1,155 @@
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 11/12/24 12:26:32 Page 1
+Create a Symmetric Table and Calculate ATMs
+C o m p i l a t i o n
+
+
+   2   
+   3  *$if not set yr $set yr 2022
+   4  *
+   5  *set    yrs(*), ru(*), cu(*), rs(*), cs(*);
+   6  *
+   7  *set    s(*)    Sectors;
+   8  *
+   9  *set    s_row(*) Supply table rows (in addition to commodities)
+  10  *       s_col(*) Supply table columns (in addition to sectors)
+  11  *       u_row(*) Use table rows (in addition to commodities)
+  12  *       u_col(*) Use table columns (in addition to sectors);
+  13  *
+  14  *$call gams %system.fp%mappings gdx=%gams.scrdir%mappings.gdx
+  15  *$gdxin %gams.scrdir%mappings.gdx
+  16  *$loaddc s=d s_row s_col u_row u_col
+  17   
+  18  set s /a1, a2/;
+  19  alias(s,g);
+  20  set va /v1/;
+  21  set fd /pce, export, xfd/;
+  22  set mrg /trans, trade/;
+  23   
+  24  set ru(*) / (set.g), (set.va)/;
+  25  set cu(*) / (set.s), (set.fd)/;
+  26  set rs(*) / (set.g) /;
+  27  set cs(*) / (set.s), (set.mrg)/;
+  28  set u_col / (set.fd)/;
+  29  set u_row / (set.va)/;
+  30  set s_col / (set.mrg) /;
+  31  set     c(*)    /set.s, set.s_col, set.u_col/;
+  32   
+  33  table use(ru,cu)
+  34      a1  a2  pce export xfd
+  35  a1  1   3   3   4       2
+  36  a2  2   4   -4  1       1
+  37  v1  2   5;
+  38   
+  39  table supply(rs, cs)
+  40      a1  a2  trans   trade
+  41  a1  2   7   3        1
+  42  a2  3   5   -3      -1;
+  43   
+  44  set     unz(ru,cu), snz(rs,cs);
+  45  option unz<use, snz<supply;
+  46   
+  47   
+  48  parameter       theta(*,*)      Fraction of good g provided by sector s
+  49                  aggsupply(s)    Aggregate supply;
+  50   
+  51   
+  52  aggsupply(s) = sum(snz(rs(g),cs(s)), supply(snz));
+  53  theta(snz(rs(g),cs(s)))$aggsupply(s) = supply(snz) / aggsupply(s);
+  54   
+  55   
+  56   
+  57  parameter       iot(*,*)        Input-output table;
+  58  iot(ru,g) = sum(cu(s), theta(g,s)*use(ru,cu));
+  59   
+  60   
+  61  iot(g(ru),cu(u_col)) = use(ru,cu);
+  62  iot(g(rs),cs(s_col)) = sum(snz(rs,cs), -supply(rs,cs));
+  63   
+  64   
+  65  set     xd(*)   Exogenous demand /
+  66      xfd /;
+  67   
+  68   
+  69  parameter
+  70          y0(g)           Aggregate supply,
+  71          yd0(g)          Domestic supply,
+  72          va0(s)          Value-added,
+  73          id0(g,s)        Intermediate demand,
+  74          x0(g)           Regional exports
+  75          ms0(g,mrg)      Margin supply,
+  76          md0(g,mrg)      Margin demand,
+  77          fd0(g,xd)       Final demand,
+  78          cd0(g)          Consumer demand,
+  79          a0(g)           Absorption,
+  80          m0(g)           Imports /a1 0, a2 0/;
+  81   
+  82   
+  83  va0(g(cu)) = sum(ru$(not g(ru)), use(ru,cu));
+  84  y0(g) = sum(ru,iot(ru,g));
+  85  x0(g(ru)) = iot(ru,"export");
+  86  *m0(g(ru)) = iot(ru,"mcif") + iot(ru,"madj") + iot(ru,"mdty");
+  87  md0(g(ru),mrg(c)) = max(0,-iot(ru,c));
+  88  ms0(g(ru),mrg(c)) = max(0,iot(ru,c));
+  89  yd0(g) = y0(g) - x0(g);
+  90  cd0(g(ru)) = iot(ru,"pce");
+  91  fd0(g(ru),xd(cu)) = iot(ru,cu);
+  92  id0(g(ru),s(cu)) = iot(ru,cu);
+  93  a0(g) = sum(s,id0(g,s)) + cd0(g) + sum(xd,fd0(g,xd));
+  94  display md0, ms0;
+  95   
+  96  parameter       market;
+  97  market(g,"a0") = a0(g);
+  98  market(g,"yd0") = yd0(g);
+  99  market(g,"md0") = sum(mrg,md0(g,mrg));
+ 100  market(g,"chk") = market(g,"a0") - market(g,"yd0") - market(g,"md0");
+ 101  display market;
+EXIT d:\GitHub\windc_build\ATMBuild\atm_calculation_small.gms
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 11/12/24 12:26:32 Page 2
+Create a Symmetric Table and Calculate ATMs
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  d:\GitHub\windc_build\ATMBuild\atm_calculation_small.gms
+     2      102 EXIT           1     102  d:\GitHub\windc_build\ATMBuild\atm_calculation_small.gms
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  47.2.0 54a8429d WEX-WEI
+GAMS 47.2.0  54a8429d Jul 1, 2024           WEX-WEI x86 64bit/MS Windows - 11/12/24 12:26:32 Page 3
+Create a Symmetric Table and Calculate ATMs
+E x e c u t i o n
+
+
+----     94 PARAMETER md0  Margin demand
+
+         trans       trade
+
+a1       3.000       1.000
+
+
+----     94 PARAMETER ms0  Margin supply
+
+         trans       trade
+
+a2       3.000       1.000
+
+
+----    101 PARAMETER market  
+
+            a0         yd0         md0         chk
+
+a1       9.000       5.000       4.000
+a2       3.000       7.000                  -4.000
+         3           
+
+
+USER: Small MUD - 5 User License                     G240611|0002AO-GEN
+      University of Wisconsin-Madison, Agricultural & Applied EconDC289
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      d:\GitHub\windc_build\ATMBuild\atm_calculation_small.gms
+Output     d:\GitHub\windc_build\ATMBuild\atm_calculation_small.lst

@@ -84,7 +84,6 @@ market_s(g,yrs,"balance") = market_s(g,yrs,"produc") +
 				market_s(g,yrs,"consum") -
 				market_s(g,yrs,"invest") -
 				market_s(g,yrs,"govt");
-
 option market_s:3:2:1;
 display market_s;
 
