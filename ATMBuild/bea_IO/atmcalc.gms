@@ -1,4 +1,10 @@
-$title	Create a Symmetric Table and Calculate ATMs
+$title	Calculate ATMs
+
+*	3:Commodity
+*	4:Sector
+*	5:Sector
+*	6:Commodity
+
 
 $if not set yr $set yr 2022
 
@@ -117,17 +123,27 @@ parameter
 
 *	Commodity-based:
 
-variables	X(g)	Commodity content
-		Y(s)	Sectoral content;
+variables	X(g)	Commodity content ($ agg per $ commodity),
+		Y(s)	Sectoral content ($ agg per $ sector output);
+
+*	ATM Calculation: variation 1.  Calculate agricultural commodity
+*	output per dollar of commodity or sectoral supply.  Ignore margins.
 
 equations	xdef_1, ydef_1;
 
+*	Commodity composition:
+
 xdef_1(g)..	co(g)*X(g) =e= sum(s,Y(s)*ys0(g,s)) + co(g)$agg(g);
+
+*	Sectoral composition.
 
 ydef_1(s)..	io(s)*Y(s) =e= sum(g, id0(s,g)*X(g));
 
 
 model atm1 /xdef_1.X, ydef_1.Y/;
+
+*	ATM Calculation: variation 2.  Calculate agricultural sectoral
+*	supply per dollar of commodity or sectoral output.  Ignore margins.
 
 equations	xdef_2, ydef_2;
 
@@ -137,29 +153,38 @@ ydef_2(s)..	io(s)*Y(s) =e= sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
 
 model atm2 /xdef_2.X, ydef_2.Y/;
 
+*	ATM Calculation: variation 3.  Calculate agricultural commodity
+*	output per dollar of commodity or sectoral supply, incorporating margins.
 
 variable	Z(mrg)		Content of margins;
 
 equations	xdef_3, ydef_3, zdef_3;
 
-ydef_3(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g));
+xdef_3(g)..	co(g)*X(g) =e=	sum(s,yd0(s,g)*Y(s)) + 
+				sum(mrg, md0(mrg,g)*Z(mrg)) + co(g)$agg(g);
 
-xdef_3(g)..	co(g)*X(g) =e= sum(s, yd0(s,g)*Y(s)) + sum(mrg, md0(mrg,g)*Z(mrg)) + co(g)$agg(g);
+ydef_3(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g));
 
 zdef_3(mrg)..	Z(mrg)*sum(s,ym0(s,mrg)) =e= sum(s, ym0(s,mrg)*Y(s));
 
-
 model atm3 /xdef_3.X, ydef_3.Y, zdef_3.Z/;
+
+*	ATM Calculation: variation 4.  Calculate agricultural sectoral
+*	supply per dollar of commodity or sectoral output, accounting for
+*	margins.
 
 equations	xdef_4, ydef_4, zdef_4;
 
 ydef_4(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
 
-xdef_4(g)..	co(g)*X(g) =e= sum(s,yd0(s,g)*Y(s)) + sum(mrg,md0(mrg,g)*Z(mrg));
+xdef_4(g)..	co(g)*X(g) =e= sum(s,yd0(s,g)*Y(s)) + 
+				sum(mrg,md0(mrg,g)*Z(mrg));
 
 zdef_4(mrg)..	Z(mrg)*sum(s,ym0(s,mrg)) =e= sum(s,ym0(s,mrg)*Y(s));
 
 model atm4 /xdef_4.X, ydef_4.Y, zdef_4.Z/;
+
+*	Identify the base year we are examining.
 
 singleton set yb(yrs) /%yr%/;
 
@@ -187,6 +212,16 @@ loop(yb(yrs),
 
 	ym0(s,mrg) = sum(g, ys0(s,g) * mu(g,mrg));
 
+);
+
+ys0(s,g)$(not sameas(g,"pip")) = 0;
+yd0(s,g)$(not sameas(g,"pip")) = 0;
+md0(mrg,g)$(not sameas(g,"pip")) = 0;
+id0(g,s)$(not sameas(g,"pip")) = 0;
+co(g)$(not sameas(g,"pip")) = 0;
+display yd0, ys0, id0;
+
+$exit
 
 	solve atm1 using mcp;
 	atmval("X",g,"atm1") = X.L(g)-1$agg(g);
@@ -211,7 +246,6 @@ option atmval:3:2:1;
 display atmval; 
 
 *	Create a diagonal production dataset -- commodity by commodity:
-
 
 parameter	theta(yrs,*,*)		Fraction of good g provided by sector s
 		aggsupply(yrs,g)	Aggregate supply;
@@ -301,12 +335,35 @@ atmval("X",g,"atm5") = X.L(g);
 atmval("Y",s,"atm5") = Y.L(s)-1$ags(s);
 atmval("Z",mrg,"atm5") = Z.L(mrg);
 
+equations	xdef_6, ydef_6, zdef_6;
+
+ydef_6(s)..	Y(s)*io(s) =e= sum(g,X(g)*id0(g,s));
+
+xdef_6(g)..	X(g)*co(g) =e= Y(g)*(io(g)-sum(mrg,ms0(g,mrg))) + 
+			sum(mrg,Z(mrg)*md0(mrg,g)) + co(g)$agg(g);
+
+zdef_6(mrg)..	Z(mrg)*sum(g,ms0(g,mrg))  =e= sum(g,Y(g)*ms0(g,mrg));
+
+model atm6 /xdef_6.X, ydef_6.Y, zdef_6.Z/;
+
+X.UP(g) = +inf; X.LO(g) = -inf;
+Y.UP(s) = +inf; Y.LO(s) = -inf;
+Z.UP(mrg) = +inf; Z.LO(mrg) = -inf;
+X.FX(g)$(not co(g)) = 0;
+Y.FX(s)$(not io(s)) = 0;
+Z.FX(mrg)$(not mo(mrg)) = 0;
+
+solve atm6 using mcp;
+
+atmval("X",g,"atm6") = X.L(g)-1$agg(g);
+atmval("Y",s,"atm6") = Y.L(s);
+atmval("Z",mrg,"atm6") = Z.L(mrg);
+
 option atmval:0:1:1;
 display atmval;
 
 execute_unload 'atmval.gdx',atmval;
 execute 'gdxxrw i=atmval.gdx o=atmval.xlsx par=atmval rng=PivotData!a2 cdim=0';
-
 
 
 $exit
