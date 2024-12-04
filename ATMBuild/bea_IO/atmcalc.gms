@@ -122,33 +122,42 @@ variables	X(g)	Commodity content
 
 equations	xdef_1, ydef_1;
 
-xdef_1(g)..	co(g)*X(g) =e= sum(s,Y(s)*id0(g,s)) + co(g)$agg(g);
-ydef_1(s)..	io(s)*Y(s) =e= sum(g, ys0(s,g)*X(g));
+xdef_1(g)..	co(g)*X(g) =e= sum(s,Y(s)*ys0(g,s)) + co(g)$agg(g);
+
+ydef_1(s)..	io(s)*Y(s) =e= sum(g, id0(s,g)*X(g));
+
 
 model atm1 /xdef_1.X, ydef_1.Y/;
 
 equations	xdef_2, ydef_2;
 
-xdef_2(g)..	co(g)*X(g) =e= sum(s, ys0(s,g)*Y(s));
-ydef_2(s)..	io(s)*Y(s) =e= sum(g, id0(g,s)*X(g)) + io(s)$ags(s);
+xdef_2(g)..	co(g)*X(g) =e= sum(s,ys0(s,g)*Y(s));
+
+ydef_2(s)..	io(s)*Y(s) =e= sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
 
 model atm2 /xdef_2.X, ydef_2.Y/;
+
 
 variable	Z(mrg)		Content of margins;
 
 equations	xdef_3, ydef_3, zdef_3;
 
 ydef_3(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g));
+
 xdef_3(g)..	co(g)*X(g) =e= sum(s, yd0(s,g)*Y(s)) + sum(mrg, md0(mrg,g)*Z(mrg)) + co(g)$agg(g);
-zdef_3(mrg)..	Z(mrg)*sum(g,md0(mrg,g)) =e= sum(s, ym0(s,mrg)*Y(s));
+
+zdef_3(mrg)..	Z(mrg)*sum(s,ym0(s,mrg)) =e= sum(s, ym0(s,mrg)*Y(s));
+
 
 model atm3 /xdef_3.X, ydef_3.Y, zdef_3.Z/;
 
 equations	xdef_4, ydef_4, zdef_4;
 
 ydef_4(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
-xdef_4(g)..	co(g)*X(g) =e= sum(s, yd0(s,g)*Y(s)) + sum(mrg, md0(mrg,g)*Z(mrg));
-zdef_4(mrg)..	Z(mrg)*sum(g,md0(mrg,g)) =e= sum(s,ym0(s,mrg)*Y(s));
+
+xdef_4(g)..	co(g)*X(g) =e= sum(s,yd0(s,g)*Y(s)) + sum(mrg,md0(mrg,g)*Z(mrg));
+
+zdef_4(mrg)..	Z(mrg)*sum(s,ym0(s,mrg)) =e= sum(s,ym0(s,mrg)*Y(s));
 
 model atm4 /xdef_4.X, ydef_4.Y, zdef_4.Z/;
 
@@ -175,6 +184,7 @@ loop(yb(yrs),
 	mu(g,mrg) = (ms0(g,mrg)/sum(s,ys0(s,g)))$sum(s,ys0(s,g));
 
 	yd0(s,g) = ys0(s,g) * (1 - sum(mrg,mu(g,mrg)));
+
 	ym0(s,mrg) = sum(g, ys0(s,g) * mu(g,mrg));
 
 

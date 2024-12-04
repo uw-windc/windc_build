@@ -115,7 +115,7 @@ equation invertalt, ydef;
 
 invertalt[g]..   X[g] =E= sum(s, b(g,s)*Y[s]) + 1$(sameas(g, "a1"));
 
-ydef[s]..	 Y[s] =e= sum(gg, d(s,gg) * X(gg));
+ydef[s]..	 Y[s] =e= sum(g, d(s,g) * X(g));
 
 model classicalt /invertalt.X, ydef.Y/;
 solve classicalt using mcp;

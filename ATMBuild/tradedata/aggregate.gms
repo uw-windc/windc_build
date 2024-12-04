@@ -196,7 +196,6 @@ dist(s,loc) = max(1,dist(s,loc));
 
 execute_unload 'tradedata.gdx', i, r, pd, loc, md_0, xs_0, dist;
 
-
 parameter	md_0_(i,rr,pd)	Bilateral imports
 		xs_0_(i,pd,rr)	Bilater exports;
 

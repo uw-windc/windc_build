@@ -7,8 +7,6 @@ $if not set ds $set ds gtapingams
 
 $if not set gtap_version $include "gtapingams.gms"
 
-
-
 *	RELTOL changes data footprint:
 
 $if not set reltol $set reltol 4
@@ -56,7 +54,6 @@ nz("vifm","abstol") = card(vifm) - nz("vifm","gtap11");
 nz("vfm","abstol") = card(vfm) - nz("vfm","gtap11");
 
 parameter	vxmdtot,vdfmtot,vtwrtot,vifmtot;
-
 vxmdtot(i,r,".") = sum(rr,vxmd(i,r,rr));
 vxmdtot(i,".",rr) = sum(r,vxmd(i,r,rr));
 vtwrtot(i,rr,r) = sum(j,vtwr(j,i,rr,r));
@@ -111,6 +108,8 @@ trace("vifm",r,"%pt%") = sum((i,g),vifm(i,g,r));
 trace("vfm",r,"%pt%") = sum((f,g),vfm(f,g,r));
 
 $include %system.fp%calibrate
+
+$exit
 
 $set pt calibrated
 trace("vst",r,"%pt%") = sum((i),vst(i,r));
