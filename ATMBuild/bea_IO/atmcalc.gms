@@ -1,10 +1,13 @@
 $title	Calculate ATMs
 
-*	3:Commodity
-*	4:Sector
-*	5:Sector
-*	6:Commodity
+*	1:Commodity	supply-use		su_g_nm
+*	2:Sector	supply-use		su_s_nm
 
+*	3:Commodity	supply-use		su_g_m
+*	4:Sector	supply-use		su_s_m
+
+*	5:Sector	io (diagonal)		io_s_m
+*	6:Commodity	io (diagonal)		io_g_m
 
 $if not set yr $set yr 2022
 
@@ -175,7 +178,7 @@ model atm3 /xdef_3.X, ydef_3.Y, zdef_3.Z/;
 
 equations	xdef_4, ydef_4, zdef_4;
 
-ydef_4(s)..	io(s)*Y(s) =e=  sum(g,id0(g,s)*X(g)) + io(s)$ags(s);
+ydef_4(s)..	io(s)*Y(s) =e=  sum(g,yd0(g,s)*X(g)) + io(s)$ags(s);
 
 xdef_4(g)..	co(g)*X(g) =e= sum(s,yd0(s,g)*Y(s)) + 
 				sum(mrg,md0(mrg,g)*Z(mrg));
@@ -188,7 +191,8 @@ model atm4 /xdef_4.X, ydef_4.Y, zdef_4.Z/;
 
 singleton set yb(yrs) /%yr%/;
 
-parameter	atmval(*,*,*)	Trade multiplier for comparison;
+parameter	atmval(*,*,*)	Trade multiplier for comparison,
+		debug		Diagnosing problems with PIP;
 
 loop(yb(yrs),
 	io(s(cs))       = sum(rs(g), supply(yrs,rs,cs));
@@ -212,38 +216,43 @@ loop(yb(yrs),
 
 	ym0(s,mrg) = sum(g, ys0(s,g) * mu(g,mrg));
 
-);
-
-ys0(s,g)$(not sameas(g,"pip")) = 0;
-yd0(s,g)$(not sameas(g,"pip")) = 0;
-md0(mrg,g)$(not sameas(g,"pip")) = 0;
-id0(g,s)$(not sameas(g,"pip")) = 0;
-co(g)$(not sameas(g,"pip")) = 0;
-display yd0, ys0, id0;
-
-$exit
-
 	solve atm1 using mcp;
-	atmval("X",g,"atm1") = X.L(g)-1$agg(g);
-	atmval("Y",s,"atm1") = Y.L(s);
+	atmval("X",g,"su_g_nm") = X.L(g)-1$agg(g);
+	atmval("Y",s,"su_g_nm") = Y.L(s);
 
 	solve atm2 using mcp;
-	atmval("X",g,"atm2") = X.L(g);
-	atmval("Y",s,"atm2") = Y.L(s)-1$ags(s);
+	atmval("X",g,"su_s_nm") = X.L(g);
+	atmval("Y",s,"su_s_nm") = Y.L(s)-1$ags(s);
 
 	solve atm3 using mcp;
-	atmval("X",g,"atm3") = X.L(g)-1$agg(g);
-	atmval("Y",s,"atm3") = Y.L(s);
-	atmval("Z",mrg,"atm3") = Z.L(mrg);
+	atmval("X",g,"su_g_m") = X.L(g)-1$agg(g);
+	atmval("Y",s,"su_g_m") = Y.L(s);
+	atmval("Z",mrg,"su_g_m") = Z.L(mrg);
+
+	debug("sector","su_g_m","total","i0*Y") = io("pip")*Y.L("pip");
+	debug("sector","su_g_m",g,"id0*X(g)") = id0(g,"pip")*X.L(g);
+
+	debug("commodity","su_g_m","total","co*X") = io("pip")*X.L("pip");
+	debug("commodity","su_g_m",s,"yd0*Y(s)") = yd0(s,"pip")*Y.L(s);
+	debug("commodity","su_g_m",mrg,"md0*Z(mrg)") = md0(mrg,"pip")*Z.L(mrg);
 
 	solve atm4 using mcp;
-	atmval("X",g,"atm4") = X.L(g);
-	atmval("Y",s,"atm4") = Y.L(s)-1$ags(s);
-	atmval("Z",mrg,"atm4") = Z.L(mrg);
+
+	atmval("X",g,"su_s_m") = X.L(g);
+	atmval("Y",s,"su_s_m") = Y.L(s)-1$ags(s);
+	atmval("Z",mrg,"su_s_m") = Z.L(mrg);
+
+	debug("sector","total","su_s_m","i0*Y") = io("pip")*Y.L("pip");
+	debug("sector",g,"su_s_m","id0*X(g)") = id0(g,"pip")*X.L(g);
+
+	debug("commodity","total","su_s_m","co*X") = io("pip")*X.L("pip");
+	debug("commodity",s,"su_s_m","yd0*Y(s)") = yd0(s,"pip")*Y.L(s);
+	debug("commodity",mrg,"su_s_m","md0*Z(mrg)") = md0(mrg,"pip")*Z.L(mrg);
+
+	option debug:3:1:2; 
+	display debug;
 
 );
-option atmval:3:2:1;
-display atmval; 
 
 *	Create a diagonal production dataset -- commodity by commodity:
 
@@ -313,10 +322,9 @@ mo(mrg(c))     = sum(ru(g),max(0,-iot(yb,ru,c)));
 
 equations	xdef_5, ydef_5, zdef_5;
 
-ydef_5(s)..	Y(s)*io(s) =e= sum(g,X(g)*id0(g,s)) + io(s)$ags(s);
+ydef_5(s)..	Y(s)*io(s) =e= sum(g,X(g,s)*id0(g,s)) + io(s)$ags(s);
 
-xdef_5(g)..	X(g)*co(g) =e= Y(g)*(io(g)-sum(mrg,ms0(g,mrg))) + 
-			sum(mrg,Z(mrg)*md0(mrg,g));
+xdef_5(g,s)..	X(g,s)*id0(g,s) =e= Y(g)*dd0(g,s) + sum(mrg,Z(mrg)*md0(mrg,g,s));
 
 zdef_5(mrg)..	Z(mrg)*sum(g,ms0(g,mrg))  =e= sum(g,Y(g)*ms0(g,mrg));
 
@@ -331,9 +339,9 @@ Z.FX(mrg)$(not mo(mrg)) = 0;
 
 solve atm5 using mcp;
 
-atmval("X",g,"atm5") = X.L(g);
-atmval("Y",s,"atm5") = Y.L(s)-1$ags(s);
-atmval("Z",mrg,"atm5") = Z.L(mrg);
+atmval("X",g,"io_s_m") = X.L(g);
+atmval("Y",s,"io_s_m") = Y.L(s)-1$ags(s);
+atmval("Z",mrg,"io_s_m") = Z.L(mrg);
 
 equations	xdef_6, ydef_6, zdef_6;
 
@@ -355,9 +363,9 @@ Z.FX(mrg)$(not mo(mrg)) = 0;
 
 solve atm6 using mcp;
 
-atmval("X",g,"atm6") = X.L(g)-1$agg(g);
-atmval("Y",s,"atm6") = Y.L(s);
-atmval("Z",mrg,"atm6") = Z.L(mrg);
+atmval("X",g,"io_g_m") = X.L(g)-1$agg(g);
+atmval("Y",s,"io_g_m") = Y.L(s);
+atmval("Z",mrg,"io_g_m") = Z.L(mrg);
 
 option atmval:0:1:1;
 display atmval;

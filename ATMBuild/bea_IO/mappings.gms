@@ -7,10 +7,7 @@ Analysis (BEA) are generally available at four levels of detail:
 sector (21 industry groups), summary (71 industry groups), underlying
 summary (138 industry groups), and detail (402 industry groups). For
 most data products, estimates at the detail level are available only
-for estimate year 2017. This table shows the relationship between
-these four levels of detail as well as how each level relates to the
-2017 North American Industry Classification System (NAICS) code
-structure. 
+for estimate year 2017. 
 
 $offtext
 

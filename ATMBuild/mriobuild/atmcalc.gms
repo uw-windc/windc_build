@@ -251,7 +251,6 @@ set	mkt	Markets /%mktdomain%/;
 
 set	tp(*)			Trade partner;
 
-
 parameter
 	use(ru,cu,r)		Projected Use of Commodities by Industries - (Millions of dollars),
 	supply(rs,cs,r)		Projected Supply of Commodities by Industries - (Millions of dollars),
@@ -440,6 +439,9 @@ loop(iter$round(dev,2),
 );
 display iter_log;
 
+$exit
+
+
 set	agr(g)	Agricultural and food products /
 
 	osd_agr	     "Oilseed farming (1111A0)",
@@ -484,19 +486,19 @@ set	agr(g)	Agricultural and food products /
 
 parameter	atm(*,g,*)	Agricultural trade multipliers (summary);
 
-atm("y0",agr(g),tp) = y0(r,g);
-atm("y0%",agr(g),tp) = y0(r,g)/sum(gg,y0(r,gg));
+atm("y0",agr(g),tp) = sum(r,y0(r,g));
+atm("y0%",agr(g),tp) = sum(r,y0(r,g))/sum((r,gg),y0(r,gg));
 atm("atm_trade",agr(g),tp) = sum(r, thetax(g,r,tp) * (V_PY.L(r,g) - 1$ags(g)));
 atm("atm_output",agr(g),r) = (V_PY.L(r,g) - 1$ags(g));
+
+$exit
 
 parameter	v_D(r,s)	Locally sourced agricultural content
 		v_M(r,s)	Interstate sourced agricultural content;
 
 	v_D(r,s) = sum(g$a0(r,g), id0(r,g,s)/y0(r,s) * v_PY(r,g)*yd0(r,g)/a0(r,g));
-
 	v_M(r,s) = sum(g$a0(r,g), id0(r,g,s)/y0(r,s) * 
-			sum(mkt, v_P(g,mkt)*d0(g,mkt,r)/a0(r,g));
-
+			sum(mkt, v_P(g,mkt)*d0(g,mkt,r)/a0(r,g)));
 
 
 

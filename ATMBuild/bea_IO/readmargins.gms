@@ -35,7 +35,7 @@ dollars) of the commodity.
 
 $offtext
 
-set	s	Industries /
+set	s_m	Industries in the margin data /
 	1111A0	"Oilseed farming",
 	1111B0	"Grain farming",
 	111200	"Vegetable and melon farming",
@@ -428,6 +428,7 @@ set	s	Industries /
 	813A00	"Grantmaking, giving, and social advocacy organizations",
 	813B00	"Civic, social, professional, and similar organizations",
 	814000	"Private households",
+
 	F01000	"Personal consumption expenditures",
 	F02E00	"Nonresidential private fixed investment in equipment",
 	F02N00	"Nonresidential private fixed investment in intellectual property products",
@@ -459,7 +460,7 @@ set	s	Industries /
 	S00500	"Federal general government (defense)",
 	S00600	"Federal general government (nondefense)" /;
 
-set	g	Commodities /
+set	g_m	Commodities /
 	1111A0	"Oilseed farming",
 	1111B0	"Grain farming",
 	111200	"Vegetable and melon farming",
@@ -866,11 +867,54 @@ set	g	Commodities /
 	V00200	"Taxes on production and imports, less subsidies",
 	V00300	"Gross operating surplus" /;
 
-set	c  Columns /"producer","transport", "wholesale","retail","purchaser"/;
+set	c  Columns /"producer", "transport", "wholesale", "retail", "purchaser"/;
 
 set	yrs /2007,2012,2017/;
 
-parameter	m(yrs,s,g,c)	Margins;
+set	j(*)	Detailed labels (numeric)
+	d(*)	Detailed labels (WiNDC alpha)
+	jd(j,d)	Mapping from j to d;
+
+$call gams mappings gdx=%gams.scrdir%mappings.gdx
+$gdxin %gams.scrdir%mappings.gdx
+$loaddc j d jd
+
+alias (d,s,g), (i,j), (jd,is,ig,js);
+
+set cu_d(*) 	Use table columns -- labels are different ?/
+	(set.i),
+	T001	"Total Intermediate",
+	F01000 	"Personal consumption expenditures",
+	F02E00 	"Nonresidential private fixed investment in equipment",
+	F02N00 	"Nonresidential private fixed investment in intellectual property products",
+	F02R00 	"Residential private fixed investment",
+	F02S00 	"Nonresidential private fixed investment in structures",
+	F03000 	"Change in private inventories",
+	F04000 	"Exports of goods and services",
+	F06C00 	"Federal Government defense: Consumption expenditures",
+	F06E00 	"Federal national defense: Gross investment in equipment",
+	F06N00 	"Federal national defense: Gross investment in intellectual property products",
+	F06S00 	"Federal national defense: Gross investment in structures",
+	F07C00 	"Federal Government nondefense: Consumption expenditures",
+	F07E00 	"Federal nondefense: Gross investment in equipment",
+	F07N00 	"Federal nondefense: Gross investment in intellectual property products",
+	F07S00 	"Federal nondefense: Gross investment in structures",
+	F10C00 	"State and local government consumption expenditures",
+	F10E00 	"State and local: Gross investment in equipment",
+	F10N00 	"State and local: Gross investment in intellectual property products",
+	F10S00 	"State and local: Gross investment in structures",
+	T019	"Total use of products" /;
+
+set	s_m_unmapped(s_m), g_m_unmapped(g_m);
+s_m_unmapped(s_m) = s_m(s_m)$(not cu_d(s_m));
+g_m_unmapped(g_m) = s_m(g_m)$(not j(g_m));
+
+option s_m_unmapped:0:0:1, g_m_unmapped:0:0:1;
+display s_m_unmapped, g_m_unmapped;
+
+$exit
+
+parameter	m(yrs,s_m,g_m,c)	Margins;
 
 $set yr 2007
 $call 'gdxxrw i=data\Margins_Before_Redefinitions_2017_DET.xlsx o=m%yr%.gdx par=m rng=%yr%!a6 rdim=2 cdim=1 ignorecolumns=b,d checkdate'
@@ -894,3 +938,8 @@ $loaddc m%yr%=m
 m("%yr%",s,g,c) = m%yr%(s,g,c);
 
 execute_unload 'margins.gdx',m,s,g,c;
+
+parameter	xmargin(yrs,g,c)	Export margins;
+xmargin(yrs,g,c) = m(yrs,"F04000",g,c);
+option xmargin:3:1:1;
+display xmargin;
