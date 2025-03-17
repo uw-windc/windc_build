@@ -329,8 +329,8 @@ $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(cps_nipa(yr,'government be
 $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hdisval','meyer');
 
 $if %hhdata%=="cps" trn_weight_(yr,'hvetval','rothbaum') = 1 / 0.679;
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans' benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans' benefits")/100 + 1);
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans' benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans benefits")/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
 
 * Otherwise, default to literature estimates
 
@@ -378,7 +378,7 @@ parameter
     health_care_transfers(r,*,*,*)	Medicaid and medicare transfers payments;
 
 $set health_data_dir ../data/household/health_care/
-$set file "%health_data_dir%public_health_benefits_2009_2019.csv"
+$set file "%health_data_dir%public_health_benefits.csv"
 $call 'csv2gdx "%file%" id=health_care_transfers useheader=yes index="(1,2,3)" values="(4,5)" output="%gdxdir%public_health_benefits.gdx"'
 $gdxin '%gdxdir%public_health_benefits.gdx'
 $load health_care_transfers
