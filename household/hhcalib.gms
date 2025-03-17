@@ -1033,6 +1033,7 @@ fsav0 = FSAV.L;
 fint0 = FINT.L;
 
 $if %hhdata%=="soi" hhtrn0(r,h,'gov') = TRANS_GOV.L(r,h);
+$if %hhdata%=="soi" trn('gov') = yes;
 $if %hhdata%=="cps" hhtrn0(r,h,trn) = hhtrans_shr(r,h,trn) * TRANS_GOV.L(r,h);
 
 trn('other') = yes;
