@@ -23,13 +23,13 @@ $set gdxdir gdx/
 
 * Translate the CPS income CSV data to GDX:
 
-$set file "%cpsdir%cps_asec_income_totals_2000_2022.csv"
+$set file "%cpsdir%cps_asec_income_totals.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 $call 'csv2gdx "%file%" id=cpscsv useheader=yes index="(1,2,3,4)" values=5 output="%gdxdir%cpscsv.gdx" CheckDate=yes trace=3'
 
 * Translate the CPS population CSV data to GDX:
 
-$set file "%cpsdir%cps_asec_numberhh_2000_2022.csv"
+$set file "%cpsdir%cps_asec_numberhh.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 $call 'csv2gdx %file% id=popcsv useheader=yes index="(1,2,3)" values=4 output="%gdxdir%cps_households.gdx" CheckDate=yes trace=3'
 
@@ -151,7 +151,8 @@ set
 			hfinval	! "financial assistance"
 			) /;
 
-r(sr) = yes$(not sameas(sr,'us'));
+*r(sr) = yes$(not sameas(sr,'us'));
+r(sr) = yes;
 
 parameter
     wages0_(yr,sr,h)		Wage income by region and household (in billions),
