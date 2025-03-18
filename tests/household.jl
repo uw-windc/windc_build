@@ -22,6 +22,18 @@ function run_household(year, household, invest, capital, region, sector)
 end
 
 
+function test_household_instance(year, household, invest, capital, region, sector)
+    output = "$household - $year, $invest, $capital, $region, $sector"
+    println(output)
+    try
+        run_household(y, household, i, c, r, s)
+    catch e
+        open(log_file, "a") do io
+            write(io, "$output\n")
+        end
+    end
+end
+
 
 function test_household()
     set_working_directory()
@@ -40,28 +52,14 @@ function test_household()
     regoinal_mapping = ["state", "census_divisions", "census_regions", "national"]
     sectoral_mapping = ["windc", "gtap_32", "sage", "gtap_10", "macro", "bluenote"]
 
-    #=
+    
     for (y,i,c,r,s) in Iterators.product(cps_years, investments, capital_ownership, regoinal_mapping, sectoral_mapping) 
-        println("CPS - $y $i $c $r $s")
-        try
-            run_household(y, "cps", i, c, r, s)
-        catch e
-            open(log_file, "a") do io
-                write(io, "CPS - $y $i $c $r $s\n")
-            end
-        end
+        test_household_instance(y, "cps", i, c, r, s)
     end
-    =#
+    
 
     for (y,i,c,r,s) in Iterators.product(soi_years, investments, capital_ownership, regoinal_mapping, sectoral_mapping) 
-        println("SOI - $y $i $c $r $s")
-        try
-            run_household(y, "soi", i, c, r, s)
-        catch e
-            open(log_file, "a") do io
-                write(io, "SOI - $y $i $c $r $s\n")
-            end
-        end
+        test_household_instance(y, "soi", i, c, r, s)
     end
 
 end
