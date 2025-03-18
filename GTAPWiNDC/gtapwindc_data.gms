@@ -32,7 +32,8 @@ set	trn	Transfer types /
 		medicaid	Medicaid
 		hedval		Educational assistance
 		hcspval		Child support
-		hfinval		Financial assistance /;
+		hfinval		Financial assistance 
+		other 							/;
 
 
 *	These sets are defined prior to reading the dataset in the disaggregation routine:

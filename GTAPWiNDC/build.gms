@@ -234,7 +234,7 @@ $label regiondisagg43
 
 $log	"Ready to run regiondisagg with 43 sector dataset  (datasets/gtapwindc/43.gdx)"
 $if not %pause%==no $call pause
-$call gams regiondisagg  --ds=43 --dropagr=yes  o=lst/regiondisagg_43.lst 
+$call gams regiondisagg  --datasets=%datasets% --ds=43 --dropagr=yes  o=lst/regiondisagg_43.lst 
 
 $if errorlevel 1 $log   "Non-zero return code from regiondisagg.gms for 43.gdx"
 $if errorlevel 1 $abort "Non-zero return code from regiondisagg.gms for 43.gdx"
