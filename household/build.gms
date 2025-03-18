@@ -27,7 +27,7 @@ $if not set capital_ownership $set capital_ownership "all"
 * set regional mapping (state,census_divisions,census_regions,national)
 $if not set rmap $set rmap "state"
 
-* set sectoral mapping (windc,gtap_32,sage,gtap_10,macro,bluenote)
+* set sectoral mapping (windc,gtap_32,gtap_10,macro,bluenote)
 $if not set smap $set smap "windc,gtap_32"
 
 
