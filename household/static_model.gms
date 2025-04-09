@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2023_gtap_32_state
+$set ds cps_static_all_2023
 
 * Allow for end of line comments
 $eolcom !
