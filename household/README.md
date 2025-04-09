@@ -1,33 +1,34 @@
 # Household
 
 
+- [Household](#household)
 - [Overview](#overview)
 - [Running the Household Subroutine](#running-the-household-subroutine)
 - [File Listing](#file-listing)
 - [Canonical Static Household Model](#canonical-static-household-model)
 - [Optional R Routines](#optional-r-routines)
 - [Set Listing](#set-listing)
-    - [Sets](#sets)
-    - [Parameters](#parameters)
-    - [Set Listing](#set-listing)
-        - [Regions](#regions)
-            - [States](#states)
-            - [Census Divisions](#census-divisions)
-            - [Census Regions](#census-regions)
-            - [National](#national)
-        - [Goods and sectors from BEA -- Margin related sectors](#goods-and-sectors-from-bea----margin-related-sectors)
-            - [WiNDC Aggregation](#windc-aggregation)
-            - [GTAP_32 Aggregation](#gtap_32-aggregation)
-            - [GTAP 10 Aggregation](#gtap-10-aggregation)
-            - [Macro](#macro)
-        - [Margins trade or transport](#margins-trade-or-transport)
-        - [Household Categories](#household-categories)
-        - [Transfer Types](#transfer-types)
+  - [Sets](#sets)
+  - [Parameters](#parameters)
+  - [Set Listing](#set-listing-1)
+    - [Regions](#regions)
+      - [States](#states)
+      - [Census Divisions](#census-divisions)
+      - [Census Regions](#census-regions)
+      - [National](#national)
+    - [Goods and sectors from BEA -- Margin related sectors](#goods-and-sectors-from-bea----margin-related-sectors)
+      - [WiNDC Aggregation](#windc-aggregation)
+      - [GTAP\_32 Aggregation](#gtap_32-aggregation)
+      - [GTAP 10 Aggregation](#gtap-10-aggregation)
+      - [Macro](#macro)
+    - [Margins (trade or transport)](#margins-trade-or-transport)
+    - [Household Categories](#household-categories)
+    - [Transfer Types](#transfer-types)
 
 
 # Overview
 
-The WiNDC household subroutine is an extension to the core WiNDC buildstream that disaggregates regional representative households in the core database on the basis of household income from 2000-2022. The subroutine leverages several additional source datasets to produce disaggregate consumer accounts, including: the [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html), state-level statistics from the [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) database, commuting flows from the [American Community Survey](https://www.census.gov/programs-surveys/acs), Medicare and Medicaid benefits from [Centers for Medicare and Medicaid Services (CMS)](https://www.cms.gov/), [National Income and Product Accounts (NIPA)](https://www.bea.gov/itable/national-gdp-and-personal-income), average and marginal income tax rates from [TAXSIM](https://taxsim.nber.org/taxsim27/), the [Consumer Expenditure Survey (CE)](https://www.bls.gov/cex/), and several academic publications on under-reporting bias in survey data on transfer incomes. The disaggregation routine relies on an income balance condition that allows us to fully denominate incomes and expenditures without defining any ad hoc adjustment parameters to close the income balance constraint in a CGE model. The income balance condition is specified as:
+The WiNDC household subroutine is an extension to the core WiNDC buildstream that disaggregates regional representative households in the core database on the basis of household income from 2000-2023. The subroutine leverages several additional source datasets to produce disaggregate consumer accounts, including: the [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html), state-level statistics from the [Statistics of Income (SOI)](https://www.irs.gov/statistics/soi-tax-stats-statistics-of-income) database, commuting flows from the [American Community Survey](https://www.census.gov/programs-surveys/acs), Medicare and Medicaid benefits from [Centers for Medicare and Medicaid Services (CMS)](https://www.cms.gov/), [National Income and Product Accounts (NIPA)](https://www.bea.gov/itable/national-gdp-and-personal-income), average and marginal income tax rates from [TAXSIM](https://taxsim.nber.org/taxsim27/), the [Consumer Expenditure Survey (CE)](https://www.bls.gov/cex/), and several academic publications on under-reporting bias in survey data on transfer incomes. The disaggregation routine relies on an income balance condition that allows us to fully denominate incomes and expenditures without defining any ad hoc adjustment parameters to close the income balance constraint in a CGE model. The income balance condition is specified as:
 
 $$
 \sum_q WAGES_{rqh} + INTEREST_{rh} + \sum_{t}TRANS_{rht} = CONS_{rh} + TAXES_{rh} + SAVINGS_{rh}
@@ -42,7 +43,7 @@ The routine is designed to be flexible. The default options produce a dataset wi
 
 # Running the Household Subroutine
 
-Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2022 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
+Before running the household build, the user must first verify that the core WiNDC database has been constructed or downloaded and is located in the `core` subdirectory. Verify that all data sources have been downloaded to the local WiNDC distribution, specifically adding household files in the `data` directory. Navigate to the household subdirectory, which contains all GAMS code needed to generate the WiNDC household datasets for the years 2000 to 2023 (for the CPS-based build). Note that the distribution contains a restricted set of years for an SOI-based build, which is included purely as a sensitivity to the initial data source information.
 
 If you have a local version of GAMS and access to the relevant licenses, navigate in your command line to the directory household and run the GAMS file `build.gms` by typing the following command:
 
@@ -61,17 +62,14 @@ The code creates the directory `datasets`, generates the household datasets and 
     Command line options:
     |Command|Options| Default | Description |
     | ---   | ---   | --- | ---|
-    | year | cps: 2000-2022, soi: 2014-2017 | 2017, 2022 | Years to compute data |
+    | year | cps: 2000-2023, soi: 2014-2017 | 2017, 2023 | Years to compute data |
     | hhdata | cps, soi | cps | Primary household data source |
     | invest | static | static| Investment calibration |
     | captial_ownership| all, partial| all | Assumption on capital ownership |
     | rmap | state, census_divisions, census_regions, national | state | Regional mapping |
     | smap | windc, gtap_32, gtap_10, macro, bluenote | windc, gtap_32 | Sectoral mapping | 
 
-
-    Note: The option pair (`cps`, `all`) has a calibration error in years `2006` and `2007`. If you require these two years, with the given option pair, you can modify the bounds on the household variables. We opted to leave as-is to preserve variable preciseness in other years. 
-    
-     All other options and years run properly.
+     All options and years run properly.
 
 2. `cps_data.gms` - Reads [Current Population Survey (CPS)](https://www.census.gov/programs-surveys/cps.html) data from the directory `data/household/cps`, processes it and saves the processed data in a GDX file in the directory `household/gdx`. Processed data includes CPS income categories, number of households, and income tax rates. Notably, should a user like to change the income thresholds for households, see the R program that leverages the CPS API to grab and reconcile income data in `data/household/cps/read_cps.r`.
 
@@ -127,7 +125,8 @@ A complete overview of the household model accompanying the disaggregated set of
 
 # Optional R Routines
 
-Source datasets are compiled using the R programming language. All R routines needed for generating CPS, NIPA, SOI, ACS, and CMS source dataset `CSV` files accompany the data source download. All programs are heavily documented and should be self explanatory.
+Source datasets are compiled using the Julia programming langauge. If desired, the household data can be obtained using the package [available here](https://github.com/uw-windc/windc_household_data). The package has a corresponding [documentation website](https://uw-windc.github.io/windc_household_data/dev/) with details on package functions and how to run.
+
 
 # Set Listing
 

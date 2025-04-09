@@ -2,15 +2,16 @@
 
 <!-- TOC -->
 
+- [Core](#core)
 - [Description](#description)
 - [File Listing](#file-listing)
 - [Sets](#sets)
 - [Parameters](#parameters)
 - [Set Listing](#set-listing)
-    - [Years in WiNDC Database](#years-in-windc-database)
-    - [Regions in WiNDC Database](#regions-in-windc-database)
-    - [BEA Goods and sectors categories & Commodities employed in margin supply](#bea-goods-and-sectors-categories--commodities-employed-in-margin-supply)
-    - [Margins trade or transport](#margins-trade-or-transport)
+  - [Years in WiNDC Database](#years-in-windc-database)
+  - [Regions in WiNDC Database](#regions-in-windc-database)
+  - [BEA Goods and sectors categories \& Commodities employed in margin supply](#bea-goods-and-sectors-categories--commodities-employed-in-margin-supply)
+  - [Margins (trade or transport)](#margins-trade-or-transport)
 
 <!-- /TOC -->
 
@@ -27,7 +28,7 @@ By default, one version of the core WiNDC database will be generated and saved i
 
     gams build --huber=yes
 
-This file will be called `WiNDCdatabase_huber.gdx`. Both databases contain data for all US states and 69 (summary) sectors from 1997 to 2021.
+This file will be called `WiNDCdatabase_huber.gdx`. Both databases contain data for all US states and 69 (summary) sectors from 1997 to 2023.
 
 If you don't have access to a GAMS license including needed solver licenses, you can generate the databases locally using [NEOS](https://neos-server.org/neos/). To run the routines on NEOS, type the following command:
 
@@ -103,7 +104,7 @@ Once the core WiNDC database is generated, it can be loaded into a general equil
 
 8. `fafshare.gms` - Create the parameter `rpc` from the Freight Analysis Framework data. This replaces the Commodity Flow Survey from previous releases.
 
-    Inputs - `/data/core/windc_base.gdx`, `/data/core/faf_data_1997_2021.csv`
+    Inputs - `/data/core/windc_base.gdx`
 
     Outputs - `gdx/faf_rpcs.gdx`
     
@@ -141,7 +142,7 @@ Once the core WiNDC database is generated, it can be loaded into a general equil
     | ---   | ---   | --- | ---|
     | year | A single year | 2017 | Load a single year of the state-level dataset|
 
-11. `replicate.gms` - Run a model calibration check on the state-level data
+12. `replicate.gms` - Run a model calibration check on the state-level data
 
     Inputs: `WiNDCdatabase.gdx`
 
