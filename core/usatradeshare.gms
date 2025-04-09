@@ -76,11 +76,12 @@ set
 parameter
     usda(r,ayr)	State level exports from usda of total agricultural output;
 
-$call 'csv2gdx ../data/core/usda_time_series_exports.csv output=gdx/usda_time_series_exports.gdx id=usda useheader=yes index="(1,2)" value=3 CheckDate=yes';
-$gdxin 'gdx/usda_time_series_exports.gdx'
-$load ayr=Dim2
+
+$gdxin '../data/core/windc_base.gdx'
+$loaddc ayr<usda.dim2
 $loaddc usda
 $gdxin
+
 
 $ontext	 
 parameter

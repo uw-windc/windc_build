@@ -4,14 +4,14 @@ $title Consolidate household datasets
 * Set options
 * -----------------------------------------------------------------------------
 
-* set year(s) to compute data (cps: 2000-2021, soi: 2014-2017)
-$if not set year $set year 2017
+* set year(s) to compute data (cps: 2000-2023, soi: 2014-2017)
+$if not set year $set year 2023
 
 * set environment variable for alternative household datasets
 $if not set hhdata $set hhdata "cps"
 
 * set invest assumption (static vs. dynamic)
-$if not set invest $set invest "dynamic"
+$if not set invest $set invest "static"
 
 * set assumption on capital ownership (all,partial)
 $if not set capital_ownership $set capital_ownership "all"

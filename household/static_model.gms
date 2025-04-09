@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2021
+$set ds cps_static_all_2023
 
 * Allow for end of line comments
 $eolcom !
@@ -108,7 +108,7 @@ $prod:X(r,g)$x_(r,g)  t:4
         o:PD(r,g)       q:xd0(r,g)
         i:PY(r,g)       q:s0(r,g)
 
-$prod:A(r,g)$a_(r,g)  s:0 dm:4  d(dm):2
+$prod:A(r,g)$a_(r,g)  s:0 dm:2  d(dm):4
         o:PA(r,g)       q:a0(r,g)               a:GOVT t:ta(r,g)       p:(1-ta0(r,g))
         o:PFX           q:rx0(r,g)
         i:PN(g)         q:nd0(r,g)      d:
@@ -323,11 +323,19 @@ $macro PI_X(r,g) ((theta_PFX_X(r,g)*PFX**(1+4) + theta_PN_X(r,g)*PN(g)**(1+4) + 
 
 * $prod:X(r,g)$x_(r,g)  t:4
 *         o:PFX           q:(x0(r,g)-rx0(r,g))
-$macro	O_X_PFX(r,g)	((x0(r,g)-rx0(r,g))*(PFX/PI_X(r,g))**4)
+$macro	O_X_PFX(r,g)	((x0(r,g)-rx0(r,g))*((PFX/PI_X(r,g))**4)$(x0(r,g)-rx0(r,g)))
 *         o:PN(g)         q:xn0(r,g)
-$macro	O_X_PN(g,r)	(xn0(r,g)*(PN(g)/PI_X(r,g))**4)
-*         o:PD(r,g)       q:xd0(r,g)
-$macro	O_X_PD(r,g)	(xd0(r,g)*(PD(r,g)/PI_X(r,g))**4)
+$macro	O_X_PN(g,r)	(xn0(r,g)*((PN(g)/PI_X(r,g))**4)$xn0(r,g))
+
+*	This is a tricky piece of code.  The PIP sector in HI has a single output from the 
+*	X sector into the PD market.  This output is only used in margins which have a Leontief
+*	demand structure.  In a counter-factual equilibrium, the price (PD("HI","PIP")) can then
+*	fall to zero, and iso-elastic compensated supply function cannot be evaluated  (0/0).
+*	We therefore need to differentiate between sectors with Leontief supply and those in 
+*	which outputs are produce for multiple markets.  This is the sort of numerical nuisance
+*	that is avoided when using MPSGE.
+
+$macro	O_X_PD(r,g)	(xd0(r,g)*((((PD(r,g)/PI_X(r,g))**4)$round(1-theta_PD_X(r,g),6) + (1)$(not round(1-theta_PD_X(r,g),6))))$xd0(r,g))
 *         i:PY(r,g)       q:s0(r,g)
 $macro	I_PY_X(r,g)	s0(r,g)
 
@@ -337,26 +345,28 @@ prf_X(r,g)$x_(r,g)..	PY(r,g)*I_PY_X(r,g) =e= PFX*O_X_PFX(r,g) + PN(g)*O_X_PN(g,r
 
 *	-----------------------------------------------------------------------------------
 parameter	theta_PN_A_d(r,g)	National value share in nest d,
+		theta_PD_A_d(r,g)       Regional value share in nest d,
 		theta_PFX_A_dm(r,g)	Imported value share in nest dm;
 
-$echo	theta_PN_A_d(r,g)$a_(r,g) = nd0(r,g)/(nd0(r,g)+dd0(r,g));					>>%gams.scrdir%static_hh_mcp.gen	
-$echo	theta_PFX_A_dm(r,g)$a_(r,g) = m0(r,g)*(1+tm0(r,g))/(m0(r,g)*(1+tm0(r,g))+nd0(r,g)+dd0(r,g));	>>%gams.scrdir%static_hh_mcp.gen
+$echo	theta_PN_A_d(r,g)=0; theta_PFX_A_dm(r,g)=0; theta_PD_A_d(r,g) = 0;				>>%gams.scrdir%static_hh_mcp.gen
+$echo	theta_PN_A_d(r,g)$nd0(r,g) = nd0(r,g)/(nd0(r,g)+dd0(r,g));					>>%gams.scrdir%static_hh_mcp.gen
+$echo	theta_PD_A_d(r,g)$dd0(r,g) = dd0(r,g)/(nd0(r,g)+dd0(r,g));					>>%gams.scrdir%static_hh_mcp.gen
+$echo	theta_PFX_A_dm(r,g)$m0(r,g) = m0(r,g)*(1+tm0(r,g))/(m0(r,g)*(1+tm0(r,g))+nd0(r,g)+dd0(r,g));	>>%gams.scrdir%static_hh_mcp.gen
 
-$macro PI_A_D(r,g)	((theta_PN_A_d(r,g)*PN(g)**(1-2)+(1-theta_PN_A_d(r,g))*PD(r,g)**(1-2))**(1/(1-2)))
-$macro PI_A_DM(r,g)	((theta_PFX_A_dm(r,g)*(PFX*(1+tm(r,g))/(1+tm0(r,g)))**(1-4)+(1-theta_PFX_A_dm(r,g))*PI_A_D(r,g)**(1-4))**(1/(1-4)))
+$macro PI_A_D(r,g)	((theta_PN_A_d(r,g)*PN(g)**(1-4)$theta_PN_A_d(r,g)+theta_PD_A_d(r,g)*PD(r,g)**(1-4)$theta_PD_A_d(r,g))**(1/(1-4)))
+$macro PI_A_DM(r,g)	((theta_PFX_A_dm(r,g)*(PFX*(1+tm(r,g))/(1+tm0(r,g)))**(1-2)$theta_PFX_A_dm(r,g)+(1-theta_PFX_A_dm(r,g))*PI_A_D(r,g)**(1-2)$(1-theta_PFX_A_dm(r,g)))**(1/(1-2)))
 
-
-* $prod:A(r,g)$a_(r,g)  s:0 dm:4  d(dm):2
+* $prod:A(r,g)$a_(r,g)  s:0 dm:2  d(dm):4
 *         o:PA(r,g)       q:a0(r,g)               a:GOVT t:ta(r,g)       p:(1-ta0(r,g))
 $macro O_A_PA(r,g)	a0(r,g)
 *         o:PFX           q:rx0(r,g)
 $macro O_A_PFX(r,g)	rx0(r,g)
 *         i:PN(g)         q:nd0(r,g)      d:
-$macro I_PN_A(g,r)	(nd0(r,g)*(PI_A_DM(r,g)/PI_A_D(r,g))**4 * (PI_A_D(r,g)/PN(g))**2)
+$macro I_PN_A(g,r)	(nd0(r,g)*((PI_A_DM(r,g)/PI_A_D(r,g))**2 * (PI_A_D(r,g)/PN(g))**4)$nd0(r,g))
 *         i:PD(r,g)       q:dd0(r,g)      d:
-$macro I_PD_A(r,g)	(dd0(r,g)*(PI_A_DM(r,g)/PI_A_D(r,g))**4 * (PI_A_D(r,g)/PD(r,g))**2)
+$macro I_PD_A(r,g)	(dd0(r,g)*((PI_A_DM(r,g)/PI_A_D(r,g))**2 * (PI_A_D(r,g)/PD(r,g))**4)$dd0(r,g))
 *         i:PFX           q:m0(r,g)       dm:     a:GOVT t:tm(r,g)       p:(1+tm0(r,g))
-$macro I_PFX_A(r,g)	(m0(r,g)*(PI_A_DM(r,g)*(1+tm0(r,g))/(PFX*(1+tm(r,g))))**4)
+$macro I_PFX_A(r,g)	(m0(r,g)*((PI_A_DM(r,g)*(1+tm0(r,g))/(PFX*(1+tm(r,g))))**2)$m0(r,g))
 *         i:PM(r,m)       q:md0(r,m,g)
 $macro I_PM_A(r,m,g)	md0(r,m,g)
 
@@ -378,6 +388,7 @@ $macro I_PD_MS(r,gm,m)	(dm0(r,gm,m))
 prf_MS(r,m)..	sum(gm, PD(r,gm)*I_PD_MS(r,gm,m) + PN(gm)*I_PN_MS(gm,r,m)) =e= PM(r,m)*O_MS_PM(r,m);
 
 *	-----------------------------------------------------------------------------------
+
 parameter	thetac(r,g,h)	Consumption value share;
 $echo	thetac(r,g,h) = cd0_h(r,g,h)/sum(g.local,cd0_h(r,g,h));	>>%gams.scrdir%static_hh_mcp.gen
 
@@ -385,13 +396,14 @@ $echo	thetac(r,g,h) = cd0_h(r,g,h)/sum(g.local,cd0_h(r,g,h));	>>%gams.scrdir%sta
 *	are independent of set g dimensions appearing in equation in which 
 *	this function appears.
 
-$macro	PI_C(r,h)	(prod(g.local,PA(r,g)**thetac(r,g,h)))
+* $macro	PI_C(r,h)	(prod(g.local,PA(r,g)**thetac(r,g,h)))
+$macro  PI_C(r,h,n)	((prod(g.local$thetac(r,g,h), PA(r,g)**thetac(r,g,h)))$sameas(n,"s"))
 
 * $prod:C(r,h)	  s:1
 *        o:PC(r,h)       q:c0_h(r,h)
 $macro	O_C_PC(r,h)	(c0_h(r,h))
 *        i:PA(r,g)       q:cd0_h(r,g,h)
-$macro	I_PA_C(r,g,h)	(cd0_h(r,g,h)*PI_C(r,h)/PA(r,g))	! N.B. Set g enters PI_C but is local to that macro
+$macro	I_PA_C(r,g,h)	(cd0_h(r,g,h)*(PI_C(r,h,"s")/PA(r,g))$cd0_h(r,g,h))	! N.B. Set g enters PI_C but is local to that macro
 
 prf_c(r,h)..	sum(g, PA(r,g)*I_PA_C(r,g,h)) =e= PC(r,h)*O_C_PC(r,h);
 
@@ -571,8 +583,18 @@ model static_hh_mcp /
 	aux_SSK.SSK,
 	aux_CPI.CPI /;
 
+*	Fix to zero commodity prices and sectoral activity levels
+*	which do not enter the model:
+
+PK.LO = 1e-5;
 PA.FX(r,g)$(not a0(r,g)) = 1;
 ROW.FX$(not fint0) = 0;
+PA.FX(r,g)$(not a0(r,g)) = 0;
+PY.FX(r,g)$(not s0(r,g)) = 0;
+PD.FX(r,g)$(not xd0(r,g)) = 0;
+Y.FX(r,s)$(not y_(r,s)) = 0;
+X.FX(r,g)$(not x_(r,g)) = 0;
+A.FX(r,g)$(not a_(r,g)) = 0;
 
 static_hh_mcp.workspace = 10000;
 static_hh_mcp.iterlim=0;

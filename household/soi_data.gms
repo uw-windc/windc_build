@@ -21,7 +21,7 @@ $set gdxdir gdx/
 
 * Translate the SOI income CSV data to GDX:
 
-$set file "%soidir%soi_income_totals_2014_2017.csv"
+$set file "%soidir%soi_income_totals.csv"
 $if not exist %file% $abort "%file% does not exist. Did you place the data in the correct location?"
 $call 'csv2gdx "%file%" id=soicsv useheader=yes index="(1,2,3,4)" values=5 output="%gdxdir%soicsv.gdx" CheckDate=yes trace=3'
 
@@ -153,7 +153,7 @@ set
 * 60b First-time homebuyer credit repayment. Attach Form 5405 if required -- missing
 * 62c Taxes from Instructions -- missing
 		
-		fed_tax.a10300 ! Total tax liability amount [8] 1040:63 / 1040A:39 / 1040EZ: 10"
+		fed_tax.a10300 ! Total tax liability amount [8] 1040:63 / 1040A:39 / 1040EZ: 10
 
 		retirement.(
 			a03300	! Self-employment retirement plans amount 1040:28
@@ -210,7 +210,7 @@ display fedtax;
 set
     h		Household categories /
                 hh1      "under $25,000",
-		hh2      "$25,000 under $50,000",
+				hh2      "$25,000 under $50,000",
                 hh3      "$50,000 under $75,000",
                 hh4      "$75,000 under $200,000",
                 hh5      "over $200,000" /,

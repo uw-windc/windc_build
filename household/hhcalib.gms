@@ -54,7 +54,7 @@ $title Read the household data and recalibrate WiNDC household accounts
 * -----------------------------------------------------------------------------
 
 * set year of interest
-$if not set year $set year 2021
+$if not set year $set year 2022
 
 * set underlying dataset for recalibration
 $if not set hhdata $set hhdata "cps"
@@ -329,8 +329,8 @@ $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(cps_nipa(yr,'government be
 $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hdisval','meyer');
 
 $if %hhdata%=="cps" trn_weight_(yr,'hvetval','rothbaum') = 1 / 0.679;
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans' benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans' benefits")/100 + 1);
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans' benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans benefits")/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
 
 * Otherwise, default to literature estimates
 
@@ -378,7 +378,7 @@ parameter
     health_care_transfers(r,*,*,*)	Medicaid and medicare transfers payments;
 
 $set health_data_dir ../data/household/health_care/
-$set file "%health_data_dir%public_health_benefits_2009_2019.csv"
+$set file "%health_data_dir%public_health_benefits.csv"
 $call 'csv2gdx "%file%" id=health_care_transfers useheader=yes index="(1,2,3)" values="(4,5)" output="%gdxdir%public_health_benefits.gdx"'
 $gdxin '%gdxdir%public_health_benefits.gdx'
 $load health_care_transfers
@@ -485,6 +485,7 @@ $endif.dynamic
 
 parameter
     household_shares(r,h,*)	Household shares of income,
+    hhtrans_shr(r,h,*)          Transfer shares,
     ret_dist0(r,h)		Reference retirement distributions from hh data,
     savings_rate_bea0		Reference economy-wide savings rate from bea /0.1/,
     savings_rate0(r,h)		Reference savings rate,
@@ -533,6 +534,33 @@ $if %capital_ownership%=="partial" save_target=1;
 ret_dist0(r,h) = save0(r,h) / sum(h.local, save0(r,h));
 display ret_dist0, savings_rate0;
 
+* Read in data from CBO on the distribution of wealth across income quintiles in
+* the U.S.:
+parameter
+    cbo_wealth_distribution(h);
+
+cbo_wealth_distribution('hh1') = 0.025871517;
+cbo_wealth_distribution('hh2') = 0.043989237;
+cbo_wealth_distribution('hh3') = 0.077542098;
+cbo_wealth_distribution('hh4') = 0.147248546;
+cbo_wealth_distribution('hh5') = 0.705348602;    
+
+* Read in data from BLS on the distribution of aggregate expenditures across
+* income quintiles in the U.S. Numbers are average annual expenditures by income
+* quintile (before taxes):
+parameter
+    bls_exp_distribution(r,h);
+
+bls_exp_distribution(r,'hh1') = 25138;
+bls_exp_distribution(r,'hh2') = 36770;
+bls_exp_distribution(r,'hh3') = 47664;
+bls_exp_distribution(r,'hh4') = 64910;
+bls_exp_distribution(r,'hh5') = 112221;
+
+bls_exp_distribution(r,h) = bls_exp_distribution(r,h) * pop0(r,h) /
+    sum((hh), bls_exp_distribution(r,hh) * pop0(r,hh));
+
+
 * Define a multiplier that characterizes the ratio of income received from labor
 * compensation to sectoral labor payments. If the number is <1, we can interpret
 * as relatively more commuters coming into the state to work. If >1, commuters
@@ -575,6 +603,11 @@ othinc0(r,h) = cons0(r,h)/sum(h.local, cons0(r,h)) * c0(r) +
 display othinc0, adj_trans0;
 
 
+* Calculate transfer shares:
+
+hhtrans_shr(r,h,trn) = hhtrans0(r,h,trn) / sum(trn.local, hhtrans0(r,h,trn));
+
+
 * -----------------------------------------------------------------------------
 * Income side balancing routine
 * -----------------------------------------------------------------------------
@@ -585,27 +618,30 @@ variable
     TAXES(r,h)		Direct labor tax payments,
     OBJ			Objective definition,
     FSAV            	Foreign savings in United States,
+    TRANS(r,h)		Total Transfer payments,
     OTHINC(r,h)		Other non-governmental transfer income;
 
 nonnegative
 variable
-    TRANS(r,h)		Transfer payments,
-    TRANSHH(r,h,*)	Disaggregate Transfer payments,
+    TRANS_GOV(r,h)	Governmental transfer payments,
     CONS(r,h)		Consumption expenditure
     WAGES(r,r,h)	Aggregate wage income (living in r and working in rr),
     INTEREST(r,h)	Aggregate interest income,
     FINT		Foreign capital ownership,
-    SAVE(r,h)		Savings,
-    SAVE_RATE(r,h)	Savings rate (relative to consumption);
+    SAVE(r,h)		Savings;
 
 equations
     objdef		Objective function,
     taxdef		Tax constraint,
     consdef		Consumption constraint,
+    consdis             Distribution of consumption constraint (BLS),
     wagedef		Cross state labor income constraint,
+    wagedis		Wage distribution assumption (CPS),
+    commutedis          Commuting distribution assumption (ACS),
     interestdef		Capital income constraint,
+    interestdis		Capital income distribution assumption (CPS),
     savedef		Savings constraint,
-    saveratedef		Definition of savings rate,
+    savedis             Savings distribution assumption (CBO),
     targetsave		Target economy-wide savings rate from bea,
     incbal		Income balance closure,
     disagtrn		Disaggregate transfer payment;
@@ -633,21 +669,37 @@ taxdef(r,h)..
 consdef(r)..
     sum(h, CONS(r,h)) =e= c0(r);
 
+* distribution assumption on total household consumption (driven by BLS)
+consdis(r,h)..
+    CONS(r,h) =e= bls_exp_distribution(r,h) * sum((hh), CONS(r,hh));
+
 * wage income must sum to total labor demands by region
 wagedef(rr)..
     sum((r,h), WAGES(r,rr,h)) =e= sum(s, ld0(rr,s));
+
+* distribution of wage income driven by the data (CPS or SOI)
+wagedis(r,h)..
+    sum(rr, WAGES(r,rr,h)) * sum(hh, wages0(r,hh)) =e= wages0(r,h) * sum((rr,hh), WAGES(r,rr,hh));
+
+* put lower bound on commuting
+commutedis(r,h)..
+    WAGES(r,r,h) =g= sum(rr$(not sameas(r,rr)), WAGES(r,rr,h));
 
 * capital rents must sum to total capital demands by region
 interestdef..
     sum((r,h), INTEREST(r,h)) + FINT =e= sum((r,s), kd0(r,s) + yh0(r,s));
 
+* distribution of interest income driven by the data (CPS or SOI)
+interestdis(r,h)..
+    INTEREST(r,h) * sum(hh, interest0(r,hh)) =e= interest0(r,h) * sum(hh, INTEREST(r,hh));
+
 * ignore enterprise and government saving:
 savedef..
     sum((r,h), SAVE(r,h)) + FSAV =e= sum((r,g), i0(r,g));
 
-* define savings rate
-saveratedef(r,h)..
-    SAVE_RATE(r,h) * (CONS(r,h)+SAVE(r,h)) =e= SAVE(r,h);
+* distribution of household savings driven by wealth data from CBO
+savedis(r,h)..
+    SAVE(r,h) =e= cbo_wealth_distribution(h) * sum(hh, SAVE(r,hh));
 
 * target economy-wide savings rate
 targetsave$save_target..
@@ -659,36 +711,26 @@ incbal(r,h)..
 
 * disaggregate transfer payments
 disagtrn(r,h)..
-    sum(trn, TRANSHH(r,h,trn)) + OTHINC(r,h) =e= TRANS(r,h);
+    sum(trn, hhtrans_shr(r,h,trn)*TRANS_GOV(r,h)) + OTHINC(r,h) =e= TRANS(r,h);
 
-model calib_step2_%hhdata% / objdef, taxdef, consdef, wagedef, interestdef,
-			     savedef, saveratedef, targetsave, incbal, disagtrn /;
+model calib_step2_%hhdata% / objdef, taxdef, consdef, consdis, wagedef, wagedis, commutedis,
+			     interestdef, interestdis, savedef, savedis, targetsave, incbal,
+			     disagtrn /;
 
-* Bounds on ABSOLUTE government transfers (we have good data on this). 
+* Bound on governmental transfers (we have good data on this), assume
+* distribution of transfers is constant:
 
-TRANSHH.L(r,h,trn) = hhtrans0(r,h,trn);
-
-$if %hhdata% == "cps" TRANSHH.LO(r,h,trn) = 0.8 * hhtrans0(r,h,trn);
-$if %hhdata% == "cps" TRANSHH.UP(r,h,trn) = 1.2 * hhtrans0(r,h,trn);
-
-$if %hhdata% == "soi" TRANSHH.LO(r,h,trn) = 0.5 * hhtrans0(r,h,trn);
-$if %hhdata% == "soi" TRANSHH.UP(r,h,trn) = 1.5 * hhtrans0(r,h,trn);
+$if %hhdata% == "cps" TRANS_GOV.LO(r,h) = 0.8 * sum(trn, hhtrans0(r,h,trn));
+$if %hhdata% == "cps" TRANS_GOV.UP(r,h) = 1.2 * sum(trn, hhtrans0(r,h,trn));
+$if %hhdata% == "soi" TRANS_GOV.LO(r,h) = 0.5 * sum(trn, hhtrans0(r,h,trn));
+$if %hhdata% == "soi" TRANS_GOV.UP(r,h) = 1.5 * sum(trn, hhtrans0(r,h,trn));
 
 TRANS.L(r,h) = sum(trn, hhtrans0(r,h,trn));
-
-* Fix "other" transfer income not accounted for in the household data (can
-* be negative) to zero in the static case. Allow adjustments in dynamic
-* calibration as an additional "transfer" category:
-
-$if %invest% == "static" OTHINC.FX(r,h) = 0;
-$if %invest% == "dynamic" OTHINC.L(r,h) = 0;
-$if %invest% == "dynamic" OTHINC.LO(r,h)$(ord(h)<4) = 0;
 
 * Require a lower bound on aggregate consumption to prevent zero values from
 * occurring
 
 CONS.L(r,h) = cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
-CONS.LO(r,h) = 0.1 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
 
 * Target income SHARES for wages and capital earnings (both categories having
 * missing information so we target the distribution based on WiNDC
@@ -699,19 +741,12 @@ CONS.LO(r,h) = 0.1 * cons0(r,h) / sum(h.local, cons0(r,h)) * c0(r);
 * commute.
 
 WAGES.L(r,r,h) = household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-
-$if %hhdata% == "cps" WAGES.LO(r,r,h) = 0.65 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-$if %hhdata% == "cps" WAGES.UP(r,r,h) = 1.25 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-$if %hhdata% == "soi" WAGES.LO(r,r,h) = 0.5 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-$if %hhdata% == "soi" WAGES.UP(r,r,h) = 1.5 * household_shares(r,h,'wages') * le0_multiplier(r) * sum(s, ld0(r,s));
-
 WAGES.L(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 0.5 * commute0(r,rr)/card(h);
-WAGES.LO(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 0.1 * commute0(r,rr)/card(h);
-WAGES.UP(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 1.25 * commute0(r,rr)/card(h);
+WAGES.LO(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 0.05 * commute0(r,rr)/card(h);
+* WAGES.UP(r,rr,h)$(commute0(r,rr)>0 and not sameas(r,rr)) = 2 * commute0(r,rr)/card(h);
 WAGES.FX(r,rr,h)$(commute0(r,rr)=0 and not sameas(r,rr)) = 0;
 
 INTEREST.L(r,h) = household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
-
 $if %hhdata% == "cps" INTEREST.LO(r,h) = 0.75 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
 $if %hhdata% == "cps" INTEREST.UP(r,h) = 1.25 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
 $if %hhdata% == "soi" INTEREST.LO(r,h) = 0.5 * household_shares(r,h,'cap') * cap_own0 * sum((s,rr), kd0(rr,s));
@@ -731,14 +766,6 @@ INTEREST.UP(r,h)$(ord(h)=card(h)) = inf;
 SAVE.L(r,h) = save0(r,h);
 $if %hhdata% == "cps" SAVE.LO(r,h) = 0.1 * save0(r,h);
 $if %hhdata% == "soi" SAVE.LO(r,h) = 0.1 * save0(r,h);
-
-* Constrain savings rate letting any additional savings needed to close the
-* budget constraint accrues to the upper income group
-
-SAVE_RATE.L(r,h) = savings_rate0(r,h);
-SAVE_RATE.LO(r,h) = min(savings_rate0(r,h),savings_rate0(r,h-1));
-SAVE_RATE.UP(r,h) = max(savings_rate0(r,h),savings_rate0(r,h+1));
-SAVE_RATE.UP(r,h)$(ord(h)=card(h)) = inf;
 
 * Taxes are constrained by a fixed tax rate in the balancing routine
 
@@ -763,10 +790,10 @@ parameter
 
 cbochk(h) = sum(r, TRANS.L(r,h) - TAXES.L(r,h));
 
-chkhhdata("income","total",h) = sum(r, sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h));
+chkhhdata("income","total",h) = sum(r, sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
 chkhhdata("income","wage",h) = sum(r, sum(rr, WAGES.L(r,rr,h))) / chkhhdata("income","total",h);
 chkhhdata("income","interest",h) = sum(r, INTEREST.L(r,h)) / chkhhdata("income","total",h);
-chkhhdata("income","transfers",h) = sum(r, TRANS.L(r,h)) / chkhhdata("income","total",h);
+chkhhdata("income","gov_transfers",h) = sum(r, TRANS_GOV.L(r,h)) / chkhhdata("income","total",h);
 chkhhdata("income","other",h) = sum(r, OTHINC.L(r,h)) / chkhhdata("income","total",h);
 
 chkhhdata("expend","total",h) = sum(r, CONS.L(r,h) + TAXES.L(r,h) + SAVE.L(r,h));
@@ -774,10 +801,10 @@ chkhhdata("expend","cons",h) = sum(r, CONS.L(r,h)) / chkhhdata("expend","total",
 chkhhdata("expend","taxes",h) = sum(r, TAXES.L(r,h)) / chkhhdata("expend","total",h);
 chkhhdata("expend","save",h) = sum(r, SAVE.L(r,h)) / chkhhdata("expend","total",h);
 
-chktotals("income","total",h) = sum(r, sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h));
+chktotals("income","total",h) = sum(r, sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
 chktotals("income","wage",h) = sum(r, sum(rr, WAGES.L(r,rr,h)));
 chktotals("income","interest",h) = sum(r, INTEREST.L(r,h));
-chktotals("income","transfers",h) = sum(r, TRANS.L(r,h));
+chktotals("income","gov_transfers",h) = sum(r, TRANS_GOV.L(r,h));
 chktotals("income","other",h) = sum(r, OTHINC.L(r,h));
 
 chktotals("expend","total",h) = sum(r, CONS.L(r,h) + TAXES.L(r,h) + SAVE.L(r,h));
@@ -785,38 +812,40 @@ chktotals("expend","cons",h) = sum(r, CONS.L(r,h));
 chktotals("expend","taxes",h) = sum(r, TAXES.L(r,h));
 chktotals("expend","save",h) = sum(r, SAVE.L(r,h));
 
-increp(r,h,'wage','cal') = sum(rr, WAGES.L(r,rr,h)) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.l(r,h));
-increp(r,h,'interest','cal') = INTEREST.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h));
-increp(r,h,'trans','cal') = TRANS.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h));
-increp(r,h,'other','cal') = OTHINC.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h));
-increp('us',h,'wage','cal') = sum(r, sum(rr, WAGES.L(r,rr,h))) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp('us',h,'interest','cal') = sum(r, INTEREST.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp('us',h,'trans','cal') = sum(r, TRANS.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp('us',h,'trans','cal') = sum(r, OTHINC.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
+increp(r,h,'wage','cal') = sum(rr, WAGES.L(r,rr,h)) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
+increp(r,h,'interest','cal') = INTEREST.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
+increp(r,h,'gov_trans','cal') = TRANS_GOV.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
+increp(r,h,'other','cal') = OTHINC.L(r,h) / (sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h));
+increp('us',h,'wage','cal') = sum(r, sum(rr, WAGES.L(r,rr,h))) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp('us',h,'interest','cal') = sum(r, INTEREST.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp('us',h,'gov_trans','cal') = sum(r, TRANS_GOV.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp('us',h,'other','cal') = sum(r, OTHINC.L(r,h)) / sum(r,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
 increp(r,"all",'wage','cal') = sum(h, sum(rr, WAGES.L(r,rr,h))) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
-increp(r,"all",'interest','cal') = sum(h, INTEREST.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp(r,"all",'trans','cal') = sum(h, TRANS.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp(r,"all",'trans','cal') = sum(h, OTHINC.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp("us","all",'wage','cal') = sum((r,rr,h), WAGES.L(r,rr,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp("us","all",'interest','cal') = sum((r,h), INTEREST.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp("us","all",'trans','cal') = sum((r,h), TRANS.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
-increp("us","all",'trans','cal') = sum((r,h), OTHINC.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h) + OTHINC.L(r,h)));
+increp(r,"all",'interest','cal') = sum(h, INTEREST.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp(r,"all",'gov_trans','cal') = sum(h, TRANS_GOV.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp(r,"all",'other','cal') = sum(h, OTHINC.L(r,h)) / sum(h,(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp("us","all",'wage','cal') = sum((r,rr,h), WAGES.L(r,rr,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp("us","all",'interest','cal') = sum((r,h), INTEREST.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp("us","all",'gov_trans','cal') = sum((r,h), TRANS_GOV.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
+increp("us","all",'other','cal') = sum((r,h), OTHINC.L(r,h)) / sum((r,h),(sum(rr, WAGES.L(r,rr,h)) + INTEREST.L(r,h) + TRANS.L(r,h)));
 
 increp(r,h,'wage','data') = WAGES0(r,h) / (WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h));
 increp(r,h,'interest','data') = INTEREST0(r,h) / (WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h));
-increp(r,h,'trans','data') = TRANS0(r,h) / (WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h));
+increp(r,h,'gov_trans','data') = TRANS0(r,h) / (WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h));
 increp('us',h,'wage','data') = sum(r, WAGES0(r,h)) / sum(r,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 increp('us',h,'interest','data') = sum(r, INTEREST0(r,h)) / sum(r,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
-increp('us',h,'trans','data') = sum(r, TRANS0(r,h)) / sum(r,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
+increp('us',h,'gov_trans','data') = sum(r, TRANS0(r,h)) / sum(r,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 increp(r,"all",'wage','data') = sum(h, WAGES0(r,h)) / sum(h,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 increp(r,"all",'interest','data') = sum(h, INTEREST0(r,h)) / sum(h,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
-increp(r,"all",'trans','data') = sum(h, TRANS0(r,h)) / sum(h,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
+increp(r,"all",'gov_trans','data') = sum(h, TRANS0(r,h)) / sum(h,(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 increp("us","all",'wage','data') = sum((r,h), WAGES0(r,h)) / sum((r,h),(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 increp("us","all",'interest','data') = sum((r,h), INTEREST0(r,h)) / sum((r,h),(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
-increp("us","all",'trans','data') = sum((r,h), TRANS0(r,h)) / sum((r,h),(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
+increp("us","all",'gov_trans','data') = sum((r,h), TRANS0(r,h)) / sum((r,h),(WAGES0(r,h) + INTEREST0(r,h) + TRANS0(r,h)));
 
 cons_save(r,h,'cons') = CONS.L(r,h);
+cons_save('tot','tot','cons') = sum((r,h), CONS.L(r,h));
 cons_save(r,h,'save') = SAVE.L(r,h);
+cons_save('tot','tot','save') = sum((r,h), SAVE.L(r,h));
 cons_save(r,h,'savings_rate') = SAVE.L(r,h) / (CONS.L(r,h)+SAVE.L(r,h));
 cons_save('tot','tot','savings_rate') = sum((r,h), SAVE.L(r,h)) / sum((r,h), CONS.L(r,h)+SAVE.L(r,h));
 
@@ -826,9 +855,9 @@ boundshr(h,'wage','mean') = chkhhdata("income","wage",h);
 boundshr(h,'interest','min') = smin(r, increp(r,h,'interest','cal'));
 boundshr(h,'interest','max') = smax(r, increp(r,h,'interest','cal'));
 boundshr(h,'interest','mean') = chkhhdata("income","interest",h);
-boundshr(h,'trans','min') = smin(r, increp(r,h,'trans','cal'));
-boundshr(h,'trans','max') = smax(r, increp(r,h,'trans','cal'));
-boundshr(h,'trans','mean') = chkhhdata("income","transfers",h);
+boundshr(h,'gov_trans','min') = smin(r, increp(r,h,'gov_trans','cal'));
+boundshr(h,'gov_trans','max') = smax(r, increp(r,h,'gov_trans','cal'));
+boundshr(h,'gov_trans','mean') = chkhhdata("income","gov_transfers",h);
 boundshr(h,'other','min') = smin(r, increp(r,h,'other','cal'));
 boundshr(h,'other','max') = smax(r, increp(r,h,'other','cal'));
 boundshr(h,'other','mean') = chkhhdata("income","other",h);
@@ -842,7 +871,6 @@ chkwages(r,'all','ld0') = sum(s, ld0(r,s));
 chkwages(r,'all','ld0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','ld0');
 chkwages(r,'all','le0_pct') = 100 * chkwages(r,'all','le0_cal') / chkwages(r,'all','le0');
 display cbochk, chkhhdata, hhshares, chktotals, increp, boundshr, chkwages, cons_save, WAGES.L;
-display fsav.l, fint.l, othinc.l;
 
 parameter
     avg_tax_h, avg_tax_r, avg_tax    Reports on average tax rates;
@@ -851,6 +879,7 @@ avg_tax_h(h) = sum(r, TAXES.L(r,h)) / sum(r, sum(rr, WAGES.L(r,rr,h)));
 avg_tax_r(r) = sum(h, TAXES.L(r,h)) / sum(h, sum(rr, WAGES.L(r,rr,h)));
 avg_tax = sum((r,h), TAXES.L(r,h)) / sum((r,h), sum(rr, WAGES.L(r,rr,h)));
 display avg_tax_h, avg_tax;
+
 
 
 * -----------------------------------------------------------------------------
@@ -1002,13 +1031,14 @@ ke0(r,h) = INTEREST.L(r,h);
 sav0(r,h) = SAVE.L(r,h);
 fsav0 = FSAV.L;
 fint0 = FINT.L;
-trn0(r,h) = TRANS.L(r,h);
 
-$if %hhdata%=="soi" hhtrn0(r,h,trn) = trn0(r,h);
-$if %hhdata%=="cps" hhtrn0(r,h,trn) = TRANSHH.L(r,h,trn);
+$if %hhdata%=="soi" hhtrn0(r,h,'gov') = TRANS_GOV.L(r,h);
+$if %hhdata%=="soi" trn('gov') = yes;
+$if %hhdata%=="cps" hhtrn0(r,h,trn) = hhtrans_shr(r,h,trn) * TRANS_GOV.L(r,h);
 
-$if %invest%=="dynamic" trn('other') = yes;
-$if %invest%=="dynamic" hhtrn0(r,h,'other') = OTHINC.L(r,h);
+trn('other') = yes;
+hhtrn0(r,h,'other') = OTHINC.L(r,h);
+trn0(r,h) = sum(trn, hhtrn0(r,h,trn));
 
 * Output resulting data parameters
 

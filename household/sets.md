@@ -100,7 +100,7 @@
 
 #### Census Divisions 
 
-| uni   | element_text       |
+| r     | Description        |
 |:------|:-------------------|
 | neg   | New England        |
 | mid   | Mid Atlantic       |
@@ -115,19 +115,19 @@
 
 #### Census Regions
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| nor   |                |
-| mid   |                |
-| sou   |                |
-| wes   |                |
+| nor   | Northeast      |
+| mid   | Midwest        |
+| sou   | South          |
+| wes   | West           |
 
 
 #### National
 
-| uni   | element_text   |
+| r   | Description   |
 |:------|:---------------|
-| usa   |                |
+| usa   | United States  |
 
 
 ### Goods and sectors from BEA -- Margin related sectors
@@ -283,35 +283,36 @@
 
 ### Margins (trade or transport)
 
-| m   | Description   |
-|:----|:--------------|
-| trn | transport     |
-| trd | trade         |
+| m   | Description          |
+|:----|:---------------------|
+| trn | Transport (shipping) |
+| trd | Trade (retail)       |
 
 ### household categories
 
 | h   | Description   |
 |:----|:--------------|
-| hh1 |               |
-| hh2 |               |
-| hh3 |               |
-| hh4 |               |
-| hh5 |               |
+| hh1 |   <$25k            |
+| hh2 |   $25k - $50k            |
+| hh3 |   $50k - $75k            |
+| hh4 |   $75k - $150k            |
+| hh5 |   >$150k            |
 
 ### transfer types
 
 | trn      | Description                  |
 |:---------|:-----------------------------|
-| hucval   | unemployment compensation    |
-| hwcval   | workers compensation         |
-| hssval   | social security              |
-| hssival  | supplemental security        |
-| hpawval  | public assistance or welfare |
-| hvetval  | veterans benefits            |
-| hsurval  | survivors income             |
-| hdisval  | disability                   |
-| hedval   | educational assistance       |
-| hcspval  | child support                |
-| hfinval  | financial assistance         |
-| medicare |                              |
-| medicaid |                              |
+| hucval   | Unemployment compensation    |
+| hwcval   | Workers compensation         |
+| hssval   | Social security              |
+| hssival  | Supplemental security        |
+| hpawval  | Public assistance or welfare |
+| hvetval  | Veterans benefits            |
+| hsurval  | Survivors income             |
+| hdisval  | Disability                   |
+| hedval   | Educational assistance       |
+| hcspval  | Child support                |
+| hfinval  | Financial assistance         |
+| medicare | Medicare benefits            |
+| medicaid | Medicaid benefits            |
+| other    | Other benefits               |

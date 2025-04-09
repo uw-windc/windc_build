@@ -9,7 +9,7 @@ $title State disaggregation of national accounts
 $if not set matbal $set matbal ls
 
 * check benchmark consistency in regional model for single year
-$if not set year $setglobal year 2017
+$if not set year $setglobal year 2022
 
 * input data directory
 $set gdxdir gdx/
@@ -389,11 +389,36 @@ nm0_(yr,r,gm,m) = totmargsupply(yr,r,m,gm) - dm0_(yr,r,gm,m);
 xd0_(yr,r,g) = sum(m, dm0_(yr,r,g,m)) + dd0_(yr,r,g);
 xn0_(yr,r,g) = s0_(yr,r,g) + rx0_(yr,r,g) - xd0_(yr,r,g) - x0_(yr,r,g);
 
-* Remove tiny numbers:
+* Remove tiny numbers in every parameter:
 
-xd0_(yr,r,g)$(xd0_(yr,r,g) < 1e-8) = 0;
-xn0_(yr,r,g)$(xn0_(yr,r,g) < 1e-8) = 0;
-a0_(yr,r,g)$(a0_(yr,r,g) < 1e-8) = 0;
+* xd0_(yr,r,g)$(xd0_(yr,r,g) < 1e-8) = 0;
+* xn0_(yr,r,g)$(xn0_(yr,r,g) < 1e-8) = 0;
+* a0_(yr,r,g)$(a0_(yr,r,g) < 1e-8) = 0;
+
+va0_(yr,r,s)$(va0_(yr,r,s) < 1e-6) = 0;
+ld0_(yr,r,s)$(ld0_(yr,r,s) < 1e-6) = 0;
+kd0_(yr,r,s)$(kd0_(yr,r,s) < 1e-6) = 0;
+ys0_(yr,r,s,g)$(ys0_(yr,r,s,g) < 1e-6) = 0;
+id0_(yr,r,g,s)$(id0_(yr,r,g,s) < 1e-6) = 0;
+yh0_(yr,r,s)$(yh0_(yr,r,s) < 1e-6) = 0;
+fe0_(yr,r)$(fe0_(yr,r) < 1e-6) = 0;
+cd0_(yr,r,s)$(cd0_(yr,r,s) < 1e-6) = 0;
+c0_(yr,r)$(c0_(yr,r) < 1e-6) = 0;
+i0_(yr,r,s)$(i0_(yr,r,s) < 1e-6) = 0;
+g0_(yr,r,s)$(g0_(yr,r,s) < 1e-6) = 0;
+xn0_(yr,r,g)$(xn0_(yr,r,g) < 1e-6) = 0;
+xd0_(yr,r,g)$(xd0_(yr,r,g) < 1e-6) = 0;
+dd0_(yr,r,g)$(dd0_(yr,r,g) < 1e-6) = 0;
+nd0_(yr,r,g)$(nd0_(yr,r,g) < 1e-6) = 0;
+nm0_(yr,r,g,m)$(nm0_(yr,r,g,m) < 1e-6) = 0;
+dm0_(yr,r,g,m)$(dm0_(yr,r,g,m) < 1e-6) = 0;
+m0_(yr,r,g)$(m0_(yr,r,g) < 1e-6) = 0;
+md0_(yr,r,m,g)$(md0_(yr,r,m,g) < 1e-6) = 0;
+x0_(yr,r,g)$(x0_(yr,r,g) < 1e-6) = 0;
+s0_(yr,r,g)$(s0_(yr,r,g) < 1e-6) = 0;
+bopdef0_(yr,r)$(bopdef0_(yr,r) < 1e-6) = 0;
+a0_(yr,r,g)$(a0_(yr,r,g) < 1e-6) = 0;
+rx0_(yr,r,g)$(rx0_(yr,r,g) < 1e-6) = 0;
 
 
 * -------------------------------------------------------------------------------------
@@ -483,6 +508,7 @@ $include STATEMODEL.GEN
 
 solve statemodel using mcp;
 abort$(statemodel.objval > 1e-5) "Error in benchmark calibration with regional data.";
+
 
 
 * ------------------------------------------------------------------------------
