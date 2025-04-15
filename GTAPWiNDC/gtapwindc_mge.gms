@@ -2,7 +2,7 @@ $title	Canonical Template GTAP-WINDC Model (MGE format)
 
 *	Read the data:
 
-$if not set ds $set ds 43
+$if not set ds $set ds 43_filtered
 
 $if not defined y_ $include %system.fp%gtapwindc_data
 
@@ -73,13 +73,16 @@ $prod:N(i,r)$n_(i,r)  s:esubn(i)
 	o:PN(i,r)	q:vnm(i,r)
 	i:PY(i,r,s)	q:ns0(i,r,s)
 
+
 $prod:Z(i,r,s)$z_(i,r,s)  s:esubdm(i)  nm:(2*esubdm(i))
 	o:PZ(i,r,s)	q:a0(i,r,s)
 	i:PY(i,r,s)	q:yl0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s))
 	i:PN(i,r)	q:nd0(i,r,s)	a:GOVT(r) t:rtd(i,r,s) p:(1+rtd0(i,r,s)) nm:
 	i:PM(i,r)	q:md0(i,r,s)	a:GOVT(r) t:rtm(i,r,s) p:(1+rtm0(i,r,s)) nm:
 
-$prod:FT(sf,r)$pk_(sf,r)  t:etrae(sf)
+*	Factors are immobile within states and mobile across sectors:
+
+$prod:FT(sf,r)$pk_(sf,r)  t:0 s.tl:(etrae(sf))
 	o:PS(sf,g,r,s)	q:vfm(sf,g,r,s)
 	i:PK(sf,r)	q:(sum(s,evom(sf,r,s)))
 
