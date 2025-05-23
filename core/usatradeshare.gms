@@ -99,6 +99,15 @@ $offtext
 usatrd_shr(ayr,r,'agr','exports')$(ayr.val <= smax(yr,yr.val)) =
     usda(r,ayr) / sum(r.local, usda(r,ayr));
 
+* assign newer shares based on most recent trade data
+set r_ayr(ayr)   most recent agricultural data;
+alias(ayr,aayr);
+r_ayr(ayr) = yes$(ayr.val = smax(aayr,aayr.val));
+
+usatrd_shr(yr,r,'agr','exports')$(yr.val >= smax(ayr,ayr.val)) =
+    sum(r_ayr, usatrd_shr(r_ayr,r,'agr','exports'));
+
+
 
 * -------------------------------------------------------------------
 * Output regional shares
