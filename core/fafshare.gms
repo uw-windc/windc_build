@@ -100,7 +100,9 @@ $include 'maps/mapfaf.map'
 		 2019.2019,
 		 2020.2020,
 		 2021.2021,
-		 2022.2022/;
+		 2022.2022,
+* May 20, 2025 - 2023 FAF data is not available yet. Use 2022 data
+		 2022.2023/;
 
 * Note that WiNDC uses the RPC in the Armington nest. Therefore, we need to
 * capture all goods coming IN from other states (net imports -- here we care
@@ -150,8 +152,8 @@ rpc(yr,r,'con') = 0.9;
 
 
 
-* May 20, 2025 - 2023 FAF data is not available yet. Use 2022 data
-rpc("2023", r, g) = rpc("2022", r, g);
+
+*rpc("2023", r, g) = rpc("2022", r, g);
 
 
 * -------------------------------------------------------------------
