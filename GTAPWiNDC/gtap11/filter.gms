@@ -18,7 +18,7 @@ $if not set reltol $set reltol 4
 $if not set abstol $set abstol 7
 
 parameter	reltol	Relative filter tolerance /1e-%reltol%/,
-		abstol	Absolute filter tolerance /1e-%abstol%/;
+			abstol	Absolute filter tolerance /1e-%abstol%/;
 
 $include %system.fp%gtapdata
 
@@ -26,51 +26,51 @@ alias (r,rr), (g,gg);
 
 parameter	trace		Aggregate values;
 $set pt gtap11
-trace("vst",r,"%pt%") = sum((i),vst(i,r));
+trace("vst" ,r,"%pt%") = sum((i)     ,vst(i,r)      );
 trace("vtwr",r,"%pt%") = sum((i,j,rr),vtwr(i,j,r,rr));
-trace("vxmd",r,"%pt%") = sum((i,rr),vxmd(i,r,rr));
-trace("vdfm",r,"%pt%") = sum((i,g),vdfm(i,g,r));
-trace("vifm",r,"%pt%") = sum((i,g),vifm(i,g,r));
-trace("vfm",r,"%pt%") = sum((f,g),vfm(f,g,r));
+trace("vxmd",r,"%pt%") = sum((i,rr)  ,vxmd(i,r,rr)  );
+trace("vdfm",r,"%pt%") = sum((i,g)   ,vdfm(i,g,r)   );
+trace("vifm",r,"%pt%") = sum((i,g)   ,vifm(i,g,r)   );
+trace("vfm" ,r,"%pt%") = sum((f,g)   ,vfm(f,g,r)    );
 
 parameter	nz(*,*)		Nonzero count;
-nz("vst","gtap11") = card(vst);
+nz("vst" ,"gtap11") = card(vst );
 nz("vtwr","gtap11") = card(vtwr);
 nz("vxmd","gtap11") = card(vxmd);
 nz("vdfm","gtap11") = card(vdfm);
 nz("vifm","gtap11") = card(vifm);
-nz("vfm","gtap11") = card(vfm);
+nz("vfm" ,"gtap11") = card(vfm );
 
-vst(i,r)$(vst(i,r)<abstol) = 0;
-vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)<abstol) = 0;
-vxmd(i,rr,r)$(vxmd(i,rr,r)<abstol) = 0;
-vdfm(i,g,r)$(vdfm(i,g,r)<abstol) = 0;
-vifm(i,g,r)$(vifm(i,g,r)<abstol) = 0;
-vfm(f,g,r)$(vfm(f,g,r)<abstol) = 0;
+vst(i,r)      $(vst(i,r)      < abstol) = 0;
+vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)< abstol) = 0;
+vxmd(i,rr,r)  $(vxmd(i,rr,r)  < abstol) = 0;
+vdfm(i,g,r)   $(vdfm(i,g,r)   < abstol) = 0;
+vifm(i,g,r)   $(vifm(i,g,r)   < abstol) = 0;
+vfm(f,g,r)    $(vfm(f,g,r)    < abstol) = 0;
 
-nz("vst","abstol") = card(vst) - nz("vst","gtap11");
+nz("vst" ,"abstol") = card(vst)  - nz("vst" ,"gtap11");
 nz("vtwr","abstol") = card(vtwr) - nz("vtwr","gtap11");
 nz("vxmd","abstol") = card(vxmd) - nz("vxmd","gtap11");
 nz("vdfm","abstol") = card(vdfm) - nz("vdfm","gtap11");
 nz("vifm","abstol") = card(vifm) - nz("vifm","gtap11");
-nz("vfm","abstol") = card(vfm) - nz("vfm","gtap11");
+nz("vfm" ,"abstol") = card(vfm)  - nz("vfm" ,"gtap11");
 
 parameter	vxmdtot,vdfmtot,vtwrtot,vifmtot;
 
-vxmdtot(i,r,".") = sum(rr,vxmd(i,r,rr));
-vxmdtot(i,".",rr) = sum(r,vxmd(i,r,rr));
-vtwrtot(i,rr,r) = sum(j,vtwr(j,i,rr,r));
-vdfmtot(i,".",r) = sum(g,vdfm(i,g,r));
-vdfmtot(".",g,r) = sum(i,vdfm(i,g,r));
-vifmtot(i,".",r) = sum(g,vifm(i,g,r));
-vifmtot(".",g,r) = sum(i,vifm(i,g,r));
+vxmdtot(i,r,".")  = sum(rr,vxmd(i,r,rr)  );
+vxmdtot(i,".",rr) = sum(r ,vxmd(i,r,rr)  );
+vtwrtot(i,rr,r)   = sum(j ,vtwr(j,i,rr,r));
+vdfmtot(i,".",r)  = sum(g ,vdfm(i,g,r)   );
+vdfmtot(".",g,r)  = sum(i ,vdfm(i,g,r)   );
+vifmtot(i,".",r)  = sum(g ,vifm(i,g,r)   );
+vifmtot(".",g,r)  = sum(i ,vifm(i,g,r)   );
 
 *	Filter based on the relative tolerance:
 
-vxmd(  i,rr,r)$(vxmd(i,rr,r)<reltol*min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
-vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)<reltol*vtwrtot(i,rr,r)) = 0;
-vdfm(i,g,   r)$(vdfm(i,g,r)<reltol*min(vdfmtot(i,".",r),vdfmtot(".",g,r))) = 0;
-vifm(i,g,   r)$(vifm(i,g,r)<reltol*min(vifmtot(i,".",r),vifmtot(".",g,r))) = 0;
+vxmd(  i,rr,r)$(vxmd(i,rr,r)  < reltol*min(vxmdtot(i,rr,"."),vxmdtot(i,".",r))) = 0;
+vtwr(j,i,rr,r)$(vtwr(j,i,rr,r)< reltol*vtwrtot(i,rr,r))                         = 0;
+vdfm(i,g,   r)$(vdfm(i,g,r)   < reltol*min(vdfmtot(i,".",r),vdfmtot(".",g,r)))  = 0;
+vifm(i,g,   r)$(vifm(i,g,r)   < reltol*min(vifmtot(i,".",r),vifmtot(".",g,r)))  = 0;
 
 *	Drop transport margins and tariffs on non-existent trade links:
 
@@ -83,19 +83,19 @@ vst(j,r) = vst(j,r)/sum(rr,vst(j,rr)) * sum((i,r1,r2),vtwr(j,i,r1,r2));
 rtxs(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 rtms(i,r,rr)$(not vxmd(i,r,rr)) = 0;
 
-nz("vst","reltol")  = card(vst)  - nz("vst","gtap11")  - nz("vst","abstol");
+nz("vst" ,"reltol") = card(vst)  - nz("vst" ,"gtap11") - nz("vst","abstol");
 nz("vtwr","reltol") = card(vtwr) - nz("vtwr","gtap11") - nz("vtwr","abstol");
 nz("vxmd","reltol") = card(vxmd) - nz("vxmd","gtap11") - nz("vxmd","abstol");
 nz("vdfm","reltol") = card(vdfm) - nz("vdfm","gtap11") - nz("vdfm","abstol");
 nz("vifm","reltol") = card(vifm) - nz("vifm","gtap11") - nz("vifm","abstol");
-nz("vfm","reltol")  = card(vfm)  - nz("vfm","gtap11")  - nz("vfm","abstol");
+nz("vfm" ,"reltol") = card(vfm)  - nz("vfm" ,"gtap11") - nz("vfm","abstol");
 
-nz("vst","card")  = card(vst);
+nz("vst" ,"card") = card(vst );
 nz("vtwr","card") = card(vtwr);
 nz("vxmd","card") = card(vxmd);
 nz("vdfm","card") = card(vdfm);
 nz("vifm","card") = card(vifm);
-nz("vfm","card")  = card(vfm);
+nz("vfm" ,"card") = card(vfm );
 
 set param /vst,vtwr, vxmd, vdfm, vifm, vfm/;
 nz(param,"%")  = round(100 * nz(param,"card")/nz(param,"gtap11"));
