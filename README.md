@@ -17,7 +17,7 @@ and build the data.
 # Data
 
 The data required to build each of piece of the repository is located at 
-the following link [WiNDC Data Page)](https://windc.wisc.edu/datasets/4-1-0/). 
+the following link [WiNDC Data Page)](https://windc.wisc.edu/datasets/4-1-1/). 
 Download and extract one of the options into the `windc_build` directory. This will 
 create a directory called `data`.
 
