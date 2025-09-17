@@ -134,11 +134,11 @@ $sectors:
         Y(r,s,t)$y_(r,s)        !       Production
         X(r,g,t)$x_(r,g)        !       Disposition
         A(r,g,t)$a_(r,g)        !       Absorption
+        LS(r,h,t)		!	Labor supply
+        C(r,h,t)		!       Household consumption
+        MS(r,m,t)               !       Margin supply
 	W(r,h)			!	Interemporal welfare
 	GD(t)			!	Government demand
-        C(r,h,t)		!       Household consumption
-	LS(r,h,t)		!	Labor supply
-        MS(r,m,t)               !       Margin supply
 	K(r,g,t)$k0(r,g)	!	Sectoral capital stock
 	I(r,g,t)$kn0(r,g)	!	Sectoral investment
 	INV(r,t)		!	Aggregate investment	
@@ -201,6 +201,9 @@ $prod:C(r,h,t)	  s:1
 $prod:LS(r,h,t)
 	o:PL(q,t)	q:le0(r,q,h)	a:GOVT(t)	t:tl(r,h)	p:(1-tl0(r,h))
 	i:PLS(r,h,t)	q:ls0(r,h)
+
+
+
 
 $prod:K(r,g,tt)$(k0(r,g) and t(tt))
 	o:PK(r,g,tt+1)		q:(k0(r,g)*(1-delta))
