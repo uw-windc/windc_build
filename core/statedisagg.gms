@@ -9,7 +9,7 @@ $title State disaggregation of national accounts
 $if not set matbal $set matbal ls
 
 * check benchmark consistency in regional model for single year
-$if not set year $setglobal year 2022
+$if not set year $setglobal year 2024
 
 * input data directory
 $set gdxdir gdx/
@@ -269,6 +269,9 @@ notrd(yr,g) = yes$(not sum(r, usatrd_shr(yr,r,g,'exports')));
 x0_(yr,r,g) = usatrd_shr(yr,r,g,'exports') * x_0(yr,g);
 x0_(yr,r,g)$notrd(yr,g) = region_shr(yr,r,g) * x_0(yr,g);
 
+
+
+
 * No longer subtracting margin supply from gross output. This will be allocated
 * through the national and local markets.
 
@@ -284,6 +287,8 @@ parameter
 thetaa(yr,r,g)$sum(r.local, (1-ta0_(yr,r,g))*a0_(yr,r,g)) = a0_(yr,r,g) / sum(r.local, a0_(yr,r,g));
 m0_(yr,r,g) = thetaa(yr,r,g) * m_0(yr,g);
 md0_(yr,r,m,g) = thetaa(yr,r,g) * md_0(yr,m,g);
+
+
 
 * Note that s0_ - x0_ is negative for the other category. md0 is zero for that
 * category and: a + x = s + m. This means that some part of the other goods
@@ -336,21 +341,28 @@ parameter
 * market. Maximum or minimum amound would depend on level of national imports
 * and exports.
 
-dd0max(yr,r,g) = min(round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
-                        ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10),
-                      round(s0_(yr,r,g) - (x0_(yr,r,g) - rx0_(yr,r,g)),10) );
+dd0max(yr,r,g) = min(
+    round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10),
+    round(s0_(yr,r,g) - (x0_(yr,r,g) - rx0_(yr,r,g)),10)
+    );
 
-nd0max(yr,r,g) = min(round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
-                        ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10),
-                      round(s0_(yr,r,g) - (x0_(yr,r,g) - rx0_(yr,r,g)),10) );
+nd0max(yr,r,g) = min(
+    round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10),
+    round(s0_(yr,r,g) - (x0_(yr,r,g) - rx0_(yr,r,g)),10)
+    );
+
+
+parameter test(yr,r,g);
+
+test(yr,r,g) =     round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10);
+
+
 
 * We can subsequently define nd0min and xd0min as:
 
-nd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) -
-    (dd0max(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g)));
+nd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) - (dd0max(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g)));
 
-dd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) -
-    (nd0max(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g)));
+dd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) - (nd0max(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g)));
 
 * The mixture of domestic vs. national demand in the absorption market is
 * determined by regional purchase coefficients. Use estimates based on 2012
@@ -361,8 +373,9 @@ parameter
 
 rpc(yr,r,g) = faf_rpc(yr,r,g);
 dd0_(yr,r,g) = rpc(yr,r,g) * dd0max(yr,r,g);
-nd0_(yr,r,g) = round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
-    (dd0_(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g))),10);
+nd0_(yr,r,g) = round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - (dd0_(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g))),10);
+
+
 
 * Assume margins come both from local and national production. Assign like
 * dd0. Use information on national margin supply to enforce other identities.
@@ -379,8 +392,10 @@ totmargsupply(yr,r,m,g) = margshr(yr,r,m) * ms_0(yr,g,m);
 shrtrd(yr,r,m,gm)$sum(m.local, totmargsupply(yr,r,m,gm)) =
     totmargsupply(yr,r,m,gm) / sum(m.local, totmargsupply(yr,r,m,gm));
 
-dm0_(yr,r,gm,m) = min(rpc(yr,r,gm)*totmargsupply(yr,r,m,gm),
-    shrtrd(yr,r,m,gm)*(s0_(yr,r,gm) - x0_(yr,r,gm) + rx0_(yr,r,gm) - dd0_(yr,r,gm)));
+dm0_(yr,r,gm,m) = min(
+    rpc(yr,r,gm)*totmargsupply(yr,r,m,gm),
+    shrtrd(yr,r,m,gm)*(s0_(yr,r,gm) - x0_(yr,r,gm) + rx0_(yr,r,gm) - dd0_(yr,r,gm))
+);
 
 nm0_(yr,r,gm,m) = totmargsupply(yr,r,m,gm) - dm0_(yr,r,gm,m);
 
@@ -388,6 +403,7 @@ nm0_(yr,r,gm,m) = totmargsupply(yr,r,m,gm) - dm0_(yr,r,gm,m);
 
 xd0_(yr,r,g) = sum(m, dm0_(yr,r,g,m)) + dd0_(yr,r,g);
 xn0_(yr,r,g) = s0_(yr,r,g) + rx0_(yr,r,g) - xd0_(yr,r,g) - x0_(yr,r,g);
+
 
 * Remove tiny numbers in every parameter:
 

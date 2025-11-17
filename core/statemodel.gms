@@ -13,32 +13,35 @@ $if not set year $set year 2021
 * -------------------------------------------------------------------
 
 parameters
-    ys0(r,s,g)	Sectoral supply,
     id0(r,g,s)	Intermediate demand,
-    ld0(r,s)	Labor demand,
+	ld0(r,s)	Labor demand,
     kd0(r,s)	Capital demand,
     ty0(r,s)	Production tax,
-    m0(r,g)	Imports,
-    x0(r,g)	Exports of goods and services,
-    rx0(r,g)	Re-exports of goods and services,
-    md0(r,m,g)	Total margin demand,
-    nm0(r,g,m)	Margin demand from national market,
+	x0(r,g)		Exports of goods and services,
+	nm0(r,g,m)	Margin supply from national market,
     dm0(r,g,m)	Margin supply from local market,
-    s0(r,g)	Aggregate supply,
-    a0(r,g)	Armington supply,
+	cd0(r,g)	Final demand,
+	g0(r,g)		Government demand,
+    i0(r,g)		Investment demand,
+	dd0(r,g)	Regional demand from local  market,
+    nd0(r,g)	Regional demand from national market,
+   
+    ys0(r,s,g)	Sectoral supply,
+    m0(r,g)		Imports,
+    md0(r,m,g)	Total margin demand,
     ta0(r,g)	Tax net subsidy rate on intermediate demand,
-    tm0(r,g)	Import tariff,
-    cd0(r,g)	Final demand,
-    c0(r)	Aggregate final demand,
+    tm0(r,g)	Import tariff,    
     yh0(r,g)	Household production,
-    bopdef0(r)	Balance of payments,
-    hhadj0(r)	Household adjustment,
-    g0(r,g)	Government demand,
-    i0(r,g)	Investment demand,
-    xn0(r,g)	Regional supply to national market,
+	xn0(r,g)	Regional supply to national market,
     xd0(r,g)	Regional supply to local market,
-    dd0(r,g)	Regional demand from local  market,
-    nd0(r,g)	Regional demand from national market;
+
+
+	hhadj0(r)	Household adjustment,
+	bopdef0(r)	Balance of payments,
+	c0(r)	Aggregate final demand,
+	a0(r,g)	Armington supply,
+	s0(r,g)	Aggregate supply,
+	rx0(r,g)	Re-exports of goods and services;
 
 ys0(r,s,g) = ys0_("%year%",r,s,g);
 id0(r,g,s) = id0_("%year%",r,g,s);
@@ -85,28 +88,28 @@ $ontext
 $model:statemodel
 
 $sectors:
-	Y(r,s)$y_(r,s)		!	Production
-	X(r,g)$x_(r,g)		!	Disposition
-	A(r,g)$a_(r,g)		!	Absorption
+	Y(r,s)$y_(r,s)	!	Production
+	X(r,g)$x_(r,g)	!	Disposition
+	A(r,g)$a_(r,g)	!	Absorption
 	C(r)			!	Aggregate final demand
 	MS(r,m)			!	Margin supply
 
 $commodities:
-	PA(r,g)$a0(r,g)		!	Regional market (input)
-	PY(r,g)$s0(r,g)		!	Regional market (output)
-	PD(r,g)$xd0(r,g)	!	Local market price
-	PN(g)			!	National market
-	PL(r)			!	Wage rate
-	PK(r,s)$kd0(r,s)	!	Rental rate of capital
-	PM(r,m)			!	Margin price
-	PC(r)			!	Consumer price index
-	PFX			!	Foreign exchange
+	PA(r,g)$a0(r,g)	 !	Regional market (input)
+	PY(r,g)$s0(r,g)	 !	Regional market (output)
+	PD(r,g)$xd0(r,g) !	Local market price
+	PN(g)			 !	National market
+	PL(r)			 !	Wage rate
+	PK(r,s)$kd0(r,s) !	Rental rate of capital
+	PM(r,m)			 !	Margin price
+	PC(r)			 !	Consumer price index
+	PFX				 !	Foreign exchange
 
 $consumer:
-	RA(r)			!	Representative agent
+	RA(r)			 !	Representative agent
 
 $prod:Y(r,s)$y_(r,s)  s:0 va:1
-	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty0(r,s)    p:(1-ty0(r,s))
+	o:PY(r,g)	q:ys0(r,s,g) 		a:RA(r) t:ty0(r,s)    p:(1-ty0(r,s))
 	i:PA(r,g)	q:id0(r,g,s)
 	i:PL(r)		q:ld0(r,s)	va:
 	i:PK(r,s)	q:kd0(r,s)	va:
@@ -131,7 +134,7 @@ $prod:MS(r,m)
 	i:PD(r,gm)	q:dm0(r,gm,m)
 
 $prod:C(r)  s:1
-    	o:PC(r)		q:c0(r)
+	o:PC(r)		q:c0(r)
 	i:PA(r,g)	q:cd0(r,g)
 
 $demand:RA(r)

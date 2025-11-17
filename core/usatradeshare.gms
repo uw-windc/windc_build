@@ -65,7 +65,10 @@ usatrd_shr(yr,r,s,t)$(not notinc(s) and not sum(r.local, usatrd(yr,r,s,t))) =
 abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'exports')), 4)) <> 1) "Export shares don't sum to 1.";
 abort$(smax((yr,s), round(sum(r, usatrd_shr(yr,r,s,'imports')), 4)) <> 1) "Import shares don't sum to 1.";
 
+parameter 
+    usatrd_shr_pre(*,r,s,t);
 
+usatrd_shr_pre(yr,r,s,t) = usatrd_shr(yr,r,s,t);
 * -------------------------------------------------------------------
 * add export shares from usda for the agricultural sector
 * -------------------------------------------------------------------
@@ -106,7 +109,6 @@ r_ayr(ayr) = yes$(ayr.val = smax(aayr,aayr.val));
 
 usatrd_shr(yr,r,'agr','exports')$(yr.val >= smax(ayr,ayr.val)) =
     sum(r_ayr, usatrd_shr(r_ayr,r,'agr','exports'));
-
 
 
 * -------------------------------------------------------------------

@@ -61,6 +61,11 @@ sgf_shr(yr,r,g)$(sum(r.local, sgf_shr(yr,r,g)) = 0) = sgf_shr(yr,r,'fdd');
 abort$(round(smax((yr,g), sum(r, sgf_shr(yr,r,g))),6) <> 1) "Regional SGF shares don't sum to 1";
 
 
+* For year 2024, assume same shares as 2023
+
+sgf_shr("2024", r,g) = sgf_shr("2023", r,g);
+
+
 * -------------------------------------------------------------------
 * Output regional shares
 * -------------------------------------------------------------------
