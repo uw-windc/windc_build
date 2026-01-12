@@ -102,7 +102,8 @@ $include 'maps/mapfaf.map'
 		 2020.2020,
 		 2021.2021,
 		 2022.2022,
-		 2023.2023/;
+		 2023.2023,
+		 2024.2024/;
 
 * Note that WiNDC uses the RPC in the Armington nest. Therefore, we need to
 * capture all goods coming IN from other states (net imports -- here we care
