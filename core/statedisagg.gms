@@ -241,6 +241,9 @@ i0_(yr,r,g) = region_shr(yr,r,g) * i_0(yr,g);
 c0_(yr,r) = sum(g, cd0_(yr,r,g));
 
 
+display g_0, sgf_shr, g0_;
+
+
 * -------------------------------------------------------------------------------------
 * Trade parameters:
 * -------------------------------------------------------------------------------------
@@ -300,6 +303,7 @@ md0_(yr,r,m,g) = thetaa(yr,r,g) * md_0(yr,m,g);
 
 rx0_(yr,r,g)$(round(s0_(yr,r,g) - x0_(yr,r,g),10) < 0) = x0_(yr,r,g) - s0_(yr,r,g);
 
+
 * The 'oth' and 'use' sectors are problematic with negative numbers (removed
 * from the dataset in previous steps).
 
@@ -308,6 +312,9 @@ parameter
 
 diff(yr,r,g) = - min(round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) -
                         ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10), 0);
+
+
+
 
 * Initial level of rx0_ makes the armington supply zero profit condition
 * negative meaning it is too small (imports + margins > supply +
@@ -319,6 +326,8 @@ x0_(yr,r,g) = x0_(yr,r,g) + diff(yr,r,g);
 s0_(yr,r,g) = s0_(yr,r,g) + diff(yr,r,g);
 yh0_(yr,r,g) = yh0_(yr,r,g) + diff(yr,r,g);
 bopdef0_(yr,r) = sum(g, m0_(yr,r,g) - x0_(yr,r,g));
+
+
 
 set
     gm(g) 	Commodities employed in margin supply;
@@ -352,12 +361,6 @@ nd0max(yr,r,g) = min(
     );
 
 
-parameter test(yr,r,g);
-
-test(yr,r,g) =     round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - ((1+tm0_(yr,r,g))*m0_(yr,r,g) + sum(m, md0_(yr,r,m,g))),10);
-
-
-
 * We can subsequently define nd0min and xd0min as:
 
 nd0min(yr,r,g) = (1-ta0_(yr,r,g))* a0_(yr,r,g) + rx0_(yr,r,g) - (dd0max(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g)));
@@ -375,8 +378,6 @@ rpc(yr,r,g) = faf_rpc(yr,r,g);
 dd0_(yr,r,g) = rpc(yr,r,g) * dd0max(yr,r,g);
 nd0_(yr,r,g) = round((1-ta0_(yr,r,g))*a0_(yr,r,g) + rx0_(yr,r,g) - (dd0_(yr,r,g) + m0_(yr,r,g)*(1+tm0_(yr,r,g)) + sum(m,md0_(yr,r,m,g))),10);
 
-
-
 * Assume margins come both from local and national production. Assign like
 * dd0. Use information on national margin supply to enforce other identities.
 
@@ -392,6 +393,11 @@ totmargsupply(yr,r,m,g) = margshr(yr,r,m) * ms_0(yr,g,m);
 shrtrd(yr,r,m,gm)$sum(m.local, totmargsupply(yr,r,m,gm)) =
     totmargsupply(yr,r,m,gm) / sum(m.local, totmargsupply(yr,r,m,gm));
 
+parameter test;
+
+test(yr,r,m,gm) = shrtrd(yr,r,m,gm)*(s0_(yr,r,gm) - x0_(yr,r,gm) + rx0_(yr,r,gm) - dd0_(yr,r,gm));
+
+
 dm0_(yr,r,gm,m) = min(
     rpc(yr,r,gm)*totmargsupply(yr,r,m,gm),
     shrtrd(yr,r,m,gm)*(s0_(yr,r,gm) - x0_(yr,r,gm) + rx0_(yr,r,gm) - dd0_(yr,r,gm))
@@ -403,6 +409,7 @@ nm0_(yr,r,gm,m) = totmargsupply(yr,r,m,gm) - dm0_(yr,r,gm,m);
 
 xd0_(yr,r,g) = sum(m, dm0_(yr,r,g,m)) + dd0_(yr,r,g);
 xn0_(yr,r,g) = s0_(yr,r,g) + rx0_(yr,r,g) - xd0_(yr,r,g) - x0_(yr,r,g);
+
 
 
 * Remove tiny numbers in every parameter:
