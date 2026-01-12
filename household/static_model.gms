@@ -6,7 +6,7 @@ $title Static household model (MGE and MCP)
 * -----------------------------------------------------------------------------
 
 * Set datset option
-$set ds cps_static_all_2023
+$set ds cps_static_all_2024
 
 * Allow for end of line comments
 $eolcom !
@@ -70,15 +70,18 @@ $commodities:
 		PA(r,g)$a0(r,g)     !       Regional market (input)
 		PY(r,g)$s0(r,g)     !       Regional market (output)
 		PD(r,g)$pd_(r,g)    !       Local market price
-		RK(r,s)$kd0(r,s)	!       Sectoral rental rate
-		RKS			        !		Capital stock
-		PM(r,m)             !       Margin price
-		PC(r,h)		        !       Consumer price index
 		PN(g)$pn_(g)        !       National market price for goods
-		PLS(r,h)	        !		Leisure price
 		PL(r)               !       Regional wage rate
 		PK			        !     	Aggregate return to capital
+		PM(r,m)             !       Margin price
+		PC(r,h)		        !       Consumer price index
 		PFX                 !       Foreign exchange
+		RK(r,s)$kd0(r,s)	!       Sectoral rental rate
+		RKS			        !		Capital stock
+		PLS(r,h)	        !		Leisure price
+		
+		
+		
 
 $consumer:
 	RA(r,h)			!	Representative agent
@@ -132,8 +135,6 @@ $prod:LS(r,h)
 	i:PLS(r,h)	q:ls0(r,h)
 
 
-
-
 $prod:KS	t:etaK
 	o:RK(r,s)	q:kd0(r,s)
 	i:RKS		q:(sum((r,s),kd0(r,s)))
@@ -180,7 +181,7 @@ $constraint:TRANS
 	GOVT =e= sum((r,g),PA(r,g)*g0(r,g));
 
 $constraint:CPI
-    	CPI =e= sum((r,h), PC(r,h)*c0_h(r,h))/sum((r,h),c0_h(r,h));
+	CPI =e= sum((r,h), PC(r,h)*c0_h(r,h))/sum((r,h),c0_h(r,h));
 
 $offtext
 $sysinclude mpsgeset static_hh_mge -mt=1
