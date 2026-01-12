@@ -179,6 +179,8 @@ taxes0_(yr,r,h) = 0;
 
 * Calculate per capita consumption for consistency check
 
+
+
 cons0_(yr,r,h) = wages0_(yr,r,h) + interest0_(yr,r,h) + trans0_(yr,r,h) - taxes0_(yr,r,h) - save0_(yr,r,h);
 pccons0_(yr,r,h) = 1e3*cons0_(yr,r,h) / pop0_(yr,r,h);
 

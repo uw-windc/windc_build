@@ -8,6 +8,7 @@ $if not set yr		$set yr 2011
 $set tmpdir %gams.scrdir%
 
 set	ii	Commodities in GTAP 9 nomenclature/
+
 	pdr	"Paddy rice",
 	wht	"Wheat",
 	gro	"Cereal grains nec",
@@ -67,10 +68,9 @@ set	ii	Commodities in GTAP 9 nomenclature/
 	dwe	"Dwellings"
 	cgds	"Investment goods" /;
 
+
 set	r	Regions in GTAP 9 /
-
 *	Adds: brn(xse),dom(xcb),jam,pri,tto,jor
-
 	aus	"Australia",
 	nzl	"New Zealand",
 	xoc	"Rest of Oceania",
@@ -478,31 +478,47 @@ $loaddc adrev mfarev purev tfrv=tarifrev
 $loaddc verrev tfrvsa xtrev vtwr_=vtwrini
 
 parameter
-	vxmd(i,r,s)	"Non-margin exports, at market prices",
+	vxmd(i,r,s)		"Non-margin exports, at market prices",
 	vtwr(i,j,r,s)	"Trade margins",
-	rtxs(i,r,s)	"Export subsidy rate"
-	rtms(i,r,s)	"Import tariff rate"
-
-	vdfm(i,g,r)	"Domestic purchases, by firms, at market prices",
-	vifm(i,g,r)	"Import purchases, by firms, at market prices",
-	vfm(f,g,r)	"Primary factor purchases, by firms, at market prices",
-
-	rtfd(i,g,r)	"Taxes on firms' domestic purchases - % ad valorem rate,"
-	rtfi(i,g,r)	"Taxes on firms' imports purchases -- % ad valorem rate",
-	rtf(f,i,r)	"Taxes on primary factors - % ad valorem rate,",
-
-	rto(g,r)	"Tax rate on output (gross basis)"
-
-	vst(i,r)	"Margin exports";
+	rtxs(i,r,s)		"Export subsidy rate"
+	rtms(i,r,s)		"Import tariff rate"
+	vdfm(i,g,r)		"Domestic purchases, by firms, at market prices",
+	vifm(i,g,r)		"Import purchases, by firms, at market prices",
+	vfm(f,g,r)		"Primary factor purchases, by firms, at market prices",
+	rtfd(i,g,r)		"Taxes on firms' domestic purchases - % ad valorem rate,"
+	rtfi(i,g,r)		"Taxes on firms' imports purchases -- % ad valorem rate",
+	rtf(f,i,r)		"Taxes on primary factors - % ad valorem rate,",
+	rto(g,r)		"Tax rate on output (gross basis)"
+	vst(i,r)		"Margin exports";
 
 vxmd(i,r,s)   = sum(mapi(ii,i),vxmd_(ii,r,s));
 vtwr(i,j,r,s) = sum(mapij(ii,jj,i,j),vtwr_(ii,jj,r,s));
 
 *	Change the sign of export taxes as export subsidies:
 
-rtxs(i,r,s)$vxmd(i,r,s) = -sum(mapi(ii,i),vxwd(ii,r,s))/vxmd(i,r,s)-1;
-
+*rtxs(i,r,s)$vxmd(i,r,s) = -sum(mapi(ii,i),vxwd(ii,r,s))/vxmd(i,r,s)-1;
+rtxs(i,r,s)$vxmd(i,r,s) = -sum(mapi(ii,i),vxwd(ii,r,s))/vxmd(i,r,s) + 1;
 rtms(i,r,s)$vxmd(i,r,s) = sum(mapi(ii,i),vims(ii,r,s))/sum(mapi(ii,i),viws(ii,r,s))-1;
+
+parameter	
+	pvxmd(i,r,r)	Import price (power of benchmark tariff)
+	pvtwr(i,r,r)	Import price for transport services
+	viws_(i,r,s)
+	chk(i,r,r)
+	subsidy(i,r,s)	"Export subsidy equivalent";
+
+
+subsidy(i,r,s) = sum(mapi(ii,i), vxwd(ii,r,s)) - vxmd(i,r,s);
+
+*viws_(i,r,s) = vxmd(i,r,s)*(1-rtxs(i,r,s)) + sum(j, vtwr(j,i,r,s));
+
+viws_(i,r,s) = vxmd(i,r,s) + subsidy(i,r,s) + sum(j, vtwr(j,i,r,s));
+
+chk(i,r,s) = viws_(i,r,s) - sum(mapi(ii,i),viws(ii,r,s));
+
+display chk;
+
+
 
 vdfm(i,j,r) = sum(mapij(ii,jj,i,j),vdfm_(ii,jj,r));
 vdfm(i,"c",r) = sum(mapi(ii,i),vdpm(ii,r));
@@ -529,9 +545,28 @@ rtf(f,j,r)$vfm(f,j,r) = sum((mapf(ff,f),mapj(jj,j)),evfa(ff,jj,r))/vfm(f,j,r) - 
 
 vst(i,r) = sum(mapi(ii,i),vst_(ii,r));
 
-rto(j,r) = 1 - ( sum(i,vdfm(i,j,r)*(1+rtfd(i,j,r)) + vifm(i,j,r)*(1+rtfi(i,j,r)))
-	+  sum(f,vfm(f,j,r)*(1+rtf(f,j,r))) ) /
-		( vst(j,r) + sum(s,vxmd(j,r,s)) + sum(g,vdfm(j,g,r)) );
+rto(j,r) = 1 - ( 
+		sum(i,
+			vdfm(i,j,r)*(1+rtfd(i,j,r)) + 
+			vifm(i,j,r)*(1+rtfi(i,j,r))
+		) +
+		sum(f,vfm(f,j,r)*(1+rtf(f,j,r))) 
+	) /
+	( 
+		vst(j,r) + sum(s,vxmd(j,r,s)) + sum(g,vdfm(j,g,r)) 
+	);
+
+
+parameter input_(j,r),output_(j,r);
+
+input_(j,r) = 		sum(i,
+			vdfm(i,j,r)*(1+rtfd(i,j,r)) + 
+			vifm(i,j,r)*(1+rtfi(i,j,r))
+		) +
+		sum(f,vfm(f,j,r)*(1+rtf(f,j,r))) ;
+
+output_(j,r) = vst(j,r) + sum(s,vxmd(j,r,s)) + sum(g,vdfm(j,g,r)) ;
+
 
 parameter
 	edf(ii,jj,r)	"Usage of domestic product by firms, Mtoe",

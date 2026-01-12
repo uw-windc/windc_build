@@ -81,6 +81,7 @@ parameter
 d0_(fyr,r,sg) = faf_units(r,r,sg,fyr);
 mrt0_(fyr,r,rr,sg)$(not sameas(r,rr)) = faf_units(r,rr,sg,fyr);
 
+
 * Map to model indices -- use SCTG codes. Trade is through goods markets. Note
 * that the mapping includes double counting. In some instances there
 * are many to one, and in other there are one to many. No trade data for
@@ -101,7 +102,8 @@ $include 'maps/mapfaf.map'
 		 2020.2020,
 		 2021.2021,
 		 2022.2022,
-		 2023.2023/;
+		 2023.2023,
+		 2024.2024/;
 
 * Note that WiNDC uses the RPC in the Armington nest. Therefore, we need to
 * capture all goods coming IN from other states (net imports -- here we care
@@ -117,6 +119,8 @@ d0(yr,r,g) = sum((map(sg,g),mapy(fyr,yr)), d0_(fyr,r,sg));
 mrt0(yr,r,rr,g) = sum((map(sg,g),mapy(fyr,yr)), mrt0_(fyr,r,rr,sg));
 xn0(yr,r,g) = sum(rr, mrt0(yr,r,rr,g));
 mn0(yr,r,g) = sum(rr, mrt0(yr,rr,r,g));
+
+
 
 * Note that services and public sectors (i.e. utilities) are not included
 * in the FAF data.
@@ -134,6 +138,9 @@ display ng;
 d0(yr,r,ng) = (1 / sum(g$(not ng(g)), 1)) * sum(g, d0(yr,r,g));
 xn0(yr,r,ng) = (1 / sum(g$(not ng(g)), 1)) * sum(g, xn0(yr,r,g));
 mn0(yr,r,ng) = (1 / sum(g$(not ng(g)), 1)) * sum(g, mn0(yr,r,g));
+
+
+
 
 * Define a region-good pairing's RPC as the local share of total subnational
 * demand:

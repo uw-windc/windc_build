@@ -112,13 +112,13 @@ y0(yr,i) = sum(j, ys0(yr,j,i));
 * -------------------------------------------------------------------
 
 parameter
-    interm(yr,j,*) 	Total intermediate inputs (purchasers' prices),
-    basicva(yr,j,*) 	Basic value added (purchasers' prices),
-    valueadded(yr,j,*) 	Value added (purchaser's prices),
+    interm(yr,j,*) 	Total intermediate inputs (purchasers prices),
+    basicva(yr,j,*) 	Basic value added (purchasers prices),
+    valueadded(yr,j,*) 	Value added (purchasers prices),
     output(yr,j,*) 	Total industry output (basic prices),
     taxtotal(yr,*) 	Check on total taxes,
-    totint(yr,i,*) 	Total intermediate use (purchasers' prices),
-    totaluse(yr,i,*) 	Total use of commodities (purchasers' prices),
+    totint(yr,i,*) 	Total intermediate use (purchasers prices),
+    totaluse(yr,i,*) 	Total use of commodities (purchasers prices),
     basicsupply(yr,i,*)	Basic supply,
     tsupply(yr,i,*) 	Total supply;
 

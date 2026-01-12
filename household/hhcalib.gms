@@ -328,9 +328,11 @@ $if %hhdata%=="cps" trn_weight_(yr,'hdisval','meyer') = 1 / 0.819;
 $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(cps_nipa(yr,'government benefits: social security')) = 1 / (cps_nipa(yr,'government benefits: social security')/100 + 1);
 $if %hhdata%=="cps" trn_weight_(yr,'hdisval','nipa')$(not cps_nipa(yr,'government benefits: social security')) = trn_weight_(yr,'hdisval','meyer');
 
+* Is this a typo? Should it be hvetrval? 
+* NO! It should be hvetval
 $if %hhdata%=="cps" trn_weight_(yr,'hvetval','rothbaum') = 1 / 0.679;
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(cps_nipa(yr,"government benefits: veterans benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans benefits")/100 + 1);
-$if %hhdata%=="cps" trn_weight_(yr,'hvetrval','nipa')$(not cps_nipa(yr,"government benefits: veterans benefits")) = trn_weight_(yr,'hvetrval','rothbaum');
+$if %hhdata%=="cps" trn_weight_(yr,'hvetval','nipa')$(cps_nipa(yr,"government benefits: veterans' benefits")) = 1 / (cps_nipa(yr,"government benefits: veterans' benefits")/100 + 1);
+$if %hhdata%=="cps" trn_weight_(yr,'hvetval','nipa')$(not cps_nipa(yr,"government benefits: veterans' benefits")) = trn_weight_(yr,'hvetval','rothbaum');
 
 * Otherwise, default to literature estimates
 

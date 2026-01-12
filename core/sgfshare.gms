@@ -48,9 +48,6 @@ sgf_map(yr,r,g) = sum(map(g,ec), sgf_raw_units(yr,r,ec,"millions of us dollars (
 sgf_map(yr,'DC',g) = sgf_map(yr,'MD',g);
 sgf_shr(yr,r,g)$sum(r.local, sgf_map(yr,r,g)) = sgf_map(yr,r,g) / sum(r.local, sgf_map(yr,r,g));
 
-* As of March 5, 2025 the SGF data for 2023 is not available. Use 2022 data
-
-sgf_shr("2023", r,g) = sgf_shr("2022", r,g);
 
 * For years: 1998, 2007, 2008, 2009, 2010, 2011, no government
 * administration data is listed. In these cases, use all public
@@ -59,6 +56,11 @@ sgf_shr("2023", r,g) = sgf_shr("2022", r,g);
 sgf_shr(yr,r,g)$(sum(r.local, sgf_shr(yr,r,g)) = 0) = sgf_shr(yr,r,'fdd');
 
 abort$(round(smax((yr,g), sum(r, sgf_shr(yr,r,g))),6) <> 1) "Regional SGF shares don't sum to 1";
+
+
+* For year 2024, assume same shares as 2023
+
+sgf_shr("2024", r,g) = sgf_shr("2023", r,g);
 
 
 * -------------------------------------------------------------------

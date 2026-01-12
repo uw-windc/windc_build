@@ -7,22 +7,22 @@ $sectors:
 	Y(r,s)$y_(r,s)		!	Production
 	X(r,g)$x_(r,g)		!	Disposition
 	A(r,g)$a_(r,g)		!	Absorption
-	C(r)			!	Aggregate final demand
-	MS(r,m)			!	Margin supply
+	C(r)				!	Aggregate final demand
+	MS(r,m)				!	Margin supply
 
 $commodities:
 	PA(r,g)$a0(r,g)		!	Regional market (input)
 	PY(r,g)$s0(r,g)		!	Regional market (output)
 	PD(r,g)$xd0(r,g)	!	Local market price
-	PN(g)			!	National market
-	PL(r)			!	Wage rate
+	PN(g)				!	National market
+	PL(r)				!	Wage rate
 	PK(r,s)$kd0(r,s)	!	Rental rate of capital
-	PM(r,m)			!	Margin price
-	PC(r)			!	Consumer price index
-	PFX			!	Foreign exchange
+	PM(r,m)				!	Margin price
+	PC(r)				!	Consumer price index
+	PFX					!	Foreign exchange
 
 $consumer:
-	RA(r)			!	Representative agent
+	RA(r)				!	Representative agent
 
 $prod:Y(r,s)$y_(r,s)  s:0 va:1
 	o:PY(r,g)	q:ys0(r,s,g)            a:RA(r) t:ty(r,s)    p:(1-ty0(r,s))
@@ -50,7 +50,7 @@ $prod:MS(r,m)
 	i:PD(r,gm)	q:dm0(r,gm,m)
 
 $prod:C(r)  s:1
-    	o:PC(r)		q:c0(r)
+	o:PC(r)		q:c0(r)
 	i:PA(r,g)	q:cd0(r,g)
 
 $demand:RA(r)
