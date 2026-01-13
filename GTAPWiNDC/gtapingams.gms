@@ -25,7 +25,7 @@ $setglobal gtap_version gtap11a
 * windc_build/data/GTAPWiNDC/gtap11a/GDX11aAY333.zip"              *
 * -----------------------------------------------------------------*
 
-*$setglobal gtap_zip_path /path/to/gtap11/file
+$setglobal gtap_zip_path h:/windc/github/windc_build/data/GTAPWiNDC/gtap11a/GDX11aAY333.zip
 
 
 * ---------------------------------------------------------------- *
